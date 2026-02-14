@@ -1,0 +1,93 @@
+package com.resources;
+
+import com.divisions.AbstractLandDivision;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import java.util.*;
+
+public abstract class HabitableLand extends AbstractLandDivision {
+    final Set<Resource> resources = new HashSet<>();
+    long population;
+
+    public HabitableLand(UUID id, Date created, Date ended) {
+        super(id, created, ended);
+    }
+
+    public HabitableLand(JsonObject payload) {
+        super(payload);
+    }
+
+
+
+    @Override
+    protected void setPassthroughData(JsonObject passthrough) {
+        fromJson(passthrough);
+    }
+    @Override
+    protected JsonObject getPassthroughData() {
+        return toJson();
+    }
+
+    public HabitableLand(UUID id, Date created, Date ended, JsonObject additionalData) {
+        super(id, created, ended, additionalData);
+    }
+
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("population", population);
+        JsonArray array = new JsonArray();
+        for (Resource resource : resources) {
+            JsonObject rj = new JsonObject();
+            rj.addProperty("type",resource.type().name());
+            rj.addProperty("amount",resource.abundance());
+            array.add(rj);
+        }
+        json.add("resources", array);
+        return json;
+    }
+    public void fromJson(JsonObject json) {
+        population = json.get("population").getAsLong();
+        resources.clear();
+        JsonArray array = json.get("resources").getAsJsonArray();
+        for (JsonElement element : array) {
+            JsonObject rj = element.getAsJsonObject();
+            resources.add(new Resource(rj.get("type").getAsString(),rj.get("amount").getAsInt()));
+        }
+    }
+    public Set<Resource> getResources() {
+        Map<ResourceType, Integer> maxAbundance = new HashMap<>();
+
+        // Add this land's direct resources
+        for (Resource r : resources) {
+            maxAbundance.put(r.type(), r.abundance());
+        }
+
+        // Aggregate from children, keeping max abundance per type
+        for (AbstractLandDivision child : Children()) {
+            if (child instanceof HabitableLand h) {
+                for (Resource r : h.getResources()) {
+                    maxAbundance.merge(r.type(), r.abundance(), Math::max);
+                }
+            }
+        }
+
+        // Convert back to Resource set
+        Set<Resource> result = new HashSet<>();
+        for (Map.Entry<ResourceType, Integer> entry : maxAbundance.entrySet()) {
+            result.add(new Resource(entry.getKey(), entry.getValue()));
+        }
+        return result;
+    }
+    public long getPopulation() {
+        long result = population;
+        for (AbstractLandDivision child : Children()) {
+            if (child instanceof HabitableLand h) {
+                result += h.getPopulation();
+            }
+        }
+        return result;
+    }
+}
