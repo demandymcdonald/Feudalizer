@@ -6,10 +6,11 @@ import com.people.Character;
 import com.resources.HabitableLand;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class Town extends HabitableLand {
+public class Town extends HabitableLand<Town> {
     public Optional<Character> Mayor;
     private Optional<UUID> MayorID;
     public Town(UUID id, Date created, Date ended) {
@@ -25,8 +26,18 @@ public class Town extends HabitableLand {
     }
 
     @Override
-    protected void setPassthroughData(JsonObject passthrough) {
-        super.setPassthroughData(passthrough);
+    public boolean canInherit(Character person) {
+        return false;
+    }
+
+    @Override
+    public List<Character> getAllClaimants() {
+        return List.of();
+    }
+
+    @Override
+    protected void onNewStateLoad(JsonObject passthrough) {
+        super.onNewStateLoad(passthrough);
         Mayor = Optional.empty();
         MayorID = Optional.empty();
         if (passthrough.has("Mayor")){

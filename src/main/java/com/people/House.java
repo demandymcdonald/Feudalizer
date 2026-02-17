@@ -14,14 +14,16 @@ import java.util.Set;
 import java.util.UUID;
 
 public class House extends DateMutableEntity<House.HouseState> {
+    private String Name;
     private HashMultimap<House, County> DirectHouses = HashMultimap.create();
     private Character HeadOfHouse;
     private Set<Family> DirectMembers = Sets.newHashSet();
     private Set<Family> IndirectMembers = Sets.newHashSet();
 
 
-    public record HouseState(UUID HeadofHouse, Set<UUID> Houses, Set<UUID> DirectMembers, Set<UUID> IndirectMembers) {
-        public static HouseState builder(HashMultimap<House, County> Counties, Character HeadOfHouse, Set<Family> DirectMembers, Set<Family> IndirectMembers) {
+    public record HouseState(String Name, UUID HeadofHouse, Set<UUID> Houses, Set<UUID> DirectMembers, Set<UUID> IndirectMembers) {
+
+        public static HouseState builder(String name, HashMultimap<House, County> Counties, Character HeadOfHouse, Set<Family> DirectMembers, Set<Family> IndirectMembers) {
             Set<UUID> Houses = Sets.newHashSet();
             for (House house : Counties.keySet()) {
                 Houses.add(house.getId());
@@ -34,10 +36,11 @@ public class House extends DateMutableEntity<House.HouseState> {
             for (Family family : IndirectMembers) {
                 iFamilies.add(family.getId());
             }
-            return new HouseState(HeadOfHouse.getId(),Houses,dFamilies,iFamilies);
+            return new HouseState(name, HeadOfHouse.getId(),Houses,dFamilies,iFamilies);
         }
         public JsonObject serialize() {
             JsonObject json = new JsonObject();
+            json.addProperty("Name", Name);
             json.addProperty("HoH",HeadofHouse.toString());
             JsonArray counties = new JsonArray();
             JsonArray indirectMembers = new JsonArray();
@@ -58,6 +61,7 @@ public class House extends DateMutableEntity<House.HouseState> {
         }
         public static HouseState deserialize(JsonObject json) {
             UUID headOfHouse = UUID.fromString(json.get("HoH").getAsString());
+            String name = json.get("Name").getAsString();
             Set<UUID> Houses = Sets.newHashSet();
             Set<UUID> DirectMembers = Sets.newHashSet();
             Set<UUID> IndirectMembers = Sets.newHashSet();
@@ -73,7 +77,7 @@ public class House extends DateMutableEntity<House.HouseState> {
             for (JsonElement jsonElement : directMembers) {
                 DirectMembers.add(UUID.fromString(jsonElement.getAsString()));
             }
-            return new HouseState(headOfHouse,Houses,DirectMembers,IndirectMembers);
+            return new HouseState(name,headOfHouse,Houses,DirectMembers,IndirectMembers);
         }
     }
 
@@ -88,7 +92,7 @@ public class House extends DateMutableEntity<House.HouseState> {
 
     @Override
     protected HouseState getCurrentState() {
-        return HouseState.builder(DirectHouses, HeadOfHouse, DirectMembers, IndirectMembers);
+        return HouseState.builder(Name,DirectHouses, HeadOfHouse, DirectMembers, IndirectMembers);
     }
 
     @Override
@@ -104,6 +108,12 @@ public class House extends DateMutableEntity<House.HouseState> {
         }
     }
 
+    public String getName() {
+        return Name;
+    }
+    public void setName(String name) {
+        Name = name;
+    }
     @Override
     protected JsonObject serializeData(HouseState data) {
         return data.serialize();

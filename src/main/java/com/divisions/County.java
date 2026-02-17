@@ -1,12 +1,14 @@
 package com.divisions;
 
 import com.google.gson.JsonObject;
+import com.people.Character;
 import com.resources.HabitableLand;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-public class County extends HabitableLand {
+public class County extends HabitableLand<County> {
 
 
     public County(UUID id, Date created, Date ended, JsonObject additionalData) {
@@ -17,6 +19,26 @@ public class County extends HabitableLand {
         super(payload);
     }
 
+    @Override
+    public boolean canInherit(Character person) {
+        return false;
+    }
+
+    @Override
+    public boolean isInheritable() {
+        return false;
+    }
+
+    @Override
+    public boolean isSubPropagating() {
+        return false;
+    }
+
+    @Override
+    public List<Character> getAllClaimants() {
+        return List.of();
+    }
+
 
     @Override
     protected JsonObject getPassthroughData() {
@@ -24,8 +46,8 @@ public class County extends HabitableLand {
     }
 
     @Override
-    protected void setPassthroughData(JsonObject passthrough) {
-        super.setPassthroughData(passthrough);
+    protected void onNewStateLoad(JsonObject passthrough) {
+        super.onNewStateLoad(passthrough);
     }
 
     @Override

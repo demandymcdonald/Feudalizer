@@ -2,27 +2,21 @@ package com.divisions;
 
 import com.google.gson.JsonObject;
 import com.people.Character;
-import com.resources.HabitableLand;
 
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class Province extends HabitableLand<Province> {
-    public Province(UUID id, Date created, Date ended) {
+public class SpecialEconomicZone extends AbstractLandDivision<SpecialEconomicZone> {
+    public SpecialEconomicZone(UUID id, Date created, Date ended) {
         super(id, created, ended);
     }
 
-    public Province(UUID id, Date created, Date ended, JsonObject additionalData) {
+    public SpecialEconomicZone(UUID id, Date created, Date ended, JsonObject additionalData) {
         super(id, created, ended, additionalData);
     }
 
-    @Override
-    protected void onRelink() {
-
-    }
-
-    public Province(JsonObject payload) {
+    public SpecialEconomicZone(JsonObject payload) {
         super(payload);
     }
 
@@ -34,5 +28,15 @@ public class Province extends HabitableLand<Province> {
     @Override
     public List<Character> getAllClaimants() {
         return List.of();
+    }
+
+    @Override
+    protected void onRelink() {
+
+    }
+
+    @Override
+    protected JsonObject getPassthroughData() {
+        return null;
     }
 }

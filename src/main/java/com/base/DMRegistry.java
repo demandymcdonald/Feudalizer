@@ -1,10 +1,9 @@
 package com.base;
+import com.people.*;
+import com.succession.Title;
+import com.succession.TitleManager;
 
-import com.divisions.LandManager;
-import com.people.CharacterManager;
-import com.people.FamilyManager;
-import com.people.HouseManager;
-
+import java.lang.Character;
 import java.util.HashMap;
 
 public class DMRegistry {
@@ -14,30 +13,51 @@ public class DMRegistry {
     public static <R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>> void addEntry(String database, M manager) {
         registry.put(database, manager);
     }
+    public static <R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>> void registerDateMutable(T entity) {
+        M manager = (M) getEntry(entity.getClass());
+        assert manager != null;
+        manager.register(entity);
+    }
+    public static <T extends DateMutableEntity<?>,M extends AbstractMutableManager<?,T>> M getEntry(Class<T> database){
+        if(Title.class.isAssignableFrom(database)){
+            return (M) getTitleManager();
+        }
+        if(Family.class.isAssignableFrom(database)){
+            return (M) getFamilyManager();
+        }
+        if (House.class.isAssignableFrom(database)){
+            return (M) getHouseManager();
+        }
+        if (Character.class.isAssignableFrom(database)){
+            return (M) getCharacterManager();
+        }
+        return null;
+    }
 
     public static <R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>> M getEntry(String database) {
         return (M) registry.get(database);
     }
     static {
-        addEntry("character", new CharacterManager());
-        addEntry("family", new FamilyManager());
-        addEntry("house", new HouseManager());
-        addEntry("land", new LandManager());
+        addEntry("Character", new CharacterManager());
+        addEntry("Family", new FamilyManager());
+        addEntry("House", new HouseManager());
+        addEntry("Title", new TitleManager());
     }
 
 
     public static FamilyManager getFamilyManager() {
-        return (FamilyManager) registry.get("family");
+        return (FamilyManager) registry.get(Family.class);
     }
     public static CharacterManager getCharacterManager() {
-        return (CharacterManager) registry.get("character");
+        return (CharacterManager) registry.get(Character.class);
     }
     public static HouseManager getHouseManager() {
-        return (HouseManager) registry.get("house");
+        return (HouseManager) registry.get(House.class);
     }
-    public static LandManager getLandManager() {
-        return (LandManager) registry.get("land");
+    public static TitleManager getTitleManager() {
+        return (TitleManager) registry.get(Title.class);
     }
+
 
 //    protected record MutableEntry<R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>>(M manager, Function<>) {
 //

@@ -26,6 +26,9 @@ public abstract class AbstractMutableManager<R,T extends DateMutableEntity<R>> {
     public void onLoad(){
         isLoaded = true;
     }
+    public void register(T entity) {
+        ItemMap.put(entity.getId(), entity);
+    }
     public T get(UUID id) {
         T t = ItemMap.get(id);
         if (t == null) {

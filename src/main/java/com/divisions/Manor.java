@@ -1,17 +1,29 @@
 package com.divisions;
 
 import com.google.gson.JsonObject;
+import com.people.Character;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-public class Manor extends AbstractLandDivision{
+public class Manor extends AbstractLandDivision<Manor>{
     public Manor(UUID id, Date created, Date ended, JsonObject additionalData) {
         super(id, created, ended, additionalData);
     }
 
     public Manor(JsonObject payload) {
         super(payload);
+    }
+
+    @Override
+    public boolean canInherit(Character person) {
+        return false;
+    }
+
+    @Override
+    public List<Character> getAllClaimants() {
+        return List.of();
     }
 
     public Manor(UUID id, Date created, Date ended) {
@@ -24,7 +36,7 @@ public class Manor extends AbstractLandDivision{
     }
 
     @Override
-    protected void setPassthroughData(JsonObject passthrough) {
+    protected void onNewStateLoad(JsonObject passthrough) {
 
     }
 

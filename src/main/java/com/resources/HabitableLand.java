@@ -4,10 +4,11 @@ import com.divisions.AbstractLandDivision;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.succession.Title;
 
 import java.util.*;
 
-public abstract class HabitableLand extends AbstractLandDivision {
+public abstract class HabitableLand<R extends HabitableLand<R>> extends AbstractLandDivision<R> {
     final Set<Resource> resources = new HashSet<>();
     long population;
 
@@ -22,7 +23,7 @@ public abstract class HabitableLand extends AbstractLandDivision {
 
 
     @Override
-    protected void setPassthroughData(JsonObject passthrough) {
+    protected void onNewStateLoad(JsonObject passthrough) {
         fromJson(passthrough);
     }
     @Override
@@ -66,8 +67,8 @@ public abstract class HabitableLand extends AbstractLandDivision {
         }
 
         // Aggregate from children, keeping max abundance per type
-        for (AbstractLandDivision child : Children()) {
-            if (child instanceof HabitableLand h) {
+        for (Title<?> child : getChildren()) {
+            if (child instanceof HabitableLand<?> h) {
                 for (Resource r : h.getResources()) {
                     maxAbundance.merge(r.type(), r.abundance(), Math::max);
                 }
@@ -83,7 +84,7 @@ public abstract class HabitableLand extends AbstractLandDivision {
     }
     public long getPopulation() {
         long result = population;
-        for (AbstractLandDivision child : Children()) {
+        for (Title<?>  child : getChildren()) {
             if (child instanceof HabitableLand h) {
                 result += h.getPopulation();
             }

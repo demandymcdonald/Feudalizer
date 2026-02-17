@@ -25,7 +25,7 @@ public abstract class CompositeLandDivision extends HabitableLand {
     }
 
     @Override
-    protected void setPassthroughData(JsonObject passthrough) {
+    protected void onNewStateLoad(JsonObject passthrough) {
 
     }
 }

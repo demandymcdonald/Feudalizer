@@ -1,4 +1,4 @@
-package com.geography;
+package com.display.geography;
 
 import org.geotools.feature.collection.FilteringSimpleFeatureCollection;
 

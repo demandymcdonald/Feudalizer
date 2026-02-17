@@ -4,15 +4,11 @@ import com.GlobalData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.*;
+
+import static com.GlobalVars.MAX_DATE;
 
 public abstract class DateMutableEntity<T> {
     private final UUID id;
@@ -21,24 +17,40 @@ public abstract class DateMutableEntity<T> {
     private final JsonObject additionalData;
     private long currentTime;
     protected List<DateState<T>> timeline = new ArrayList<DateState<T>>();
-    public record DateState<T>(Date created, Date ended, T state, String Startnotes, String EndNotes) {
+    public record DateState<T>(Date created, Date ended, T state, List<StateChangeKey> startKey, String EndNotes) {
         public DateState(JsonObject metadata, T sta){
             this(
                     Date.from(Instant.parse(String.valueOf(metadata.get("created")))),
                     metadata.has("ended") ? Date.from(Instant.parse(String.valueOf(metadata.get("ended")))) : null,
                     sta,
-                    metadata.get("startNotes").getAsString(),
+                    buildStartKey(metadata.get("startKey").getAsJsonArray()),
                     metadata.has("endNotes") ? metadata.get("endNotes").getAsString() : null
             );
         }
+
+
         public JsonObject serializeMetadata(){
             JsonObject json = new JsonObject();
             json.addProperty("created", created.toInstant().toString());
             json.addProperty("ended", ended.toInstant().toString());
             json.addProperty("state", state.toString());
-            json.addProperty("Startnotes", Startnotes);
+            json.add("startKey", buildStartArray());
             json.addProperty("Endnotes", EndNotes);
             return json;
+        }
+        private JsonArray buildStartArray(){
+            JsonArray array = new JsonArray();
+            for (StateChangeKey key : startKey){
+                array.add(key.serialize());
+            }
+            return array;
+        }
+        private static List<StateChangeKey> buildStartKey(JsonArray array){
+            List<StateChangeKey> key = new ArrayList<>();
+            for (JsonElement element : array){
+                key.add(StateChangeKey.deserialize(element.getAsJsonObject()));
+            }
+            return key;
         }
     }
     public DateMutableEntity(UUID id, Date created, Date ended) {
@@ -46,12 +58,14 @@ public abstract class DateMutableEntity<T> {
         this.created = created;
         this.ended = ended;
         this.additionalData = new JsonObject();
+        DMRegistry.registerDateMutable(this);
     }
     public DateMutableEntity(UUID id, Date created, Date ended, JsonObject additionalData) {
         this.id = id;
         this.created = created;
         this.ended = ended;
         this.additionalData = additionalData;
+        DMRegistry.registerDateMutable(this);
     }
     public DateMutableEntity(JsonObject payload) {
         this.id = UUID.fromString(payload.get("id").getAsString());
@@ -65,6 +79,7 @@ public abstract class DateMutableEntity<T> {
             timeline.add(new DateState<>(metadata,buildState(pl)));
         }
         this.additionalData = payload.get("additionalData").getAsJsonObject();
+        DMRegistry.registerDateMutable(this);
     }
     public T getStateAt(){
         return getStateAt(GlobalData.CurrentDate());
@@ -77,20 +92,47 @@ public abstract class DateMutableEntity<T> {
                 .orElse(null);
     }
     protected abstract T getCurrentState(); // Each subclass implements this
-
-    protected void addStateChange(Date startDate, String startNotes) {
+    public boolean isLast(DateState<T> check){
+        return timeline.get(timeline.size()-1).equals(check);
+    }
+    protected void addStateChange(Date startDate, StateChangeKey startNotes) {
         // Close previous state
         List<DateState<T>> unended = timeline.stream().filter(ds -> ds.ended == null || ds.ended.after(startDate)).toList();
         if (unended.size() > 1) {
             GlobalData.logger().warn("Multiple Unended states found: " + unended);
         }
-        for (DateState<T> ds : unended) {
-            DateState<T> dsn = new DateState<>(ds.created,startDate,ds.state,ds.Startnotes,ds.EndNotes);
-            timeline.remove(ds);
-            timeline.add(dsn);
+        DateState<T> current = unended.getFirst();
+        DateState<T> dsn;
+        if (current.created.equals(startDate)) {
+            for (StateChangeKey sck : current.startKey()){
+                if (startNotes.equals(sck)) {
+                    return;
+                } else if (sck.canBeNullified(startNotes)){
+                    //Nullify both entries.
+                    timeline.remove(current);
+                    return;
+                }
+            }
+            current.startKey().add(startNotes);
+            dsn = new DateState<>(current.created,null,getCurrentState(),current.startKey(),current.EndNotes);
+
+        } else {
+            timeline.add(new DateState<>(current.created, startDate, current.state(), current.startKey(), null)); //TODO: add state change type end messages l8r
+            dsn =new DateState<>(startDate,null,current.state(),current.startKey(),null);
         }
+        if (isLast(current)){
+            timeline.add(dsn);
+        } else {
+            //TODO add sandbox instantiation here
+        }
+        timeline.remove(current);
+
+//        for (DateState<T> ds : unended) {
+//
+//            timeline.remove(ds);
+//            timeline.add(dsn);
+//        }
         // Add new state
-        timeline.add(new DateState<>(startDate, null, getCurrentState(), startNotes, null));
     }
     public void relinkStateChange(JsonObject o, T payload){
 
@@ -114,6 +156,12 @@ public abstract class DateMutableEntity<T> {
     public Date getCreated(){
         return created;
     };
+    public Date getEnded(){
+        if (ended == null) {
+            return MAX_DATE;
+        }
+        return ended;
+    }
     protected JsonObject getAdditionalData(){
         return additionalData;
     }
@@ -134,5 +182,45 @@ public abstract class DateMutableEntity<T> {
         return currentTime == checksum;
 
     }
+    public static <R extends DateMutableEntity<?>,B extends Collection<R>> List<UUID> convert (B b){
+        List<UUID> result = new ArrayList<>();
+        for (R r : b){
+            result.add(r.getId());
+        }
+        return result;
+    }
+    public static JsonArray buildJson(List<UUID> ids){
+        JsonArray json = new JsonArray();
+        for (UUID id : ids){
+            json.add(id.toString());
+        }
+        return json;
+    }
+    @SafeVarargs
+    public static <R extends DateMutableEntity<?>> JsonArray buildJson(R... ent){
+        JsonArray json = new JsonArray();
+        for (R r : ent){
+            JsonObject obj = new JsonObject();
+            obj.addProperty("type",r.getClass().getSimpleName());
+            obj.addProperty("id", r.getId().toString());
+            json.add(obj);
+        }
+        return buildJson(convert(List.of(ent)));
+    }
 
+    public static List<UUID> buildUUID (JsonArray json){
+        List<UUID> result = new ArrayList<>();
+        for (int i = 0; i < json.size(); i++){
+            result.add(UUID.fromString(json.get(i).getAsString()));
+        }
+        return result;
+    }
+    //TODO: Get proper manager from class type.
+    public static List<UUID> quickBuildID(DateMutableEntity<?>... entities){
+        List<UUID> result = new ArrayList<>();
+        for (DateMutableEntity<?> e : entities){
+            result.add(e.getId());
+        }
+        return result;
+    }
 }

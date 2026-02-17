@@ -1,24 +1,31 @@
 package com.people;
 
 import com.GlobalData;
-import com.base.DateMutableEntity;
-import com.base.DMRegistry;
+import com.GlobalVars;
+import com.base.*;
+import com.base.reference.DMEReference;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.succession.Title;
 import javafx.util.Pair;
 
 import java.util.*;
 
 public class Character extends DateMutableEntity<Character.CharacterState> {
+    public enum Gender {
+        Male,
+        Female;
+    }
     private String givenName;
+    private Gender gender;
     private House house;
     private HashMap<Family, FamilyRelationship> families = new HashMap<>();
-    public Character(UUID id, String givenName, House house,Date dateOfBirth, Date dateOfDeath, Pair<Family,FamilyRelationship>... families) {
-        super(id,dateOfBirth,dateOfDeath, addAdditional(new JsonObject(),givenName));
+    private List<Title<?>> Titles = new ArrayList<>();
+    public Character(UUID id, String givenName, House house,Date dateOfBirth, Date dateOfDeath, Gender gender, Pair<Family,FamilyRelationship>... families) {
+        super(id,dateOfBirth,dateOfDeath, addAdditional(new JsonObject(),givenName,gender));
         this.givenName = givenName;
         this.house = house;
-
+        this.gender = gender;
         for ( Pair<Family,FamilyRelationship> pair : families) {
             this.families.put(pair.getKey(), pair.getValue());
         }
@@ -27,12 +34,13 @@ public class Character extends DateMutableEntity<Character.CharacterState> {
     public Character(JsonObject json) {
         super(json);
         givenName = getAdditionalData().get("givenName").getAsString();
+        gender = Gender.valueOf(getAdditionalData().get("gender").getAsString());
     }
 
 
     @Override
     protected CharacterState getCurrentState() {
-        return CharacterState.builder(families.keySet(),house);
+        return CharacterState.builder(families.keySet().stream().toList(),getTitles(),house);
     }
 
     @Override
@@ -45,7 +53,9 @@ public class Character extends DateMutableEntity<Character.CharacterState> {
             families.put(f,f.getFamilyRelationship(this));
         }
     }
-
+    public  boolean isAlive() {
+        return getEnded().after(GlobalVars.CURRENT_DATE);
+    }
 
     @Override
     protected JsonObject serializeData(CharacterState data) {
@@ -57,31 +67,25 @@ public class Character extends DateMutableEntity<Character.CharacterState> {
         return CharacterState.deserialize(o);
     }
 
-    public record CharacterState(Set<UUID> Families, UUID House){
-        public static CharacterState builder(Set<Family> families, House house){
-            Set<UUID> ids = new HashSet<>();
-            for(Family family : families){
-                ids.add(family.getId());
-            }
-            return new CharacterState(ids, house.getId());
+    public record CharacterState(List<UUID> Families, UUID House, List<UUID> Titles){
+        public static CharacterState builder(List<Family> families, List<Title<?>> title, House house){
+            List<UUID> familyID = DateMutableEntity.convert(families);
+            List<UUID> titleID = DateMutableEntity.convert(title);
+            return new CharacterState(familyID, house.getId(),titleID);
         }
         public JsonObject serialize() {
             JsonObject json = new JsonObject();
-            JsonArray array = new JsonArray();
+            JsonArray familyArray = DateMutableEntity.buildJson(Families);
+            JsonArray titleArray = DateMutableEntity.buildJson(Titles);
             json.addProperty("house", House.toString());
-            for (UUID id : Families) {
-                array.add(id.toString());
-            }
-            json.add("families", array);
+            json.add("families", familyArray);
+            json.add("titles", titleArray);
             return json;
         }
         public static CharacterState deserialize(JsonObject o) {
-            Set<UUID> ids = new HashSet<>();
-            JsonArray array = o.get("families").getAsJsonArray();
-            for (JsonElement element : array) {
-                ids.add(UUID.fromString(element.getAsString()));
-            }
-            return new CharacterState(ids, UUID.fromString(o.get("house").getAsString()));
+            List<UUID> familyID = buildUUID(o.get("families").getAsJsonArray());
+            List<UUID> titleID = buildUUID(o.get("titles").getAsJsonArray());
+            return new CharacterState(familyID, UUID.fromString(o.get("house").getAsString()), titleID);
         }
     };
 
@@ -92,6 +96,7 @@ public class Character extends DateMutableEntity<Character.CharacterState> {
     public House getHouse() {
         return house;
     }
+    public Gender getGender() {return gender;}
     public Family getParentFamily() {
       for (Map.Entry<Family, FamilyRelationship> family : families.entrySet()) {
           if (family.getValue() == FamilyRelationship.CHILD){
@@ -111,20 +116,66 @@ public class Character extends DateMutableEntity<Character.CharacterState> {
         return married;
     }
 
-    public String givenName() {
-        return givenName;
+    public HashMap<Family, FamilyRelationship> getFamilies() {
+        return families;
     }
-    public House house() {
-        return house;
+    public List<Title<?>> getTitles(){
+        //TODO: Fix
+        return new ArrayList<>(this.Titles);
     }
-    private static JsonObject addAdditional(JsonObject j, String name){
+    public void addTitle(Title<?> title){
+        if (title.getHolder().isPresent() && title.getHolder().get().equals(this)){
+            this.Titles.add(title);
+            addStateChange(GlobalVars.CURRENT_DATE, new StateChangeKey(StateChangeKey.StateChangeType.GRANT_TITLE, DMEReference.of(this),DMEReference.of(title)));
+        } else {
+            title.setHolder(this);
+        }
+    }
+    public void revokeTitle(Title<?> title){
+        if (!title.getHolder().isPresent()){
+            this.Titles.remove(title);
+            addStateChange(GlobalVars.CURRENT_DATE, new StateChangeKey(StateChangeKey.StateChangeType.REVOKE_TITLE, DMEReference.of(this),DMEReference.of(title)));
+        } else if (title.getHolder().get().equals(this)){
+            title.removeHolder(this);
+        }
+    }
+    public void giveBirth(Character otherParent, Gender gender, String name){
+
+        Family f = findOrCreateFamily(otherParent,true); //TODO check if this is okay logic wise..
+
+
+    }
+    public void recalculateSuccession(){
+
+    }
+
+    protected Family findOrCreateFamily(Character spouse, boolean makePrimary){
+        for (Family f : Family.getNuclear(this)){
+            if (Arrays.asList(f.getSpouses()).contains(spouse)){
+                return f;
+            }
+        }
+        Character primary;
+        Character secondary;
+        if (makePrimary){
+            primary = this;
+            secondary = spouse;
+        } else {
+            primary = spouse;
+            secondary = this;
+        }
+        return new Family(UUID.randomUUID(), GlobalVars.CURRENT_DATE, primary, secondary, new HashMap<>());
+    }
+    private static JsonObject addAdditional(JsonObject j, String name, Gender gender){
         j.addProperty("givenName", name);
+        j.addProperty("gender", gender.toString());
         return j;
     }
     @Override
     protected JsonObject saveAdditional(JsonObject j) {
         super.saveAdditional(j);
-        addAdditional(j,givenName);
+        addAdditional(j,givenName,gender);
         return j;
     }
+
 }
