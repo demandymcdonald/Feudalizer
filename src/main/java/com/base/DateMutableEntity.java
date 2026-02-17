@@ -4,6 +4,7 @@ import com.GlobalData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.sql.SQLManager;
 
 import java.time.Instant;
 import java.util.*;
@@ -120,13 +121,13 @@ public abstract class DateMutableEntity<T> {
             timeline.add(new DateState<>(current.created, startDate, current.state(), current.startKey(), null)); //TODO: add state change type end messages l8r
             dsn =new DateState<>(startDate,null,current.state(),current.startKey(),null);
         }
-        if (isLast(current)){
+        //if (isLast(current)){
             timeline.add(dsn);
-        } else {
+        //} else {
             //TODO add sandbox instantiation here
-        }
+        //}
         timeline.remove(current);
-
+        SQLManager.save(this);
 //        for (DateState<T> ds : unended) {
 //
 //            timeline.remove(ds);

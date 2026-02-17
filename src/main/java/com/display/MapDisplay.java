@@ -1,7 +1,7 @@
 package com.display;
 
 import com.display.geography.GeographyManager;
-import com.sun.javafx.geom.Point2D ;
+import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -56,8 +56,8 @@ public class MapDisplay {
         double[] y = new double[coordinates.length];
 
         for (int i = 0; i < coordinates.length; i++) {
-            x[i] = (coordinates[i].x - boundMin.x) * scale.x;
-            y[i] = (boundMax.y - coordinates[i].y) * scale.y;
+            x[i] = (coordinates[i].getX() - boundMin.getX()) * scale.getX();
+            y[i] = (boundMax.getY() - coordinates[i].getY()) * scale.getY();
         }
         return new Pair<>(x,y);
     }

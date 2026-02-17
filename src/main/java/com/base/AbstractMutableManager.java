@@ -39,7 +39,7 @@ public abstract class AbstractMutableManager<R,T extends DateMutableEntity<R>> {
     public UUID getItemId(T entity) {
         return ItemMap.inverse().get(entity);
     }
-    protected HashBiMap<UUID, T> getItemMap() {
+    public HashBiMap<UUID, T> getItemMap() {
         return ItemMap;
     }
     public boolean isLoaded() {

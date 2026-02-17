@@ -4,7 +4,19 @@ import com.GlobalData;
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.store.ReprojectingFeatureCollection;
+import org.geotools.referencing.CRS;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +60,7 @@ public class GeographyLoader {
         if (files == null) return shapefiles;
 
         for (File file : files) {
+
             if (file.isDirectory()) {
                 shapefiles.addAll(findAllShapefiles(file));  // Recurse
             } else if (file.getName().endsWith(".shp")) {
@@ -68,10 +81,65 @@ public class GeographyLoader {
         return GeometryType.CUST;  // Default to custom
     }
 
-    private SimpleFeatureCollection loadShapefile(File shp) throws IOException {
+    private SimpleFeatureCollection loadShapefile(File shp) throws IOException, FactoryException {
         FileDataStore store = FileDataStoreFinder.getDataStore(shp);
         SimpleFeatureSource source = store.getFeatureSource();
-        return source.getFeatures();
+        SimpleFeatureCollection features = source.getFeatures();
+
+        // Filter out dateline-crossing islands
+        return filterDatelineIslands(features);
+    }
+    private SimpleFeatureCollection filterDatelineIslands(SimpleFeatureCollection features) {
+        List<SimpleFeature> filtered = new ArrayList<>();
+
+        SimpleFeatureIterator iterator = features.features();
+        try {
+            while (iterator.hasNext()) {
+                SimpleFeature feature = iterator.next();
+                Geometry geom = (Geometry) feature.getDefaultGeometry();
+
+                // Filter out extreme east/west coordinates
+                Geometry cleaned = filterGeometry(geom);
+
+                if (cleaned != null && !cleaned.isEmpty()) {
+                    feature.setDefaultGeometry(cleaned);
+                    filtered.add(feature);
+                }
+            }
+        } finally {
+            iterator.close();
+        }
+
+        return new ListFeatureCollection(features.getSchema(), filtered);
     }
 
+    private Geometry filterGeometry(Geometry geom) {
+        if (geom instanceof MultiPolygon) {
+            List<Polygon> kept = new ArrayList<>();
+            for (int i = 0; i < geom.getNumGeometries(); i++) {
+                Polygon poly = (Polygon) geom.getGeometryN(i);
+                if (isValidPolygon(poly)) {
+                    kept.add(poly);
+                }
+            }
+            if (kept.isEmpty()) return null;
+            return geom.getFactory().createMultiPolygon(kept.toArray(new Polygon[0]));
+        } else if (geom instanceof Polygon) {
+            return isValidPolygon((Polygon) geom) ? geom : null;
+        }
+        return geom;
+    }
+
+    private boolean isValidPolygon(Polygon poly) {
+        for (Coordinate coord : poly.getCoordinates()) {
+            // Cut anything near the dateline
+            if (coord.x > 0 || coord.x < -170) {
+                return false;
+            }
+            if (coord.y < 15) {  // Below 15°N
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -1,7 +1,7 @@
 package com.base;
-import com.people.*;
-import com.succession.Title;
-import com.succession.TitleManager;
+import com.simulation.people.*;
+import com.simulation.succession.Title;
+import com.simulation.succession.TitleManager;
 
 import java.lang.Character;
 import java.util.HashMap;
