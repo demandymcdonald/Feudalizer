@@ -1,0 +1,91 @@
+package com.base.flags;
+
+import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
+import com.base.reference.StateReference;
+import com.base.timeline.change.TimelineChange;
+import com.base.timeline.propagation.core.Sandbox;
+import com.simulation.people.BookCharacter;
+import com.simulation.title.Title;
+import org.apache.commons.lang3.tuple.Pair;
+
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+
+public class StateError{
+        private final CompletableFuture<String> response;
+        private final Map<String,ErrorResolution> options;
+        private final Map<String,String> uiMap;
+        private final StateReference message;
+
+    public StateError(StateReference message, ErrorResolution... options) {
+        this.message = message;
+        response = new CompletableFuture<>();
+        Pair<Map<String,ErrorResolution>, Map<String,String>> p = buildOptionsString(options);
+        this.options = p.getLeft();
+        uiMap = p.getRight();
+    }
+    private Pair<Map<String,ErrorResolution>,Map<String,String>> buildOptionsString(ErrorResolution... options){
+        Map<String,String> ui = new HashMap<>();
+        Map<String,ErrorResolution> map = new HashMap<>();
+        for (ErrorResolution e : options) {
+            ui.put(e.getCode(),e.tooltip());
+            map.put(e.getCode(),e);
+        }
+        return Pair.of(map,ui);
+    }
+    public CompletableFuture<String> getResponse() {
+        return response;
+    }
+    public <T extends DateMutableEntity<T,?>> SandboxCode handleDecision(Sandbox sandbox, TimelineChange<T> change, T entity){
+        if (options.size() == 1){
+            return executeDecision(options.keySet().iterator().next(),sandbox,change,entity);
+        }
+        return executeDecision(response.join(),sandbox,change,entity);
+    }
+    private <T extends DateMutableEntity<T,?>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change, T entity){
+        if (!uiMap.keySet().contains(code)){
+            throw new IllegalArgumentException("Invalid code: " + code);
+        }
+        return options.get(code).resolve(sandbox,change,entity);
+    }
+    public StateError addIgnore(){
+        addOption(new ErrorResolution.GenIgnore());
+        return this;
+    }
+    public  StateError  addEndState() {
+        addOption(new ErrorResolution.EndSandbox());
+        return this;
+    }
+    public StateError  addEndCancel() {
+        addOption(new ErrorResolution.EndCancel());
+        return this;
+    }
+    public StateError  addOverride() {
+        addOption(new ErrorResolution.GenOverride());
+        return this;
+    }
+    public StateError  addAccept() {
+        addOption(new ErrorResolution.GenAccept());
+        return this;
+    }
+    public StateError  addNullify() {
+        addOption(new ErrorResolution.GenNullify());
+        return this;
+    }
+    public StateError addContinue() {
+        addOption(new ErrorResolution.GenContinue());
+        return this;
+    }
+    private void addOption(ErrorResolution option){
+        options.put(option.getCode(),option);
+        uiMap.put(option.getCode(),option.tooltip());
+    }
+    public StateError runSuccessionPlanning(DMEReference<? extends Title<?>> title, DMEReference<BookCharacter> newHolder){
+
+    }
+}
+

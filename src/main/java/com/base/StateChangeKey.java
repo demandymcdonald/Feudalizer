@@ -3,7 +3,7 @@ package com.base;
 import com.base.reference.StateReference;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.simulation.people.Character;
+import com.simulation.people.BookCharacter;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -23,8 +23,12 @@ public record StateChangeKey(StateChangeType type, StateReference... variables) 
         REVOKE_TITLE("%s revoked the title from %s", GRANT_TITLE),
         DE_JURE_DRIFT("%s de-jure parent changed to %s"),
         HAD_CHILD("%s (Mother) and %s (Father) gave birth to %s"),
+        HOUSE_CHANGED("%s moved to %s"),
         HOUSE_NAME_CHANGE("%s changed to %s"),
-        TREAT_AS_STATUS_QUO("",MARRIAGE,DIVORCE,GRANT_TITLE,REVOKE_TITLE);
+        TITLE_CREATED("%s was formed"),
+        WAS_BORN ("%s was born"),
+
+        TREAT_AS_STATUS_QUO("");
         final String template;
         final StateChangeType[] canNullify;
         //Example
@@ -68,7 +72,7 @@ public record StateChangeKey(StateChangeType type, StateReference... variables) 
         return new StateChangeKey(type, refs);
     }
 
-    public static StateChangeKey hadChild(com.simulation.people.Character father, com.simulation.people.Character mother, Character child){
+    public static StateChangeKey hadChild(BookCharacter father, BookCharacter mother, BookCharacter child){
         return new StateChangeKey(StateChangeType.HAD_CHILD,DMEReference.of(mother),DMEReference.of(father),DMEReference.of(child));
     }
 }

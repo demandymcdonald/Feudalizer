@@ -1,140 +1,133 @@
 package com.base;
 
-import com.GlobalData;
+import com.Feudalizer;
+
+import com.GlobalVars;
+import com.base.timeline.Timeline;
+import com.base.timeline.TimelineContainer;
+import com.base.timeline.TimelineState;
+import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.sql.SQLManager;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 import static com.GlobalVars.MAX_DATE;
 
-public abstract class DateMutableEntity<T> {
+/**
+ * Represents an abstract class for date-aware mutable entities that track state changes over time.
+ * This class maintains a timeline of states, which are stored as objects of the nested {@code DateState} record.
+ * Each state includes metadata such as creation and end dates, associated keys for state changes, and a payload
+ * representing the state value.
+ *
+ * @param <T> The type representing the state of the entity.
+ */
+public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C extends TimelineContainer<C>> {
     private final UUID id;
-    private final Date created;
-    private final Date ended;
+    private LocalDate created;
+    private LocalDate ended;
+    private LocalDate currentStateStart;
+    private final Timeline<T,C> timeline;
+
+    private LocalDate currentStateEnd;
     private final JsonObject additionalData;
-    private long currentTime;
-    protected List<DateState<T>> timeline = new ArrayList<DateState<T>>();
-    public record DateState<T>(Date created, Date ended, T state, List<StateChangeKey> startKey, String EndNotes) {
-        public DateState(JsonObject metadata, T sta){
-            this(
-                    Date.from(Instant.parse(String.valueOf(metadata.get("created")))),
-                    metadata.has("ended") ? Date.from(Instant.parse(String.valueOf(metadata.get("ended")))) : null,
-                    sta,
-                    buildStartKey(metadata.get("startKey").getAsJsonArray()),
-                    metadata.has("endNotes") ? metadata.get("endNotes").getAsString() : null
-            );
-        }
+//    private long currentTime;
+//    protected List<DateState<T>> timeline = new ArrayList<DateState<T>>();
 
-
-        public JsonObject serializeMetadata(){
-            JsonObject json = new JsonObject();
-            json.addProperty("created", created.toInstant().toString());
-            json.addProperty("ended", ended.toInstant().toString());
-            json.addProperty("state", state.toString());
-            json.add("startKey", buildStartArray());
-            json.addProperty("Endnotes", EndNotes);
-            return json;
-        }
-        private JsonArray buildStartArray(){
-            JsonArray array = new JsonArray();
-            for (StateChangeKey key : startKey){
-                array.add(key.serialize());
-            }
-            return array;
-        }
-        private static List<StateChangeKey> buildStartKey(JsonArray array){
-            List<StateChangeKey> key = new ArrayList<>();
-            for (JsonElement element : array){
-                key.add(StateChangeKey.deserialize(element.getAsJsonObject()));
-            }
-            return key;
-        }
+    public DateMutableEntity(UUID id, LocalDate created, LocalDate ended) {
+        this(id,created,ended,new JsonObject());
     }
-    public DateMutableEntity(UUID id, Date created, Date ended) {
-        this.id = id;
-        this.created = created;
-        this.ended = ended;
-        this.additionalData = new JsonObject();
-        DMRegistry.registerDateMutable(this);
-    }
-    public DateMutableEntity(UUID id, Date created, Date ended, JsonObject additionalData) {
+    public DateMutableEntity(UUID id, LocalDate created, LocalDate ended, JsonObject additionalData) {
         this.id = id;
         this.created = created;
         this.ended = ended;
         this.additionalData = additionalData;
-        DMRegistry.registerDateMutable(this);
+        this.timeline = new Timeline<>(getManager().getEmptyObject());
     }
-    public DateMutableEntity(JsonObject payload) {
+    public DateMutableEntity(JsonObject payload, Timeline<T,C> timeline) {
         this.id = UUID.fromString(payload.get("id").getAsString());
-        this.created = Date.from(Instant.parse(payload.get("created").getAsString()));
-        this.ended = Date.from(Instant.parse(payload.get("ended").getAsString()));
+        this.created = LocalDate.ofEpochDay(payload.get("created").getAsLong());
+        this.timeline = timeline;
+        if (payload.has("ended")) {
+            this.ended = LocalDate.ofEpochDay(payload.get("ended").getAsLong());
+        } else {
+            this.ended = null;
+        }
         JsonArray states = payload.get("states").getAsJsonArray();
         for (JsonElement state : states) {
             JsonObject obj = state.getAsJsonObject();
-            JsonObject metadata = obj.getAsJsonObject("metadata");
-            JsonObject pl = obj.getAsJsonObject().getAsJsonObject("payload");
-            timeline.add(new DateState<>(metadata,buildState(pl)));
+//            JsonObject metadata = obj.getAsJsonObject("metadata");
+//            JsonObject pl = obj.getAsJsonObject().getAsJsonObject("payload");
+            timeline.unsafeInsertState(TimelineState.deserialize(obj));
         }
         this.additionalData = payload.get("additionalData").getAsJsonObject();
-        DMRegistry.registerDateMutable(this);
     }
-    public T getStateAt(){
-        return getStateAt(GlobalData.CurrentDate());
-    }
-    public T getStateAt(Date d) {
-        return timeline.stream()
-                .filter(ds -> ds.created.before(d) && (ds.ended == null || ds.ended.after(d)))
-                .map(ds -> ds.state)
-                .findFirst()
-                .orElse(null);
-    }
-    protected abstract T getCurrentState(); // Each subclass implements this
-    public boolean isLast(DateState<T> check){
-        return timeline.get(timeline.size()-1).equals(check);
-    }
-    protected void addStateChange(Date startDate, StateChangeKey startNotes) {
-        // Close previous state
-        List<DateState<T>> unended = timeline.stream().filter(ds -> ds.ended == null || ds.ended.after(startDate)).toList();
-        if (unended.size() > 1) {
-            GlobalData.logger().warn("Multiple Unended states found: " + unended);
-        }
-        DateState<T> current = unended.getFirst();
-        DateState<T> dsn;
-        if (current.created.equals(startDate)) {
-            for (StateChangeKey sck : current.startKey()){
-                if (startNotes.equals(sck)) {
-                    return;
-                } else if (sck.canBeNullified(startNotes)){
-                    //Nullify both entries.
-                    timeline.remove(current);
-                    return;
-                }
-            }
-            current.startKey().add(startNotes);
-            dsn = new DateState<>(current.created,null,getCurrentState(),current.startKey(),current.EndNotes);
 
-        } else {
-            timeline.add(new DateState<>(current.created, startDate, current.state(), current.startKey(), null)); //TODO: add state change type end messages l8r
-            dsn =new DateState<>(startDate,null,current.state(),current.startKey(),null);
-        }
-        //if (isLast(current)){
-            timeline.add(dsn);
-        //} else {
-            //TODO add sandbox instantiation here
-        //}
-        timeline.remove(current);
-        SQLManager.save(this);
-//        for (DateState<T> ds : unended) {
-//
-//            timeline.remove(ds);
-//            timeline.add(dsn);
-//        }
-        // Add new state
+    public C getStateAt(){
+        return getStateAt(GlobalVars.CURRENT_DATE());
     }
+    public TimelineState<T,C> getDateStateAt(LocalDate d){
+        return timeline.getState(d);
+    }
+    public C getStateAt(LocalDate d) {
+        return timeline.getContainer(d);
+    }
+    public abstract C getCurrentContainer(); // Each subclass implements this. Should package up current state
+    public boolean isLast(TimelineState<T> check){
+        return timeline.isLast(check.start());
+    }
+    /**
+     * Adds a state change to the entity's timeline based on the provided start date and StateChangeKey.
+     * Performs validation, updates the timeline, and saves the updated entity state to the database.
+     *
+     * @param date  The starting date of the new state change.
+     * @param startNotes The details of the state change in the form of a StateChangeKey.
+     */
+    @SafeVarargs
+    protected final void addStateChange(LocalDate date, TimelineChange<T>... startNotes){
+        addStateChange(date,false,startNotes);
+    }
+    @SafeVarargs
+    protected final void addStateChange(LocalDate date, boolean bypass, TimelineChange<T>... startNotes) {
+        Feudalizer.LOGGER.info("{} {} State Change: {} -> {}", this.getClass(),this.getId(),date,startNotes);
+        // Close previous state
+        boolean resaveStart = false;
+        TimelineState<T> before = timeline.getState(date);
+        TimelineState<T> after = timeline.getNextState(date);
+        LocalDate endCurrent = null;
+        ArrayList<TimelineChange<T>> mergedChangeLog;
+        if (before != null && (before.end().isPresent()) && before.start().equals(date)) {
+            if (DMRegistry.isMain() || bypass) {
+                mergedChangeLog = new ArrayList<>(before.changeLog());
+                mergedChangeLog.addAll(List.of(startNotes));
+                mergedChangeLog = new ArrayList<>(List.of(startNotes));
+            } else {
+                mergedChangeLog = new ArrayList<>(before.changeLog());
+            }
+        } else {
+            mergedChangeLog = new ArrayList<>(List.of(startNotes));
+        }
+        TimelineState<T> newState = new TimelineState<>(date,Optional.ofNullable(endCurrent),this.getCurrentContainer().getSerialized(),mergedChangeLog);
+        saveStateChange(newState);
+    }
+    public void saveStateChange(TimelineState<T,C> state){
+        if (DMRegistry.isMain()) {
+            timeline.safeInsertState(this,state);
+        } else {
+            timeline.unsafeInsertState(state);
+        }
+    }
+    /**
+     * Modifies or updates the state of the current entity by utilizing the provided
+     * state information and data from the given JSON object.
+     *
+     * @param o       A JsonObject containing state-related data to be interpreted
+     *                or deserialized for the update process.
+     * @param payload A state-specific payload used to relink or modify the entity's state,
+     *                allowing for fine-grained state management or synchronization.
+     */
     public void relinkStateChange(JsonObject o, T payload){
 
     }
@@ -142,48 +135,90 @@ public abstract class DateMutableEntity<T> {
     public UUID getId() {
         return id;
     }
+
+    /**
+     * Serializes the current entity to a JsonObject representation. This includes properties such as
+     * id, created, ended, additional data, and the entity's timeline of states. Each state in the
+     * timeline is serialized along with its metadata and payload.
+     *
+     * @return a JsonObject containing the serialized representation of the entity.
+     */
     public JsonObject serialize(){
         JsonObject json = new JsonObject();
         json.addProperty("id", id.toString());
-        json.addProperty("created", created.toInstant().toString());
-        json.addProperty("ended", ended.toInstant().toString());
-        json.add("additionalData", saveAdditional(new JsonObject()));
-        for (DateState<T> ds : timeline) {
-            json.add("metadata", ds.serializeMetadata());
-            json.add("payload", serializeData(ds.state()));
+        json.addProperty("created", created.toEpochDay());
+        if (ended != null) {
+            json.addProperty("ended", ended.toEpochDay());
         }
+        json.add("additionalData", saveAdditional(new JsonObject()));
+        JsonArray states = new JsonArray();
+        for (TimelineState ds : timeline.getStates()) {
+            JsonObject state = ds.serialize();
+            states.add(state);
+        }
+        json.add("states", states);
         return json;
     }
-    public Date getCreated(){
+    public LocalDate getCreated(){
         return created;
     };
-    public Date getEnded(){
+    public LocalDate getEnded(){
         if (ended == null) {
             return MAX_DATE;
         }
         return ended;
     }
+    /**
+     * Retrieves the additional data associated with the entity.
+     *
+     * @return a JsonObject representing the additional data of the entity.
+     */
     protected JsonObject getAdditionalData(){
         return additionalData;
     }
+    /**
+     * Saves or processes additional data related to the entity and returns the modified or processed
+     * data as a JsonObject. This method may be overridden in subclasses to implement specific data
+     * handling logic.
+     *
+     * @param j a JsonObject containing the additional data to be saved or processed.
+     * @return a JsonObject representing the saved or processed additional data.
+     */
     protected JsonObject saveAdditional(JsonObject j){
         return new JsonObject();
     }
-    public abstract void relink(T state);
+    /**
+     * Updates or modifies the current state of the entity using the provided state information.
+     *
+     * @param state The new state instance to be linked or associated with the entity. This state
+     *              is expected to represent valid, updated data used for modifying or
+     *              re-establishing the entity's state.
+     */
+    public abstract void relink(C state);
     protected abstract JsonObject serializeData(T data);
-    protected abstract T buildState(JsonObject o);
-    protected void setCurrentState(Date date){
-        T state = getStateAt(date);
+
+    /**
+     * Constructs a new state instance from the provided JSON object. This method is intended
+     * to deserialize or interpret the JSON object to create an instance of the state.
+     *
+     * @param o the JSON object containing the data to build the state. The JSON must contain
+     *          the necessary fields to properly construct an instance of the state.
+     * @return an instance of the state constructed from the input JSON object.
+     */
+    protected final C buildState(JsonObject o){
+        return getManager().deserializeContainer(o);
+    };
+    protected void setCurrentState(LocalDate date){
+        TimelineState<T> state = getDateStateAt(date);
+        currentStateStart = state.start();
+        currentStateEnd = state.end().orElse(null);
         if (state != null) {
-            relink(state);
-            this.currentTime = date.getTime();
+            relink(timeline.getContainer(date));
+            //this.currentTime = date.getTime();
         }
     };
-    public boolean isSynced(long checksum){
-        return currentTime == checksum;
 
-    }
-    public static <R extends DateMutableEntity<?>,B extends Collection<R>> List<UUID> convert (B b){
+    public static <R extends DateMutableEntity<?,?>,B extends Collection<R>> List<UUID> convert (B b){
         List<UUID> result = new ArrayList<>();
         for (R r : b){
             result.add(r.getId());
@@ -198,7 +233,7 @@ public abstract class DateMutableEntity<T> {
         return json;
     }
     @SafeVarargs
-    public static <R extends DateMutableEntity<?>> JsonArray buildJson(R... ent){
+    public static <R extends DateMutableEntity<?,?>> JsonArray buildJson(R... ent){
         JsonArray json = new JsonArray();
         for (R r : ent){
             JsonObject obj = new JsonObject();
@@ -217,11 +252,52 @@ public abstract class DateMutableEntity<T> {
         return result;
     }
     //TODO: Get proper manager from class type.
-    public static List<UUID> quickBuildID(DateMutableEntity<?>... entities){
-        List<UUID> result = new ArrayList<>();
-        for (DateMutableEntity<?> e : entities){
-            result.add(e.getId());
+    public static Map<UUID,ObjectType> quickBuildID(DateMutableEntity<?,?>... entities){
+        Map<UUID,ObjectType> result = new HashMap<>();
+        for (DateMutableEntity<?,?> e : entities){
+            result.put(e.getId(),DMRegistry.getObjectType(e));
         }
         return result;
     }
+    public LocalDate getCurrentStateEnd() {
+        return currentStateEnd;
+    }
+
+    public LocalDate getCurrentStateStart() {
+        return currentStateStart;
+    }
+    public TimelineState<T> getCurrentState(){
+        return timeline.getState(GlobalVars.CURRENT_DATE());
+    }
+    public void relink(){
+
+    }
+    public abstract TimelineChange<T> defaultKey();
+    public void init(){
+        if (timeline.isEmpty()) {
+            addStateChange(getCreated(),defaultKey());
+        }
+        DMRegistry.registerDateMutable(this);
+        Feudalizer.LOGGER.debug("{} {} Created", this.getClass(),this.getId());
+    };
+    protected void setCreated(LocalDate created){
+        this.created = created;
+    }
+    protected void setEnded(LocalDate ended){
+        this.ended = ended;
+    }
+    public TimelineState<T>[] getAllStates(){
+        return timeline.getStates();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DateMutableEntity<?,?> dme && this.getClass().equals(dme.getClass())) {
+            return this.getId().equals(dme.getId());
+        }
+        return false;
+    }
+
+    public abstract AbstractMutableManager<T,C> getManager();
+
 }

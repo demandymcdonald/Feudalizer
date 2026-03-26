@@ -11,6 +11,9 @@ public class SimpleReference extends StateReference {
     public String parse() {
         return String;
     }
+    public static SimpleReference of(String string){
+        return new SimpleReference(string);
+    }
 
     @Override
     public JsonObject serialize() {

@@ -1,0 +1,59 @@
+package com.simulation.title.succession.rules;
+
+import com.TypedSerialized;
+import com.base.reference.DMEReference;
+import com.base.utilities.JsonSerializable;
+import com.google.gson.JsonObject;
+import com.simulation.people.BookCharacter;
+
+import java.util.List;
+import java.util.UUID;
+
+public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements JsonSerializable<T> {
+    private final DMEReference<BookCharacter> subject;
+
+    protected SuccessionEntry(DMEReference<BookCharacter> subject) {
+        this.subject = subject;
+    }
+
+    protected enum Type{
+        SPOUSE_EXTENDED,
+        CHILD,
+        PRIMARY_EXTENDED,
+        ADDED
+    }
+    public List<UUID> getLoS(){
+        List<BookCharacter> characters = getLoSFull();
+        return characters.stream().map(BookCharacter::getId).toList();
+    }
+    public abstract List<BookCharacter> getLoSFull();
+    protected abstract JsonObject serialize();
+    protected abstract T deserialize(DMEReference<BookCharacter> subject, JsonObject json);
+
+    @Override
+    public T empty() {
+        return (T) TypedSerialized.getRegisteredRules().get(this.getClass());
+    }
+
+    @Override
+    public final void fromJson(JsonObject json) {
+        JsonObject subjectJson = json.get("subject").getAsJsonObject();
+        DMEReference<BookCharacter> subject = DMEReference.deserialize(subjectJson);
+        empty().deserialize(subject,json);
+    }
+
+    @Override
+    public final JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.add("subject",subject.serialize());
+        json.add("payload",serialize());
+        return json;
+    }
+    public static SuccessionEntry<?> getEmptyEntry(Class<? extends SuccessionEntry<?>> json){
+        return TypedSerialized.getRegisteredRules().get(json);
+    }
+    public DMEReference<BookCharacter> getSubject() {
+        return subject;
+    }
+
+}

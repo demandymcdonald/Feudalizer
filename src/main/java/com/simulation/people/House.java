@@ -1,113 +1,61 @@
 package com.simulation.people;
 
-import com.simulation.divisions.County;
+import com.GlobalVars;
+import com.base.StateChangeKey;
+import com.base.reference.DMEReference;
+import com.simulation.land.County;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-public class House extends DateMutableEntity<House.HouseState> {
+public class House extends DateMutableEntity<House,HouseState> {
     private String Name;
-    private HashMultimap<House, County> DirectHouses = HashMultimap.create();
-    private Character HeadOfHouse;
-    private Set<Family> DirectMembers = Sets.newHashSet();
-    private Set<Family> IndirectMembers = Sets.newHashSet();
+    private final HashMultimap<House, County> DirectHouses = HashMultimap.create();
+    private BookCharacter HeadOfHouse;
+    private final Set<Family> DirectMembers = Sets.newHashSet();
+    private final HashMultimap<RetainerType,BookCharacter> Retainer = HashMultimap.create();
 
 
-    public record HouseState(String Name, UUID HeadofHouse, Set<UUID> Houses, Set<UUID> DirectMembers, Set<UUID> IndirectMembers) {
-
-        public static HouseState builder(String name, HashMultimap<House, County> Counties, Character HeadOfHouse, Set<Family> DirectMembers, Set<Family> IndirectMembers) {
-            Set<UUID> Houses = Sets.newHashSet();
-            for (House house : Counties.keySet()) {
-                Houses.add(house.getId());
-            }
-            Set<UUID> dFamilies = Sets.newHashSet();
-            for (Family family : DirectMembers) {
-                dFamilies.add(family.getId());
-            }
-            Set<UUID> iFamilies = Sets.newHashSet();
-            for (Family family : IndirectMembers) {
-                iFamilies.add(family.getId());
-            }
-            return new HouseState(name, HeadOfHouse.getId(),Houses,dFamilies,iFamilies);
-        }
-        public JsonObject serialize() {
-            JsonObject json = new JsonObject();
-            json.addProperty("Name", Name);
-            json.addProperty("HoH",HeadofHouse.toString());
-            JsonArray counties = new JsonArray();
-            JsonArray indirectMembers = new JsonArray();
-            JsonArray directMembers = new JsonArray();
-            for (UUID uuid : Houses) {
-                counties.add(uuid.toString());
-            }
-            for (UUID uuid : DirectMembers) {
-                directMembers.add(uuid.toString());
-            }
-            for (UUID uuid : IndirectMembers) {
-                indirectMembers.add(uuid.toString());
-            }
-            json.add("counties", counties);
-            json.add("indirectMembers", indirectMembers);
-            json.add("directMembers", directMembers);
-            return json;
-        }
-        public static HouseState deserialize(JsonObject json) {
-            UUID headOfHouse = UUID.fromString(json.get("HoH").getAsString());
-            String name = json.get("Name").getAsString();
-            Set<UUID> Houses = Sets.newHashSet();
-            Set<UUID> DirectMembers = Sets.newHashSet();
-            Set<UUID> IndirectMembers = Sets.newHashSet();
-            JsonArray counties = json.get("counties").getAsJsonArray();
-            JsonArray indirectMembers = json.get("indirectMembers").getAsJsonArray();
-            JsonArray directMembers = json.get("directMembers").getAsJsonArray();
-            for (JsonElement jsonElement : counties) {
-                Houses.add(UUID.fromString(jsonElement.getAsString()));
-            }
-            for (JsonElement jsonElement : indirectMembers) {
-                IndirectMembers.add(UUID.fromString(jsonElement.getAsString()));
-            }
-            for (JsonElement jsonElement : directMembers) {
-                DirectMembers.add(UUID.fromString(jsonElement.getAsString()));
-            }
-            return new HouseState(name,headOfHouse,Houses,DirectMembers,IndirectMembers);
-        }
+    public House(String name, BookCharacter headOfHouse) {
+        super(UUID.randomUUID(), GlobalVars.CURRENT_DATE(),null);
+        this.Name = name;
+        this.HeadOfHouse = headOfHouse;
+        init();
     }
-
-
-
-    public House(UUID id, Date foundDate, HouseState... states) {
-        super(id, foundDate, null);
-        for (HouseState state : states) {
-
-        }
+    public House(JsonObject payload) {
+        super(payload);
+        init();
     }
-
     @Override
-    protected HouseState getCurrentState() {
-        return HouseState.builder(Name,DirectHouses, HeadOfHouse, DirectMembers, IndirectMembers);
+    protected HouseState getCurrentContainer() {
+        return HouseState.builder(Name,DirectHouses, HeadOfHouse, DirectMembers, Retainer);
     }
 
     @Override
     public void relink(HouseState state) {
         DirectHouses.clear();
-        IndirectMembers.clear();
+        Retainer.clear();
         DirectMembers.clear();
         final HouseManager HM = DMRegistry.getHouseManager();
         final FamilyManager FM = DMRegistry.getFamilyManager();
-        for (UUID uuid : state.Houses) {
+        for (UUID uuid : state.vassalHouses) {
             House house = HM.get(uuid);
             DirectHouses.put(HM.get(uuid),null);
         }
     }
+    public enum RetainerType {
+        Knight,
+        Administrator,
+        Chief_of_Staff,
+        Deputy_Chief_of_Staff,
+        Servant,
+        Slave,
 
+    }
     public String getName() {
         return Name;
     }
@@ -116,11 +64,30 @@ public class House extends DateMutableEntity<House.HouseState> {
     }
     @Override
     protected JsonObject serializeData(HouseState data) {
-        return data.serialize();
+        return data.getSerialized();
     }
     @Override
     protected HouseState buildState(JsonObject o) {
         return HouseState.deserialize(o);
+    }
+
+    @Override
+    public StateChangeKey defaultKey() {
+        return new StateChangeKey(StateChangeKey.StateChangeType.TITLE_CREATED,new DMEReference<>(this));
+    }
+    public Set<BookCharacter> getAllCharacters(){
+        Set<BookCharacter> characters = new HashSet<>();
+        characters.addAll(Retainer.values());
+        characters.add(HeadOfHouse);
+        for (House house : DirectHouses.keySet()) {
+            characters.addAll(house.getAllCharacters());
+        }
+        for (Family family : DirectMembers) {
+            characters.addAll(family.getChildren());
+            characters.add(family.getPrimarySpouse());
+            characters.add(family.getSecondarySpouse().orElse(null));
+        }
+        return characters;
     }
 //
 //    @Override

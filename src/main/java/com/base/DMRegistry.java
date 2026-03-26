@@ -1,24 +1,39 @@
 package com.base;
+import com.Feudalizer;
+import com.GlobalVars;
+import com.base.timeline.TimelineContainer;
+import com.google.gson.JsonObject;
 import com.simulation.people.*;
-import com.simulation.succession.Title;
-import com.simulation.succession.TitleManager;
+import com.simulation.title.Title;
+import com.simulation.title.TitleManager;
+import org.apache.commons.lang3.tuple.Triple;
 
-import java.lang.Character;
+import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
+import static com.base.ObjectType.*;
 
 public class DMRegistry {
-    private static final HashMap<String,AbstractMutableManager<?,?>> registry = new HashMap<>();
-
-
-    public static <R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>> void addEntry(String database, M manager) {
-        registry.put(database, manager);
+    private static final ThreadLocal<HashMap<ObjectType,AbstractMutableManager<?,?>>> registry = ThreadLocal.withInitial(HashMap::new);
+    private static final ConcurrentLinkedDeque<Triple<ObjectType,UUID, CompletableFuture<JsonObject>>> pendingLoads = new ConcurrentLinkedDeque<>();
+    static {
+        sandboxReInit();
     }
-    public static <R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>> void registerDateMutable(T entity) {
-        M manager = (M) getEntry(entity.getClass());
-        assert manager != null;
+
+    public static <T extends DateMutableEntity<T,C>,M extends AbstractMutableManager<T,C>, C extends TimelineContainer<C>> void addEntry(ObjectType database, M manager) {
+        registry.get().put(database, manager);
+    }
+    public static void registerDateMutable(DateMutableEntity<?,?> entity) {
+        AbstractMutableManager<?,?> manager = getEntry(entity.getClass());
+        if (manager == null) {
+            throw new RuntimeException("Could not find entry for " + entity.getClass());
+        }
         manager.register(entity);
     }
-    public static <T extends DateMutableEntity<?>,M extends AbstractMutableManager<?,T>> M getEntry(Class<T> database){
+    public static <T extends DateMutableEntity<T,?>,M extends AbstractMutableManager<T,?>> M getEntry(Class<T> database){
         if(Title.class.isAssignableFrom(database)){
             return (M) getTitleManager();
         }
@@ -28,37 +43,86 @@ public class DMRegistry {
         if (House.class.isAssignableFrom(database)){
             return (M) getHouseManager();
         }
-        if (Character.class.isAssignableFrom(database)){
+        if (BookCharacter.class.isAssignableFrom(database)){
             return (M) getCharacterManager();
         }
+        Feudalizer.LOGGER.error("Unsupported database class type: " + database);
         return null;
     }
 
-    public static <R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>> M getEntry(String database) {
-        return (M) registry.get(database);
+    public static <T extends DateMutableEntity<T,C>,M extends AbstractMutableManager<T,C>, C extends TimelineContainer<C>> M getEntry(String database) {
+        return (M) registry.get().get(database);
     }
-    static {
-        addEntry("Character", new CharacterManager());
-        addEntry("Family", new FamilyManager());
-        addEntry("House", new HouseManager());
-        addEntry("Title", new TitleManager());
+    public static <T extends DateMutableEntity<T,C>, C extends TimelineContainer<C>> T getEntity(ObjectType type, UUID id){
+        return (T) getEntry(type.getRegKey()).get(id);
     }
-
+    public static void sandboxReInit() {
+        addEntry(CHARACTER, new CharacterManager());
+        addEntry(FAMILY, new FamilyManager());
+        addEntry(HOUSE, new HouseManager());
+        addEntry(TITLE, new TitleManager());
+    }
 
     public static FamilyManager getFamilyManager() {
-        return (FamilyManager) registry.get(Family.class);
+        return (FamilyManager) registry.get().get(FAMILY);
     }
     public static CharacterManager getCharacterManager() {
-        return (CharacterManager) registry.get(Character.class);
+        return (CharacterManager) registry.get().get(CHARACTER);
     }
     public static HouseManager getHouseManager() {
-        return (HouseManager) registry.get(House.class);
+        return (HouseManager) registry.get().get(HOUSE);
     }
     public static TitleManager getTitleManager() {
-        return (TitleManager) registry.get(Title.class);
+        return (TitleManager) registry.get().get(TITLE);
     }
 
+    public static ObjectType getObjectType(DateMutableEntity<?,?> entity){
+        for (ObjectType type : ObjectType.values()) {
+            if (type.getBaseClass().isAssignableFrom(entity.getClass())){
+                return type;
+            }
+        }
+        return null;
+    }
+    public static boolean isMain(){
+        return Thread.currentThread().getName().equals("main");
+    }
+    /**
+     * Updates the current date across the application and triggers corresponding actions
+     * for all registered managers. Depending on whether the sandbox mode is enabled,
+     * additional GUI or load-state changes may be applied.
+     *
+     * @param date The new date to set as the current application state.
+     * @param sandbox Specifies whether the operation is performed in sandbox mode. If true,
+     *                certain visual or blocking actions (like loading screens) are skipped.
+     */
+    public static void updateCurrentDate(LocalDate date, boolean sandbox){
+        //TODO trigger loading screen that freezes the main display if not sandbox
+        GlobalVars.setCurrentDate(date);
+        for (AbstractMutableManager<?,?> m : registry.get().values()) {
+            m.onGameStateChangeLoad(date);
+        }
+        //TODO Change GUI to show we're in linking stage if not sandbox.
+        for (AbstractMutableManager<?,?> m : registry.get().values()) {
+            m.onGameStateChangeLink();
+        }
+        //TODO end load state if not sandbox
+    }
 
+    public static synchronized CompletableFuture<JsonObject> addPendingLoad(ObjectType type, UUID id){
+        CompletableFuture<JsonObject> cf = new CompletableFuture<>();
+        pendingLoads.add(Triple.of(type,id,cf));
+        return cf;
+    }
+    public static void onTick(){
+        processHooks();
+    }
+    public static void processHooks(){
+        for (Triple<ObjectType,UUID,CompletableFuture<JsonObject>> t : pendingLoads) {
+            t.getRight().complete(getEntity(t.getLeft(),t.getMiddle()).serialize());
+        }
+        pendingLoads.clear();
+    }
 //    protected record MutableEntry<R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>>(M manager, Function<>) {
 //
 //    }

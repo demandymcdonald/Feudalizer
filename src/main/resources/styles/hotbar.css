@@ -1,0 +1,117 @@
+/* =============================
+   SEARCH HOTBAR
+   ============================= */
+
+.search-hotbar {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2a2218, #1a1410);
+    -fx-border-color: transparent transparent #c9a961 transparent;
+    -fx-border-width: 2px;
+    -fx-padding: 12 24 12 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 12, 0, 0, 4);
+}
+
+/* =============================
+   SEARCH FIELD
+   ============================= */
+
+.search-field {
+    -fx-background-color: #3a3228;
+    -fx-border-color: #4a3f30;
+    -fx-border-width: 1px;
+    -fx-text-fill: #e8dcc8;
+    -fx-font-family: "Crimson Pro";
+    -fx-font-size: 15px;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-prompt-text-fill: #b8a888;
+    -fx-pref-width: 280px;
+}
+
+.search-field:focused {
+    -fx-border-color: #c9a961;
+    -fx-effect: dropshadow(gaussian, rgba(201,169,97,0.3), 8, 0, 0, 0);
+}
+
+/* =============================
+   CHARACTER CHIP
+   ============================= */
+
+.character-chip {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #3a3228, #2a2218);
+    -fx-border-color: #4a3f30;
+    -fx-border-width: 1px;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.character-chip:hover {
+    -fx-background-color: #3a3228;
+    -fx-border-color: #c9a961;
+    -fx-translate-y: -1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 8, 0, 0, 4);
+}
+
+.chip-name {
+    -fx-font-family: "Crimson Pro";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e8dcc8;
+}
+
+.chip-house {
+    -fx-font-family: "Crimson Pro";
+    -fx-font-size: 11px;
+    -fx-text-fill: #b8a888;
+}
+
+.chip-portrait {
+    -fx-background-color: #1a1410;
+    -fx-border-color: #c9a961;
+    -fx-border-width: 2px;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-font-family: "Cinzel";
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-text-fill: #d4af37;
+    -fx-alignment: center;
+    -fx-min-width: 32px;
+    -fx-min-height: 32px;
+    -fx-max-width: 32px;
+    -fx-max-height: 32px;
+}
+
+/* =============================
+   CHIPS SCROLL PANE
+   ============================= */
+
+.chips-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.chips-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.chips-scroll .scroll-bar:horizontal {
+    -fx-pref-height: 4px;
+}
+
+.chips-scroll .scroll-bar:horizontal .thumb {
+    -fx-background-color: #c9a961;
+    -fx-background-radius: 2px;
+}
+
+.chips-scroll .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+}
+
+.chips-scroll .scroll-bar:horizontal .increment-button,
+.chips-scroll .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-pref-width: 0;
+}

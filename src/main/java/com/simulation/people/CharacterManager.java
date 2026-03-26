@@ -5,12 +5,12 @@ import com.google.gson.JsonObject;
 
 import java.util.UUID;
 
-public class CharacterManager extends AbstractMutableManager<Character.CharacterState,Character> {
+public class CharacterManager extends AbstractMutableManager<BookCharacter,CharacterState> {
 
 
     @Override
-    public Character deserializer(UUID id, JsonObject json) {
-        return new Character(json);
+    public BookCharacter deserializer(UUID id, JsonObject json) {
+        return new BookCharacter(json);
     }
 
 }

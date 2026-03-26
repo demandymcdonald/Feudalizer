@@ -1,6 +1,6 @@
 package com.display.geography;
 
-import com.GlobalData;
+
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
@@ -33,24 +33,22 @@ public class GeographyLoader {
     }
     public void loadAll() {
 
-        File shapefilesDir = new File("data/shapefiles");
-
-        // Recursively find all .shp files
-        List<File> shapefiles = findAllShapefiles(shapefilesDir);
-
-        for (File shp : shapefiles) {
+//        File shapefilesDir = new File("data/shapefiles");
+//
+//        // Recursively find all .shp files
+//        List<File> shapefiles = findAllShapefiles(shapefilesDir);
+        for (GeometryType type : GeometryType.values()) {
+            Path path = type.buildFullPath();
             try {
-                GeometryType type = determineType(shp);
-                SimpleFeatureCollection features = loadShapefile(shp);
+                SimpleFeatureCollection features = loadShapefile(path.toFile());
 
                 GeographyManager.register(type, features);
 
-                System.out.println("Loaded: " + shp.getName() + " as " + type);
+                System.out.println("Loaded: " + type.toString() + " (" + features.size() + " features)");
             } catch (Exception e) {
-                System.err.println("Failed to load: " + shp.getName());
+                System.err.println("Failed to load: " + type.toString() + " (" + path + ")");
             }
         }
-
     }
 
     private List<File> findAllShapefiles(File directory) {
@@ -71,15 +69,15 @@ public class GeographyLoader {
         return shapefiles;
     }
 
-    private GeometryType determineType(File shp) {
-        String path = shp.getPath();
-
-        if (path.contains("us_county")) return GeometryType.FIPS;
-        if (path.contains("canada")) return GeometryType.CANA;
-        if (path.contains("custom")) return GeometryType.CUST;
-
-        return GeometryType.CUST;  // Default to custom
-    }
+//    private GeometryType determineType(File shp) {
+//        String path = shp.getPath();
+//
+//        if (path.contains("us_county")) return GeometryType.FIPS;
+//        if (path.contains("canada")) return GeometryType.CANA;
+//        if (path.contains("custom")) return GeometryType.CUST;
+//
+//        return GeometryType.CUST;  // Default to custom
+//    }
 
     private SimpleFeatureCollection loadShapefile(File shp) throws IOException, FactoryException {
         FileDataStore store = FileDataStoreFinder.getDataStore(shp);

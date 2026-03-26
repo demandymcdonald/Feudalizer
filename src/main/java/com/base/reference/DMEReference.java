@@ -1,14 +1,16 @@
 package com.base.reference;
 
-import com.GlobalData;
+import com.Feudalizer;
+
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.google.gson.JsonObject;
+import com.simulation.title.Title;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class DMEReference<T extends DateMutableEntity<?>> extends StateReference {
+public class DMEReference<T extends DateMutableEntity<T,?>> extends StateReference {
     private final Class<T> type;
     private final UUID uuid;
     private transient T cachedEntity;
@@ -16,6 +18,23 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
         this.type = type;
         this.uuid = uuid;
     }
+    public DMEReference(T entity) {
+        this.type = (Class<T>) entity.getClass();
+        this.uuid = entity.getId();
+    }
+    public <R extends T> DMEReference(R entity, boolean indirect) {
+        this.type = (Class<T>) entity.getClass();
+        this.uuid = entity.getId();
+    }
+
+    public static <T extends Title<T>> DMEReference<T> of(Title<T> tTitle) {
+        return new DMEReference<>(tTitle,true);
+    }
+
+    //    public <R extends DateMutableEntity<R,?>> DMEReference(R entity) {
+//        this.type = (Class<T>) entity.getClass();
+//        this.uuid = entity.getId();
+//    }
     public T link() {
         if (cachedEntity == null) {
             cachedEntity = DMRegistry.getEntry(type).get(uuid);
@@ -29,12 +48,12 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
         object.addProperty("type", type.getName());
         return object;
     }
-    public static <T extends DateMutableEntity<?>> DMEReference<T> deserialize(JsonObject object) {
+    public static <T extends DateMutableEntity<T,?>> DMEReference<T> deserialize(JsonObject object) {
         Class<T> r = null;
         try {
             r = (Class<T>) Class.forName(object.get("type").getAsString());
         } catch (Exception e){
-            GlobalData.logger().error(e.getMessage());
+            Feudalizer.LOGGER.error(e.getMessage());
         }
         String uuid = object.get("uuid").getAsString();
         if (!uuid.equals("") && r != null) {
@@ -59,8 +78,13 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
     }
 
 
-    public static <T extends DateMutableEntity<?>> DMEReference<T> of(T entity){
+    public static <T extends DateMutableEntity<T,?>> DMEReference<T> of(T entity){
         return new DMEReference<T>((Class<T>) entity.getClass(),entity.getId());
+    }
+    public static <T extends DateMutableEntity<T,?>> DMEReference<T>[] of(T... entity){
+        DMEReference<T>[] references = new DMEReference[entity.length];
+        for (int i = 0; i < entity.length; i++) references[i] = of(entity[i]);
+        return references;
     }
 
     @Override

@@ -1,0 +1,249 @@
+package com.base.timeline.propagation.core;
+
+import com.base.AbstractMutableManager;
+import com.base.DMRegistry;
+import com.base.DateMutableEntity;
+import com.base.ObjectType;
+import com.base.flags.Errors;
+import com.base.flags.StateError;
+import com.base.timeline.TimelineChangeState;
+import com.base.timeline.TimelineContainer;
+import com.base.timeline.TimelineState;
+import com.google.common.collect.HashMultimap;
+import com.google.gson.JsonObject;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+public class Sandbox {
+    private final HashMultimap<ObjectType, JsonObject> Payload;
+    private CompletableFuture<HashMultimap<ObjectType, JsonObject>> future;
+    private final BlockingQueue<StateError> queue = new ArrayBlockingQueue<>(6);
+    private final Objective primary;
+    private final Objective[] secondary;
+    private final HashMap<ObjectType,UUID> toBeDiffed = new HashMap<>();
+    private final HashMultimap<ObjectType, JsonObject> diff = HashMultimap.create();
+
+    public Sandbox(Objective obj, HashMultimap<ObjectType, JsonObject> Payload, Objective[]... secondaryObjectives) {
+        this.Payload = Payload;
+        this.primary = obj;
+        this.secondary = secondaryObjectives.length > 0 ? secondaryObjectives[0] : new Objective[0];
+    }
+
+    public CompletableFuture<HashMultimap<ObjectType, JsonObject>> startSimulation() {
+        future = new CompletableFuture<>();
+        Thread thread = new Thread(() -> runtime(future));
+        thread.start();
+        return future;
+    }
+
+    /**
+     * Exposes the flag queue to the UI thread so it can poll for incoming StateErrors
+     * and present resolution dialogs to the user.
+     */
+    public BlockingQueue<StateError> getQueue() {
+        return queue;
+    }
+
+    private void runtime(CompletableFuture<HashMultimap<ObjectType, JsonObject>> future) {
+        startup();
+        HashMultimap<ObjectType, JsonObject> result = runSimulation();
+        shutdown();
+        future.complete(result);
+    }
+
+    private void startup() {
+        DMRegistry.sandboxReInit();
+        populateSandbox();
+    }
+
+    private void populateSandbox() {
+        for (ObjectType type : Payload.keySet()) {
+            AbstractMutableManager<?, ?> manager = DMRegistry.getEntry(type.getRegKey());
+            for (JsonObject json : Payload.get(type)) {
+                manager.deserializeEntity(UUID.fromString(json.get("id").getAsString()), json);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> HashMultimap<ObjectType, JsonObject> runSimulation() {
+        final HT host = DMRegistry.getEntry(primary.type().getRegKey()).get(primary.id());
+        TimelineChangeState incomingChange = primary.state();
+
+        // Apply the objective's mutation to the host at the insertion point
+        host.sandboxApplyStartState(incomingChange.start());
+        primary.applyDiff().accept(incomingChange, host.getSandboxCurrentState());
+        trackMutation(host);
+
+        // Walk forward through the timeline checking for conflicts at each state
+        while (true) {
+            TimelineState currentState = host.getSandboxCurrentTimelineState();
+            if (currentState == null) break;
+
+            StateError[] conflicts = incomingChange.change().doesTimelineConflict(currentState);
+            for (StateError conflict : conflicts) {
+                boolean shouldContinue = handleResolution(conflict, host, incomingChange, currentState);
+                if (!shouldContinue) {
+                    // Cancel — discard everything and return empty diff
+                    diff.clear();
+                    return diff;
+                }
+                // Re-track in case resolution mutated the host
+                trackMutation(host);
+            }
+
+            // Advance to next state — null means we've reached the end of the timeline
+            if (host.sandboxNextState() == null) break;
+        }
+
+        return diff;
+    }
+
+    /**
+     * Handles a single conflict by pushing the StateError to the UI queue and blocking
+     * until the user (or autoresolve) completes the CompletableFuture with a resolution code.
+     *
+     * @return true if simulation should continue, false if it should cancel.
+     */
+    private boolean handleResolution(StateError error, DateMutableEntity<?,?> host, TimelineChangeState incomingChange, TimelineState conflictingState) {
+        // Autoresolve errors skip the queue entirely
+        if (isAutoResolvable(error)) {
+            return autoResolve(error, host, incomingChange, conflictingState);
+        }
+
+        // Push to queue so UI thread can pick it up and show a dialog
+        try {
+            queue.put(error);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+
+        // Block until user picks a resolution
+        int choice;
+        try {
+            choice = error.response().get();
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+
+        return applyResolution(choice, error, host, incomingChange, conflictingState);
+    }
+
+    /**
+     * Checks if the error should be handled automatically without user input.
+     * Currently covers TITLE_SEMANTIC_ERROR and TITLE_HOLDER_DEAD.
+     */
+    private boolean isAutoResolvable(StateError error) {
+        return error.message() == Errors.TITLE_SEMANTIC_ERROR
+                || error.message() == Errors.TITLE_HOLDER_DEAD;
+    }
+
+    /**
+     * Handles autoresolvable errors. Returns true to continue simulation, false to cancel.
+     * TODO: TITLE_HOLDER_DEAD should run succession planner here and swap the incoming change's target.
+     */
+    private boolean autoResolve(StateError error, DateMutableEntity<?> host, TimelineChangeState incomingChange, TimelineState conflictingState) {
+        switch (error.message()) {
+            case TITLE_SEMANTIC_ERROR -> {
+                // Just clean up references silently and continue
+                return true;
+            }
+            case TITLE_HOLDER_DEAD -> {
+                // TODO: Run succession planner, find heir, redirect incomingChange to heir
+                return true;
+            }
+            default -> {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Branches on the user's resolution choice and applies the appropriate action.
+     * Resolution codes map to the options defined in StateError.Errors.
+     *
+     * @return true if simulation should continue, false if cancelled.
+     */
+    private boolean applyResolution(StateError error, DateMutableEntity<?,?> host, TimelineChangeState incomingChange, TimelineState conflictingState) {
+        final int choice = error.response().join();
+        switch (error.message()) {
+            case DUPLICATE_STATE -> {
+                switch (choice) {
+                    case 0 -> { // Overwrite — carry on, the incoming change wins
+
+                        return true;
+                    }
+                    case 1 -> { // Cancel
+                        return false;
+                    }
+                    case 2 -> { // Nullify — remove the conflicting change from the state
+                        incomingChange.change().doNullify(conflictingState);
+                        return true;
+                    }
+                    case 3 -> { // AutoResolve
+                        return autoResolve(error, host, incomingChange, conflictingState);
+                    }
+                }
+            }
+            case NEW_STATE_INVALIDATES_OLD_STATE, OLD_STATE_INVALIDATES_NEW_STATE -> {
+                switch (choice) {
+                    case 0 -> { return true; }  // Overwrite
+                    case 1 -> { return true; }  // Ignore — continue without applying
+                    case 2 -> {                  // End before conflict — close out the old state at the conflict date
+                        // TODO: set end date on conflicting state
+                        return true;
+                    }
+                    case 3 -> { return false; } // Cancel
+                }
+            }
+            case OLD_TITLE_INVALIDATES_NEW_TITLE, NEW_TITLE_INVALIDATES_OLD_TITLE -> {
+                switch (choice) {
+                    case 0 -> { return true; }  // Overwrite
+                    case 1 -> { return true; }  // Ignore
+                    case 2 -> {                  // End before conflict
+                        // TODO: set end date on conflicting title state
+                        return true;
+                    }
+                    case 3 -> { return false; } // Cancel
+                }
+            }
+            case TITLE_HOLDER_EXISTS -> {
+                switch (choice) {
+                    case 0 -> { return true; }  // Overwrite existing holder
+                    case 1 -> {                  // End existing holder's state before conflict date
+                        // TODO: end existing holder's title state
+                        return true;
+                    }
+                    case 2 -> { return false; } // Cancel
+                }
+            }
+            default -> { return false; }
+        }
+        return false;
+    }
+
+    /**
+     * Serializes the host object and tracks it in the diff multimap.
+     */
+    private void trackMutation(DateMutableEntity<?> host) {
+        ObjectType type = DMRegistry.getObjectType(host);
+        JsonObject serialized = host.serialize();
+        // Remove any previous version of this object from the diff before re-adding
+        diff.get(type).removeIf(o -> o.get("id").getAsString().equals(host.getId().toString()));
+        diff.put(type, serialized);
+    }
+    public LocalDate getCurrent(){
+        r
+    }
+    private void shutdown() {
+
+    }
+}

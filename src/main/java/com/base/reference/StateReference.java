@@ -23,6 +23,10 @@ public abstract class StateReference {
                     ref.add(SimpleReference.deserialize(o));
                     break;
                 }
+                case "CompoundSR": {
+                    ref.add(CompoundSR.deserialize(o));
+                    break;
+                }
             }
         }
         return ref.toArray(new DMEReference<?>[ref.size()]);

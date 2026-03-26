@@ -1,0 +1,161 @@
+/* =============================
+   INFO PANEL
+   ============================= */
+
+.info-panel {
+    -fx-background-color: #2a2218;
+    -fx-border-color: transparent transparent transparent #c9a961;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 12, 0, -4, 0);
+}
+
+/* =============================
+   CARD SHARED
+   ============================= */
+
+.card-header {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #3a3228, #2a2218);
+    -fx-border-color: transparent transparent #c9a961 transparent;
+    -fx-border-width: 2px;
+    -fx-padding: 24px;
+}
+
+.card-footer {
+    -fx-background-color: #1a1410;
+    -fx-border-color: #4a3f30 transparent transparent transparent;
+    -fx-border-width: 1px;
+    -fx-padding: 20 24 20 24;
+}
+
+.card-body {
+    -fx-background-color: #2a2218;
+    -fx-padding: 24px;
+}
+
+/* =============================
+   SCROLL PANE BODY
+   ============================= */
+
+.card-scroll {
+    -fx-background-color: #2a2218;
+    -fx-background: #2a2218;
+}
+
+.card-scroll > .viewport {
+    -fx-background-color: #2a2218;
+}
+
+/* =============================
+   HOLDER SECTION
+   ============================= */
+
+.holder-section {
+    -fx-background-color: #1a1410;
+    -fx-border-color: transparent transparent transparent #c9a961;
+    -fx-border-width: 3px;
+    -fx-padding: 16px;
+    -fx-cursor: hand;
+}
+
+.holder-section:hover {
+    -fx-background-color: #3a3228;
+    -fx-border-color: transparent transparent transparent #d4af37;
+    -fx-translate-x: 4;
+}
+
+.holder-name {
+    -fx-font-family: "Cinzel";
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e8dcc8;
+}
+
+/* =============================
+   RESOURCE TAGS
+   ============================= */
+
+.resource-tag {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #3a3228, #1a1410);
+    -fx-border-color: #4a3f30;
+    -fx-border-width: 1px;
+    -fx-padding: 6 12 6 12;
+    -fx-font-family: "Crimson Pro";
+    -fx-font-size: 12px;
+    -fx-text-fill: #e8dcc8;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* =============================
+   CHARACTER CARD SPECIFIC
+   ============================= */
+
+.character-header {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #3a3228, #2a2218);
+    -fx-border-color: transparent transparent #c9a961 transparent;
+    -fx-border-width: 2px;
+    -fx-padding: 24px;
+    -fx-alignment: center;
+}
+
+.character-name {
+    -fx-font-family: "Cinzel";
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #d4af37;
+    -fx-alignment: center;
+}
+
+.character-house {
+    -fx-font-family: "Crimson Pro";
+    -fx-font-size: 16px;
+    -fx-text-fill: #b8a888;
+    -fx-font-style: italic;
+    -fx-alignment: center;
+}
+
+.portrait-large {
+    -fx-background-color: #1a1410;
+    -fx-border-color: #c9a961;
+    -fx-border-width: 3px;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-font-family: "Cinzel";
+    -fx-font-weight: bold;
+    -fx-font-size: 48px;
+    -fx-text-fill: #d4af37;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 16, 0, 0, 8);
+}
+
+/* =============================
+   LIEGE SECTION
+   ============================= */
+
+.liege-row {
+    -fx-background-color: #1a1410;
+    -fx-border-color: transparent transparent transparent #8b2f2f;
+    -fx-border-width: 3px;
+    -fx-padding: 14 16 14 16;
+    -fx-cursor: hand;
+}
+
+.liege-row:hover {
+    -fx-background-color: #3a3228;
+    -fx-translate-x: 4;
+}
+
+/* =============================
+   VACANT STATE
+   ============================= */
+
+.vacant-label {
+    -fx-font-family: "Crimson Pro";
+    -fx-font-size: 14px;
+    -fx-text-fill: #b8a888;
+    -fx-font-style: italic;
+    -fx-padding: 12 16 12 16;
+    -fx-background-color: #1a1410;
+    -fx-border-color: #4a3f30;
+    -fx-border-width: 1px;
+}

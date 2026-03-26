@@ -1,206 +1,172 @@
 package com.simulation.people;
 
-import com.GlobalData;
+import com.Feudalizer;
+
 import com.base.DateMutableEntity;
 import com.GlobalVars;
 import com.base.StateChangeKey;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import javafx.util.Pair;
 
+import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class Family extends DateMutableEntity<Family.FamilyState> {
-    private  Character PrimarySpouse;
-    private  Character SecondarySpouse;
-    private  House PrimaryHouse;
-    private  House SecondaryHouse;
-    private  HashMap<Character,String> Children;
-    public record FamilyState(UUID PrimarySpouse, UUID SecondarySpouse, UUID PrimaryHouse, UUID SecondaryHouse, HashMap<UUID,String> Children) {
-        public static FamilyState builder(Character primary, Character secondary, House primaryHouse, House secondaryHouse, HashMap<Character,String> children) {
-            HashMap<UUID,String> Children = new HashMap<>();
-            for (Map.Entry<Character,String> child : children.entrySet()) {
-                Children.put(child.getKey().getId(), child.getValue());
-            }
-            return new FamilyState(primary.getId(),secondary.getId(),primaryHouse.getId(),secondaryHouse.getId(),Children);
-        }
-        public JsonObject serialize() {
-            JsonObject json = new JsonObject();
-            json.addProperty("PrimarySpouse", PrimarySpouse.toString());
-            json.addProperty("SecondarySpouse", SecondarySpouse.toString());
-            json.addProperty("PrimaryHouse", PrimaryHouse.toString());
-            json.addProperty("SecondaryHouse", SecondaryHouse.toString());
-            JsonArray children = new JsonArray();
-            for (Map.Entry<UUID, String> entry : Children.entrySet()) {
-                JsonObject child = new JsonObject();
-                child.addProperty("id", entry.getKey().toString());
-                child.addProperty("value", entry.getValue());
-                children.add(child);
-            }
-            json.add("Children", children);
-            return json;
-        }
-        public static FamilyState deserialize(JsonObject json) {
-            UUID PrimarySpouse = UUID.fromString(json.get("PrimarySpouse").getAsString());
-            UUID SecondarySpouse = UUID.fromString(json.get("SecondarySpouse").getAsString());
-            UUID PrimaryHouse = UUID.fromString(json.get("PrimaryHouse").getAsString());
-            UUID SecondaryHouse = UUID.fromString(json.get("SecondaryHouse").getAsString());
-            HashMap<UUID, String> Children = new HashMap<>();
-            JsonArray children = json.get("Children").getAsJsonArray();
-            for (JsonElement child : children) {
-                UUID id = UUID.fromString(child.getAsString());
-                String value = child.getAsString();
-                Children.put(id, value);
-            }
-            return new FamilyState(PrimarySpouse, SecondarySpouse, PrimaryHouse, SecondaryHouse, Children);
-        }
-    }
+/**
+ * Represents a Family entity which includes information about spouses, children, and
+ * associated houses. The `Family` class also provides utility functions to manage
+ * relationships and retrieve information about the family members.
+ */
+public class Family extends DateMutableEntity<Family,FamilyState> {
+    private BookCharacter PrimarySpouse;
+    private Optional<BookCharacter> SecondarySpouse;
+    private  Optional<House> PrimaryHouse;
+    private  Optional<House> SecondaryHouse;
+    private  List<BookCharacter> Children = new ArrayList<>();
 
     public Family(JsonObject payload) {
         super(payload);
+        init();
     }
 
-    public Family(UUID id, Date foundingDate, Character PrimarySpouse, Character SecondarySpouse, HashMap<Character,String> Children) {
+    public Family(UUID id, LocalDate foundingDate, BookCharacter PrimarySpouse, BookCharacter secondarySpouse, List<BookCharacter> Children) {
         super(id,foundingDate,null);
         this.PrimarySpouse = PrimarySpouse;
-        this.SecondarySpouse = SecondarySpouse;
+        if (secondarySpouse != null) {
+            this.SecondarySpouse = Optional.of(secondarySpouse);
+            SecondaryHouse = secondarySpouse.getHouse();
+        } else {
+            SecondaryHouse = Optional.empty();
+            this.SecondarySpouse = Optional.empty();
+        }
+
         PrimaryHouse = PrimarySpouse.getHouse();
-        SecondaryHouse = SecondarySpouse.getHouse();
         this.Children = Children;
+        init();
     }
-    public Character getPrimarySpouse() {
+    public Family(UUID id, LocalDate foundingDate, BookCharacter primarySpouse){
+        this(id,foundingDate,primarySpouse,null,new ArrayList<>());
+        init();
+    }
+    public BookCharacter getPrimarySpouse() {
         return PrimarySpouse;
     }
-    public Character getSecondarySpouse() {
+    public Optional<BookCharacter> getSecondarySpouse() {
         return SecondarySpouse;
     }
-    public House getPrimaryHouse() {
+    public Optional<House> getPrimaryHouse() {
         return PrimaryHouse;
     }
-    public House getSecondaryHouse() {
+    public Optional<House> getSecondaryHouse() {
         return SecondaryHouse;
     }
-    public HashMap<Character,String> getChildren() {
+    public List<BookCharacter> getChildren() {
         return Children;
     }
-    public Character[] getSpouses() {
-        return new Character[]{PrimarySpouse, SecondarySpouse};
+    public BookCharacter[] getSpouses() {
+        return SecondarySpouse.map(bookCharacter -> new BookCharacter[]{PrimarySpouse, bookCharacter}).orElseGet(() -> new BookCharacter[]{PrimarySpouse});
     }
 
-    public FamilyRelationship getFamilyRelationship(Character person) {
+    public FamilyRelationship getFamilyRelationship(BookCharacter person) {
         FamilyRelationship relationship;
-        if (Children.containsKey(person)) {
+        if (Children.stream().anyMatch(p -> p.getId() == person.getId())) {
             return FamilyRelationship.CHILD;
         }
         else if (person == PrimarySpouse) {
             return FamilyRelationship.PRIMARY_SPOUSE;
-        } else if (person == SecondarySpouse) {
+        } else if (SecondarySpouse.isPresent() && person == SecondarySpouse.get()) {
             return FamilyRelationship.SECONDARY_SPOUSE;
         } else {
-            GlobalData.logger().error(person + " is not in family: " + this.toString());
+            Feudalizer.LOGGER.error(person + " is not in family: " + this.toString());
             return FamilyRelationship.ERROR;
         }
     }
-    public boolean isMember(Character person) {
-        return  person == PrimarySpouse || person == SecondarySpouse || Children.containsKey(person);
+    public boolean isMember(BookCharacter person) {
+        return  person == PrimarySpouse || person == SecondarySpouse.orElse(PrimarySpouse) || Children.stream().anyMatch(p -> p.getId() == person.getId());
     };
 
     @Override
     public String toString() {
-        return PrimaryHouse.toString();
+        return PrimarySpouse.getSurname();
     }
 
     @Override
-    protected FamilyState getCurrentState() {
-        return FamilyState.builder(PrimarySpouse, SecondarySpouse, PrimaryHouse, SecondaryHouse, Children);
+    protected FamilyState getCurrentContainer() {
+        return FamilyState.builder(PrimarySpouse, SecondarySpouse.orElse(null), Children);
     }
 
     @Override
     public void relink(FamilyState state) {
 
     }
-    public static List<Family> getNuclear(Character character) {
-        List<Family> families = new ArrayList<>();
-        for (Map.Entry<Family,FamilyRelationship> family : character.getFamilies().entrySet()) {
-            if (family.getValue() != FamilyRelationship.CHILD) {
-                families.add(family.getKey());
-            }
-        }
-        families.sort(Comparator.comparing(Family::getCreated));
-        return families;
-    }
-    public static Family getBirth(Character character) {
-        for (Map.Entry<Family,FamilyRelationship> family : character.getFamilies().entrySet()) {
-            if (family.getValue() != FamilyRelationship.CHILD) {
-                return family.getKey();
-            }
-        }
-        return null;
-    }
-    public static Family getCurrentFamily(Character character) {
-        for (Family family : getNuclear(character)) {
-            if (family.getEnded().after(GlobalVars.CURRENT_DATE)){
-                return family;
-            }
-        }
-        return null;
-    }
-    public static List<Character> getAllSpouses(Character c, boolean oldestToYoungest){
-        List<Pair<Character,Date>> spouses = new ArrayList<>();
-        List<Family> families = getNuclear(c);
-        for (Family family : families) {
-            Character spouse = Arrays.stream(family.getSpouses()).filter(sp -> sp != c).findFirst().orElse(null);
-            if (spouse != null) {
-                spouses.add(new Pair<>(spouse,family.getCreated()));
-            }
-        }
-        if (oldestToYoungest) {
-            spouses.sort(Comparator.comparing(Pair::getValue));
-        } else {
-            spouses.sort(Comparator.<Pair<Character,Date>, Date>comparing(Pair::getValue).reversed());
-        }
-        return spouses.stream().map(Pair::getKey).collect(Collectors.toList());
-    }
-    public List<Character> getChildrenOrdered(){
+
+    public List<BookCharacter> getChildrenOrdered(){
         return (getChildrenOrdered(true));
     }
-    public List<Character> getChildrenOrdered(boolean oldestToYoungest) {
-        List<Character> children = new ArrayList<>();
-        children.addAll(Children.keySet());
+    public List<BookCharacter> getChildrenOrdered(boolean oldestToYoungest) {
+        List<BookCharacter> children = new ArrayList<>(Children);
         if (oldestToYoungest) {
-            children.sort(Comparator.comparing(Character::getCreated));
+            return children;
         } else {
-            children.sort(Comparator.comparing(Character::getCreated).reversed());
+            children.sort(Comparator.comparing(BookCharacter::getCreated).reversed());
         }
+        Feudalizer.LOGGER.info("Children for " + PrimarySpouse.getGivenName() + ": " + children.size());
         return children;
     }
-    public void haveChild(Character.Gender gender, String name, boolean primarySurname) {
-        if (PrimarySpouse.getGender() == SecondarySpouse.getGender()){
+    public void haveChild(BookCharacter.Gender gender, String name, boolean primarySurname) {
+        if (!SecondarySpouse.isPresent()) {
+            //TODO add flag for no spouse in family
+            Feudalizer.LOGGER.error("No spouse in family: " + this.toString());
+            return;
+        }else if (PrimarySpouse.getGender() == SecondarySpouse.get().getGender()){
+            Feudalizer.LOGGER.error("Spouses are of same gender: " + this.toString());
             //TODO add flag to either override or delegate to adopt function. No in-vitro here :(
             return;
-        } else if (!SecondarySpouse.isAlive() || !PrimarySpouse.isAlive()) {
+        } else if (!SecondarySpouse.get().isAlive() || !PrimarySpouse.isAlive()) {
+            Feudalizer.LOGGER.error("Spouses are dead: " + this.toString());
             //TODO add flag because necrophilia doesn't produce kids (No Gideon of the Ninth necromancy)
             return;
         }
+        BookCharacter secSpouse = SecondarySpouse.get();
+        Feudalizer.LOGGER.info("Adding child: " + name + " to family: " + this.toString());
         Pair<Family,FamilyRelationship> defaultFam = new Pair<>(this,FamilyRelationship.CHILD);
-        Character child = new Character(UUID.randomUUID(),name,this.PrimaryHouse,GlobalVars.CURRENT_DATE,null,gender,defaultFam);
-        if (primarySurname) {
-            Children.put(child, PrimaryHouse.getName());
+        //Feudalizer.LOGGER.info("family tie established");
+        BookCharacter child;
+        if (primarySurname || (PrimarySpouse.isNoble() && !secSpouse.isNoble())) {
+            child = new BookCharacter(UUID.randomUUID(),name,PrimarySpouse.getSurname(),this.PrimaryHouse.orElse(null), GlobalVars.CURRENT_DATE(),null,gender,defaultFam);
+            Children.add(child);
         } else {
-            Children.put(child, SecondaryHouse.getName());
+            child = new BookCharacter(UUID.randomUUID(),name,secSpouse.getSurname(),this.PrimaryHouse.orElse(null), GlobalVars.CURRENT_DATE(),null,gender,defaultFam);
+            Children.add(child);
         }
-        addStateChange(GlobalVars.CURRENT_DATE, StateChangeKey.hadChild(PrimarySpouse,SecondarySpouse,child));
+        doChildReorder();
+        addStateChange(GlobalVars.CURRENT_DATE(), StateChangeKey.hadChild(PrimarySpouse,SecondarySpouse.orElse(null),child));
+    }
+    public static List<BookCharacter> orderByAge(boolean oldestToYoungest, Collection<BookCharacter> toBeOrdered) {
+        List<BookCharacter> ordered = new ArrayList<>(toBeOrdered);
+        if (oldestToYoungest){
+            ordered.sort(Comparator.comparing(BookCharacter::getCreated));
+        } else {
+            ordered.sort(Comparator.comparing(BookCharacter::getCreated).reversed());
+        }
+        return ordered;
+    }
+    private void doChildReorder(){
+        Children.sort(Comparator.comparing(BookCharacter::getCreated));
     }
     @Override
     protected JsonObject serializeData(FamilyState data) {
-        return data.serialize();
+        return data.getSerialized();
     }
 
     @Override
     protected FamilyState buildState(JsonObject o) {
         return FamilyState.deserialize(o);
+    }
+
+    @Override
+    public StateChangeKey defaultKey() {
+        return new StateChangeKey(StateChangeKey.StateChangeType.TITLE_CREATED,new DMEReference<>(this));
     }
 
 }
