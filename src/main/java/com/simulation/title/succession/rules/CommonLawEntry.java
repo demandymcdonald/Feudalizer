@@ -5,13 +5,12 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
-import com.simulation.title.CandidateRules;
 import com.simulation.title.Title;
 import com.simulation.title.succession.SuccessionChecksum;
 
 import java.util.*;
 
-import static com.simulation.title.CandidateRules.handleIfDead;
+import static com.simulation.title.succession.rules.CandidateRules.handleIfDead;
 
 public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     //private static final Cache<,ArrayList<BookCharacter>> CACHE = CacheBuilder.newBuilder().build();

@@ -12,8 +12,13 @@ import java.util.UUID;
 public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements JsonSerializable<T> {
     private final DMEReference<BookCharacter> subject;
 
-    protected SuccessionEntry(DMEReference<BookCharacter> subject) {
+
+
+    private final boolean isProjected;
+
+    protected SuccessionEntry(DMEReference<BookCharacter> subject, boolean isProjected) {
         this.subject = subject;
+        this.isProjected = isProjected;
     }
 
     protected enum Type{
@@ -32,7 +37,7 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements J
 
     @Override
     public T empty() {
-        return (T) TypedSerialized.getRegisteredRules().get(this.getClass());
+        return (T) TypedSerialized.getRegisteredSuccessionRules().get(this.getClass());
     }
 
     @Override
@@ -49,8 +54,11 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements J
         json.add("payload",serialize());
         return json;
     }
+    public boolean isProjected() {
+        return isProjected;
+    }
     public static SuccessionEntry<?> getEmptyEntry(Class<? extends SuccessionEntry<?>> json){
-        return TypedSerialized.getRegisteredRules().get(json);
+        return TypedSerialized.getRegisteredSuccessionRules().get(json);
     }
     public DMEReference<BookCharacter> getSubject() {
         return subject;

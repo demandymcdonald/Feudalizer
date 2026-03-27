@@ -2,6 +2,7 @@ package com.display.windows.cards.edit;
 
 import com.base.DMRegistry;
 import com.simulation.people.BookCharacter;
+import com.simulation.people.CharacterManager;
 import com.simulation.people.House;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -170,18 +171,18 @@ public class CharacterEditCard extends BaseEditCard<BookCharacter> {
         } else {
             // Create new character
             if (commonerRadio.isSelected()) {
-                return BookCharacter.buildCommoner(givenName, surname, dob, dod, gender);
+                return CharacterManager.buildCommoner(givenName, surname, dob, dod, gender);
             }
 
             House existingHouse = houseCombo.getValue();
             String newHouseName = newHouseField.getText().trim();
 
             if (existingHouse != null) {
-                return BookCharacter.buildNoble(givenName, surname, existingHouse, dob, dod, gender);
+                return CharacterManager.buildNoble(givenName, surname, existingHouse, dob, dod, gender);
             } else if (!newHouseName.isEmpty()) {
-                return BookCharacter.buildNoble(givenName, surname, newHouseName, dob, dod, gender);
+                return CharacterManager.buildNoble(givenName, surname, newHouseName, dob, dod, gender);
             } else {
-                return BookCharacter.buildNoble(givenName, surname, dob, dod, gender);
+                return CharacterManager.buildNoble(givenName, surname, dob, dod, gender);
             }
         }
     }

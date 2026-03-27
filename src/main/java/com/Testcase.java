@@ -1,15 +1,11 @@
 package com;
 
 import com.simulation.people.BookCharacter;
-import com.simulation.people.Family;
-import com.simulation.people.House;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.UUID;
+import com.simulation.people.CharacterManager;
 
 public class Testcase {
-    public static final BookCharacter TESTIFICATE = BookCharacter.buildNoble("Testificate","Mojang", "Mojang", BookCharacter.Gender.Male);
-    public static final BookCharacter FEMALE_TESTIFICATE = BookCharacter.buildNoble("Hot Testificate","Doe",TESTIFICATE.getHouse().get(),BookCharacter.Gender.Female);
+    public static final BookCharacter TESTIFICATE = CharacterManager.buildNoble("Testificate","Mojang", "Mojang", BookCharacter.Gender.Male);
+    public static final BookCharacter FEMALE_TESTIFICATE = CharacterManager.buildNoble("Hot Testificate","Doe",TESTIFICATE.getHouse().get(),BookCharacter.Gender.Female);
 
     public static void init(){
         FEMALE_TESTIFICATE.giveBirth(TESTIFICATE, BookCharacter.Gender.Male,"Claude");

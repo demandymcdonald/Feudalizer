@@ -1,6 +1,7 @@
 package com.base;
 import com.Feudalizer;
 import com.GlobalVars;
+import com.base.reference.DMEReference;
 import com.base.timeline.TimelineContainer;
 import com.google.gson.JsonObject;
 import com.simulation.people.*;
@@ -49,13 +50,19 @@ public class DMRegistry {
         Feudalizer.LOGGER.error("Unsupported database class type: " + database);
         return null;
     }
-
-    public static <T extends DateMutableEntity<T,C>,M extends AbstractMutableManager<T,C>, C extends TimelineContainer<C>> M getEntry(String database) {
+    public static <T extends DateMutableEntity<T,C>,M extends AbstractMutableManager<T,C>, C extends TimelineContainer<C>> M getEntry(ObjectType database) {
         return (M) registry.get().get(database);
+    }
+    public static <T extends DateMutableEntity<T,C>,M extends AbstractMutableManager<T,C>, C extends TimelineContainer<C>> M getEntry(String database) {
+        return (M) registry.get().get(ObjectType.getByRegKey(database));
     }
     public static <T extends DateMutableEntity<T,C>, C extends TimelineContainer<C>> T getEntity(ObjectType type, UUID id){
         return (T) getEntry(type.getRegKey()).get(id);
     }
+    public static JsonObject getEntityData(ObjectType type, UUID id){
+        return getEntity(type,id).serialize();
+    }
+
     public static void sandboxReInit() {
         addEntry(CHARACTER, new CharacterManager());
         addEntry(FAMILY, new FamilyManager());
@@ -83,6 +90,10 @@ public class DMRegistry {
             }
         }
         return null;
+    }
+    public static void load(DMEReference<?> header, JsonObject data){
+        AbstractMutableManager<?,?> manager = getEntry(header.getType());
+        manager.deserializeEntity(header.getUuid(),data);
     }
     public static boolean isMain(){
         return Thread.currentThread().getName().equals("main");

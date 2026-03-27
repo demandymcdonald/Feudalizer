@@ -5,7 +5,9 @@ import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.ObjectType;
 import com.base.flags.Errors;
+import com.base.flags.SandboxCode;
 import com.base.flags.StateError;
+import com.base.reference.DMEReference;
 import com.base.timeline.TimelineChangeState;
 import com.base.timeline.TimelineContainer;
 import com.base.timeline.TimelineState;
@@ -14,6 +16,7 @@ import com.google.gson.JsonObject;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -21,27 +24,24 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Sandbox {
-    private final HashMultimap<ObjectType, JsonObject> Payload;
-    private CompletableFuture<HashMultimap<ObjectType, JsonObject>> future;
+    private CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future;
+    private final HashMap<DMEReference<?>, JsonObject> dirty = new HashMap<>();
+    private final HashSet<DMEReference<?>> Scope;
     private final BlockingQueue<StateError> queue = new ArrayBlockingQueue<>(6);
     private final Objective primary;
-    private final Objective[] secondary;
-    private final HashMap<ObjectType,UUID> toBeDiffed = new HashMap<>();
-    private final HashMultimap<ObjectType, JsonObject> diff = HashMultimap.create();
-
-    public Sandbox(Objective obj, HashMultimap<ObjectType, JsonObject> Payload, Objective[]... secondaryObjectives) {
-        this.Payload = Payload;
+    private volatile LocalDate sandboxEndDate = LocalDate.MAX;
+    private volatile SandboxCode status = SandboxCode.CONTINUE;
+    public Sandbox(Objective obj) {
         this.primary = obj;
-        this.secondary = secondaryObjectives.length > 0 ? secondaryObjectives[0] : new Objective[0];
+        this.Scope = obj.state().change().getScope();
     }
-
-    public CompletableFuture<HashMultimap<ObjectType, JsonObject>> startSimulation() {
+    public void startSimulation() {
         future = new CompletableFuture<>();
-        Thread thread = new Thread(() -> runtime(future));
-        thread.start();
+        startup(new HashMap<>());
+    }
+    public synchronized CompletableFuture<HashMap<DMEReference<?>, JsonObject>> getFuture() {
         return future;
     }
-
     /**
      * Exposes the flag queue to the UI thread so it can poll for incoming StateErrors
      * and present resolution dialogs to the user.
@@ -50,29 +50,36 @@ public class Sandbox {
         return queue;
     }
 
-    private void runtime(CompletableFuture<HashMultimap<ObjectType, JsonObject>> future) {
-        startup();
-        HashMultimap<ObjectType, JsonObject> result = runSimulation();
+    private void runtime(HashMap<DMEReference<?>, JsonObject> sandbox) {
+        DMRegistry.sandboxReInit();
+        loadSandbox(sandbox);
+        HashMap<DMEReference<?>, JsonObject> result = runSimulation();
         shutdown();
         future.complete(result);
     }
 
-    private void startup() {
-        DMRegistry.sandboxReInit();
-        populateSandbox();
+    private void startup(HashMap<DMEReference<?>,JsonObject> sandbox) {
+        populateSandbox(sandbox);
+        Thread thread = new Thread(() -> runtime(sandbox));
+        thread.start();
+
     }
 
-    private void populateSandbox() {
-        for (ObjectType type : Payload.keySet()) {
-            AbstractMutableManager<?, ?> manager = DMRegistry.getEntry(type.getRegKey());
-            for (JsonObject json : Payload.get(type)) {
-                manager.deserializeEntity(UUID.fromString(json.get("id").getAsString()), json);
-            }
+    private void populateSandbox(HashMap<DMEReference<?>,JsonObject> sandbox) {
+        for (DMEReference<?> type : Scope) {
+            sandbox.put(type,DMRegistry.getEntityData(type.getType(),type.getUuid()));
         }
     }
-
+    private void loadSandbox(HashMap<DMEReference<?>,JsonObject> sandbox) {
+        for (DMEReference<?> type : Scope) {
+            DMRegistry.load(type,sandbox.get(type));
+        }
+    }
+    public SandboxCode getStatus() {
+        return status;
+    }
     @SuppressWarnings("unchecked")
-    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> HashMultimap<ObjectType, JsonObject> runSimulation() {
+    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> HashMap<DMEReference<?>, JsonObject> runSimulation() {
         final HT host = DMRegistry.getEntry(primary.type().getRegKey()).get(primary.id());
         TimelineChangeState incomingChange = primary.state();
 
@@ -142,8 +149,7 @@ public class Sandbox {
      * Currently covers TITLE_SEMANTIC_ERROR and TITLE_HOLDER_DEAD.
      */
     private boolean isAutoResolvable(StateError error) {
-        return error.message() == Errors.TITLE_SEMANTIC_ERROR
-                || error.message() == Errors.TITLE_HOLDER_DEAD;
+        return error.canAutoResolve();
     }
 
     /**
@@ -246,4 +252,17 @@ public class Sandbox {
     private void shutdown() {
 
     }
+    public void setEndDate(LocalDate date){
+        sandboxEndDate = date;
+    }
+    public LocalDate getEndDate(){
+        return sandboxEndDate;
+    }
+    public static void ImplementChanges(HashMap<DMEReference<?>,JsonObject> diff){
+        for (DMEReference<?> type : diff.keySet()) {
+            DMRegistry.load(type,diff.get(type));
+            //TODO add save in too
+        }
+    }
+
 }

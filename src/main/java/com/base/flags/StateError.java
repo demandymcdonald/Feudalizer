@@ -4,6 +4,8 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.conditions.ConditionResult;
+import com.base.timeline.propagation.core.Objective;
 import com.base.timeline.propagation.core.Sandbox;
 import com.simulation.people.BookCharacter;
 import com.simulation.title.Title;
@@ -15,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 
-public class StateError{
+public class StateError implements ConditionResult {
         private final CompletableFuture<String> response;
         private final Map<String,ErrorResolution> options;
         private final Map<String,String> uiMap;
@@ -52,9 +54,18 @@ public class StateError{
         }
         return options.get(code).resolve(sandbox,change,entity);
     }
+    public boolean canAutoResolve(){
+        return options.size() == 1;
+    }
     public StateError addIgnore(){
         addOption(new ErrorResolution.GenIgnore());
         return this;
+    }
+    public StateError addCharacterLeaveFaction(BookCharacter character, Title<?> title){
+
+    }
+    public StateError addTitleChangeFaction(BookCharacter character, Title<?> title){
+
     }
     public  StateError  addEndState() {
         addOption(new ErrorResolution.EndSandbox());
@@ -79,6 +90,12 @@ public class StateError{
     public StateError addContinue() {
         addOption(new ErrorResolution.GenContinue());
         return this;
+    }
+    public StateError addBranchingSuccessionPlanning(Objective o) {
+        addOption(new ErrorResolution.SandboxBranching("succession_planning",o));
+    }
+    public StateError continueWithSuccessionPlanning(){
+        addOption(new ErrorResolution.);//TODO Finish
     }
     private void addOption(ErrorResolution option){
         options.put(option.getCode(),option);

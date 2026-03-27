@@ -1,10 +1,10 @@
-package com.simulation.title;
+package com.simulation.title.succession.rules;
 
 import com.simulation.people.BookCharacter;
 import com.simulation.people.Family;
 import com.simulation.people.FamilyManager;
+import com.simulation.title.Title;
 
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 

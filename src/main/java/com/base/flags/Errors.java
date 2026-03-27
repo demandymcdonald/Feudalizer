@@ -1,32 +1,62 @@
 package com.base.flags;
 
 import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
-import com.base.reference.StateReference;
+import com.base.timeline.TimelineChangeState;
+import com.base.timeline.change.TitleTLChange;
+import com.base.timeline.propagation.core.Objective;
 import com.simulation.people.BookCharacter;
 import com.simulation.title.Title;
 
+import java.awt.print.Book;
+
 public class Errors {
-    public static StateError duplicateError(){
+    public static StateError duplicateError() {
         return new StateError(SimpleReference.of("Duplicate Entry")).addOverride();
     }
-    public static StateError newInvalidatesOldError(){
+
+    public static StateError newInvalidatesOldError() {
         return new StateError(SimpleReference.of("New invalidates old")).addOverride().addIgnore().addEndState().addEndCancel();
     }
 
-    public static StateError oldInvalidatesNewError(){
+    public static StateError oldInvalidatesNewError() {
         return new StateError(SimpleReference.of("Old invalidates new")).addOverride().addIgnore().addEndState().addEndCancel();
     }
-    public static  StateError newStateNullifiedbyOldError(){
+
+    public static StateError newStateNullifiedbyOldError() {
         return new StateError(SimpleReference.of("New state nullified by old")).addOverride().addEndState().addEndCancel();
     }
-    public static StateError newHolderDead(Title<?> title){
+
+    public static StateError newHolderDead(TitleTLChange<?> title) {
         //TODO write error message which includes DMR for each thing.
         return new StateError(SimpleReference.of("New holder dead"));
     }
-    public static StateError alreadyHasAParent(DateMutableEntity<?,?> child, DateMutableEntity<?,?> newParent, DateMutableEntity<?,?> oldParent){
+
+    public static StateError noLongerCanHold
+
+    public static StateError characterDead(BookCharacter character) {
+
+    }
+    public static <T extends Title<T>> StateError inheritanceFirstTime(T<?> tcs) {
+        return new StateError(SimpleReference.of("Inheritance first time")).addBranchingSuccessionPlanning(new Objective(DMEReference.of(tcs.),tcs));
+    }
+    public static StateError alreadyHasAParent(DateMutableEntity<?, ?> child, DateMutableEntity<?, ?> newParent, DateMutableEntity<?, ?> oldParent) {
         //TODO write error message which includes DMR for each thing.
         return new StateError(SimpleReference.of("Already has parent")).addOverride().addContinue().addEndState().addEndCancel();
+    }
+    public static StateError wrongFaction(BookCharacter ch, Title<?> title, String existingText) {
+        StateError error = new StateError(SimpleReference.of(existingText));
+        error.addEndState().addEndCancel().addCharacterLeaveFaction(ch,title);
+        return error;
+    }
+    public static StateError aboveMaxTitle(String existingText) {
+        StateError error = new StateError(SimpleReference.of(existingText));
+        error.addIgnore().addEndState().addEndCancel();
+        return error;
+    }
+    public static StateError EMPTY() {
+        return new StateError(SimpleReference.of("Passes Condition")).addContinue();
     }
 }
 //

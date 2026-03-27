@@ -5,11 +5,12 @@ import com.Feudalizer;
 import com.GlobalVars;
 import com.base.*;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.CauseOfDeath;
+import com.base.timeline.change.CharacterTLChange;
 import com.google.gson.JsonObject;
 import com.simulation.title.Title;
 import javafx.util.Pair;
 
-import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -150,6 +151,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
             title.setHolder(this);
         }
     }
+
     public void revokeTitle(Title<?> title){
         if (!title.getHolder().isPresent()){
             this.Titles.remove(title);
@@ -157,6 +159,9 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
         } else if (title.getHolder().get().equals(this)){
             title.removeHolder(this);
         }
+    }
+    public <T extends Title<T>> List<T> getTitlesOfType(Class<T> titleClass){
+        return Titles.stream().filter(title -> titleClass.isAssignableFrom(title.getClass())).map(title -> (T) title).toList();
     }
     public void giveBirth(BookCharacter otherParent, Gender gender, String name){
         Family f = findOrCreateFamily(this,otherParent,true); //TODO check if this is okay logic wise..
@@ -175,7 +180,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
         this.house = Optional.of(house);
         addStateChange(GlobalVars.CURRENT_DATE(),new StateChangeKey(StateChangeKey.StateChangeType.HOUSE_CHANGED,DMEReference.of(this),DMEReference.of(house)));
     }
-    private void setHouseInternal(House house){
+    protected void setHouseInternal(House house){
         //TODO: Decide how to handle this... If it's a internal tool for house founding, or if it can also be an outside method to add someone to a house.. Probably the former?
         this.house = Optional.of(house);
         addStateChange(GlobalVars.CURRENT_DATE(),new StateChangeKey(StateChangeKey.StateChangeType.TREAT_AS_STATUS_QUO,DMEReference.of(this),DMEReference.of(house)));
@@ -190,6 +195,10 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
         j.addProperty("gender", gender.toString());
         return j;
     }
+    public void setDeath(LocalDate date, CauseOfDeath death){
+        this.setEnded(date);
+        addStateChange(date,new CharacterTLChange.CharacterDeath(DMEReference.of(this),null,death,date));
+    }
     @Override
     protected JsonObject saveAdditional(JsonObject j) {
         super.saveAdditional(j);
@@ -203,31 +212,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
     public boolean isNoble(){
         return house.isPresent();
     }
-    public static BookCharacter buildCommoner(String givenName, String surname, Gender gender){
-        return new BookCharacter(UUID.randomUUID(),givenName,surname,null, GlobalVars.CURRENT_DATE(),null,gender);
-    }
-    public static BookCharacter buildCommoner(String givenName, String surname, LocalDate dob, LocalDate dod, Gender gender){
-        return new BookCharacter(UUID.randomUUID(),givenName,surname,null,dob,dod,gender);
-    }
-    public static BookCharacter buildNoble(String givenName, String surname, LocalDate dob, LocalDate dod, Gender gender){
-        return buildNoble(givenName,surname,surname,dob,dod,gender);
-    }
-    public static BookCharacter buildNoble(String givenName, String surname, String houseName, Gender gender){
 
-        return buildNoble(givenName,surname,houseName, GlobalVars.CURRENT_DATE(),null,gender);
-    }
-    public static BookCharacter buildNoble(String givenName, String surname, String houseName, @Nonnull LocalDate dob, LocalDate dod, Gender gender){
-        BookCharacter character = new BookCharacter(UUID.randomUUID(),givenName,surname,null,dob,dod,gender);
-        House house = new House(houseName,character);
-        character.setHouseInternal(house);
-        return character;
-    }
-    public static BookCharacter buildNoble(String givenName, String surname, House house, Gender gender){
-        return new BookCharacter(UUID.randomUUID(),givenName,surname,house, GlobalVars.CURRENT_DATE(),null,gender);
-    }
-    public static BookCharacter buildNoble(String givenName, String surname, House house,@Nonnull LocalDate dob, LocalDate dod, Gender gender){
-        return new BookCharacter(UUID.randomUUID(),givenName,surname,house,dob,dod,gender);
-    }
     public LocalDate getDOB(){
         return this.getCreated();
     }

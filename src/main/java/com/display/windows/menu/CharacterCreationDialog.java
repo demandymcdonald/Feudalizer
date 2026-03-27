@@ -2,6 +2,7 @@ package com.display.windows.menu;
 
 import com.GlobalVars;
 import com.simulation.people.BookCharacter;
+import com.simulation.people.CharacterManager;
 import com.simulation.people.House;
 import com.base.DMRegistry;
 import javafx.geometry.Insets;
@@ -138,17 +139,17 @@ public class CharacterCreationDialog extends Dialog<BookCharacter> {
         LocalDate dod = parseDate(dodField.getText(), null);
 
         if (commonerRadio.isSelected()) {
-            return BookCharacter.buildCommoner(givenName, surname, dob, dod, gender);
+            return CharacterManager.buildCommoner(givenName, surname, dob, dod, gender);
         } else {
             House existingHouse = houseCombo.getValue();
             String newHouseName = newHouseField.getText().trim();
 
             if (existingHouse != null) {
-                return BookCharacter.buildNoble(givenName, surname, existingHouse, dob, dod, gender);
+                return CharacterManager.buildNoble(givenName, surname, existingHouse, dob, dod, gender);
             } else if (!newHouseName.isEmpty()) {
-                return BookCharacter.buildNoble(givenName, surname, newHouseName, dob, dod, gender);
+                return CharacterManager.buildNoble(givenName, surname, newHouseName, dob, dod, gender);
             } else {
-                return BookCharacter.buildNoble(givenName, surname, dob, dod, gender);
+                return CharacterManager.buildNoble(givenName, surname, dob, dod, gender);
             }
         }
     }

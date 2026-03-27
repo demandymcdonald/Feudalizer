@@ -1,4 +1,0 @@
-package com.base.timeline.change;
-
-public class CharacterTLChanges {
-}

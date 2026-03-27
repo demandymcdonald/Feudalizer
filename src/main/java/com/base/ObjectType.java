@@ -24,4 +24,12 @@ public enum ObjectType {
     public String getRegKey() {
         return regKey;
     }
+    public static ObjectType getByRegKey(String regKey){
+        for (ObjectType t : values()){
+            if (t.getRegKey().equals(regKey)){
+                return t;
+            }
+        }
+        throw new IllegalArgumentException("No such object type: "+regKey);
+    }
 }

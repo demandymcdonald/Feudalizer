@@ -5,7 +5,9 @@ import com.base.*;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TitleTLChanges;
+import com.base.timeline.change.TitleTLChange;
+import com.base.timeline.change.conditions.CanHoldTitleCondition;
+import com.base.timeline.change.conditions.DMEResult;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
 import com.simulation.people.CharacterManager;
@@ -29,11 +31,11 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
 
     public Title(UUID id, LocalDate created, LocalDate ended, JsonObject additionalData) {
         super(id, created, ended, additionalData);
-        handleHolders(additionalData.get("Holders").getAsJsonArray());
+        //handleHolders(additionalData.get("Holders").getAsJsonArray());
     }
 
     public Title(JsonObject payload) {
-        super(payload, );
+        super(payload);
     }
 
     public abstract List<BookCharacter> getAllClaimants();
@@ -57,11 +59,34 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
         onNewStateLoad(passthrough);
         onRelink();
     }
-
+    public int maxOfType(){
+        return Integer.MAX_VALUE;
+    }
     public abstract boolean canInherit(BookCharacter person);
     public abstract boolean isInheritable();
     public abstract boolean isSubPropagating();
-    public abstract boolean canHold(BookCharacter person);
+    public boolean canHold(BookCharacter person){
+        for (DMEResult<T,?,BookCharacter> result : canHoldDeep(this,person)){
+            if (!result.canHold()){
+                return false;
+            }
+        }
+        return true;
+    };
+    public static <T extends Title<T>> List<DMEResult<T,?,BookCharacter>> canHoldDeep(Title<T> title, BookCharacter person){
+        List<CanHoldTitleCondition<T,?>> base = new ArrayList<>(CanHoldTitleCondition.BaseConditions());
+        base.addAll((Collection<? extends CanHoldTitleCondition<T, ?>>) title.getConditions());
+        return title.runCheck(base,person);
+    };
+    private List<DMEResult<T,?,BookCharacter>> runCheck(List<CanHoldTitleCondition<T,?>> conditions, BookCharacter person){
+        List<DMEResult<T,?,BookCharacter>> results = new ArrayList<>();
+        for (CanHoldTitleCondition<T,?> t : conditions){
+            results.add(t.check((T) this,null,person));
+        }
+        return results;
+    }
+    protected abstract List<CanHoldTitleCondition<T,?>> getConditions();
+
     protected abstract JsonObject updateState(JsonObject j);
     protected abstract void onRelink();
     protected abstract void onNewStateLoad(JsonObject passthrough);
@@ -86,12 +111,12 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
             return;
         }
         Holder = Optional.of(holder);
-        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChanges.GrantTitle<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
+        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Grant<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
         holder.addTitle(this);
     }
     public void removeHolder(BookCharacter holder){
         Holder = Optional.empty();
-        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChanges.RevokeTitle<>(DMEReference.of(this), Optional.of(DMEReference.of(holder)), GlobalVars.CURRENT_DATE()));
+        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Revoke<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
         holder.revokeTitle(this);
     }
     public void removeCurrentHolder(){
@@ -113,18 +138,19 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
     public void addChild(Title<?> child) {
         Children.add(child);
         child.setParent(this);
-        final TitleTLChanges.DeJureDriftPassive<?,?,?> changes = new TitleTLChanges.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),GlobalVars.CURRENT_DATE());
+        final TitleTLChange.DeJureDriftPassive<?,?,?> changes = new TitleTLChange.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),GlobalVars.CURRENT_DATE());
         addStateChange(GlobalVars.CURRENT_DATE(), (TimelineChange<T>) changes);
     }
+    public
     public  void removeChild(Title<?> child, boolean canon, @Nullable Title<?> newParent) {
         if (Children.contains(child)) {
             Children.remove(child);
-            addStateChange(GlobalVars.CURRENT_DATE(),canon, new TitleTLChanges.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),DMEReference.of(newParent),GlobalVars.CURRENT_DATE()));
+            addStateChange(GlobalVars.CURRENT_DATE(),canon, new TitleTLChange.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),DMEReference.of(newParent),GlobalVars.CURRENT_DATE()));
         }
     }
     public void setParent(Title<?> parent) {
         Parent = Optional.of(parent);
-        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChanges.DeJureDrift<>(DMEReference.of(this),DMEReference.of(parent),GlobalVars.CURRENT_DATE()));
+        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.DeJureDrift<>(DMEReference.of(this),DMEReference.of(parent),GlobalVars.CURRENT_DATE()));
     }
     public boolean hasParent() {
         return Parent.isPresent();
@@ -159,6 +185,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
     public TitleContainer getCurrentContainer() {
         return TitleContainer.builder(Holder,Parent,Children, updateState(new JsonObject()));
     }
+
     //public UUID[] getAllHolders(){
     //    return everyHolder.toArray(UUID[]::new);
     //}

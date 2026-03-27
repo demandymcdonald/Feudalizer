@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public record CharacterState(List<UUID> Families, @Nullable UUID House,
+public record CharacterState(String forename, String surname, List<UUID> Families, @Nullable UUID House,
                              List<UUID> Titles) implements TimelineContainer<CharacterState> {
     public static CharacterState builder(List<Family> families, List<Title<?>> title, Optional<House> house) {
         List<UUID> familyID = DateMutableEntity.convert(families);
@@ -23,6 +23,8 @@ public record CharacterState(List<UUID> Families, @Nullable UUID House,
 
     public JsonObject getSerialized() {
         JsonObject json = new JsonObject();
+        json.addProperty("forename", forename);
+        json.addProperty("surname", surname);
         JsonArray familyArray = DateMutableEntity.buildJson(Families);
         JsonArray titleArray = DateMutableEntity.buildJson(Titles);
         if (House != null) {
@@ -33,7 +35,8 @@ public record CharacterState(List<UUID> Families, @Nullable UUID House,
         return json;
     }
 
-    public static CharacterState deserialize(JsonObject o) {
+    @Override
+    public CharacterState getDeserialized(JsonObject o) {
         List<UUID> familyID = DateMutableEntity.buildUUID(o.get("families").getAsJsonArray());
         List<UUID> titleID = DateMutableEntity.buildUUID(o.get("titles").getAsJsonArray());
         if (!o.has("house")) {
@@ -41,6 +44,7 @@ public record CharacterState(List<UUID> Families, @Nullable UUID House,
         }
         return new CharacterState(familyID, UUID.fromString(o.get("house").getAsString()), titleID);
     }
+
 
     @Override
     public String Header() {
