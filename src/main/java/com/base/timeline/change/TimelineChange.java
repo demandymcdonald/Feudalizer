@@ -66,11 +66,11 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
      * @param entity the entity on which the overwrite operation is being performed. This entity serves as the
      *               target for state updates in the timeline.
      */
-    public final void overwrite(T entity, boolean saveChangeToDiff, @Nullable TimelineChange<T> stateToOverwrite){
+    public final void overwrite(T entity, boolean saveChangeToDiff, @Nullable TimelineChange<T> beingOverwritten){
         TimelineState<T> state = onOverwrite(entity);
         doNullify(state);
-        if (stateToOverwrite != null){
-            stateToOverwrite.doNullify(state);
+        if (beingOverwritten != null){
+            beingOverwritten.doNullify(state);
         }
         entity.saveStateChange(state);
     }

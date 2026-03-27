@@ -93,6 +93,10 @@ public class StateError implements ConditionResult {
     }
     public StateError addBranchingSuccessionPlanning(Objective o) {
         addOption(new ErrorResolution.SandboxBranching("succession_planning",o));
+        return this;
+    }
+    public StateError addReplaceWithNew(TimelineChange<?> replace){
+        addOption(new ErrorResolution.ReplaceWithNew(replace));
     }
     public StateError continueWithSuccessionPlanning(){
         addOption(new ErrorResolution.);//TODO Finish

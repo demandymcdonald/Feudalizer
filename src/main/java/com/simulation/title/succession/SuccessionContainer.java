@@ -68,7 +68,13 @@ public class SuccessionContainer implements TimelineContainer<SuccessionContaine
     public SuccessionEntry<?> getEntry(LocalDate date){
         return entries.get(date);
     }
+    public SuccessionEntry<?> getNext(LocalDate date){
+        return entries.higherEntry(date).getValue();
+    }
     public void addEntry(LocalDate date, SuccessionEntry<?> entry){
         entries.put(date,entry);
+    }
+    public void removeEntry(LocalDate date){
+        entries.remove(date);
     }
 }

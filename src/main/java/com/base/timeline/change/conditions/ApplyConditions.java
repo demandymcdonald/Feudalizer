@@ -60,14 +60,37 @@ public class ApplyConditions {
             return Optional.empty();
         }
     });
-    public static final Condition<StateError, Sidecar.TitleChange> DUPLICATE = new Condition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+    public static final Condition<StateError, Sidecar.TitleChange> WAS_REGRANTED = new Condition<>("title_wasReGranted", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
         @Override
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
             Title<?> subject = sidecar.subject();
             Optional<BookCharacter> holder = sidecar.holder();
+            if(checkAgainst instanceof TitleTLChange.Grant<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().link().equals(holder.orElse(null))){
+                return Optional.of(newStateNullifiedbyOldError());
+            };
+            return Optional.empty();
+        }
+    });
+    public static final Condition<StateError, Sidecar.TitleChange> WAS_REVOKED = new Condition<>("title_wasReGranted", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+        @Override
+        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
+            Title<?> subject = sidecar.subject();
+            Optional<BookCharacter> holder = sidecar.holder();
+            if(checkAgainst instanceof TitleTLChange.Revoke<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().link().equals(holder.orElse(null))){
+                return Optional.of(newStateNullifiedbyOldError().addReplaceWithNew(new TitleTLChange.Revoke<>(DMEReference.of(subject),DMEReference.of(holder.orElse(null)),checkAgainst.getDate())));
+            };
+            return Optional.empty();
+        }
+    });
+    public static final Condition<StateError, Sidecar.TitleChange> DUPLICATE = new Condition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+        @Override
+        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
+            //Title<?> subject = sidecar.subject();
+            Optional<BookCharacter> holder = sidecar.holder();
             if( thisChange instanceof TitleTLChange<?> tC && checkAgainst instanceof TitleTLChange<?> cA){
                 Optional<BookCharacter> otherCharacter = unpackReference(cA.getHolder());
-                if (otherCharacter.orElse(null) == holder.orElse(null)){
+                if (holder.isEmpty()) return Optional.empty();
+                if (holder.get().equals(otherCharacter.orElse(null))){
                     return Optional.of(duplicateError());
                 }
             };
@@ -93,17 +116,18 @@ public class ApplyConditions {
             return Optional.empty();
         }
     });
-    public static final Condition<StateError, Sidecar.TitleChange> INHERITS_TITLE = new Condition<>("title_inherited",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
-        @Override
-        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
-            if( thisChange instanceof TitleTLChange.Inherit<?> ttl && ttl.isFirstTime()){
-
-                return Optional.of(inheritanceFirstTime(new TimelineChangeState<>(thisChange.getDate(),Optional.empty(),thisChange));
-
-            };
-
-        }
-    });
+    public static <T extends Title<T>> Condition<StateError, Sidecar.TitleChange> INHERITS_TITLE(){
+        return new Condition<>("title_inherited",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+            @Override
+            public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
+                if (thisChange instanceof TitleTLChange.Inherit<?> ttl && ttl.isFirstTime()) {
+                    ttl.setFirstTime(false);
+                    return Optional.of(inheritanceFirstTime(new TimelineChangeState<>(thisChange.getDate(), Optional.empty(), thisChange)));
+                }
+                return Optional.empty();
+            }
+        });
+    }
     public static final Condition<StateError, Sidecar.TitleChange> HAS_PARENT = new Condition<>("title_template",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
         @Override
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {

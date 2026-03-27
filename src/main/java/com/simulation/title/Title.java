@@ -114,6 +114,18 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
         addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Grant<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
         holder.addTitle(this);
     }
+    public void setInherit(BookCharacter holder, LocalDate date, boolean isFirst) {
+        Holder = Optional.of(holder);
+        addStateChange(date,isFirst, new TitleTLChange.Inherit<>(DMEReference.of(this), DMEReference.of(holder), date));
+        //holder.addTitle(this);
+    }
+    public void setInherit(TitleTLChange.Inherit<T> inherit, LocalDate date, boolean isFirst) {
+        Holder = Optional.of(inherit.getHolder().orElseThrow().link());
+        Title<?> t = inherit.getTitle().link();
+        Holder.get().addToTitleList(t);
+        addStateChange(date,isFirst, inherit);
+        //Holder.addTitle(this);
+    }
     public void removeHolder(BookCharacter holder){
         Holder = Optional.empty();
         addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Revoke<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));

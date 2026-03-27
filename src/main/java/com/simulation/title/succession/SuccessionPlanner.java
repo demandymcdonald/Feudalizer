@@ -20,6 +20,22 @@ public class SuccessionPlanner {
         for (Title<?> title : deceased.getTitles()) {
             SuccessionEntry<?> sc = title.getSuccession().getEntry(date);
             List<BookCharacter> generateLoS = sc.getLoSFull();
+            if (generateLoS.isEmpty()){
+                generateLoS.add(title.getParent().orElseThrow().getHolder().orElseThrow());
+                //TODO flesh out, probably keep climbing until a person can hold it or there's nobody left lol.
+            }
+            BookCharacter first = generateLoS.get(0);
+            title.setInherit(first, date,true);
+            assignedTitles.put(first.getId(),title);
+        }
+
+    }
+
+    public static <T extends Title<T>> void cleanUpContainer(T title, LocalDate date){
+        LocalDate current = date;
+        SuccessionContainer container = title.getSuccession();
+        while (current.isBefore(title.getEnded())){
+            if ()
         }
     }
 

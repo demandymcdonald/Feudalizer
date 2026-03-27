@@ -144,15 +144,21 @@ public abstract class ErrorResolution {
             return CRITICAL_ERROR;
         }
     }
-    public static class CharacterSuccession extends ErrorResolution {
+    public static class ReplaceWithNew extends ErrorResolution {
+        private final TimelineChange<?> replace;
+        public ReplaceWithNew(TimelineChange<?> replace) {
+            this.replace = replace;
+        }
         @Override
         public String getCode() {
-            return "character_succession";
+            return "gen_replaceWithNew";
         }
 
         @Override
         public <T extends DateMutableEntity<T, ?>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, T entity) {
-            return null;
+            final TimelineChange<T> newChange = (TimelineChange<T>) replace;
+            newChange.overwrite(entity,true,change);
+            return SandboxCode.CONTINUE;
         }
     }
 }

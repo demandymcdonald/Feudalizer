@@ -151,7 +151,11 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
             title.setHolder(this);
         }
     }
-
+    public void addToTitleList(Title<?> title){
+        if (title.getHolder().isPresent() && title.getHolder().get().equals(this)){
+            this.Titles.add(title);
+        }
+    }
     public void revokeTitle(Title<?> title){
         if (!title.getHolder().isPresent()){
             this.Titles.remove(title);

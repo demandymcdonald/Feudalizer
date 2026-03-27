@@ -1,5 +1,6 @@
 package com.base.timeline.change;
 
+import com.GlobalVars;
 import com.base.ObjectType;
 import com.base.flags.Errors;
 import com.base.flags.StateError;
@@ -115,7 +116,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of(IS_OPPOSITE,DUPLICATE,CAN_STILL_HOLD);
+            return List.of(IS_OPPOSITE,DUPLICATE,CAN_STILL_HOLD,WAS_REGRANTED,WAS_REVOKED);
         }
 
         public static <T extends Title<T>> Grant<T> fromJson(LocalDate date, JsonObject json){
@@ -132,7 +133,12 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         }
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
-            entity.setHolder(getHolder().get().link());
+            if (firstTime){
+                entity.setInherit(this, GlobalVars.CURRENT_DATE(),true);
+                firstTime = false;
+                return entity.getCurrentState();
+            }
+            entity.setInherit(this, GlobalVars.CURRENT_DATE(),false);
             return entity.getCurrentState();
         }
         @Override
@@ -146,7 +152,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of(IS_OPPOSITE,DUPLICATE,CAN_STILL_HOLD);
+            return List.of(INHERITS_TITLE(),DUPLICATE,WAS_REGRANTED,WAS_REVOKED);
         }
 
         public static <T extends Title<T>> Grant<T> fromJson(LocalDate date, JsonObject json){
@@ -156,7 +162,9 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         public boolean isFirstTime(){
             return firstTime;
         }
-
+        public void setFirstTime(boolean firstTime) {
+            this.firstTime = firstTime;
+        }
     }
     public static class Revoke<T extends Title<T>> extends TitleTLChange<T> {
         public Revoke(DMEReference<T> title, DMEReference<BookCharacter> character, LocalDate date) {

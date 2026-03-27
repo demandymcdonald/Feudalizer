@@ -38,8 +38,11 @@ public class Errors {
     public static StateError characterDead(BookCharacter character) {
 
     }
-    public static <T extends Title<T>> StateError inheritanceFirstTime(T<?> tcs) {
-        return new StateError(SimpleReference.of("Inheritance first time")).addBranchingSuccessionPlanning(new Objective(DMEReference.of(tcs.),tcs));
+    public static StateError inheritanceFirstTime(TimelineChangeState<?> tcs) {
+        if (tcs.change() instanceof TitleTLChange.Inherit<?> ic) {
+            return new StateError(SimpleReference.of("Inheritance first time")).addBranchingSuccessionPlanning(new Objective(ic.getTitle(),tcs));
+        }
+        return new StateError(SimpleReference.of("Inheritance first time")).addContinue();
     }
     public static StateError alreadyHasAParent(DateMutableEntity<?, ?> child, DateMutableEntity<?, ?> newParent, DateMutableEntity<?, ?> oldParent) {
         //TODO write error message which includes DMR for each thing.
