@@ -97,6 +97,50 @@ public class ApplyConditions {
             return Optional.empty();
         }
     });
+    public static final Condition<StateError, Sidecar.TitleChange> TITLE_LOOP = new Condition<>("title_loop;",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+        @Override
+        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
+            if( thisChange instanceof TitleTLChange.DeJureDrift<?,?> tC && checkAgainst instanceof TitleTLChange.DeJureDrift<?,?> cA){
+                Title<?> tCTitle = tC.getNewParent().link();
+                Title<?> tCNewChild = tC.getTitle().link();
+                Title<?> cANewParent = cA.getNewParent().link();
+                Title<?> cAChild = cA.getTitle().link();
+                //Title<?> cATitle = cA.getTitle().link();
+                while (tCTitle != null){
+                    //if (tCTitle.getParent().isPresent() && tCNewChild.getParent().isPresent()){
+                    Optional<StateError> finding = null;
+                    boolean isLoop = false;
+                    if(tCNewChild.hasChild(tCTitle) || (cANewParent.equals(tCNewChild) && tCTitle.equals(cAChild))){
+                        isLoop = true;
+                        finding = Optional.of(loopError());
+                    } else if (tCTitle.hasChild(tCNewChild)){
+                        isLoop = false;
+                        finding = Optional.of(nullifyError());
+                    }
+                    if (finding != null){
+                        if (isLoop){
+                            tCNewChild.removeChild(tCTitle,false,null);
+                        } else if (!tCTitle.equals(tC.getNewParent().link())){
+                            tCTitle.removeChild(tCNewChild,false,null);
+                        }
+                        return finding;
+                    }
+                    tCTitle = tCTitle.getParent().orElse(null);
+                }
+            };
+            return Optional.empty();
+        }
+        private static Optional<StateError> determineLoopError(Title<?> tCTitle, Title<?> tCNewChild, TitleTLChange.DeJureDrift<?,?> thisChange, TitleTLChange.DeJureDrift<?,?> checkAgainst, boolean isLoop){
+                if (isLoop){
+                    return Optional.of(loopError());
+                } else {
+                    return Optional.of(nullifyError());
+                }
+            //Because this specific existing change has nothing to do with our current situation, we return empty,
+            // relying on a later step to correct the state manually (most likely because the change already happened and this is just cleanup.
+            return Optional.empty();
+        }
+    });
     public static final Condition<StateError, Sidecar.TitleChange> CAN_STILL_HOLD = new Condition<>("title_canStillHold",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
         @Override
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {

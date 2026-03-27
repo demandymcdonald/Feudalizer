@@ -32,9 +32,12 @@ public class Errors {
         //TODO write error message which includes DMR for each thing.
         return new StateError(SimpleReference.of("New holder dead"));
     }
-
-    public static StateError noLongerCanHold
-
+    public static StateError loopError() {
+        return new StateError(SimpleReference.of("Loop Detected")).addOverride().addEndState().addEndCancel();
+    }
+    public static StateError nullifyError() {
+        return new StateError(SimpleReference.of("Nullify Entry")).addNullify().addEndState().addEndCancel();
+    }
     public static StateError characterDead(BookCharacter character) {
 
     }

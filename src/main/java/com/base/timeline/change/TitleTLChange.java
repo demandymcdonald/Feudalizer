@@ -238,7 +238,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of(HAS_PARENT);
+            return List.of(HAS_PARENT,DUPLICATE);
         }
 
         public static <T extends Title<T>,NP extends Title<NP>> DeJureDrift<T,NP> fromJson(LocalDate date, JsonObject json){

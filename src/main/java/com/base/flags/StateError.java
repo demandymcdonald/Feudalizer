@@ -7,11 +7,15 @@ import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.propagation.core.Objective;
 import com.base.timeline.propagation.core.Sandbox;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.simulation.people.BookCharacter;
 import com.simulation.title.Title;
 import org.apache.commons.lang3.tuple.Pair;
 
 
+import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +33,22 @@ public class StateError implements ConditionResult {
         Pair<Map<String,ErrorResolution>, Map<String,String>> p = buildOptionsString(options);
         this.options = p.getLeft();
         uiMap = p.getRight();
+    }
+    public long generateID(TimelineChange<?> change, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
+        if (proceduralInteger == null){
+            proceduralInteger = 69;
+        }
+        Hasher hasher = Hashing.murmur3_128().newHasher();
+        hasher.putString(message.parse(), StandardCharsets.UTF_8);
+        hasher.putLong(buildForTLC(change));
+        hasher.putLong(buildForTLC(existing));
+        hasher.putLong(proceduralInteger);
+        return hasher.hash().asLong();
+    }
+    private long buildForTLC(TimelineChange<?> change){
+        long toReturn = change.getDate().toEpochDay();
+        toReturn += change.getClass().toString().hashCode();
+        return toReturn;
     }
     private Pair<Map<String,ErrorResolution>,Map<String,String>> buildOptionsString(ErrorResolution... options){
         Map<String,String> ui = new HashMap<>();
@@ -107,6 +127,12 @@ public class StateError implements ConditionResult {
     }
     public StateError runSuccessionPlanning(DMEReference<? extends Title<?>> title, DMEReference<BookCharacter> newHolder){
 
+    }
+    public static class StateErrorID{
+        long id;
+        public StateErrorID(StateError error, @Nullable Integer noise) {
+            this.id = id;
+        }
     }
 }
 

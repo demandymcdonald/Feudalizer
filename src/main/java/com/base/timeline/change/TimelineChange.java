@@ -8,6 +8,7 @@ import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.*;
 import com.base.utilities.JsonSerializable;
 import com.google.common.collect.HashMultimap;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
 
@@ -34,6 +35,8 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     private final LocalDate date;
     private final List<Condition<StateError,?>> applyConditions = initApplyConditions();
     private final List<Condition<ConditionResult.Nullify,?>> nullifyConditions = initNullifyConditions();
+    private Breadcrumb breadcrumb = new Breadcrumb();
+    private boolean deativated = false;
     protected TimelineChange(LocalDate date) {
         this.date = date;
     }
@@ -204,6 +207,89 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
         conditions.addAll(this.buildNullifyConditions());
         return conditions;
     }
+    //Handling deactivation
+    public boolean isDeactivated(){
+        return deativated;
+    }
+    public void deactivate(){
+        deativated = true;
+    }
+    public void reactivate(){
+        deativated = false;
+    }
+    //Wrapper functions for breadcrumb.
+    public Breadcrumb getBreadcrumb(){
+        return breadcrumb;
+    }
+    public void addEndPoint(LocalDate date){
+        breadcrumb.addEndPoint(date);
+    }
+    public void addError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode){
+        breadcrumb.insertError(error,newChange,existingChange,proceduralInteger,resolutionCode);
+    }
     protected abstract List<Condition<StateError,?>> buildApplyConditions();
     protected abstract List<Condition<ConditionResult.Nullify,?>> buildNullifyConditions();
+    public static class Breadcrumb implements JsonSerializable<Breadcrumb>{
+        private LocalDate endOfPropagation;
+        private final HashMap<Long,String> errorResolutionLog = new HashMap<>();
+        public Breadcrumb() {}
+
+        public void addEndPoint(LocalDate date){
+            if (isComplete()){
+                throw new IllegalStateException("Cannot add a new end point to a completed Breadcrumb");
+            }
+            endOfPropagation = date;
+        }
+        public void insertError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode) {
+            errorResolutionLog.put(error.generateID(newChange, existingChange, proceduralInteger), resolutionCode);
+        }
+        public Optional<String> getResolutionCode(long id){
+            return Optional.ofNullable(errorResolutionLog.get(id));
+        }
+        public Optional<String> getResolutionCode(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger){
+            return getResolutionCode(error.generateID(newChange, existingChange, proceduralInteger));
+        }
+        public boolean isComplete(){
+            return endOfPropagation != null;
+        }
+        public LocalDate getEndOfPropagation(){
+            return endOfPropagation;
+        }
+
+        @Override
+        public JsonObject toJson() {
+            JsonObject object = new JsonObject();
+            if (endOfPropagation != null){
+                object.addProperty("eop",endOfPropagation.toEpochDay());
+            }
+            JsonArray errors = new JsonArray();
+            for (Map.Entry<Long, String> entry : errorResolutionLog.entrySet()) {
+                JsonObject error = new JsonObject();
+                error.addProperty("i",entry.getKey());
+                error.addProperty("r",entry.getValue());
+                errors.add(error);
+            }
+            object.add("errors",errors);
+            return object;
+        }
+
+        @Override
+        public void fromJson(JsonObject json) {
+            if (json.has("eop")){
+                this.endOfPropagation = LocalDate.ofEpochDay(json.get("eop").getAsLong());
+            };
+            JsonArray errors = json.getAsJsonArray("errors");
+            for (int i = 0; i < errors.size(); i++) {
+                JsonObject error = errors.get(i).getAsJsonObject();
+                long id = error.get("i").getAsLong();
+                String resolution = error.get("r").getAsString();
+                errorResolutionLog.put(id,resolution);
+            }
+        }
+
+        @Override
+        public Breadcrumb empty() {
+            return new Breadcrumb();
+        }
+    }
 }

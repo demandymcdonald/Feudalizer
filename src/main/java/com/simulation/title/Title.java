@@ -147,6 +147,9 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
     public boolean hasChild(Title<?> child) {
         return Children.contains(child);
     }
+    public boolean hasChildren() {
+        return !Children.isEmpty();
+    }
     public void addChild(Title<?> child) {
         Children.add(child);
         child.setParent(this);
