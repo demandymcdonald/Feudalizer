@@ -1,5 +1,6 @@
 package com.base.timeline.propagation.core;
 
+import com.GlobalVars;
 import com.base.AbstractMutableManager;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
@@ -11,23 +12,22 @@ import com.base.reference.DMEReference;
 import com.base.timeline.TimelineChangeState;
 import com.base.timeline.TimelineContainer;
 import com.base.timeline.TimelineState;
+import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.HashMultimap;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.google.gson.JsonObject;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class Sandbox {
     private CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future;
     private final HashMap<DMEReference<?>, JsonObject> dirty = new HashMap<>();
     private final HashSet<DMEReference<?>> Scope;
-    private final BlockingQueue<StateError> queue = new ArrayBlockingQueue<>(6);
+    private final ConcurrentLinkedDeque<StateError> ProblemQueue = new ConcurrentLinkedDeque<>();
     private final Objective primary;
     private volatile LocalDate sandboxEndDate = LocalDate.MAX;
     private volatile SandboxCode status = SandboxCode.CONTINUE;
@@ -80,38 +80,61 @@ public class Sandbox {
     }
     @SuppressWarnings("unchecked")
     private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> HashMap<DMEReference<?>, JsonObject> runSimulation() {
-        final HT host = DMRegistry.getEntry(primary.type().getRegKey()).get(primary.id());
-        TimelineChangeState incomingChange = primary.state();
-
-        // Apply the objective's mutation to the host at the insertion point
-        host.sandboxApplyStartState(incomingChange.start());
-        primary.applyDiff().accept(incomingChange, host.getSandboxCurrentState());
-        trackMutation(host);
-
-        // Walk forward through the timeline checking for conflicts at each state
-        while (true) {
-            TimelineState currentState = host.getSandboxCurrentTimelineState();
-            if (currentState == null) break;
-
-            StateError[] conflicts = incomingChange.change().doesTimelineConflict(currentState);
-            for (StateError conflict : conflicts) {
-                boolean shouldContinue = handleResolution(conflict, host, incomingChange, currentState);
-                if (!shouldContinue) {
-                    // Cancel — discard everything and return empty diff
-                    diff.clear();
-                    return diff;
+        HashMap<Long, StandingChange> standingChanges = new HashMap<>();
+        HT host = DMRegistry.getEntity(primary.type(),primary.id());
+        TimelineChange<HT> proposedChange = primary.state().change();
+        LocalDate date = primary.state().start();
+        while (date != null){
+            GlobalVars.setCurrentDate(date);
+            TimelineState<HT> state = host.getCurrentState();
+            for (TimelineChange<HT> change : state.getChanges()) {
+                if (change.isDeactivated()) continue;
+                if (proposedChange.canNullify(change)) {
+                    change.nullify(host,proposedChange);
                 }
-                // Re-track in case resolution mutated the host
-                trackMutation(host);
+                boolean allClear = false;
+                while (!allClear){
+                    List<StateError> errors = proposedChange.doesConflict(change);
+                    if (errors.isEmpty()){
+                        allClear = true;
+                        break;
+                    }
+                    for (StateError error : errors){
+
+                    }
+                }
+
+
             }
-
-            // Advance to next state — null means we've reached the end of the timeline
-            if (host.sandboxNextState() == null) break;
+            date = host.getNextDate();
         }
-
-        return diff;
     }
+    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> Map<StandingChange,StateError> handleError(TimelineChange<HT> c, HT e, List<StateError> errors){
+        Map<StandingChange,StateError> standingChanges = new HashMap<>();
 
+        ProblemQueue.addAll(errors);
+        while (!errors.isEmpty()){
+            List<CompletableFuture<String>> toRemove = new ArrayList<>();
+            for (StateError error : errors){
+                CompletableFuture<String> response = error.getResponse();;
+                if (response.isDone()){
+                    //TODO lock in if I need a step before a decision is applied to check if the decision results in a save and exit here type of deal. Probably, but I'm not sure tbh.
+                    SandboxCode code = error.handleDecision(this,c,e);
+                    if (code != SandboxCode.CONTINUE){
+                        endSimulation(code);
+                        return standingChanges;
+                    }
+                    toRemove.add(response);
+                    standingChanges.put(new StandingChange(StandingChange.generatePrivateKey(c),StandingChange.generateEventKey(error),sandboxEndDate,response.join()),error);
+                }
+            }
+        }
+        return standingChanges;
+    }
+    public void endSimulation(SandboxCode code){
+        //TODO write out later, basically parse SandboxCode, then run shutdown
+
+    }
     /**
      * Handles a single conflict by pushing the StateError to the UI queue and blocking
      * until the user (or autoresolve) completes the CompletableFuture with a resolution code.
@@ -264,5 +287,26 @@ public class Sandbox {
             //TODO add save in too
         }
     }
-
+    @SuppressWarnings("UnstableApiUsage")
+    public record StandingChange(long privateKey, long eventKey, LocalDate endDate, String resolution){
+        public static long generatePrivateKey(TimelineChange<?> t){
+            return StateError.buildForTLC(t);
+        }
+        public static long generateEventKey(StateError t){
+            Hasher hasher = Hashing.murmur3_128().newHasher();
+            hasher.putString(t.getMessage(), StandardCharsets.UTF_8);
+            return hasher.hash().asLong();
+        }
+        public boolean isMatch(long eventKeyToCheck){
+            Hasher hasher = Hashing.murmur3_128().newHasher().putLong(eventKey).putLong(privateKey);
+            Hasher hasher2 = Hashing.murmur3_128().newHasher().putLong(eventKeyToCheck).putLong(privateKey);
+            return hasher.hash().equals(hasher2.hash());
+        }
+        public long parse(){
+            return parse(eventKey,privateKey);
+        }
+        public static long parse(long eventKey, long privateKey){
+            return Hashing.murmur3_128().newHasher().putLong(eventKey).putLong(privateKey).hash().asLong();
+        }
+    }
 }

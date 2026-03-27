@@ -166,6 +166,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
             throw new RuntimeException("Could not deserialize timeline change: " + type);
         }
     }
+
     protected boolean containsMyTags(TimelineChange<?> state){
         return containsMyTags(state.getTags());
     }

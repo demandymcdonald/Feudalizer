@@ -34,6 +34,7 @@ public class StateError implements ConditionResult {
         this.options = p.getLeft();
         uiMap = p.getRight();
     }
+    @SuppressWarnings("UnstableApiUsage")
     public long generateID(TimelineChange<?> change, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
         if (proceduralInteger == null){
             proceduralInteger = 69;
@@ -45,9 +46,9 @@ public class StateError implements ConditionResult {
         hasher.putLong(proceduralInteger);
         return hasher.hash().asLong();
     }
-    private long buildForTLC(TimelineChange<?> change){
+    public static long buildForTLC(TimelineChange<?> change){
         long toReturn = change.getDate().toEpochDay();
-        toReturn += change.getClass().toString().hashCode();
+        toReturn *= change.getClass().toString().hashCode();
         return toReturn;
     }
     private Pair<Map<String,ErrorResolution>,Map<String,String>> buildOptionsString(ErrorResolution... options){
@@ -128,11 +129,8 @@ public class StateError implements ConditionResult {
     public StateError runSuccessionPlanning(DMEReference<? extends Title<?>> title, DMEReference<BookCharacter> newHolder){
 
     }
-    public static class StateErrorID{
-        long id;
-        public StateErrorID(StateError error, @Nullable Integer noise) {
-            this.id = id;
-        }
+    public String getMessage() {
+        return message.parse();
     }
 }
 

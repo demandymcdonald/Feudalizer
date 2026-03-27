@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public record TimelineState<T extends DateMutableEntity<T,?>> (LocalDate start, Optional<LocalDate> end, JsonObject payload, ArrayList<TimelineChange<T>> changeLog) {
@@ -36,5 +37,8 @@ public record TimelineState<T extends DateMutableEntity<T,?>> (LocalDate start, 
     @Override
     public LocalDate start() {
         return start;
+    }
+    public List<TimelineChange<T>> getChanges(){
+        return new ArrayList<>(changeLog);
     }
 }

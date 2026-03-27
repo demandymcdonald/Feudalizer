@@ -25,6 +25,7 @@ public class GlobalVars {
 
     public static void setCurrentDate(LocalDate currentDate) {
         CURRENT_DATE.set(currentDate);
+        //TODO use this as a trigger for Updating EVERY registered state to the proper date?
     }
 
 }

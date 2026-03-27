@@ -74,6 +74,11 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
     public C getStateAt(LocalDate d) {
         return timeline.getContainer(d);
     }
+    public LocalDate getNextDate(){
+        TimelineState<?> s = timeline.getNextState(GlobalVars.CURRENT_DATE());
+        if (s == null) return null;
+        return s.start();
+    }
     public abstract C getCurrentContainer(); // Each subclass implements this. Should package up current state
     public boolean isLast(TimelineState<T> check){
         return timeline.isLast(check.start());
