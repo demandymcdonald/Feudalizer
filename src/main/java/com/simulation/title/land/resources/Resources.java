@@ -1,4 +1,4 @@
-package com.simulation.land.resources;
+package com.simulation.title.land.resources;
 
 import java.util.Collection;
 import java.util.HashMap;

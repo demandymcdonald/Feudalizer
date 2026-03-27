@@ -1,6 +1,6 @@
 package com.simulation.title;
 
-import com.simulation.land.*;
+import com.simulation.title.land.*;
 import com.google.gson.JsonObject;
 
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.simulation.land;
+package com.simulation.title.land;
 
 import com.base.reference.SimpleReference;
 import com.base.reference.StateReference;
@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

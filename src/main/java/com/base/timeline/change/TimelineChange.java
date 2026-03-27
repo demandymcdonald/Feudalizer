@@ -6,17 +6,13 @@ import com.base.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.*;
-import com.base.utilities.JsonSerializable;
-import com.google.common.collect.HashMultimap;
+import com.utilities.JsonSerializable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
-
-import static com.base.flags.Errors.newHolderDead;
 
 
 /**
@@ -182,6 +178,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     public LocalDate getDate() {
         return date;
     }
+    public LocalDate getEndDate(){
+        return breadcrumb.getEndOfPropagation();
+    }
     /**
      * Safely adds a {@link DMEReference} of the given {@link ObjectType} and {@link UUID} to the provided
      * {@code HashSet} if it is not already present. This method ensures duplicates are avoided in the set.
@@ -243,6 +242,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
         }
         public void insertError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode) {
             errorResolutionLog.put(error.generateID(newChange, existingChange, proceduralInteger), resolutionCode);
+        }
+        public void insertError(long fullId, String resolutionCode) {
+            errorResolutionLog.put(fullId, resolutionCode);
         }
         public Optional<String> getResolutionCode(long id){
             return Optional.ofNullable(errorResolutionLog.get(id));

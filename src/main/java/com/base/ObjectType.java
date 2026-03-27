@@ -6,16 +6,25 @@ import com.simulation.people.House;
 import com.simulation.title.Title;
 
 public enum ObjectType {
-    CHARACTER("BookCharacter", BookCharacter.class),
-    FAMILY("Family", Family.class),
-    HOUSE("House", House.class),
-    TITLE("Title", Title.class);
+    CHARACTER("BookCharacter","Character", BookCharacter.class),
+    FAMILY("Family","Family","Famlies", Family.class),
+    HOUSE("House","House","Houses", House.class),
+    TITLE("Title","Title", Title.class);
 
     private final String regKey;
     private final Class<? extends DateMutableEntity> baseClass;
-
-    ObjectType(String regKey, Class<? extends DateMutableEntity> clazz) {
+    private final String displayName;
+    private final String displayNamePlural;
+    ObjectType(String regKey, String displayName,String displayNamePlural, Class<? extends DateMutableEntity> clazz) {
         this.regKey = regKey;
+        this.displayName = displayName;
+        this.displayNamePlural = displayNamePlural;
+        this.baseClass = clazz;
+    }
+    ObjectType(String regKey, String displayName,Class<? extends DateMutableEntity> clazz) {
+        this.regKey = regKey;
+        this.displayName = displayName;
+        this.displayNamePlural = displayName + "s";
         this.baseClass = clazz;
     }
     public Class<? extends DateMutableEntity> getBaseClass() {

@@ -22,18 +22,22 @@ import java.util.concurrent.CompletableFuture;
 
 
 public class StateError implements ConditionResult {
+        private final TimelineChange<?> oldChange;
         private final CompletableFuture<String> response;
         private final Map<String,ErrorResolution> options;
         private final Map<String,String> uiMap;
         private final StateReference message;
+        private boolean shouldSaveToDiff = false;
 
-    public StateError(StateReference message, ErrorResolution... options) {
+    public StateError(StateReference message,TimelineChange<?> oldChange, ErrorResolution... options) {
         this.message = message;
         response = new CompletableFuture<>();
         Pair<Map<String,ErrorResolution>, Map<String,String>> p = buildOptionsString(options);
         this.options = p.getLeft();
         uiMap = p.getRight();
+        this.oldChange = oldChange;
     }
+
     @SuppressWarnings("UnstableApiUsage")
     public long generateID(TimelineChange<?> change, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
         if (proceduralInteger == null){
@@ -45,6 +49,9 @@ public class StateError implements ConditionResult {
         hasher.putLong(buildForTLC(existing));
         hasher.putLong(proceduralInteger);
         return hasher.hash().asLong();
+    }
+    public TimelineChange<?> getOldChange() {
+        return oldChange;
     }
     public static long buildForTLC(TimelineChange<?> change){
         long toReturn = change.getDate().toEpochDay();
@@ -65,28 +72,46 @@ public class StateError implements ConditionResult {
     }
     public <T extends DateMutableEntity<T,?>> SandboxCode handleDecision(Sandbox sandbox, TimelineChange<T> change, T entity){
         if (options.size() == 1){
-            return executeDecision(options.keySet().iterator().next(),sandbox,change,entity);
+            return executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
         }
-        return executeDecision(response.join(),sandbox,change,entity);
+        return executeDecision(response.join(),sandbox,change,(TimelineChange<T>)oldChange,entity);
     }
-    private <T extends DateMutableEntity<T,?>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change, T entity){
+    private <T extends DateMutableEntity<T,?>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange,  T entity){
         if (!uiMap.keySet().contains(code)){
             throw new IllegalArgumentException("Invalid code: " + code);
         }
-        return options.get(code).resolve(sandbox,change,entity);
+        return options.get(code).resolve(sandbox,change,oldChange,entity,shouldSaveToDiff);
     }
     public boolean canAutoResolve(){
         return options.size() == 1;
     }
+    public <T extends DateMutableEntity<T,?>> void autoResolve(Sandbox sandbox, TimelineChange<T> change, T entity){
+        executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
+    }
+    public StateError saveToDiff(){
+        shouldSaveToDiff = true;
+    }
     public StateError addIgnore(){
         addOption(new ErrorResolution.GenIgnore());
         return this;
+    }
+    public int getResolutionPriority(String resolutionID){
+        return getOrDefault(resolutionID).getPriority();
     }
     public StateError addCharacterLeaveFaction(BookCharacter character, Title<?> title){
 
     }
     public StateError addTitleChangeFaction(BookCharacter character, Title<?> title){
 
+    }
+    public ErrorResolution getOrDefault(String resolutionID){
+        ErrorResolution er = options.get(resolutionID);
+        if (er == null){
+            er = options.entrySet().iterator().next().getValue();
+            if (er == null){
+                throw new IllegalArgumentException("Broken StateError: no resolutions. StateError: " + this.getMessage() + " ResolutionID: " + resolutionID);
+            }
+        }
     }
     public  StateError  addEndState() {
         addOption(new ErrorResolution.EndSandbox());

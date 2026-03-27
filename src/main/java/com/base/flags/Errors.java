@@ -4,6 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.timeline.TimelineChangeState;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TitleTLChange;
 import com.base.timeline.propagation.core.Objective;
 import com.simulation.people.BookCharacter;
@@ -12,52 +13,52 @@ import com.simulation.title.Title;
 import java.awt.print.Book;
 
 public class Errors {
-    public static StateError duplicateError() {
-        return new StateError(SimpleReference.of("Duplicate Entry")).addOverride();
+    public static StateError duplicateError(TimelineChange<?> oldChange) {
+        return new StateError(SimpleReference.of("Duplicate Entry"), oldChange).addOverride();
     }
 
-    public static StateError newInvalidatesOldError() {
-        return new StateError(SimpleReference.of("New invalidates old")).addOverride().addIgnore().addEndState().addEndCancel();
+    public static StateError newInvalidatesOldError(TimelineChange<?> oldChange) {
+        return new StateError(SimpleReference.of("New invalidates old"),oldChange).addOverride().addIgnore().addEndState().addEndCancel();
     }
 
-    public static StateError oldInvalidatesNewError() {
-        return new StateError(SimpleReference.of("Old invalidates new")).addOverride().addIgnore().addEndState().addEndCancel();
+    public static StateError oldInvalidatesNewError(TimelineChange<?> oldChange) {
+        return new StateError(SimpleReference.of("Old invalidates new"),oldChange).addOverride().addIgnore().addEndState().addEndCancel();
     }
 
-    public static StateError newStateNullifiedbyOldError() {
-        return new StateError(SimpleReference.of("New state nullified by old")).addOverride().addEndState().addEndCancel();
+    public static StateError newStateNullifiedbyOldError(TimelineChange<?> oldChange) {
+        return new StateError(SimpleReference.of("New state nullified by old"),oldChange).addOverride().addEndState().addEndCancel();
     }
 
-    public static StateError newHolderDead(TitleTLChange<?> title) {
+    public static StateError newHolderDead(TitleTLChange<?> title,TimelineChange<?> oldChange) {
         //TODO write error message which includes DMR for each thing.
-        return new StateError(SimpleReference.of("New holder dead"));
+        return new StateError(SimpleReference.of("New holder dead"),oldChange);
     }
-    public static StateError loopError() {
-        return new StateError(SimpleReference.of("Loop Detected")).addOverride().addEndState().addEndCancel();
+    public static StateError loopError(TimelineChange<?> oldChange) {
+        return new StateError(SimpleReference.of("Loop Detected"),oldChange).addOverride().addEndState().addEndCancel();
     }
-    public static StateError nullifyError() {
-        return new StateError(SimpleReference.of("Nullify Entry")).addNullify().addEndState().addEndCancel();
+    public static StateError nullifyError(TimelineChange<?> oldChange) {
+        return new StateError(SimpleReference.of("Nullify Entry"),oldChange).addNullify().addEndState().addEndCancel();
     }
-    public static StateError characterDead(BookCharacter character) {
+    public static StateError characterDead(BookCharacter character,TimelineChange<?> oldChange) {
 
     }
-    public static StateError inheritanceFirstTime(TimelineChangeState<?> tcs) {
+    public static StateError inheritanceFirstTime(TimelineChangeState<?> tcs,TimelineChange<?> oldChange) {
         if (tcs.change() instanceof TitleTLChange.Inherit<?> ic) {
-            return new StateError(SimpleReference.of("Inheritance first time")).addBranchingSuccessionPlanning(new Objective(ic.getTitle(),tcs));
+            return new StateError(SimpleReference.of("Inheritance first time"),oldChange).addBranchingSuccessionPlanning(new Objective(ic.getTitle(),tcs));
         }
-        return new StateError(SimpleReference.of("Inheritance first time")).addContinue();
+        return new StateError(SimpleReference.of("Inheritance first time"),oldChange).addContinue();
     }
-    public static StateError alreadyHasAParent(DateMutableEntity<?, ?> child, DateMutableEntity<?, ?> newParent, DateMutableEntity<?, ?> oldParent) {
+    public static StateError alreadyHasAParent(DateMutableEntity<?, ?> child, DateMutableEntity<?, ?> newParent, DateMutableEntity<?, ?> oldParent,TimelineChange<?> oldChange) {
         //TODO write error message which includes DMR for each thing.
-        return new StateError(SimpleReference.of("Already has parent")).addOverride().addContinue().addEndState().addEndCancel();
+        return new StateError(SimpleReference.of("Already has parent"),oldChange).addOverride().addContinue().addEndState().addEndCancel();
     }
-    public static StateError wrongFaction(BookCharacter ch, Title<?> title, String existingText) {
-        StateError error = new StateError(SimpleReference.of(existingText));
+    public static StateError wrongFaction(BookCharacter ch, Title<?> title,TimelineChange<?> oldChange, String existingText) {
+        StateError error = new StateError(SimpleReference.of(existingText),oldChange);
         error.addEndState().addEndCancel().addCharacterLeaveFaction(ch,title);
         return error;
     }
-    public static StateError aboveMaxTitle(String existingText) {
-        StateError error = new StateError(SimpleReference.of(existingText));
+    public static StateError aboveMaxTitle(String existingText,TimelineChange<?> oldChange) {
+        StateError error = new StateError(SimpleReference.of(existingText),oldChange);
         error.addIgnore().addEndState().addEndCancel();
         return error;
     }

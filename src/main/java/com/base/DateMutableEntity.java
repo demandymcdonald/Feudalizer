@@ -13,6 +13,8 @@ import com.google.gson.JsonObject;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static com.GlobalVars.MAX_DATE;
 
@@ -91,14 +93,12 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
      * @param startNotes The details of the state change in the form of a StateChangeKey.
      */
     @SafeVarargs
-    protected final void addStateChange(LocalDate date, TimelineChange<T>... startNotes){
+    protected final void addStateChange(LocalDate date, TimelineChange<T> startNotes, Consumer<TimelineChange<T>> runnable){
         addStateChange(date,false,startNotes);
     }
     @SafeVarargs
-    protected final void addStateChange(LocalDate date, boolean bypass, TimelineChange<T>... startNotes) {
+    protected final boolean addStateChange(LocalDate date, boolean bypass, TimelineChange<T>... startNotes) {
         Feudalizer.LOGGER.info("{} {} State Change: {} -> {}", this.getClass(),this.getId(),date,startNotes);
-        // Close previous state
-        boolean resaveStart = false;
         TimelineState<T> before = timeline.getState(date);
         TimelineState<T> after = timeline.getNextState(date);
         LocalDate endCurrent = null;
@@ -115,13 +115,14 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
             mergedChangeLog = new ArrayList<>(List.of(startNotes));
         }
         TimelineState<T> newState = new TimelineState<>(date,Optional.ofNullable(endCurrent),this.getCurrentContainer().getSerialized(),mergedChangeLog);
-        saveStateChange(newState);
+        return saveStateChange(newState);
     }
-    public void saveStateChange(TimelineState<T,C> state){
+    public boolean saveStateChange(TimelineState<T> state){
         if (DMRegistry.isMain()) {
-            timeline.safeInsertState(this,state);
+            return timeline.safeInsertState(this,state);
         } else {
             timeline.unsafeInsertState(state);
+            return false;
         }
     }
     /**
@@ -304,5 +305,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
     }
 
     public abstract AbstractMutableManager<T,C> getManager();
-
+    public ObjectType getObjectType(){
+        return DMRegistry.getObjectType(this);
+    }
 }

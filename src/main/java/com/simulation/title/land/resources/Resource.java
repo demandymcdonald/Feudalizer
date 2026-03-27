@@ -1,4 +1,4 @@
-package com.simulation.land.resources;
+package com.simulation.title.land.resources;
 
 public record Resource(ResourceType type, Integer abundance) {
     public Resource(ResourceType type, Integer abundance) {

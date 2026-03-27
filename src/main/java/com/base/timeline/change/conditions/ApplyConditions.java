@@ -26,11 +26,11 @@ public class ApplyConditions {
         @Override
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar sidecar) {
             if(checkAgainst instanceof CharacterTLChange.CharacterDeath cd){
-                return Optional.of(characterDead(cd.getPrimary().link()));
+                return Optional.of(characterDead(cd.getPrimary().link(),checkAgainst));
             } else if (thisChange instanceof TitleTLChange<?> ttl && ttl.getHolder().isPresent()){
                 DMEReference<BookCharacter> bookCharacter = ttl.getHolder().get();
                 if (!bookCharacter.link().isAlive()){
-                    return Optional.of(newHolderDead(ttl));
+                    return Optional.of(newHolderDead(ttl,checkAgainst));
                 }
             }
             return Optional.empty();
@@ -54,7 +54,7 @@ public class ApplyConditions {
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
             if( thisChange instanceof TitleTLChange<?> tC && checkAgainst instanceof TitleTLChange<?> cA){
                 if (tC.isOpposite(cA)){
-                    return Optional.of(newStateNullifiedbyOldError());
+                    return Optional.of(newStateNullifiedbyOldError(checkAgainst));
                 }
             };
             return Optional.empty();
@@ -66,7 +66,7 @@ public class ApplyConditions {
             Title<?> subject = sidecar.subject();
             Optional<BookCharacter> holder = sidecar.holder();
             if(checkAgainst instanceof TitleTLChange.Grant<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().link().equals(holder.orElse(null))){
-                return Optional.of(newStateNullifiedbyOldError());
+                return Optional.of(newStateNullifiedbyOldError(checkAgainst));
             };
             return Optional.empty();
         }
@@ -77,7 +77,7 @@ public class ApplyConditions {
             Title<?> subject = sidecar.subject();
             Optional<BookCharacter> holder = sidecar.holder();
             if(checkAgainst instanceof TitleTLChange.Revoke<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().link().equals(holder.orElse(null))){
-                return Optional.of(newStateNullifiedbyOldError().addReplaceWithNew(new TitleTLChange.Revoke<>(DMEReference.of(subject),DMEReference.of(holder.orElse(null)),checkAgainst.getDate())));
+                return Optional.of(newStateNullifiedbyOldError(checkAgainst).addReplaceWithNew(new TitleTLChange.Revoke<>(DMEReference.of(subject),DMEReference.of(holder.orElse(null)),checkAgainst.getDate())));
             };
             return Optional.empty();
         }
@@ -91,7 +91,7 @@ public class ApplyConditions {
                 Optional<BookCharacter> otherCharacter = unpackReference(cA.getHolder());
                 if (holder.isEmpty()) return Optional.empty();
                 if (holder.get().equals(otherCharacter.orElse(null))){
-                    return Optional.of(duplicateError());
+                    return Optional.of(duplicateError(checkAgainst));
                 }
             };
             return Optional.empty();
@@ -112,10 +112,10 @@ public class ApplyConditions {
                     boolean isLoop = false;
                     if(tCNewChild.hasChild(tCTitle) || (cANewParent.equals(tCNewChild) && tCTitle.equals(cAChild))){
                         isLoop = true;
-                        finding = Optional.of(loopError());
+                        finding = Optional.of(loopError(checkAgainst));
                     } else if (tCTitle.hasChild(tCNewChild)){
                         isLoop = false;
-                        finding = Optional.of(nullifyError());
+                        finding = Optional.of(nullifyError(checkAgainst));
                     }
                     if (finding != null){
                         if (isLoop){
@@ -132,13 +132,13 @@ public class ApplyConditions {
         }
         private static Optional<StateError> determineLoopError(Title<?> tCTitle, Title<?> tCNewChild, TitleTLChange.DeJureDrift<?,?> thisChange, TitleTLChange.DeJureDrift<?,?> checkAgainst, boolean isLoop){
                 if (isLoop){
-                    return Optional.of(loopError());
+                    return Optional.of(loopError(checkAgainst));
                 } else {
-                    return Optional.of(nullifyError());
+                    return Optional.of(nullifyError(checkAgainst));
                 }
             //Because this specific existing change has nothing to do with our current situation, we return empty,
             // relying on a later step to correct the state manually (most likely because the change already happened and this is just cleanup.
-            return Optional.empty();
+            //return Optional.empty();
         }
     });
     public static final Condition<StateError, Sidecar.TitleChange> CAN_STILL_HOLD = new Condition<>("title_canStillHold",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
@@ -160,13 +160,26 @@ public class ApplyConditions {
             return Optional.empty();
         }
     });
+    public static final Condition<StateError, Sidecar.TitleChange> DRIFT_ON_GRANT = new Condition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+        @Override
+        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
+            //Title<?> subject = sidecar.subject();
+            Optional<BookCharacter> holder = sidecar.holder();
+            if( thisChange instanceof TitleTLChange.DeJureDriftPassive<?,?,?> tC && checkAgainst instanceof TitleTLChange.DeJureDrift<?,?> cA){
+                if (cA.getTitle().link().equals(tC.getChild())){
+                    return Optional.of(nullifyError(checkAgainst));
+                }
+            };
+            return Optional.empty();
+        }
+    });
     public static <T extends Title<T>> Condition<StateError, Sidecar.TitleChange> INHERITS_TITLE(){
         return new Condition<>("title_inherited",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
             @Override
             public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
                 if (thisChange instanceof TitleTLChange.Inherit<?> ttl && ttl.isFirstTime()) {
                     ttl.setFirstTime(false);
-                    return Optional.of(inheritanceFirstTime(new TimelineChangeState<>(thisChange.getDate(), Optional.empty(), thisChange)));
+                    return Optional.of(inheritanceFirstTime(new TimelineChangeState<>(thisChange.getDate(), Optional.empty(), thisChange),checkAgainst));
                 }
                 return Optional.empty();
             }
@@ -182,7 +195,7 @@ public class ApplyConditions {
                 if (oldParent != null && (ttl.getLoreLast() == null || !oldParent.getId().equals(ttl.getLoreLast()))){
                     ttl.setLoreLast(oldParent.getId());
                     ttl.setLoreFlag(false);
-                    return Optional.of(Errors.alreadyHasAParent(newChild,newParent,oldParent));
+                    return Optional.of(Errors.alreadyHasAParent(newChild,newParent,oldParent,checkAgainst));
                 }
             };
             return Optional.empty();

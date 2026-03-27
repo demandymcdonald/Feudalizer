@@ -2,7 +2,9 @@ package com.base;
 
 import com.Feudalizer;
 
+import com.GlobalVars;
 import com.base.timeline.TimelineContainer;
+import com.utilities.LoadingManager;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonObject;
 
@@ -33,9 +35,6 @@ public abstract class AbstractMutableManager<T extends DateMutableEntity<T,C>,C 
         return t;
     }
 
-    public void onLoad(){
-        isLoaded = true;
-    }
     public void register(DateMutableEntity<?, ?> entity) {
         ItemMap.put(entity.getId(), (T) entity);
     }
@@ -54,28 +53,35 @@ public abstract class AbstractMutableManager<T extends DateMutableEntity<T,C>,C 
     public List<T> getAll() {
         return new ArrayList<>(ItemMap.values());
     }
+    public int getSize() {
+        return ItemMap.size();
+    }
     public UUID getItemId(T entity) {
         return ItemMap.inverse().get(entity);
     }
     public HashBiMap<UUID, T> getItemMap() {
         return ItemMap;
     }
-    public boolean isLoaded() {
-        Feudalizer.LOGGER.warn("{} ACCESSED BEFORE LOADING HAD COMPLETED",this.getClass().getName());
-        return isLoaded;
-    }
     public List<T> getWhere(Predicate<T> predicate) {
         return new ArrayList<>(ItemMap.values()).stream().filter(predicate).collect(Collectors.toList());
     }
     public void onGameStateChangeLoad(LocalDate date) {
+        LoadingManager lm = GlobalVars.getLoadingManager();
+        lm.setTemporaryAppend(getObjectType().name());
         for (T entity : ItemMap.values()) {
             entity.setCurrentState(date);
+            lm.incrementLoading();
         }
+        lm.restoreToMainState();
     }
     public void onGameStateChangeLink(){
+        LoadingManager lm = GlobalVars.getLoadingManager();
+        lm.setTemporaryAppend(getObjectType().name());
         for (T entity : ItemMap.values()) {
             entity.relink();
+            lm.incrementLoading();
         }
+        lm.restoreToMainState();
     }
     public C getEmptyObject() {
         return emptyObject;

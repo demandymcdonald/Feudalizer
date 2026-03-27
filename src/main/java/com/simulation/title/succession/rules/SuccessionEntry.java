@@ -2,7 +2,7 @@ package com.simulation.title.succession.rules;
 
 import com.TypedSerialized;
 import com.base.reference.DMEReference;
-import com.base.utilities.JsonSerializable;
+import com.utilities.JsonSerializable;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
 

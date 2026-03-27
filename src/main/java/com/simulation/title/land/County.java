@@ -1,15 +1,13 @@
-package com.simulation.land;
+package com.simulation.title.land;
 
-import com.base.reference.CompoundSR;
 import com.base.reference.SimpleReference;
 import com.base.reference.StateReference;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
-import com.simulation.land.resources.HabitableLand;
+import com.simulation.title.land.resources.HabitableLand;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

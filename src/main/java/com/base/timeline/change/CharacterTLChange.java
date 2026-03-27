@@ -55,7 +55,7 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
 
         @Override
         protected TimelineState<BookCharacter> onApply(BookCharacter entity, boolean saveChangeToDiff) {
-            return null;
+            entity.is
         }
 
         @Override

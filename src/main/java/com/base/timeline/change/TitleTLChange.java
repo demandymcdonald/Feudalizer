@@ -226,7 +226,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected String getText() {
-            return "";
+            return "DeJure Drift: " + getTitle().parse() + " is now a child of " + newParent.parse() + ".";
         }
 
         @Override
@@ -238,7 +238,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of(HAS_PARENT,DUPLICATE);
+            return List.of(HAS_PARENT,DUPLICATE,TITLE_LOOP);
         }
 
         public static <T extends Title<T>,NP extends Title<NP>> DeJureDrift<T,NP> fromJson(LocalDate date, JsonObject json){
@@ -264,6 +264,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         }
     }
     public static class DeJureDriftPassive<T extends Title<T>, C extends Title<C>,NP extends Title<NP>> extends TitleTLChange<T> {
+        //Goes on the old parent. Not the new child like DeJureDrift
         private final DMEReference<C> newChild;
         private final DMEReference<NP> newParent;
         public DeJureDriftPassive(DMEReference<T> title, DMEReference<C> newChild, DMEReference<NP> newParent, LocalDate date) {
@@ -285,7 +286,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         }
         @Override
         protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of();
+            return List.of(DRIFT_ON_GRANT);
         }
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
@@ -294,8 +295,12 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         }
         @Override
         protected String getText() {
-            return "";
+            return "DeJure Drift: " + newChild.parse() + " is now the parent of " + newChild.parse() + ".";
         }
+        public C getChild(){
+            return newChild.link();
+        }
+
         public static <T extends Title<T>, C extends Title<C>,NP extends Title<NP>> DeJureDriftPassive<T,C,NP> fromJson(LocalDate date, JsonObject json){
             Pair<DMEReference<T>,Optional<DMEReference<BookCharacter>>> pair = getBase(json);
             DMEReference<NP> newParent = DMEReference.deserialize(json.getAsJsonObject("newParent"));

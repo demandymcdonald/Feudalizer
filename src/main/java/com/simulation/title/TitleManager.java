@@ -2,13 +2,14 @@ package com.simulation.title;
 
 import com.Feudalizer;
 import com.base.AbstractMutableManager;
+import com.base.ObjectType;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonObject;
-import com.simulation.land.AbstractLandDivision;
-import com.simulation.land.Titles;
+import com.simulation.title.land.AbstractLandDivision;
+import com.simulation.title.land.Titles;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,12 +20,19 @@ import static com.GlobalVars.CONFEDERACY_FOUNDED;
 public class TitleManager extends AbstractMutableManager<Title<?>, TitleContainer> {
     private Cache<Integer,Title<?>> titleLookupCache = CacheBuilder.newBuilder().expireAfterAccess(10, java.util.concurrent.TimeUnit.MINUTES).maximumSize(256).build();
 
-
+    public TitleManager() {
+        super(new TitleContainer());
+    }
 
 
     @Override
     public Title<?> deserializer(UUID id, JsonObject json) {
         return TitleFactory.create(json);
+    }
+
+    @Override
+    public ObjectType getObjectType() {
+        return null;
     }
 
     public Title<?> getOrCreateTitle(GeometryType geoType, String geometryId) {

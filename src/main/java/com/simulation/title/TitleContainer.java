@@ -13,6 +13,9 @@ import java.util.UUID;
 
 public record TitleContainer(Optional<UUID> holder, Optional<UUID> parent, Set<UUID> children,
                              JsonObject passthrough) implements TimelineContainer<TitleContainer> {
+    public TitleContainer(){
+        this(Optional.empty(),Optional.empty(),Sets.newHashSet(),new JsonObject());
+    }
     public JsonObject getSerialized() {
         JsonObject json = new JsonObject();
         json.addProperty("Holder", holder.isPresent() ? holder.get().toString() : "");
@@ -45,11 +48,6 @@ public record TitleContainer(Optional<UUID> holder, Optional<UUID> parent, Set<U
         } else {
             parent = Optional.of(UUID.fromString(parentString));
         }
-        SuccessionContainers.PackedSC packedSC = null;
-        if (json.has("SucContainer")) {
-            packedSC = SuccessionContainers.PackedSC.deserialize(json.get("SucContainer").getAsJsonObject());
-        }
-
         JsonObject passthrough = json.get("Passthrough").getAsJsonObject();
         TitleContainer MLC = new TitleContainer(holder, parent, children, passthrough);
         return MLC;

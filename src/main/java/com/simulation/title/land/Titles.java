@@ -1,9 +1,8 @@
-package com.simulation.land;
+package com.simulation.title.land;
 
 import com.display.geography.GeometryType;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.UUID;
 
 public class Titles {

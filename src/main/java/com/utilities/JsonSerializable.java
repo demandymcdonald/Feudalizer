@@ -1,4 +1,4 @@
-package com.base.utilities;
+package com.utilities;
 
 import com.google.gson.JsonObject;
 

@@ -1,4 +1,4 @@
-package com.simulation.land;
+package com.simulation.title.land;
 
 import com.base.DMRegistry;
 import com.display.geography.GeometryType;

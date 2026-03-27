@@ -1,7 +1,7 @@
-package com.simulation.land.resources;
+package com.simulation.title.land.resources;
 
 import com.display.geography.GeometryType;
-import com.simulation.land.AbstractLandDivision;
+import com.simulation.title.land.AbstractLandDivision;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

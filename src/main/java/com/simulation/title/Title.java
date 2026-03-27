@@ -16,6 +16,8 @@ import com.simulation.title.succession.SuccessionContainer;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,TitleContainer> {
     private Optional<BookCharacter> Holder = Optional.empty();
@@ -104,12 +106,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,Titl
     public Optional<BookCharacter> getHolder() {
         return Holder;
     }
-
     public void setHolder(BookCharacter holder) {
-        if (!canInherit(holder)){
-            //TODO throw flag
-            return;
-        }
         Holder = Optional.of(holder);
         addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Grant<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
         holder.addTitle(this);
