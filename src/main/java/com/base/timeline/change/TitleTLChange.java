@@ -26,7 +26,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
     private final DMEReference<T> title;
     private final Optional<DMEReference<BookCharacter>> holder;
     protected TitleTLChange(DMEReference<T> title, Optional<DMEReference<BookCharacter>> character, LocalDate date) {
-        super(date);
+        super(date, title);
         this.title = title;
         this.holder = character;
     }

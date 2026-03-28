@@ -20,7 +20,7 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
     private final DMEReference<BookCharacter> primaryCharacter;
     private final Optional<DMEReference<BookCharacter>> secondaryCharacter;
     protected CharacterTLChange(DMEReference<BookCharacter> primary, DMEReference<BookCharacter> secondary, LocalDate date) {
-        super(date);
+        super(date, primary);
         primaryCharacter = primary;
         secondaryCharacter = Optional.ofNullable(secondary);
     }

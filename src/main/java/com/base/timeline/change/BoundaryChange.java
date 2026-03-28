@@ -24,7 +24,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
     private final DMEReference<T> subject;
     private final boolean isBirth;
     protected BoundaryChange(LocalDate date, DMEReference<T> subject, boolean isBirth) {
-        super(date);
+        super(date, subject);
         this.subject = subject;
         this.isBirth = isBirth;
     }

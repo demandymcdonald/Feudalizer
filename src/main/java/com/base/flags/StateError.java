@@ -39,24 +39,26 @@ public class StateError implements ConditionResult {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    public long generateID(TimelineChange<?> change, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
+    public long generateID(long changeProceduralId, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
         if (proceduralInteger == null){
             proceduralInteger = 69;
         }
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putString(message.parse(), StandardCharsets.UTF_8);
-        hasher.putLong(buildForTLC(change));
+        hasher.putLong(changeProceduralId);
         hasher.putLong(buildForTLC(existing));
         hasher.putLong(proceduralInteger);
         return hasher.hash().asLong();
+    }
+    // Backwards-compatible overload — delegates to the long-based primary
+    public long generateID(TimelineChange<?> change, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
+        return generateID(change.getProceduralId(), existing, proceduralInteger);
     }
     public TimelineChange<?> getOldChange() {
         return oldChange;
     }
     public static long buildForTLC(TimelineChange<?> change){
-        long toReturn = change.getDate().toEpochDay();
-        toReturn *= change.getClass().toString().hashCode();
-        return toReturn;
+        return change.getProceduralId();
     }
     private Pair<Map<String,ErrorResolution>,Map<String,String>> buildOptionsString(ErrorResolution... options){
         Map<String,String> ui = new HashMap<>();

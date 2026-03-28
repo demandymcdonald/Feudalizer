@@ -7,10 +7,13 @@ import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.*;
 import com.utilities.JsonSerializable;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -29,12 +32,14 @@ import java.util.*;
 public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     // Rules: TimelineChange implementations should only save/use StateReferences! Never use actual objects. This keeps them sandbox safe. Include this fact in documentation
     private final LocalDate date;
+    private final DMEReference<?> ownerRef;
     private final List<Condition<StateError,?>> applyConditions = initApplyConditions();
     private final List<Condition<ConditionResult.Nullify,?>> nullifyConditions = initNullifyConditions();
     private Breadcrumb breadcrumb = new Breadcrumb();
     private boolean deativated = false;
-    protected TimelineChange(LocalDate date) {
+    protected TimelineChange(LocalDate date, DMEReference<?> ownerRef) {
         this.date = date;
+        this.ownerRef = ownerRef;
     }
 
     protected enum ChangeTags{
@@ -193,6 +198,18 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     }
     public LocalDate getEndDate(){
         return breadcrumb.getEndOfPropagation();
+    }
+    public DMEReference<?> getOwnerRef() {
+        return ownerRef;
+    }
+    @SuppressWarnings("UnstableApiUsage")
+    public final long getProceduralId() {
+        Hasher hasher = Hashing.murmur3_128().newHasher();
+        hasher.putString(this.getClass().getName(), StandardCharsets.UTF_8);
+        hasher.putLong(this.date.toEpochDay());
+        hasher.putLong(ownerRef.getUuid().getMostSignificantBits());
+        hasher.putLong(ownerRef.getUuid().getLeastSignificantBits());
+        return hasher.hash().asLong();
     }
     /**
      * Safely adds a {@link DMEReference} of the given {@link ObjectType} and {@link UUID} to the provided

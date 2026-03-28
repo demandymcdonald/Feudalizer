@@ -10,6 +10,7 @@ import com.simulation.people.BookCharacter;
 import com.simulation.people.Family;
 import com.simulation.people.House;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,11 +22,13 @@ public class HouseTLChanges {
         DMEReference<BookCharacter> oldHead;
         DMEReference<BookCharacter> newHead;
 
-        public HeadOfHouseChanged(BookCharacter oldHead, BookCharacter newHead) {
+        public HeadOfHouseChanged(DMEReference<House> owningHouse, LocalDate date, BookCharacter oldHead, BookCharacter newHead) {
+            super(date, owningHouse);
             this.oldHead = DMEReference.of(oldHead);
             this.newHead = DMEReference.of(newHead);
         }
-        public HeadOfHouseChanged(UUID oldHead, UUID newHead) {
+        public HeadOfHouseChanged(DMEReference<House> owningHouse, LocalDate date, UUID oldHead, UUID newHead) {
+            super(date, owningHouse);
             this.oldHead = DMEReference.of(DMRegistry.getCharacterManager().get(oldHead));
             this.newHead = DMEReference.of(DMRegistry.getCharacterManager().get(newHead));
         }
@@ -84,10 +87,12 @@ public class HouseTLChanges {
     public static class VassalHouseAdded extends TimelineChange<House> {
         DMEReference<House> vassalHouse;
 
-        public VassalHouseAdded(House vassalHouse) {
+        public VassalHouseAdded(DMEReference<House> owningHouse, LocalDate date, House vassalHouse) {
+            super(date, owningHouse);
             this.vassalHouse = DMEReference.of(vassalHouse);
         }
-        public VassalHouseAdded(UUID vassalHouse) {
+        public VassalHouseAdded(DMEReference<House> owningHouse, LocalDate date, UUID vassalHouse) {
+            super(date, owningHouse);
             this.vassalHouse = DMEReference.of(DMRegistry.getHouseManager().get(vassalHouse));
         }
 
@@ -143,10 +148,12 @@ public class HouseTLChanges {
     public static class VassalHouseRemoved extends TimelineChange {
         DMEReference<House> vassalHouse;
 
-        public VassalHouseRemoved(House vassalHouse) {
+        public VassalHouseRemoved(DMEReference<House> owningHouse, LocalDate date, House vassalHouse) {
+            super(date, owningHouse);
             this.vassalHouse = DMEReference.of(vassalHouse);
         }
-        public VassalHouseRemoved(UUID vassalHouse) {
+        public VassalHouseRemoved(DMEReference<House> owningHouse, LocalDate date, UUID vassalHouse) {
+            super(date, owningHouse);
             this.vassalHouse = DMEReference.of(DMRegistry.getHouseManager().get(vassalHouse));
         }
 
@@ -190,10 +197,12 @@ public class HouseTLChanges {
     public static class FamilyAdded extends TimelineChange {
         DMEReference<Family> family;
 
-        public FamilyAdded(Family family) {
+        public FamilyAdded(DMEReference<House> owningHouse, LocalDate date, Family family) {
+            super(date, owningHouse);
             this.family = DMEReference.of(family);
         }
-        public FamilyAdded(UUID family) {
+        public FamilyAdded(DMEReference<House> owningHouse, LocalDate date, UUID family) {
+            super(date, owningHouse);
             this.family = DMEReference.of(DMRegistry.getFamilyManager().get(family));
         }
 
@@ -238,10 +247,12 @@ public class HouseTLChanges {
     public static class FamilyRemoved extends TimelineChange {
         DMEReference<Family> family;
 
-        public FamilyRemoved(Family family) {
+        public FamilyRemoved(DMEReference<House> owningHouse, LocalDate date, Family family) {
+            super(date, owningHouse);
             this.family = DMEReference.of(family);
         }
-        public FamilyRemoved(UUID family) {
+        public FamilyRemoved(DMEReference<House> owningHouse, LocalDate date, UUID family) {
+            super(date, owningHouse);
             this.family = DMEReference.of(DMRegistry.getFamilyManager().get(family));
         }
 
@@ -284,11 +295,13 @@ public class HouseTLChanges {
         DMEReference<BookCharacter> retainer;
         House.RetainerType retainerType;
 
-        public RetainerAdded(BookCharacter retainer, House.RetainerType retainerType) {
+        public RetainerAdded(DMEReference<House> owningHouse, LocalDate date, BookCharacter retainer, House.RetainerType retainerType) {
+            super(date, owningHouse);
             this.retainer = DMEReference.of(retainer);
             this.retainerType = retainerType;
         }
-        public RetainerAdded(UUID retainer, House.RetainerType retainerType) {
+        public RetainerAdded(DMEReference<House> owningHouse, LocalDate date, UUID retainer, House.RetainerType retainerType) {
+            super(date, owningHouse);
             this.retainer = DMEReference.of(DMRegistry.getCharacterManager().get(retainer));
             this.retainerType = retainerType;
         }
@@ -335,10 +348,12 @@ public class HouseTLChanges {
     public static class RetainerRemoved extends TimelineChange {
         DMEReference<BookCharacter> retainer;
 
-        public RetainerRemoved(BookCharacter retainer) {
+        public RetainerRemoved(DMEReference<House> owningHouse, LocalDate date, BookCharacter retainer) {
+            super(date, owningHouse);
             this.retainer = DMEReference.of(retainer);
         }
-        public RetainerRemoved(UUID retainer) {
+        public RetainerRemoved(DMEReference<House> owningHouse, LocalDate date, UUID retainer) {
+            super(date, owningHouse);
             this.retainer = DMEReference.of(DMRegistry.getCharacterManager().get(retainer));
         }
 

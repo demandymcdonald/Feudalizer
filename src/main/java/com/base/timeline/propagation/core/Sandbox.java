@@ -211,7 +211,7 @@ public class Sandbox {
                 killBox = Pair.of(start,error);
                 return standingChanges;
             }
-            StandingChange sc = new StandingChange(error,c,error.getOldChange(),null,start,end,response);
+            StandingChange sc = new StandingChange(error,c.getProceduralId(),error.getOldChange(),null,start,end,response);
             standingChanges.put(sc,error);
         }
         return standingChanges;
@@ -270,8 +270,8 @@ public class Sandbox {
     public record StandingChange(long privateKey, long eventKey, long fullKey, LocalDate start, LocalDate endDate, String resolution){
         //Purpose: this class is built to act as a temporary container for EVERY decision the user makes. The three key system allows the sandbox to check if it's seen an error before and autoresolve,
         //which helps with limiting error spam and allows for a more streamlined algo flow.
-        public StandingChange(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, Integer procedural, LocalDate startDate, LocalDate endDate, String resolution){
-            this(generatePrivateKey(existingChange),generateEventKey(error),generateFullKey(error,newChange,existingChange,procedural),startDate,endDate,resolution);
+        public StandingChange(StateError error, long newChangeProceduralId, TimelineChange<?> existingChange, Integer procedural, LocalDate startDate, LocalDate endDate, String resolution){
+            this(generatePrivateKey(existingChange),generateEventKey(error),generateFullKey(error,newChangeProceduralId,existingChange,procedural),startDate,endDate,resolution);
         }
         /**
          * Generates a unique full key used to serialize changes into the breadcrumb for undo functionality.
@@ -288,8 +288,8 @@ public class Sandbox {
         //Full key is the actual change that gets saved to the breadcrumb and is used in undo functions.
         // This hash is very event specific, as it factors in the combination of the incomingChange AND the oldChange alongside event details.
         //This is the key that the change gets serialized under in the breadcrumb, so it's arguably the only persistent part of the breadcrumb (along with the resolution)
-        public static long generateFullKey(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, Integer procedural){
-            return error.generateID(newChange,existingChange,procedural);
+        public static long generateFullKey(StateError error, long newChangeProceduralId, TimelineChange<?> existingChange, Integer procedural){
+            return error.generateID(newChangeProceduralId,existingChange,procedural);
         }
 
         /**
