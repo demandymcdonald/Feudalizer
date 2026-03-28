@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public record TimelineState<T extends DateMutableEntity<T,?>> (LocalDate start, Optional<LocalDate> end, JsonObject payload, ArrayList<TimelineChange<T>> changeLog) {
-
+public record TimelineState<T extends DateMutableEntity<T,?>> (LocalDate start, Optional<LocalDate> end, boolean isImmutable, JsonObject payload, ArrayList<TimelineChange<T>> changeLog) {
+    public TimelineState(LocalDate start, Optional<LocalDate> end, JsonObject payload, ArrayList<TimelineChange<T>> changeLog){
+        this(start,end,false,payload,changeLog);
+    }
     public JsonObject serialize() {
         JsonObject json = new JsonObject();
         JsonObject metadata = new JsonObject();

@@ -3,10 +3,17 @@ package com.utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.lang.Thread.sleep;
 
 public class LoadingManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoadingManager.class);
@@ -19,6 +26,7 @@ public class LoadingManager {
     private AtomicBoolean isLoading = new AtomicBoolean(false);
     private AtomicInteger debugCounter = new AtomicInteger(0);
     private WeakReference<Thread> subjectThread;
+    private Deque<CompletableFuture<Thread>> loadQueue = new ConcurrentLinkedDeque<>();
     public LoadingManager(String currentLoading, int maxLoading) {
         this.currentLoading.set(currentLoading);
         this.maxLoading.set(maxLoading);
@@ -36,19 +44,53 @@ public class LoadingManager {
             LOGGER.debug("Loading Status: " + currentLoading.get() + " " + loading + "/" + maxLoading);
         }
     }
-    public Thread newStage(String currentLoading, int maxLoading, Runnable toLoad, boolean pullFromParent){
-        LOGGER.debug("Starting Load: " + currentLoading + "... Total Items: " + maxLoading +".");
+    private Thread prepLoad(String currentLoading, int maxLoading, Thread t){
+        LOGGER.debug("Starting Load: " + currentLoading + "... Total Items: " + maxLoading + ".");
         this.currentLoading.set(currentLoading);
         this.maxLoading.set(maxLoading);
         loading.set(0);
         isLoading.set(true);
+        subjectThread = new WeakReference<>(t);
+        return t;
+    }
+    private Thread prepLoad(String currentLoading, int maxLoading, CompletableFuture<Thread> t){
+        return prepLoad(currentLoading, maxLoading, t.join());
+    }
+    public Thread newStage(String currentLoading, int maxLoading, Runnable toLoad, boolean pullFromParent){
+        //final CompletableFuture<Runnable> runnable = new CompletableFuture<>();
+        final CompletableFuture<Thread> th = new CompletableFuture<>();
+        final Runnable payload;
+        if (isLoading.get()) {
+            payload = () -> {
+                while (loadQueue.contains(th)) {
+                    try {
+                        sleep(5000);
+                    } catch (InterruptedException ignored) {}
+                }
+                prepLoad(currentLoading, maxLoading,th);
+                toLoad.run();
+            };
+        } else {
+            payload = () -> {
+                toLoad.run();
+                try {
+                    sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                forceComplete();
+            };
+        }
         Thread t;
         if (pullFromParent) {
-            t = ThreadManager.buildThreadFromParent("LoadManager-"+currentLoading, toLoad);
-        } else{
-            t = ThreadManager.buildThread("LoadManager-"+currentLoading, toLoad);
+            t = ThreadManager.buildThreadFromParent("LoadManager-" + currentLoading, payload);
+        } else {
+            t = ThreadManager.buildThread("LoadManager-" + currentLoading, payload);
         }
-        subjectThread = new WeakReference<>(t);
+        if (isLoading.get()) {
+            th.complete(t);
+            loadQueue.add(th);
+        }
         return t;
     }
     public void setTemporaryAppend(String toAppend){
@@ -78,14 +120,34 @@ public class LoadingManager {
     public void setStageName(String toAppend){
         currentLoading.set(toAppend);
     }
-    public void reset(){
-        currentLoading.set(LOADING_COMPLETE);
-        maxLoading.set(0);
-        loading.set(0);
-        debugCounter.set(0);
-        oldState.set("");
-        isLoading.set(false);
-        cullThread();
+    private void reset(){
+        if (!loadQueue.isEmpty()) {
+            CompletableFuture<Thread> next = new CompletableFuture<>();
+            final int total = loadQueue.size();
+            int skipCount = 0;
+            while (true) {
+                next = loadQueue.poll();
+                if (next == null) break;
+                if (!next.join().isAlive()) {
+                    if (!loadQueue.isEmpty() && skipCount < total) {
+                        loadQueue.add(next);
+                        skipCount++;
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+                //If next is alive, then it'll be unblocked internally and will start the loading process.
+            }
+        } else {
+            currentLoading.set(LOADING_COMPLETE);
+            maxLoading.set(0);
+            loading.set(0);
+            debugCounter.set(0);
+            oldState.set("");
+            isLoading.set(false);
+            cullThread();
+        }
     }
     public void forceComplete(){
         if (isLoading.get()){

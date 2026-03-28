@@ -11,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -26,7 +27,7 @@ import static com.GlobalVars.MAX_DATE;
  *
  * @param <T> The type representing the state of the entity.
  */
-public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C extends TimelineContainer<C>> {
+public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C extends TimelineContainer<C,T>> {
     private final UUID id;
     private LocalDate created;
     private LocalDate ended;
@@ -43,10 +44,8 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
     }
     public DateMutableEntity(UUID id, LocalDate created, LocalDate ended, JsonObject additionalData) {
         this.id = id;
-        this.created = created;
-        this.ended = ended;
         this.additionalData = additionalData;
-        this.timeline = new Timeline<>(getManager().getEmptyObject());
+        this.timeline = new Timeline<>(getManager().getEmptyObject(),(T) this,created,ended);
     }
     public DateMutableEntity(JsonObject payload, Timeline<T,C> timeline) {
         this.id = UUID.fromString(payload.get("id").getAsString());
@@ -68,16 +67,16 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
     }
 
     public C getStateAt(){
-        return getStateAt(GlobalVars.CURRENT_DATE());
+        return getStateAt(GlobalVars.getDate());
     }
-    public TimelineState<T,C> getDateStateAt(LocalDate d){
+    public TimelineState<T> getDateStateAt(LocalDate d){
         return timeline.getState(d);
     }
     public C getStateAt(LocalDate d) {
         return timeline.getContainer(d);
     }
     public LocalDate getNextDate(){
-        TimelineState<?> s = timeline.getNextState(GlobalVars.CURRENT_DATE());
+        TimelineState<?> s = timeline.getNextState(GlobalVars.getDate());
         if (s == null) return null;
         return s.start();
     }
@@ -92,7 +91,6 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
      * @param date  The starting date of the new state change.
      * @param startNotes The details of the state change in the form of a StateChangeKey.
      */
-    @SafeVarargs
     protected final void addStateChange(LocalDate date, TimelineChange<T> startNotes, Consumer<TimelineChange<T>> runnable){
         addStateChange(date,false,startNotes);
     }
@@ -117,9 +115,9 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
         TimelineState<T> newState = new TimelineState<>(date,Optional.ofNullable(endCurrent),this.getCurrentContainer().getSerialized(),mergedChangeLog);
         return saveStateChange(newState);
     }
-    public boolean saveStateChange(TimelineState<T> state){
+    public boolean saveStateChange(TimelineState<T> state, @Nullable TimelineChange<?> c){
         if (DMRegistry.isMain()) {
-            return timeline.safeInsertState(this,state);
+            return timeline.safeInsertState(this,state,c);
         } else {
             timeline.unsafeInsertState(state);
             return false;
@@ -158,7 +156,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
         }
         json.add("additionalData", saveAdditional(new JsonObject()));
         JsonArray states = new JsonArray();
-        for (TimelineState ds : timeline.getStates()) {
+        for (TimelineState<T> ds : timeline.getStates()) {
             JsonObject state = ds.serialize();
             states.add(state);
         }
@@ -201,7 +199,6 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
      *              re-establishing the entity's state.
      */
     public abstract void relink(C state);
-    protected abstract JsonObject serializeData(T data);
 
     /**
      * Constructs a new state instance from the provided JSON object. This method is intended
@@ -278,24 +275,23 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
     public void relink(){
 
     }
-    public abstract TimelineChange<T> defaultKey();
+
     public void init(){
-        if (timeline.isEmpty()) {
-            addStateChange(getCreated(),defaultKey());
+        if (!timeline.isLoaded()) {
+
         }
         DMRegistry.registerDateMutable(this);
         Feudalizer.LOGGER.debug("{} {} Created", this.getClass(),this.getId());
     };
     protected void setCreated(LocalDate created){
-        this.created = created;
+        timeline.moveBirth((T) this,created);
     }
     protected void setEnded(LocalDate ended){
-        this.ended = ended;
+        timeline.moveDeath((T) this,ended);
     }
     public TimelineState<T>[] getAllStates(){
         return timeline.getStates();
     }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DateMutableEntity<?,?> dme && this.getClass().equals(dme.getClass())) {
@@ -304,8 +300,8 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
         return false;
     }
 
-    public abstract AbstractMutableManager<T,C> getManager();
-    public ObjectType getObjectType(){
-        return DMRegistry.getObjectType(this);
-    }
+    public AbstractMutableManager<T,C> getManager(){
+        return DMRegistry.getManager(getObjectType());
+    };
+    public abstract ObjectType getObjectType();
 }

@@ -36,7 +36,9 @@ public class DMRegistry extends ThreadSpecific {
 //    static {
 //        sandboxReInit();
 //    }
-
+    public static <T extends DateMutableEntity<T,C>, C extends TimelineContainer<C,T>>AbstractMutableManager<T,C> getManager(ObjectType type){
+        return (AbstractMutableManager<T, C>) map().get(type);
+    }
     public static <T extends DateMutableEntity<T,C>,M extends AbstractMutableManager<T,C>, C extends TimelineContainer<C>> void addEntry(ObjectType database, M manager) {
         map().put(database, manager);
     }
@@ -116,13 +118,12 @@ public class DMRegistry extends ThreadSpecific {
             for (AbstractMutableManager<?,?> m : map().values()) {
                 m.onGameStateChangeLink();
             }
-            lm.forceComplete();
         };
         final Runnable r = () -> {
             for (AbstractMutableManager<?,?> m : map().values()) {
-                m.onGameStateChangeLoad(GlobalVars.CURRENT_DATE());
+                m.onGameStateChangeLoad(GlobalVars.getDate());
             }
-            lm.forceComplete();
+            lm.forceComplete();//Only added for the logging and since these actions are chained together.
             lm.newStage("Linking Entities",getTotalRegistered(),r2,true);
         };
         lm.newStage("Updating Entities",getTotalRegistered(),r,true);

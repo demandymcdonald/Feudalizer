@@ -1,18 +1,21 @@
 package com.simulation.people;
 
 import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
 import com.base.timeline.TimelineContainer;
+import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.simulation.title.Title;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public record CharacterState(String forename, String surname, List<UUID> Families, @Nullable UUID House,
-                             List<UUID> Titles) implements TimelineContainer<CharacterState> {
+                             List<UUID> Titles) implements TimelineContainer<CharacterState,BookCharacter> {
     public static CharacterState builder(List<Family> families, List<Title<?>> title, Optional<House> house) {
         List<UUID> familyID = DateMutableEntity.convert(families);
         List<UUID> titleID = DateMutableEntity.convert(title);
@@ -49,5 +52,15 @@ public record CharacterState(String forename, String surname, List<UUID> Familie
     @Override
     public String Header() {
         return "CharacterContainer";
+    }
+
+    @Override
+    public TimelineChange<BookCharacter> getBirthChange(DMEReference<BookCharacter> dme, LocalDate date) {
+        return new TimelineChange<>(dme, date, null);
+    }
+
+    @Override
+    public TimelineChange<BookCharacter> getDeathChange(DMEReference<BookCharacter> dme, LocalDate date) {
+        return null;
     }
 }

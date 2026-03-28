@@ -88,15 +88,10 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
         return getEnded().isAfter(GlobalVars.CURRENT_DATE());
     }
 
-    @Override
-    protected JsonObject serializeData(CharacterState data) {
-        return data.getSerialized();
-    }
-
 
     @Override
-    public StateChangeKey defaultKey() {
-        return new StateChangeKey(StateChangeKey.StateChangeType.WAS_BORN,new DMEReference<>(this));
+    public ObjectType getObjectType() {
+        return ObjectType.CHARACTER;
     }
 
 

@@ -4,6 +4,7 @@ package com;
 import com.display.MainWindow;
 import com.display.geography.GeographyLoader;
 import com.sql.SQLManager;
+import com.utilities.ThreadManager;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -21,6 +22,7 @@ public class Feudalizer extends Application {
         LOGGER.info("Starting application");
         primaryStage.setTitle("Feudalizer a0.3");
         MAIN_THREAD = Thread.currentThread();
+        ThreadManager.buildNewInstance(MAIN_THREAD, true);
         geographyLoader = new GeographyLoader();
         geographyLoader.init();
         TypedSerialized.init();

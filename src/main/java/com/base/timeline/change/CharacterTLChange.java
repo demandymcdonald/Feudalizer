@@ -44,7 +44,48 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
         }
         return Pair.of(DMEReference.deserialize(object.getAsJsonObject("primary")),secondary);
     }
+    public static class CharacterBirth extends CharacterTLChange{
 
+        protected CharacterBirth(DMEReference<BookCharacter> primary, LocalDate date) {
+            super(primary, null, date);
+        }
+
+        @Override
+        protected TimelineState<BookCharacter> onApply(BookCharacter entity, boolean saveChangeToDiff) {
+
+            return null;
+        }
+
+        @Override
+        protected ChangeTags[] getTags() {
+            return new ChangeTags[0];
+        }
+
+        @Override
+        public HashSet<DMEReference<?>> getScope() {
+            return new HashSet<>();
+        }
+
+        @Override
+        protected String getText() {
+            return getPrimary().parse() + " was born.";
+        }
+
+        @Override
+        protected JsonObject toJson() {
+            return new JsonObject();
+        }
+
+        @Override
+        protected List<Condition<StateError, ?>> buildApplyConditions() {
+            return List.of();
+        }
+
+        @Override
+        protected List<Condition<ConditionResult.Nullify, ?>> buildNullifyConditions() {
+            return List.of();
+        }
+    }
     public static class CharacterDeath extends CharacterTLChange{
 
         private final CauseOfDeath death;
@@ -55,7 +96,7 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
 
         @Override
         protected TimelineState<BookCharacter> onApply(BookCharacter entity, boolean saveChangeToDiff) {
-            entity.is
+
         }
 
         @Override
