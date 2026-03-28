@@ -114,42 +114,36 @@ public class StateError implements ConditionResult {
         }
     }
     public  StateError  addEndState() {
-        addOption(new ErrorResolution.EndSandbox());
-        return this;
+        return addOption(new ErrorResolution.EndSandbox());
     }
     public StateError  addEndCancel() {
-        addOption(new ErrorResolution.EndCancel());
-        return this;
+        return addOption(new ErrorResolution.EndCancel());
     }
     public StateError  addOverride() {
-        addOption(new ErrorResolution.GenOverride());
-        return this;
+        return addOption(new ErrorResolution.GenOverride());
     }
     public StateError  addAccept() {
-        addOption(new ErrorResolution.GenAccept());
-        return this;
+        return addOption(new ErrorResolution.GenAccept());
     }
     public StateError  addNullify() {
-        addOption(new ErrorResolution.GenNullify());
-        return this;
+        return addOption(new ErrorResolution.GenNullify());
     }
     public StateError addContinue() {
-        addOption(new ErrorResolution.GenContinue());
-        return this;
+        return addOption(new ErrorResolution.GenContinue());
     }
     public StateError addBranchingSuccessionPlanning(Objective o) {
-        addOption(new ErrorResolution.SandboxBranching("succession_planning",o));
-        return this;
+        return addOption(new ErrorResolution.SandboxBranching("succession_planning",o));
     }
     public StateError addReplaceWithNew(TimelineChange<?> replace){
-        addOption(new ErrorResolution.ReplaceWithNew(replace));
+        return addOption(new ErrorResolution.ReplaceWithNew(replace));
     }
-    public StateError continueWithSuccessionPlanning(){
-        addOption(new ErrorResolution.);//TODO Finish
+    public StateError fixWithSuccessionPlanning(Objective o){
+        return addOption(new ErrorResolution.);//TODO Finish
     }
-    private void addOption(ErrorResolution option){
+    public StateError addOption(ErrorResolution option){
         options.put(option.getCode(),option);
         uiMap.put(option.getCode(),option.tooltip());
+        return this;
     }
     public StateError runSuccessionPlanning(DMEReference<? extends Title<?>> title, DMEReference<BookCharacter> newHolder){
 

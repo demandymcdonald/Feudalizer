@@ -7,10 +7,12 @@ import com.base.timeline.TimelineChangeState;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TitleTLChange;
 import com.base.timeline.propagation.core.Objective;
+import com.base.timeline.propagation.core.Sandbox;
 import com.simulation.people.BookCharacter;
 import com.simulation.title.Title;
 
 import java.awt.print.Book;
+import java.time.LocalDate;
 
 public class Errors {
     public static StateError duplicateError(TimelineChange<?> oldChange) {
@@ -61,6 +63,19 @@ public class Errors {
         StateError error = new StateError(SimpleReference.of(existingText),oldChange);
         error.addIgnore().addEndState().addEndCancel();
         return error;
+    }
+    public static StateError outOfBounds(TimelineChange<?> existingChange, LocalDate) {
+        return new StateError(SimpleReference.of("Out of bounds"),existingChange).addEndCancel().addOption(new ErrorResolution() {
+            @Override
+            public String getCode() {
+                return "";
+            }
+
+            @Override
+            public <T extends DateMutableEntity<T, ?>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+                return null;
+            }
+        });
     }
     public static StateError EMPTY() {
         return new StateError(SimpleReference.of("Passes Condition")).addContinue();

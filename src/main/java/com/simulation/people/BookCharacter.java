@@ -196,7 +196,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
     }
     public void setDeath(LocalDate date, CauseOfDeath death){
         this.setEnded(date);
-        addStateChange(date,new CharacterTLChange.CharacterDeath(DMEReference.of(this),null,death,date));
+        addStateChange(date,new CharacterTLChange.Death(DMEReference.of(this),null,death,date));
     }
     @Override
     protected JsonObject saveAdditional(JsonObject j) {

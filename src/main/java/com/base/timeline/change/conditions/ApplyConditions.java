@@ -1,11 +1,11 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
-import com.base.ObjectType;
 import com.base.flags.Errors;
 import com.base.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineChangeState;
+import com.base.timeline.change.BoundaryChange;
 import com.base.timeline.change.CharacterTLChange;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TitleTLChange;
@@ -25,7 +25,7 @@ public class ApplyConditions {
     public static final Condition<StateError,?> IS_DEAD = new Condition<> ("isDead",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar, Optional<StateError>>() {
         @Override
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar sidecar) {
-            if(checkAgainst instanceof CharacterTLChange.CharacterDeath cd){
+            if(checkAgainst instanceof CharacterTLChange.Death cd){
                 return Optional.of(characterDead(cd.getPrimary().link(),checkAgainst));
             } else if (thisChange instanceof TitleTLChange<?> ttl && ttl.getHolder().isPresent()){
                 DMEReference<BookCharacter> bookCharacter = ttl.getHolder().get();
@@ -36,7 +36,19 @@ public class ApplyConditions {
             return Optional.empty();
         }
     });
+    public static final Condition<StateError, Sidecar> OUT_OF_BOUNDS = new Condition<>("gen_out_of_bounds",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar, Optional<StateError>>() {
+        @Override
+        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar sidecar) {
+            if (thisChange instanceof BoundaryChange<?,?> cd){
+                if(cd.isBirth() && checkAgainst.getDate().isBefore(cd.getDate())){
+                    return Optional.of(OUT_OF_BOUNDS)
+                } else if (checkAgainst.getDate().isAfter(cd.getDate())){
 
+                }
+            }
+            return Optional.empty();
+        }
+    });
     //--- Title Conditions ---
     public static final Condition<StateError, Sidecar.TitleChange> TEMPLATE = new Condition<>("title_template",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
         @Override

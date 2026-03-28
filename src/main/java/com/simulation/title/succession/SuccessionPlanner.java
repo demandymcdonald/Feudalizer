@@ -1,5 +1,6 @@
 package com.simulation.title.succession;
 
+import com.base.flags.SandboxCode;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.simulation.people.BookCharacter;
@@ -28,9 +29,15 @@ public class SuccessionPlanner {
             title.setInherit(first, date,true);
             assignedTitles.put(first.getId(),title);
         }
-
     }
-
+    public static SandboxCode executeSuccessionSandbox(BookCharacter deceased, LocalDate date){
+        HashSet<DMEReference<?>> toReturn = executeSuccession(deceased,date);
+        if (toReturn.isEmpty()){
+            return SandboxCode.END_DISCARD;
+        } else {
+            return SandboxCode.CONTINUE;
+        }
+    }
     public static <T extends Title<T>> void cleanUpContainer(T title, LocalDate date){
         LocalDate current = date;
         SuccessionContainer container = title.getSuccession();

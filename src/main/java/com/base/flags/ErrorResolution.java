@@ -9,6 +9,7 @@ import com.base.timeline.propagation.core.Sandbox;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
 import com.simulation.people.CharacterState;
+import com.simulation.title.succession.SuccessionPlanner;
 
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -153,25 +154,7 @@ public abstract class ErrorResolution {
 
         @Override
         public <T extends DateMutableEntity<T, ?>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
-            Sandbox branch = new Sandbox(objective);
-            CompletableFuture<HashMap<DMEReference<?>, JsonObject>> payload = branch.getFuture();
-            branch.startSimulation();
-            HashMap<DMEReference<?>, JsonObject> yield = payload.join();
-            switch(branch.getStatus()){
-                case CONTINUE -> {
-                    Sandbox.ImplementChanges(yield);
-                    return SandboxCode.CONTINUE;
-                }
-                case END_DISCARD -> {
-                    return SandboxCode.END_DISCARD;
-                }
-                case END_SAVE -> {
-                    Sandbox.ImplementChanges(yield);
-                    sandbox.setEndDate(branch.getEndDate());
-                    return SandboxCode.CONTINUE;
-                }
-            }
-            return CRITICAL_ERROR;
+            return resolveWithSandbox(sandbox,objective);
         }
     }
     public static class ReplaceWithNew extends ErrorResolution {
@@ -191,5 +174,44 @@ public abstract class ErrorResolution {
             newChange.overwrite(entity,saveToDiff,change);
             return SandboxCode.CONTINUE;
         }
+    }
+    public static class HandleWithSuccessionPlanning extends ErrorResolution {
+        private final BookCharacter objective;
+        public HandleWithSuccessionPlanning(BookCharacter character) {
+            super(1);
+            this.objective = character;
+        }
+        @Override
+        public String getCode() {
+            return "succession_planning";
+        }
+
+        @Override
+        public <T extends DateMutableEntity<T, ?>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+            SuccessionPlanner.executeSuccession(objective,change.getDate());
+            return null;
+        }
+    }
+
+    public static <T extends DateMutableEntity<T, ?>> SandboxCode resolveWithSandbox(Sandbox currentSandbox, Objective objective){
+        Sandbox branch = new Sandbox(objective);
+        CompletableFuture<HashMap<DMEReference<?>, JsonObject>> payload = branch.getFuture();
+        branch.startSimulation();
+        HashMap<DMEReference<?>, JsonObject> yield = payload.join();
+        switch(branch.getStatus()){
+            case CONTINUE -> {
+                Sandbox.ImplementChanges(yield);
+                return SandboxCode.CONTINUE;
+            }
+            case END_DISCARD -> {
+                return SandboxCode.END_DISCARD;
+            }
+            case END_SAVE -> {
+                Sandbox.ImplementChanges(yield);
+                currentSandbox.setEndDate(branch.getEndDate());
+                return SandboxCode.CONTINUE;
+            }
+        }
+        return CRITICAL_ERROR;
     }
 }

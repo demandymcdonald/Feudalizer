@@ -37,6 +37,12 @@ public class Sandbox {
         this.Scope = obj.state().change().getScope();
         this.startDate = obj.state().start();
     }
+    public Sandbox(Objective obj, LocalDate endDate) {
+        this.primary = obj;
+        this.Scope = obj.state().change().getScope();
+        this.startDate = obj.state().start();
+        sandboxEndDate = endDate;
+    }
     public void startSimulation() {
         startup(new HashMap<>());
     }

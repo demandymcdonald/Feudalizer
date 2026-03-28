@@ -52,9 +52,13 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
      * @param entity the entity on which the apply operation is being performed. This represents
      *               the target for timeline changes, ensuring accurate and consistent state updates.
      */
-    public final void apply(T entity, boolean saveChangeToDiff){
-        TimelineState<T> state = onApply(entity, saveChangeToDiff);
-        entity.saveStateChange(state);
+    public final void apply(T entity, boolean saveToDiff){
+        TimelineState<T> state = onApply(entity, saveToDiff);
+        if (saveToDiff){
+            entity.saveStateChange(state,this);
+        } else {
+            entity.saveStateChange(state,null);
+        }
         //may merge with onApply if I don't need any additional logic in here
     }
     /**
@@ -65,17 +69,25 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
      * @param entity the entity on which the overwrite operation is being performed. This entity serves as the
      *               target for state updates in the timeline.
      */
-    public final void overwrite(T entity, boolean saveChangeToDiff, @Nullable TimelineChange<T> beingOverwritten){
+    public final void overwrite(T entity, boolean saveToDiff, @Nullable TimelineChange<T> beingOverwritten){
         TimelineState<T> state = onOverwrite(entity);
-        doNullify(state);
         if (beingOverwritten != null){
             beingOverwritten.doNullify(state);
         }
-        entity.saveStateChange(state);
+        if (saveToDiff){
+            entity.saveStateChange(state,this);
+        } else {
+            entity.saveStateChange(state,null);
+        }
+    }
+    public final void undo(T entity, TimelineChange<T> newData){
+        TimelineState<T> state = onUndo(entity,newData);
+        doNullify(state);
+        entity.saveStateChange(state,null);
     }
     public final void nullify(T entity, @Nullable TimelineChange<T> stateToNullify){
         TimelineState<T> state = onNullify(entity,stateToNullify);
-        entity.saveStateChange(state);
+        entity.saveStateChange(state,null);
     }
     //What to do when the provided object is getting the change from this object applied to it.
     protected abstract TimelineState<T> onApply(T entity, boolean saveChangeToDiff);
@@ -98,6 +110,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
         }
         return doNullify(entity.getCurrentState());
     }
+    protected abstract TimelineState<T> onUndo(T entity, TimelineChange<T> previousState);
     private TimelineState<T> doNullify(TimelineState<T> state){
         state.changeLog().remove(this);
         return state;

@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import static com.base.timeline.change.conditions.ApplyConditions.OUT_OF_BOUNDS;
+
 public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
     private final DMEReference<BookCharacter> primaryCharacter;
     private final Optional<DMEReference<BookCharacter>> secondaryCharacter;
@@ -78,7 +80,7 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
 
         @Override
         protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of();
+            return List.of(OUT_OF_BOUNDS);
         }
 
         @Override
@@ -86,10 +88,10 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
             return List.of();
         }
     }
-    public static class CharacterDeath extends CharacterTLChange{
+    public static class Birth extends CharacterTLChange{
 
         private final CauseOfDeath death;
-        public CharacterDeath(DMEReference<BookCharacter> primary, DMEReference<BookCharacter> secondary, CauseOfDeath death, LocalDate date) {
+        public Death(DMEReference<BookCharacter> primary, DMEReference<BookCharacter> secondary, CauseOfDeath death, LocalDate date) {
             super(primary, secondary, date);
             this.death = death;
         }
@@ -130,9 +132,58 @@ public abstract class CharacterTLChange extends TimelineChange<BookCharacter> {
         protected List<Condition<ConditionResult.Nullify, ?>> buildNullifyConditions() {
             return List.of();
         }
-        public static CharacterDeath fromJson(LocalDate date, JsonObject json){
+        public static Death fromJson(LocalDate date, JsonObject json){
             Pair<DMEReference<BookCharacter>,DMEReference<BookCharacter>> pair = unpackBaseJson(json);
-            return new CharacterDeath(pair.getLeft(),pair.getRight(), CauseOfDeath.valueOf(json.get("death").getAsString()),date);
+            return new Death(pair.getLeft(),pair.getRight(), CauseOfDeath.valueOf(json.get("death").getAsString()),date);
+        }
+    }
+    public static class Death extends CharacterTLChange{
+
+        private final CauseOfDeath death;
+        public Death(DMEReference<BookCharacter> primary, DMEReference<BookCharacter> secondary, CauseOfDeath death, LocalDate date) {
+            super(primary, secondary, date);
+            this.death = death;
+        }
+
+        @Override
+        protected TimelineState<BookCharacter> onApply(BookCharacter entity, boolean saveChangeToDiff) {
+
+        }
+
+        @Override
+        protected ChangeTags[] getTags() {
+            return new ChangeTags[0];
+        }
+
+        @Override
+        public HashSet<DMEReference<?>> getScope() {
+            return null;
+        }
+
+        @Override
+        protected String getText() {
+            return "";
+        }
+
+        @Override
+        protected JsonObject toJson() {
+            JsonObject o = new JsonObject();
+            o.addProperty("death", death.name());
+            return o;
+        }
+
+        @Override
+        protected List<Condition<StateError, ?>> buildApplyConditions() {
+            return List.of();
+        }
+
+        @Override
+        protected List<Condition<ConditionResult.Nullify, ?>> buildNullifyConditions() {
+            return List.of();
+        }
+        public static Death fromJson(LocalDate date, JsonObject json){
+            Pair<DMEReference<BookCharacter>,DMEReference<BookCharacter>> pair = unpackBaseJson(json);
+            return new Death(pair.getLeft(),pair.getRight(), CauseOfDeath.valueOf(json.get("death").getAsString()),date);
         }
     }
 }
