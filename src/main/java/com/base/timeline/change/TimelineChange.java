@@ -32,6 +32,17 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     private final List<Condition<StateError,?>> applyConditions = initApplyConditions();
     private final List<Condition<ConditionResult.Nullify,?>> nullifyConditions = initNullifyConditions();
     private Breadcrumb breadcrumb = new Breadcrumb();
+    /**
+     * The diff that acts as the logical opposite of this one — i.e. the change that
+     * nullified or will undo this change. Set during sandbox propagation when
+     * {@link #canNullify} returns {@code true} for an existing change.
+     *
+     * <p>For example, if this change is a {@code Grant}, the opposite diff is the
+     * {@code Revoke} that was applied to cancel it. For {@code DeJureDrift}, it would
+     * be a drift back to the original parent. For boundary changes (births/deaths) there
+     * is no meaningful opposite and this field stays {@code null}.</p>
+     */
+    @Nullable private TimelineChange<T> oppositeDiff;
     private boolean deativated = false;
     protected TimelineChange(LocalDate date) {
         this.date = date;
@@ -126,13 +137,53 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     }
     public void onContinue(){}
     protected abstract ChangeTags[] getTags();
+    /**
+     * Returns {@code true} if this change can nullify the given {@code state} change,
+     * using exact date matching (the default behaviour).
+     */
     public final boolean canNullify(TimelineChange<?> state){
+        return canNullify(state, false);
+    }
+
+    /**
+     * Returns {@code true} if this change can nullify the given {@code state} change.
+     *
+     * <p>When {@code fuzzyMatch} is {@code false} (default), all {@link NullifyConditions}
+     * including {@code IS_SAME_DATE} run normally — an exact date match is required.</p>
+     *
+     * <p>When {@code fuzzyMatch} is {@code true}, the {@code IS_SAME_DATE} condition is
+     * replaced by a range check: this change's date must fall within the half-open interval
+     * {@code [state.date, state.endDate]}. If {@code state} has no recorded end date the
+     * fuzzy check fails (returns {@code false}). All other conditions run normally. This is
+     * used during breadcrumb trail retracing to detect whether a new diff falls within the
+     * propagation window of an older one.</p>
+     *
+     * @param state      the existing change to check against
+     * @param fuzzyMatch when {@code true}, use date-range matching instead of exact match
+     */
+    public final boolean canNullify(TimelineChange<?> state, boolean fuzzyMatch){
         boolean hasYes = false;
         for (Condition<ConditionResult.Nullify,?> c : nullifyConditions) {
-            final ConditionResult.Nullify result = c.check(this,state, this.getSideCar()).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
+            if (fuzzyMatch && c == NullifyConditions.IS_SAME_DATE) {
+                // Replace exact date check with a range check against the existing change's
+                // breadcrumb propagation window.
+                LocalDate existingStart = state.getDate();
+                LocalDate existingEnd   = state.getEndDate();   // from breadcrumb
+                LocalDate newDate       = this.getDate();
+                if (existingEnd == null) {
+                    return false; // no end date recorded — range check cannot pass
+                }
+                if (!newDate.isBefore(existingStart) && !newDate.isAfter(existingEnd)) {
+                    hasYes = true; // date is inside propagation window → counts as a NULLIFY vote
+                } else {
+                    return false;  // exclusive block: date outside range
+                }
+                continue;
+            }
+            final ConditionResult.Nullify result = c.check(this, state, this.getSideCar())
+                    .orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
             if (result.canNullify()){
                 hasYes = true;
-                continue;
             } else if(!result.isOr()){
                 return false;
             }
@@ -229,6 +280,19 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     }
     public void reactivate(){
         deativated = false;
+    }
+    // Opposite-diff accessors
+    /** Returns the change that nullified/undoes this one, or {@code null} if not yet set. */
+    @Nullable public TimelineChange<T> getOppositeDiff() {
+        return oppositeDiff;
+    }
+    /**
+     * Records the change that acts as the logical opposite of this one.
+     * Called by the sandbox immediately before nullification so the relationship
+     * is preserved in the breadcrumb trail.
+     */
+    public void setOppositeDiff(@Nullable TimelineChange<T> opposite) {
+        this.oppositeDiff = opposite;
     }
     //Wrapper functions for breadcrumb.
     public Breadcrumb getBreadcrumb(){

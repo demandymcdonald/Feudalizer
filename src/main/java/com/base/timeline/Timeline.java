@@ -30,6 +30,15 @@ public class Timeline<T extends DateMutableEntity<T,C>,C extends TimelineContain
         timeline.put(end, template.buildDeath(new DMEReference<>(t,id),end,new JsonObject()));
         isLoaded = true;
     }
+
+    /**
+     * Convenience constructor used by {@link com.base.DateMutableEntity} which already
+     * has the entity reference. Delegates to the primary constructor by extracting the
+     * {@link ObjectType} and {@link UUID} from the entity.
+     */
+    public Timeline(C template, T entity, LocalDate start, LocalDate end) {
+        this(template, entity.getObjectType(), entity.getId(), start, end);
+    }
     public boolean safeInsertState(DateMutableEntity<T,C> entity, TimelineState<T> state, @Nullable TimelineChange<T> change){
         TimelineState<T> existing = timeline.floorEntry(state.start()).getValue();
         if(existing == null){
@@ -45,12 +54,25 @@ public class Timeline<T extends DateMutableEntity<T,C>,C extends TimelineContain
                 CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future = s.getFuture();
                 s.startSimulation();
             } else {
+                // Inherit the previous state's trail and append this change before inserting.
+                TimelineState<T> stateWithTrail = appendToTrail(existing, state, change);
                 removeState(existing);
                 insertState(newExisting);
-                insertState(state);
+                insertState(stateWithTrail);
             }
         }
+        return false;
+    }
 
+    /**
+     * Returns a new {@link TimelineState} whose trail is the previous state's trail plus
+     * the incoming change (if non-null). If there is no change, the state is returned as-is.
+     */
+    private TimelineState<T> appendToTrail(TimelineState<T> previous, TimelineState<T> newState, @Nullable TimelineChange<T> change) {
+        if (change == null) return newState;
+        ArrayList<TimelineChange<T>> inheritedTrail = new ArrayList<>(previous.trail());
+        inheritedTrail.add(change);
+        return new TimelineState<>(newState, inheritedTrail);
     }
     public void unsafeInsertState(TimelineState<T> state){
         insertState(state);
@@ -89,7 +111,8 @@ public class Timeline<T extends DateMutableEntity<T,C>,C extends TimelineContain
     }
     private TimelineState<T> resolveExistingState(TimelineState<T> existingState, TimelineState<T> newState){
         LocalDate end = newState.start();
-        return new TimelineState<T>(existingState.start(), Optional.of(end), existingState.payload(), existingState.changeLog());
+        // Preserve the existing state's trail so history isn't lost when the state is closed.
+        return new TimelineState<T>(existingState.start(), Optional.of(end), existingState.isImmutable(), existingState.payload(), existingState.changeLog(), existingState.trail());
     }
     public TimelineState<T>[] getStates(){
         return timeline.values().toArray(TimelineState[]::new);

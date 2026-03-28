@@ -30,6 +30,13 @@ public class Sandbox {
     private volatile LocalDate sandboxEndDate = LocalDate.MAX;
     private volatile SandboxCode status = SandboxCode.CONTINUE;
     private volatile Pair<LocalDate,StateError> killBox;
+    /**
+     * Propagation cache — tracks changes that have already been confirmed as
+     * <em>not</em> nullifiable by the proposed change. When a change is in this
+     * set we skip the full {@code canNullify} evaluation on subsequent simulation
+     * ticks, avoiding redundant condition checks.
+     */
+    private final HashSet<TimelineChange<?>> propagationCache = new HashSet<>();
     //TODO I need a way to have secondary saves pulled by default:
     // for example the parent in a deJure change also needs to be saved, even though they aren't the subject.
     public Sandbox(Objective obj) {
@@ -96,9 +103,30 @@ public class Sandbox {
             for (TimelineChange<HT> change : state.getChanges()) {
                 List<StandingChange> localSC = new ArrayList<>();
                 if (change.isDeactivated()) continue;
+
+                // Step 5 — propagation cache: skip changes already confirmed clear.
+                if (propagationCache.contains(change)) continue;
+
                 if (proposedChange.canNullify(change)) {
-                    change.nullify(host,proposedChange);
+                    // Step 6 — on first nullification, seal the breadcrumb end date and
+                    // record the opposite-diff relationship before actually nullifying.
+                    if (!change.getBreadcrumb().isComplete()) {
+                        change.getBreadcrumb().addEndPoint(date);
+                    }
+                    change.setOppositeDiff(proposedChange);
+                    // Persist the updated state (with the sealed breadcrumb in the trail)
+                    // so the trail reflects the end-of-propagation cleanly.
+                    host.saveStateChange(host.getCurrentState(), null);
+                    change.nullify(host, proposedChange);
+                    // Remove from cache since the change is now gone
+                    propagationCache.remove(change);
+                    continue; // nullified — no conflict check needed
+                } else {
+                    // Step 5 — this change is not nullifiable; add to cache so we skip it
+                    // on future ticks.
+                    propagationCache.add(change);
                 }
+
                 //boolean allClear = false;
                 while (true){
                     List<StateError> errors = proposedChange.doesConflict(change);
@@ -129,6 +157,12 @@ public class Sandbox {
                     standingChanges.addAll(handled.keySet());
                 }
             }
+
+            // Step 7 — retrace the breadcrumb trail stored in the current state.
+            // Using fuzzyMatch=true: if the proposed change's date falls within any
+            // trail entry's propagation window, the trail ends at that entry.
+            retraceTrail(proposedChange, host.getCurrentState());
+
             LocalDate nextDate = host.getNextDate();
             if (nextDate == null || DateUtilities.floor(nextDate,sandboxEndDate).equals(sandboxEndDate)){
                 break;
@@ -137,6 +171,34 @@ public class Sandbox {
             }
         }
         endSimulation(SandboxCode.END_SAVE,host,DateUtilities.ceiling(date,sandboxEndDate),standingChanges);
+    }
+
+    /**
+     * Step 7 — Retraces the breadcrumb trail held by the given state.
+     *
+     * <p>For each entry in the trail (oldest first), checks whether the proposed
+     * change can nullify it using {@code fuzzyMatch=true}. The first match signals
+     * the end of the trail: all subsequent entries are trimmed from the in-memory
+     * trail list so that the trail accurately reflects where propagation of the
+     * original change should stop. The matched entry's breadcrumb end date is
+     * sealed to the proposed change's date if it hasn't been sealed already.</p>
+     */
+    @SuppressWarnings("unchecked")
+    private <HT extends DateMutableEntity<HT,?>> void retraceTrail(TimelineChange<HT> proposedChange, TimelineState<HT> state) {
+        if (state == null) return;
+        List<TimelineChange<HT>> trail = state.getTrail();
+        for (int i = 0; i < trail.size(); i++) {
+            TimelineChange<HT> trailChange = trail.get(i);
+            if (proposedChange.canNullify(trailChange, true)) {
+                // Seal the breadcrumb if not already done
+                if (!trailChange.getBreadcrumb().isComplete()) {
+                    trailChange.getBreadcrumb().addEndPoint(proposedChange.getDate());
+                }
+                // Trim the trail to end at this entry (inclusive): remove everything after i.
+                state.trail().subList(i + 1, state.trail().size()).clear();
+                break;
+            }
+        }
     }
 
     /**

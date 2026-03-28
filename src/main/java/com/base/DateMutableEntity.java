@@ -113,7 +113,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T,C>, C exte
             mergedChangeLog = new ArrayList<>(List.of(startNotes));
         }
         TimelineState<T> newState = new TimelineState<>(date,Optional.ofNullable(endCurrent),this.getCurrentContainer().getSerialized(),mergedChangeLog);
-        return saveStateChange(newState);
+        return saveStateChange(newState, startNotes.length > 0 ? startNotes[0] : null);
     }
     public boolean saveStateChange(TimelineState<T> state, @Nullable TimelineChange<?> c){
         if (DMRegistry.isMain()) {
