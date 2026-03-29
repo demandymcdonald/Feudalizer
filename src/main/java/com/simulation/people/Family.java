@@ -7,6 +7,8 @@ import com.GlobalVars;
 import com.base.ObjectType;
 import com.base.StateChangeKey;
 import com.base.reference.DMEReference;
+import com.base.reference.StateReference;
+import com.base.timeline.TimelineState;
 import com.google.gson.JsonObject;
 import javafx.util.Pair;
 
@@ -21,25 +23,37 @@ import java.util.*;
  */
 public class Family extends DateMutableEntity<Family> {
     public enum Relationship {
-        HEAD_OF_HOUSE,
-        SPOUSE,
-        EX_SPOUSE,
-        LOVER,
-        EX_LOVER,
-        CONCUBINE,
-        EX_CONCUBINE,
-        CHILD_BORN,
-        CHILD_BORN_DISOWNED,
-        CHILD_ADOPTED,
-        CHILD_ADOPTED_DISOWNED,
-        ERROR
+        HEAD_OF_FAMILY(1, MemberType.HEAD),
+        SPOUSE(1, MemberType.PARTNER),
+        EX_SPOUSE(1, MemberType.PARTNER),
+        LOVER(1, MemberType.PARTNER),
+        EX_LOVER(1, MemberType.PARTNER),
+        CONCUBINE(1, MemberType.PARTNER),
+        EX_CONCUBINE(1, MemberType.PARTNER),
+        CHILD_BORN(99, MemberType.OFFSPRING),
+        CHILD_BORN_DISOWNED(99, MemberType.OFFSPRING),
+        CHILD_ADOPTED(99, MemberType.OFFSPRING),
+        CHILD_ADOPTED_DISOWNED(99, MemberType.OFFSPRING);
+
+        private final int maxInUnit;
+        private final MemberType type;
+        Relationship(int maxInUnit, MemberType type) {
+            this.maxInUnit = maxInUnit;
+            this.type = type;
+        }
+
+    }
+    public enum MemberType {
+        HEAD,
+        PARTNER,
+        OFFSPRING
     }
 
     //######
     private HashMap<DMEReference<BookCharacter>, Relationship> Members = new HashMap<>();
-
+    private StateReference customName;
     public Family(LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
-        super(created, ended, initialState);
+        super(created, ended, );
         Members = children;
     }
 
@@ -48,24 +62,48 @@ public class Family extends DateMutableEntity<Family> {
         Members = children;
     }
 
-
-
-
+    public DMEReference<BookCharacter> getHeadofFamily() {
+        return getMembersMatching(Relationship.HEAD_OF_FAMILY)[0];
+    }
+    public DMEReference<BookCharacter> getSpouse() {
+        return getMembersMatching(Relationship.SPOUSE)[0];
+    }
+    private DMEReference<BookCharacter>[] getMembersMatching(Relationship rel) {
+        return Members.entrySet().stream().filter(
+                e -> e.getValue() == rel).map(Map.Entry::getKey).toArray(DMEReference[]::new);
+    };
+    public int getNumberOf(MemberType type) {
+        return (int) Members.entrySet().stream().filter(e -> e.getValue().type == type).count();
+    }
+    public int getMaxAllowed(Relationship rel) {
+        return rel.maxInUnit;
+    }
+    public boolean hasSpaceFor(Relationship rel) {
+        return getNumberOf(rel.type) < getMaxAllowed(rel);
+    }
+    public void internal_AddMember(DMEReference<BookCharacter> member, Relationship rel) {
+        if (hasSpaceFor(rel)) {
+            Members.put(member, rel);
+        } else {
+            Feudalizer.LOGGER.error("Family " + this.toString() + " is at it's limit for members of type {}!", rel.type);
+        }
+    }
     @Override
     public ObjectType getObjectType() {
-        return null;
+        return ObjectType.FAMILY;
     }
 
     @Override
-    public JsonObject additionalData() {
-        return null;
-    }
+    public void saveAdditional(JsonObject data) {
 
+    }
+    private static TimelineState<Family> buildInitial(Family dme, LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
+
+    }
     @Override
     public JsonObject onLoad(JsonObject data) {
         return null;
     }
-
 
 
 

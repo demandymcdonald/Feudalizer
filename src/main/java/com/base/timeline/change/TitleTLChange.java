@@ -107,7 +107,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         }
 
         @Override
-        protected List<Class<? extends TimelineChange<?>>> validOpposites() {
+        protected List<Class<? extends TimelineChange<?>>> oppositeChanges() {
             return  List.of((Class<? extends TimelineChange<?>>) Revoke.class);
         }
 
@@ -146,7 +146,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
             return entity.getCurrentState();
         }
         @Override
-        protected List<Class<? extends TimelineChange<?>>> validOpposites() {
+        protected List<Class<? extends TimelineChange<?>>> oppositeChanges() {
             return  List.of();
         }
         @Override
@@ -188,7 +188,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
             return entity.getCurrentState();
         }
         @Override
-        protected List<Class<? extends TimelineChange<?>>> validOpposites() {
+        protected List<Class<? extends TimelineChange<?>>> oppositeChanges() {
             return  List.of((Class<? extends TimelineChange<?>>) Grant.class);
         }
         @Override

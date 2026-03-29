@@ -77,4 +77,25 @@ public class TimelineHelper {
     public static <T extends DateMutableEntity<T>> List<TimelineChange<T>> getChangesWhere(List<TimelineChange<T>> changes, Predicate<TimelineChange<T>> predicate){
         return changes.stream().filter(predicate).toList();
     }
+    public static <T extends DateMutableEntity<T>> TimelineChange<T> getLastValidChange(Timeline<T> timeline, TimelineState<T> current, TimelineChange<T> soonToBeGone){
+        final boolean isPositive = soonToBeGone.isPositive();
+        List<Class<? extends TimelineChange<T>>> opposites = soonToBeGone.oppositeChanges();
+        List<Class<? extends TimelineChange<T>>> siblings = soonToBeGone.siblingChanges();
+        Class<? extends TimelineChange<T>> cClass = (Class<? extends TimelineChange<T>>) soonToBeGone.getClass();
+        LocalDate currentDate = current.getStart();
+        while (true){
+            TimelineState<T> next = timeline.getStateBefore(currentDate);
+            for (TimelineChange<T> change : next.getDiffs()){
+                Class<? extends TimelineChange<T>> changeClass = (Class<? extends TimelineChange<T>>) change.getClass();
+                if ((isPositive && (changeClass.equals(cClass) || siblings.contains(changeClass))) ||
+                        !isPositive && opposites.contains(changeClass)){
+                    return change;
+                }
+            }
+            currentDate = next.getStart();
+            if (next.isBoundary()){
+                throw new IllegalStateException("Could not find a valid change for " + soonToBeGone);
+            }
+        }
+    }
 }

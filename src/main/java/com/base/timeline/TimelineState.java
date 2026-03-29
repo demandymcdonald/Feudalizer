@@ -108,8 +108,13 @@ public class TimelineState<T extends DateMutableEntity<T>>{
     }
     public void insertChange(TimelineChange<T> change){
         diffs.put(change.getId(), change);
+        TimelineHelper.propagateBreadcrumb(owner.link().getTimeline(),change);
     }
     public void removeChange(long id){
+        TimelineChange<T> t = diffs.get(id);
+        if (!t.isDeactivated()){
+            t.deactivate();
+        }
         diffs.remove(id);
     }
     //==== SERIALIZATION ====

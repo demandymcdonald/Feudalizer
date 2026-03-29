@@ -161,6 +161,11 @@ public class Timeline<T extends DateMutableEntity<T>> {
         }
         return state;
     }
+    public TimelineState<T> getStateBefore(LocalDate date){
+        TimelineState<T> state = timeline.floorEntry(date).getValue();
+        date = state.getStart().minusDays(1);
+        return timeline.floorEntry(date).getValue();
+    }
     public TimelineState<T> getOrMakeState(LocalDate d){
         TimelineState<T> state = timeline.get(d);
         if (state == null){

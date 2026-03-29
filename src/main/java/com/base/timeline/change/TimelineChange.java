@@ -74,40 +74,27 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
      * @param entity the entity on which the apply operation is being performed. This represents
      *               the target for timeline changes, ensuring accurate and consistent state updates.
      */
-    public final void apply(T entity, boolean saveToDiff){
-        TimelineState<T> state = onApply(entity, saveToDiff);
-        if (saveToDiff){
-            entity.saveStateChange(state,this);
-        } else {
-            entity.saveStateChange(state,null);
-        }
+    public final void apply(T entity){
+        onApply(entity);
         //may merge with onApply if I don't need any additional logic in here
     }
-    /**
-     * Performs an overwrite operation on the provided entity. This includes executing the overwrite logic,
-     * nullifying any applicable state transitions, and saving the updated state change for the entity
-     * to ensure the timeline's consistency and accuracy.
-     *
-     * @param entity the entity on which the overwrite operation is being performed. This entity serves as the
-     *               target for state updates in the timeline.
-     */
-    public final void overwrite(T entity, boolean saveToDiff, @Nullable TimelineChange<T> beingOverwritten){
-        TimelineState<T> state = onOverwrite(entity);
-        if (beingOverwritten != null){
-            beingOverwritten.doNullify(state);
-        }
-        if (saveToDiff){
-            entity.saveStateChange(state,this);
+
+    public final void overwrite(TimelineState<T> currentState, TimelineChange<T> beingOverwritten, boolean destructive){
+        onOverwrite(getOwner().link(),currentState,beingOverwritten,destructive);
+        if (destructive){
+            currentState.removeChange(beingOverwritten.getId());
+            TimelineHelper.BreadcrumbCleanup(getOwner().link().getTimeline(),beingOverwritten.getId(),beingOverwritten.getStart(),beingOverwritten.getEnd());
         } else {
-            entity.saveStateChange(state,null);
+            beingOverwritten.deactivate();
         }
+        currentState.insertChange(this);
     }
-    public final void nullify(T entity, @Nullable TimelineChange<T> stateToNullify){
-        TimelineState<T> state = onNullify(entity,stateToNullify);
-        entity.saveStateChange(state,null);
+    public final void nullify(T entity, TimelineState<T> state, TimelineChange<T> changeToNullify){
+        onNullify(entity,state,changeToNullify);
+        state.
     }
     //What to do when the provided object is getting the change from this object applied to it.
-    protected abstract TimelineState<T> onApply(T entity, boolean saveChangeToDiff);
+    protected abstract void onApply(T entity);
     /**
      * Handles an overwrite operation for a specific entity. This method is used to create or update
      * the timeline state after an overwrite operation, ensuring proper handling of state changes.
@@ -117,7 +104,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
      * @param entity the entity for which the overwrite operation is being performed. This represents the target of the timeline change.
      * @return a new or updated {@code TimelineState<T,C>} instance representing the state of the timeline after the overwrite operation.
      */
-    protected TimelineState<T> onOverwrite(T entity){
+    protected TimelineState<T> onOverwrite(T entity, TimelineState<T> currentState, TimelineChange<T> beingOverwritten, boolean destructive){
         return onApply(entity, false);
     };
 
@@ -132,14 +119,16 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         return state;
     }
     public boolean isOpposite(TimelineChange<?> state){
-        return validOpposites().contains(state.getClass());
+        return oppositeChanges().contains(state.getClass());
     }
     public boolean isSame(TimelineChange<?> state){
         return this.getClass().equals(state.getClass());
     }
-    protected List<Class<? extends TimelineChange<?>>> validOpposites(){
+    public abstract List<Class<? extends TimelineChange<T>>> oppositeChanges();
+    public List<Class<? extends TimelineChange<T>>> siblingChanges(){
         return new ArrayList<>();
-    }
+    };
+    public abstract boolean isPositive();
     public void onContinue(){}
     protected abstract ChangeTags[] getTags();
     public final boolean canNullify(TimelineChange<?> state){
@@ -214,7 +203,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public LocalDate getStart() {
         return start;
     }
-    public void moveState(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
+    public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
         final LocalDate setStart = start;
         final LocalDate setEnd = breadcrumb.getEndOfPropagation();
         Timeline<T> timeline = owner.link().getTimeline();
@@ -266,7 +255,10 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     }
     public void deactivate(){
         deativated = true;
-        TimelineHelper.BreadcrumbCleanup(owner.link().getTimeline(),getId(), start,breadcrumb.getEndOfPropagation());
+        Timeline<T> tl = owner.link().getTimeline();
+        TimelineHelper.BreadcrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
+        TimelineChange<T> lastData = TimelineHelper.getLastValidChange(tl,tl.getStateAt(this.start),this);
+        lastData.moveChange(null,breadcrumb.getEndOfPropagation());
     }
     public void reactivate(boolean sandbox){
         if (sandbox){
