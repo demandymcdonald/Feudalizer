@@ -1,7 +1,7 @@
 package com.utilities;
 
 import com.Feudalizer;
-import com.GlobalVariableContainer;
+import com.GlobalVars;
 import com.base.DMRegistry;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -61,20 +61,20 @@ public class ThreadManager {
     }
     private static List<ThreadSpecific> getFreshTS(){
         return List.of(
-                new GlobalVariableContainer(),
+                new GlobalVars(),
                 new DMRegistry()
         );
     }
 
-    public static Thread createNewThread(String name, Runnable runnable, boolean pullFromParent){
-        Thread thread = new Thread(runnable,name);
-        if(pullFromParent){
-            copyNewInstance(thread,Thread.currentThread());
-        } else {
-            buildNewInstance(thread);
-        }
-        return thread;
-    }
+//    public static Thread createNewThread(String name, Runnable runnable, boolean pullFromParent){
+//        Thread thread = new Thread(runnable,name);
+//        if(pullFromParent){
+//            copyNewInstance(thread,Thread.currentThread());
+//        } else {
+//            buildNewInstance(thread);
+//        }
+//        return thread;
+//    }
     public static boolean isMainThread(){
         //That global variable is pulled at startup, so it should ALWAYS be the JavaFX thread name
         return Thread.currentThread().equals(Feudalizer.MAIN_THREAD);

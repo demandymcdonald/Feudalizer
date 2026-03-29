@@ -1,6 +1,6 @@
 package com.base.timeline.change;
 
-import com.base.flags.StateError;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.Condition;

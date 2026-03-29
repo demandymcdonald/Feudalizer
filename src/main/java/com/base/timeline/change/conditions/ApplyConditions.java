@@ -1,8 +1,8 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
-import com.base.flags.Errors;
-import com.base.flags.StateError;
+import com.base.timeline.flags.Errors;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineChangeState;
 import com.base.timeline.change.BoundaryChange;
@@ -16,7 +16,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import java.util.List;
 import java.util.Optional;
 
-import static com.base.flags.Errors.*;
+import static com.base.timeline.flags.Errors.*;
 
 public class ApplyConditions {
     public static List<Condition<StateError,?>> BaseConditions(){
@@ -40,9 +40,9 @@ public class ApplyConditions {
         @Override
         public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar sidecar) {
             if (thisChange instanceof BoundaryChange<?,?> cd){
-                if(cd.isBirth() && checkAgainst.getDate().isBefore(cd.getDate())){
+                if(cd.isBirth() && checkAgainst.getStart().isBefore(cd.getStart())){
                     return Optional.of(OUT_OF_BOUNDS)
-                } else if (checkAgainst.getDate().isAfter(cd.getDate())){
+                } else if (checkAgainst.getStart().isAfter(cd.getStart())){
 
                 }
             }
@@ -89,7 +89,7 @@ public class ApplyConditions {
             Title<?> subject = sidecar.subject();
             Optional<BookCharacter> holder = sidecar.holder();
             if(checkAgainst instanceof TitleTLChange.Revoke<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().link().equals(holder.orElse(null))){
-                return Optional.of(newStateNullifiedbyOldError(checkAgainst).addReplaceWithNew(new TitleTLChange.Revoke<>(DMEReference.of(subject),DMEReference.of(holder.orElse(null)),checkAgainst.getDate())));
+                return Optional.of(newStateNullifiedbyOldError(checkAgainst).addReplaceWithNew(new TitleTLChange.Revoke<>(DMEReference.of(subject),DMEReference.of(holder.orElse(null)),checkAgainst.getStart())));
             };
             return Optional.empty();
         }
@@ -191,7 +191,7 @@ public class ApplyConditions {
             public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
                 if (thisChange instanceof TitleTLChange.Inherit<?> ttl && ttl.isFirstTime()) {
                     ttl.setFirstTime(false);
-                    return Optional.of(inheritanceFirstTime(new TimelineChangeState<>(thisChange.getDate(), Optional.empty(), thisChange),checkAgainst));
+                    return Optional.of(inheritanceFirstTime(new TimelineChangeState<>(thisChange.getStart(), Optional.empty(), thisChange),checkAgainst));
                 }
                 return Optional.empty();
             }
@@ -213,7 +213,7 @@ public class ApplyConditions {
             return Optional.empty();
         }
     });
-    private static <T extends DateMutableEntity<T,?>> Optional<T> unpackReference(Optional<DMEReference<T>> reference){
+    private static <T extends DateMutableEntity<T>> Optional<T> unpackReference(Optional<DMEReference<T>> reference){
         return reference.map(DMEReference::link);
     }
 }

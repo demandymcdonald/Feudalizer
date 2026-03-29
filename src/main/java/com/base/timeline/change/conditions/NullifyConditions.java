@@ -1,6 +1,5 @@
 package com.base.timeline.change.conditions;
 
-import com.base.flags.StateError;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TitleTLChange;
 import org.apache.commons.lang3.function.TriFunction;
@@ -25,7 +24,7 @@ public class NullifyConditions {
     public static final Condition<ConditionResult.Nullify,?> IS_SAME_DATE = new Condition<>("isSameDate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar, Optional<ConditionResult.Nullify>>() {
             @Override
             public Optional<ConditionResult.Nullify> apply(TimelineChange<?> change, TimelineChange<?> check, Sidecar sidecar) {
-                if (change.getDate().equals(check.getDate())) {
+                if (change.getStart().equals(check.getStart())) {
                     return Optional.of(NULLIFY);
                 }
                 return Optional.of(NOT_NULLIFY_EXCLUSIVE);

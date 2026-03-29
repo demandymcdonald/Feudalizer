@@ -16,7 +16,7 @@ import java.util.*;
 
 import static com.simulation.people.FamilyManager.findOrCreateFamily;
 
-public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterState> {
+public class BookCharacter extends DateMutableEntity<BookCharacter> {
     public enum Gender {
         Male,
         Female;
@@ -24,7 +24,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterStat
     private String givenName;
     private String surname;
     private Gender gender;
-    private Optional<House> house;
+    private DMEReference<House> house;
     private final HashMap<Family, FamilyRelationship> families = new HashMap<>();
     private List<Title<?>> Titles = new ArrayList<>();
     public BookCharacter(UUID id, String givenName, String surname, House house, LocalDate dateOfBirth, LocalDate dateOfDeath, Gender gender, Pair<Family,FamilyRelationship>... families) {

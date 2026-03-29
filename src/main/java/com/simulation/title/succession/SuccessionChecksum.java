@@ -3,17 +3,14 @@ package com.simulation.title.succession;
 import com.base.reference.DMEReference;
 import com.simulation.people.BookCharacter;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.*;
-import java.util.zip.Checksum;
 
 public record SuccessionChecksum(int entries, long checksum) {
 
     public static SuccessionChecksum of(DMEReference<BookCharacter>... container) {
         List<UUID> ids = new ArrayList<>();
         for (DMEReference<BookCharacter> ref : container) {
-            ids.add(ref.getUuid());
+            ids.add(ref.getID());
         }
         return of(ids.toArray(UUID[]::new));
     }

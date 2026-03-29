@@ -1,6 +1,6 @@
 package com.simulation.title.succession;
 
-import com.base.flags.SandboxCode;
+import com.base.timeline.flags.SandboxCode;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.simulation.people.BookCharacter;
@@ -8,7 +8,6 @@ import com.simulation.title.Title;
 import com.simulation.title.succession.rules.SuccessionEntry;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;

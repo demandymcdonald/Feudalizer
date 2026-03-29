@@ -60,7 +60,7 @@ public class SQLManager {
                 JsonObject payload = JsonParser.parseString(rs.getString("payload")).getAsJsonObject();
 
                 // Get the appropriate manager and deserialize
-                AbstractMutableManager<?, ?> manager = DMRegistry.getEntry(classType);
+                AbstractMutableManager<?, ?> manager = DMRegistry.getManager(classType);
                 if (manager != null) {
                     manager.deserializeEntity(id, payload);
                     count++;
@@ -103,7 +103,7 @@ public class SQLManager {
 
             // Get all managers from registry and save their entities
             for (String managerKey : new String[]{"BookCharacter", "Family", "House", "Title"}) {
-                AbstractMutableManager<?, ?> manager = DMRegistry.getEntry(managerKey);
+                AbstractMutableManager<?, ?> manager = DMRegistry.getManager(managerKey);
                 if (manager != null) {
                     for (Object entity : manager.getItemMap().values()) {
                         if (entity instanceof DateMutableEntity<?> dme) {

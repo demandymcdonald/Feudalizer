@@ -1,7 +1,7 @@
 package com.base.timeline.change.conditions;
 
-import com.base.flags.Errors;
-import com.base.flags.StateError;
+import com.base.timeline.flags.Errors;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.simulation.factions.FactionManager;
 import com.simulation.people.BookCharacter;
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.List;
 
-import static com.base.flags.Errors.aboveMaxTitle;
+import static com.base.timeline.flags.Errors.aboveMaxTitle;
 
 public class CanHoldTitleCondition<T extends Title<T>, U extends Title<U>> extends DMECondition<CanHoldTitleCondition<T,U>,T,U,BookCharacter>{
 

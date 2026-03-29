@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 import java.util.*;
 
-public class House extends DateMutableEntity<House,HouseState> {
+public class House extends DateMutableEntity<House> {
     private String Name;
     private final HashMultimap<House, County> DirectHouses = HashMultimap.create();
     private BookCharacter HeadOfHouse;
@@ -83,8 +83,8 @@ public class House extends DateMutableEntity<House,HouseState> {
             characters.addAll(house.getAllCharacters());
         }
         for (Family family : DirectMembers) {
-            characters.addAll(family.getChildren());
-            characters.add(family.getPrimarySpouse());
+            characters.addAll(family.getMembers());
+            characters.add(family.getHeadofFamily());
             characters.add(family.getSecondarySpouse().orElse(null));
         }
         return characters;
