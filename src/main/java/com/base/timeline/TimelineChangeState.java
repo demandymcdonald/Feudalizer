@@ -10,6 +10,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-public record TimelineChangeState<T extends DateMutableEntity<T,?>> (LocalDate start, Optional<LocalDate> end, TimelineChange<T> change){
+public record TimelineChangeState(LocalDate start, Optional<LocalDate> end, TimelineChange<T> change){
 
 }

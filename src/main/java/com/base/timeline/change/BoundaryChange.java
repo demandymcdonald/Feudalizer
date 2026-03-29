@@ -1,7 +1,7 @@
 package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
-import com.base.flags.StateError;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.ApplyConditions;
@@ -12,7 +12,6 @@ import com.simulation.people.BookCharacter;
 import com.simulation.people.Family;
 import com.simulation.people.House;
 import com.simulation.title.Title;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -20,7 +19,7 @@ import java.util.List;
 
 import static com.base.timeline.change.CauseOfDeath.NOT_LOADED;
 
-public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends DateMutableEntity<T,?>> extends TimelineChange<T> {
+public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     private final DMEReference<T> subject;
     private final boolean isBirth;
     protected BoundaryChange(LocalDate date, DMEReference<T> subject, boolean isBirth) {
@@ -61,7 +60,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
     protected List<Condition<ConditionResult.Nullify, ?>> buildNullifyConditions() {
         return List.of();
     }
-    protected static <T extends DateMutableEntity<T,?>> DMEReference<T> unpack(JsonObject o){
+    protected static <T extends DateMutableEntity<T>> DMEReference<T> unpack(JsonObject o){
         return DMEReference.deserialize(o.getAsJsonObject("subject"));
     }
     protected abstract JsonObject additionalData();
@@ -83,7 +82,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
         }
         @Override
         protected String getText() {
-            return getSubject() + " was born on " + getDate();
+            return getSubject() + " was born on " + getStart();
         }
         public static CharacterBirth fromJson(LocalDate date, JsonObject json){
             DMEReference<BookCharacter> subject = BoundaryChange.unpack(json);
@@ -110,7 +109,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
 
         @Override
         protected String getText() {
-            return getSubject() + " died on " + getDate() + " because of " + death;
+            return getSubject() + " died on " + getStart() + " because of " + death;
         }
         public static CharacterDeath fromJson(LocalDate date, JsonObject json){
             DMEReference<BookCharacter> subject = BoundaryChange.unpack(json);
@@ -132,7 +131,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
         }
         @Override
         protected String getText() {
-            return getSubject() + " was created on " + getDate();
+            return getSubject() + " was created on " + getStart();
         }
         public static<T extends Title<T>> TitleBirth<T> fromJson(LocalDate date, JsonObject json){
             DMEReference<T> subject = BoundaryChange.unpack(json);
@@ -159,7 +158,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
 
         @Override
         protected String getText() {
-            return getSubject() + " was destroyed " + getDate() + " because " + death;
+            return getSubject() + " was destroyed " + getStart() + " because " + death;
         }
         public static<T extends Title<T>> TitleDeath<T> fromJson(LocalDate date, JsonObject json){
             DMEReference<T> subject = BoundaryChange.unpack(json);
@@ -180,7 +179,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
         }
         @Override
         protected String getText() {
-            return getSubject() + " was formed on " + getDate();
+            return getSubject() + " was formed on " + getStart();
         }
         public static FamilyBirth fromJson(LocalDate date, JsonObject json){
             DMEReference<Family> subject = BoundaryChange.unpack(json);
@@ -207,7 +206,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
 
         @Override
         protected String getText() {
-            return getSubject() + " was dissolved on " + getDate() + " because of " + death;
+            return getSubject() + " was dissolved on " + getStart() + " because of " + death;
         }
         public static FamilyDeath fromJson(LocalDate date, JsonObject json){
             DMEReference<Family> subject = BoundaryChange.unpack(json);
@@ -228,7 +227,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
         }
         @Override
         protected String getText() {
-            return getSubject() + " was formed on " + getDate();
+            return getSubject() + " was formed on " + getStart();
         }
         public static HouseBirth fromJson(LocalDate date, JsonObject json){
             DMEReference<House> subject = BoundaryChange.unpack(json);
@@ -255,7 +254,7 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
 
         @Override
         protected String getText() {
-            return getSubject() + " was dissolved on " + getDate() + " because of " + death;
+            return getSubject() + " was dissolved on " + getStart() + " because of " + death;
         }
         public static HouseDeath fromJson(LocalDate date, JsonObject json){
             DMEReference<House> subject = BoundaryChange.unpack(json);

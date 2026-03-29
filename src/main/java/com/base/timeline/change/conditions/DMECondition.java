@@ -6,7 +6,7 @@ import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.function.BiFunction;
 
-public abstract class DMECondition<A extends DMECondition<A,T,U,V>, T extends DateMutableEntity<T,?>, U extends DateMutableEntity<U,?>, V extends DateMutableEntity<V,?>> implements iCondition {
+public abstract class DMECondition<A extends DMECondition<A,T,U,V>, T extends DateMutableEntity<T>, U extends DateMutableEntity<U>, V extends DateMutableEntity<V>> implements iCondition {
     private final String id;
     private final TriFunction<T,U,V, DMEResult<T,U,V>> function;
 

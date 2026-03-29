@@ -2,17 +2,25 @@ package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
 import com.base.ObjectType;
-import com.base.flags.StateError;
+import com.base.timeline.Timeline;
+import com.base.timeline.TimelineHelper;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.*;
+import com.google.common.base.Suppliers;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.utilities.JsonSerializable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.utilities.SidecarSave;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Supplier;
 
 
 /**
@@ -26,15 +34,19 @@ import java.util.*;
  *
  * @param <T> the type of mutable state the change is applied to
  */
-public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
+public abstract class TimelineChange<T extends DateMutableEntity<T>> implements SidecarSave {
     // Rules: TimelineChange implementations should only save/use StateReferences! Never use actual objects. This keeps them sandbox safe. Include this fact in documentation
-    private final LocalDate date;
+    private LocalDate start;
+    private final DMEReference<T> owner;
+    //I'm not fully sold on the supplier route, may be overkill. but it works?
+    private final Supplier<Long> id = Suppliers.memoize(this::generateID);
     private final List<Condition<StateError,?>> applyConditions = initApplyConditions();
     private final List<Condition<ConditionResult.Nullify,?>> nullifyConditions = initNullifyConditions();
     private Breadcrumb breadcrumb = new Breadcrumb();
     private boolean deativated = false;
-    protected TimelineChange(LocalDate date) {
-        this.date = date;
+    protected TimelineChange(DMEReference<T> owner, LocalDate date) {
+        this.owner = owner;
+        this.start = date;
     }
 
     protected enum ChangeTags{
@@ -44,6 +56,12 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
         TITLE_CHANGE,
         HOUSE_EMPLOYMENT_CHANGE,
         CHARACTER_DEATH;
+    }
+    public final long getId(){
+        return id.get();
+    }
+    public final DMEReference<T> getOwner(){
+        return owner;
     }
     /**
      * Applies changes to the specified entity by invoking the {@code onApply} method to handle
@@ -159,11 +177,11 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
         JsonObject object = new JsonObject();
         JsonObject payload = toJson();
         object.addProperty("type", type);
-        object.addProperty("date", date.toEpochDay());
+        object.addProperty("date", start.toEpochDay());
         object.add("payload", payload);
         return object;
     }
-    public static <R extends TimelineChange<T>,T extends DateMutableEntity<T,?>> R deserialize(JsonObject payload) {
+    public static <R extends TimelineChange<T>,T extends DateMutableEntity<T>> R deserialize(JsonObject payload) {
         String type = payload.get("type").getAsString();
         LocalDate date = LocalDate.ofEpochDay(payload.get("date").getAsLong());
         JsonObject payloadObject = payload.getAsJsonObject("payload");
@@ -186,12 +204,29 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
         return true;
     }
     public boolean dateMatch(TimelineChange<?> state){
-        return date.equals(state.date);
+        return start.equals(state.start);
     }
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getStart() {
+        return start;
     }
-    public LocalDate getEndDate(){
+    public void moveState(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
+        final LocalDate setStart = start;
+        final LocalDate setEnd = breadcrumb.getEndOfPropagation();
+        Timeline<T> timeline = owner.link().getTimeline();
+        if (newStart != null){
+            start = newStart;
+            TimelineState<T> state = timeline.getOrMakeState(newStart);
+            TimelineState<T> removeFrom = timeline.getStateAt(setStart);
+            removeFrom.removeChange(this.getId());
+            state.insertChange(this);
+        }
+        if (newEnd != null){
+            breadcrumb.addEndPoint(newEnd);
+        }
+        TimelineHelper.BreadcrumbCleanup(timeline,getId(), setStart,setEnd);
+        TimelineHelper.propagateBreadcrumb(timeline,this);
+    }
+    public LocalDate getEnd(){
         return breadcrumb.getEndOfPropagation();
     }
     /**
@@ -226,9 +261,18 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     }
     public void deactivate(){
         deativated = true;
+        TimelineHelper.BreadcrumbCleanup(owner.link().getTimeline(),getId(), start,breadcrumb.getEndOfPropagation());
     }
-    public void reactivate(){
+    public void reactivate(boolean sandbox){
+        if (sandbox){
+            //TODO have it do a quick sandbox run to check if it's all good. I want to unify the sandbox process in a handler.
+        } else {
+            TimelineHelper.propagateBreadcrumb(owner.link().getTimeline(),this);
+        }
+
+
         deativated = false;
+
     }
     //Wrapper functions for breadcrumb.
     public Breadcrumb getBreadcrumb(){
@@ -242,15 +286,30 @@ public abstract class TimelineChange<T extends DateMutableEntity<T,?>>  {
     }
     protected abstract List<Condition<StateError,?>> buildApplyConditions();
     protected abstract List<Condition<ConditionResult.Nullify,?>> buildNullifyConditions();
+
+    @SuppressWarnings("UnstableApiUsage")
+    private long generateID(){
+        Hasher hasher = Hashing.murmur3_128().newHasher();
+        hasher.putLong(start.toEpochDay());
+        hasher.putString(this.getClass().getSimpleName(), StandardCharsets.UTF_8);
+        hasher.putLong(owner.hash());
+        for (DMEReference<?> dme : additionalIDVars()) {
+            hasher.putLong(dme.hash());
+        }
+        return hasher.hash().asLong();
+    }
+    protected List<DMEReference<?>> additionalIDVars(){
+        return new ArrayList<>();
+    }
+
+
+
     public static class Breadcrumb implements JsonSerializable<Breadcrumb>{
         private LocalDate endOfPropagation;
         private final HashMap<Long,String> errorResolutionLog = new HashMap<>();
         public Breadcrumb() {}
 
         public void addEndPoint(LocalDate date){
-            if (isComplete()){
-                throw new IllegalStateException("Cannot add a new end point to a completed Breadcrumb");
-            }
             endOfPropagation = date;
         }
         public void insertError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode) {

@@ -1,11 +1,9 @@
 package com.base.timeline.change.conditions;
 
-import com.base.flags.StateError;
 import com.base.timeline.change.TimelineChange;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 
 /**
@@ -22,7 +20,7 @@ import java.util.function.BiFunction;
  * - The first parameter is the sandbox subject, represented by {@link TimelineChange<?>}.
  * - The second parameter is the existing variable to compare against, also represented by {@link TimelineChange<?>}.
  * - The third parameter is the {@link Sidecar} object determined by the subclass, which can be used
- *   to include precomputed or reference data, such as title sidecars containing prebuilt DME references.
+ *   to include precomputed or subject data, such as title sidecars containing prebuilt DME references.
  */
 public record Condition<T extends ConditionResult, C extends Sidecar>(String id, boolean shouldInvalidate,TriFunction<TimelineChange<?>,TimelineChange<?>,C, Optional<T>> condition) implements iCondition{
     //For the trifunction, the first var is always the sandbox subject, the second var is always the existing variable. Sidecar is determined by subclass, for example: title has a title sidecar that contains the DME references prebuilt to save compute. include in documentation
@@ -32,7 +30,7 @@ public record Condition<T extends ConditionResult, C extends Sidecar>(String id,
      * the result encapsulated within an {@code Optional<T>}.
      *
      * @param thisChange the timeline change object serving as the sandbox subject to be evaluated.
-     * @param checkAgainst the timeline change object used as the comparison reference in the evaluation.
+     * @param checkAgainst the timeline change object used as the comparison subject in the evaluation.
      * @param sidecar a sidecar instance providing supplemental data to assist in the condition's evaluation logic.
      * @return an {@code Optional<T>} containing the result of the condition's evaluation,
      *         or an empty {@code Optional} if no result is produced.

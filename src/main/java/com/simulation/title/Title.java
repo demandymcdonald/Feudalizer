@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class Title<T extends Title<T>> extends DateMutableEntity<T,TitleContainer> {
+public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     private Optional<BookCharacter> Holder = Optional.empty();
     private Optional<Title<?>> Parent = Optional.empty();
     private final Set<Title<?>> Children = new HashSet<>();

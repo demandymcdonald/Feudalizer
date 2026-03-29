@@ -1,12 +1,12 @@
-package com.base.flags;
+package com.base.timeline.flags;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.conditions.ConditionResult;
-import com.base.timeline.propagation.core.Objective;
-import com.base.timeline.propagation.core.Sandbox;
+import com.base.timeline.sandbox.core.Objective;
+import com.base.timeline.sandbox.core.Sandbox;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.simulation.people.BookCharacter;
@@ -54,7 +54,7 @@ public class StateError implements ConditionResult {
         return oldChange;
     }
     public static long buildForTLC(TimelineChange<?> change){
-        long toReturn = change.getDate().toEpochDay();
+        long toReturn = change.getStart().toEpochDay();
         toReturn *= change.getClass().toString().hashCode();
         return toReturn;
     }
@@ -70,13 +70,13 @@ public class StateError implements ConditionResult {
     public CompletableFuture<String> getResponse() {
         return response;
     }
-    public <T extends DateMutableEntity<T,?>> SandboxCode handleDecision(Sandbox sandbox, TimelineChange<T> change, T entity){
+    public <T extends DateMutableEntity<T>> SandboxCode handleDecision(Sandbox sandbox, TimelineChange<T> change, T entity){
         if (options.size() == 1){
             return executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
         }
         return executeDecision(response.join(),sandbox,change,(TimelineChange<T>)oldChange,entity);
     }
-    private <T extends DateMutableEntity<T,?>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange,  T entity){
+    private <T extends DateMutableEntity<T>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange,  T entity){
         if (!uiMap.keySet().contains(code)){
             throw new IllegalArgumentException("Invalid code: " + code);
         }
@@ -85,7 +85,7 @@ public class StateError implements ConditionResult {
     public boolean canAutoResolve(){
         return options.size() == 1;
     }
-    public <T extends DateMutableEntity<T,?>> void autoResolve(Sandbox sandbox, TimelineChange<T> change, T entity){
+    public <T extends DateMutableEntity<T>> void autoResolve(Sandbox sandbox, TimelineChange<T> change, T entity){
         executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
     }
     public StateError saveToDiff(){

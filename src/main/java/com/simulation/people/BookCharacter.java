@@ -16,7 +16,7 @@ import java.util.*;
 
 import static com.simulation.people.FamilyManager.findOrCreateFamily;
 
-public class BookCharacter extends DateMutableEntity<BookCharacter,CharacterState> {
+public class BookCharacter extends DateMutableEntity<BookCharacter> {
     public enum Gender {
         Male,
         Female;

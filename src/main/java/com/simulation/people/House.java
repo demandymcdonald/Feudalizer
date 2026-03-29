@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 import java.util.*;
 
-public class House extends DateMutableEntity<House,HouseState> {
+public class House extends DateMutableEntity<House> {
     private String Name;
     private final HashMultimap<House, County> DirectHouses = HashMultimap.create();
     private BookCharacter HeadOfHouse;

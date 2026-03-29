@@ -1,17 +1,15 @@
-package com.base.flags;
+package com.base.timeline.flags;
 
 import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.timeline.TimelineChangeState;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TitleTLChange;
-import com.base.timeline.propagation.core.Objective;
-import com.base.timeline.propagation.core.Sandbox;
+import com.base.timeline.sandbox.core.Objective;
+import com.base.timeline.sandbox.core.Sandbox;
 import com.simulation.people.BookCharacter;
 import com.simulation.title.Title;
 
-import java.awt.print.Book;
 import java.time.LocalDate;
 
 public class Errors {
@@ -50,7 +48,7 @@ public class Errors {
         }
         return new StateError(SimpleReference.of("Inheritance first time"),oldChange).addContinue();
     }
-    public static StateError alreadyHasAParent(DateMutableEntity<?, ?> child, DateMutableEntity<?, ?> newParent, DateMutableEntity<?, ?> oldParent,TimelineChange<?> oldChange) {
+    public static StateError alreadyHasAParent(DateMutableEntity<?> child, DateMutableEntity<?> newParent, DateMutableEntity<?> oldParent, TimelineChange<?> oldChange) {
         //TODO write error message which includes DMR for each thing.
         return new StateError(SimpleReference.of("Already has parent"),oldChange).addOverride().addContinue().addEndState().addEndCancel();
     }
@@ -72,7 +70,7 @@ public class Errors {
             }
 
             @Override
-            public <T extends DateMutableEntity<T, ?>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+            public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
                 return null;
             }
         });

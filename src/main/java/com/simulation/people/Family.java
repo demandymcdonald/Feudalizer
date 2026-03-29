@@ -17,7 +17,7 @@ import java.util.*;
  * associated houses. The `Family` class also provides utility functions to manage
  * relationships and retrieve information about the family members.
  */
-public class Family extends DateMutableEntity<Family,FamilyState> {
+public class Family extends DateMutableEntity<Family> {
     private BookCharacter PrimarySpouse;
     private Optional<BookCharacter> SecondarySpouse;
     private  Optional<House> PrimaryHouse;

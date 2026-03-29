@@ -1,10 +1,10 @@
-package com.base.timeline.propagation.core;
+package com.base.timeline.sandbox.core;
 
 import com.GlobalVars;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
-import com.base.flags.SandboxCode;
-import com.base.flags.StateError;
+import com.base.timeline.flags.SandboxCode;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineContainer;
 import com.base.timeline.TimelineState;
@@ -13,6 +13,7 @@ import com.utilities.DateUtilities;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.gson.JsonObject;
+import com.utilities.ThreadManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.charset.StandardCharsets;
@@ -20,80 +21,75 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class Sandbox {
+public class Sandbox<T extends DateMutableEntity<T>> {
     private CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future  = new CompletableFuture<>();
     private final HashMap<DMEReference<?>, JsonObject> dirty = new HashMap<>();
-    private final HashSet<DMEReference<?>> Scope;
+    private HashMap<DMEReference<?>, JsonObject> Scope = new HashMap<>();
     private final ConcurrentLinkedDeque<StateError> ProblemQueue = new ConcurrentLinkedDeque<>();
-    private final Objective primary;
-    private final LocalDate startDate;
-    private volatile LocalDate sandboxEndDate = LocalDate.MAX;
+
+
+    private SandboxHandler<T> handler;
+    private final Thread thread;
+    private final Objective<T> objective;
+    private final DMEReference<T> subject;
+    private volatile LocalDate sandboxEndDate;
     private volatile SandboxCode status = SandboxCode.CONTINUE;
     private volatile Pair<LocalDate,StateError> killBox;
     //TODO I need a way to have secondary saves pulled by default:
     // for example the parent in a deJure change also needs to be saved, even though they aren't the subject.
-    public Sandbox(Objective obj) {
-        this.primary = obj;
-        this.Scope = obj.state().change().getScope();
-        this.startDate = obj.state().start();
+    public Sandbox(Objective<T> obj) {
+        this.objective = obj;
+        this.subject = obj.subject();
+        sandboxEndDate = obj.getEnd() == null ? obj.subject().link().getEnded() : obj.getEnd();
+        if (sandboxEndDate == null) {
+            sandboxEndDate = LocalDate.MAX;
+        }
+        thread = ThreadManager.buildThread("Sandbox-" + subject.getID(), this::main);
     }
-    public Sandbox(Objective obj, LocalDate endDate) {
-        this.primary = obj;
-        this.Scope = obj.state().change().getScope();
-        this.startDate = obj.state().start();
+    public Sandbox(Objective<T> obj, LocalDate endDate) {
+        this.objective = obj;
+        this.subject = obj.subject();
         sandboxEndDate = endDate;
+        thread = ThreadManager.buildThread("Sandbox-" + subject.getID(), this::main);
     }
     public void startSimulation() {
-        startup(new HashMap<>());
+        startup();
     }
     public synchronized CompletableFuture<HashMap<DMEReference<?>, JsonObject>> getFuture() {
         return future;
     }
-    /**
-     * Exposes the flag queue to the UI thread so it can poll for incoming StateErrors
-     * and present resolution dialogs to the user.
-     */
-    public ConcurrentLinkedDeque<StateError> getQueue() {
-        return ProblemQueue;
-    }
 
-    private void runtime(HashMap<DMEReference<?>, JsonObject> sandbox) {
-        DMRegistry.sandboxReInit();
-        loadSandbox(sandbox);
-        runSimulation();
-        shutdown();
-    }
 
-    private void startup(HashMap<DMEReference<?>,JsonObject> sandbox) {
-        populateSandbox(sandbox);
-        Thread thread = new Thread(() -> runtime(sandbox));
+    private void startup(SandboxHandler<T> handler) {
+        populateSandbox();
+        this.handler = handler;
+        //End of Parent Thread Stuff
         thread.start();
-
     }
 
-    private void populateSandbox(HashMap<DMEReference<?>,JsonObject> sandbox) {
-        for (DMEReference<?> type : Scope) {
-            sandbox.put(type,DMRegistry.getEntityData(type.getType(),type.getUuid()));
+    private void populateSandbox() {
+        for (DMEReference<?> type : objective.change().getScope()) {
+            Scope.put(type,DMRegistry.getEntityData(type.getType(),type.getID()));
         }
     }
-    private void loadSandbox(HashMap<DMEReference<?>,JsonObject> sandbox) {
-        for (DMEReference<?> type : Scope) {
-            DMRegistry.load(type,sandbox.get(type));
+    private void loadSandbox() {
+        for (Map.Entry<DMEReference<?>,JsonObject> object : Scope.entrySet()) {
+            DMRegistry.load(object.getKey(),object.getValue());
         }
     }
     public SandboxCode getStatus() {
         return status;
     }
     @SuppressWarnings("unchecked")
-    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> void runSimulation() {
+    private  void runSimulation() {
         HashSet<StandingChange> standingChanges = new HashSet<>();
-        HT host = DMRegistry.getEntity(primary.type(),primary.id());
-        TimelineChange<HT> proposedChange = primary.state().change();
-        LocalDate date = primary.state().start();
+        T host = DMRegistry.getEntity(objective.type(), objective.id());
+        TimelineChange<T> proposedChange = objective.state().change();
+        LocalDate date = objective.state().start();
         while (true){
             GlobalVars.setCurrentDate(date);
-            TimelineState<HT> state = host.getCurrentState();
-            for (TimelineChange<HT> change : state.getChanges()) {
+            TimelineState<T> state = host.getCurrentState();
+            for (TimelineChange<T> change : state.getDiffs()) {
                 List<StandingChange> localSC = new ArrayList<>();
                 if (change.isDeactivated()) continue;
                 if (proposedChange.canNullify(change)) {
@@ -138,12 +134,16 @@ public class Sandbox {
         }
         endSimulation(SandboxCode.END_SAVE,host,DateUtilities.ceiling(date,sandboxEndDate),standingChanges);
     }
-
+    private void main(){
+        loadSandbox();
+        runSimulation();
+        shutdown();
+    }
     /**
      * Handles errors related to a given timeline change involving a specific entity and resolves them
      * based on provided resolution priorities and responses.
      *
-     * @param <HT> The type of the DateMutableEntity being modified by the timeline change.
+     * @param <T> The type of the DateMutableEntity being modified by the timeline change.
      * @param <HC> The type of the TimelineContainer associated with the DateMutableEntity.
      * @param c The timeline change being processed.
      * @param e The specific entity being modified by the timeline change.
@@ -153,7 +153,7 @@ public class Sandbox {
      * @return A map where each key is a {@link StandingChange} representing a processed change,
      *         and the corresponding value is the associated {@link StateError}.
      */
-    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> Map<StandingChange,StateError> handleError(TimelineChange<HT> c, HT e, List<StateError> errors, HashMap<StateError,String> autoResolves){
+    private <HT extends DateMutableEntity<HT>,HC extends TimelineContainer<HC>> Map<StandingChange,StateError> handleError(TimelineChange<HT> c, HT e, List<StateError> errors, HashMap<StateError,String> autoResolves){
         TreeMap<Integer,Pair<StateError,String>> errorsByPriority = new TreeMap<>();
         for (Map.Entry<StateError,String> entry : autoResolves.entrySet()){
             String resolution = entry.getValue();
@@ -190,14 +190,14 @@ public class Sandbox {
      * @return A map where each key is a {@link StandingChange} representing a processed change,
      *         and the corresponding value is the associated {@link StateError}.
      */
-    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> Map<StandingChange,StateError> buildMap(TimelineChange<HT> c, HT e, TreeMap<Integer,Pair<StateError,String>> errorsByPriority){
+    private <HT extends DateMutableEntity<HT>,HC extends TimelineContainer<HC>> Map<StandingChange,StateError> buildMap(TimelineChange<HT> c, HT e, TreeMap<Integer,Pair<StateError,String>> errorsByPriority){
         Map<StandingChange,StateError> standingChanges = new HashMap<>();
         for (Map.Entry<Integer,Pair<StateError,String>> entry : errorsByPriority.entrySet()){
             final StateError error = entry.getValue().getLeft();
             final String response = entry.getValue().getRight();
             final SandboxCode code = error.handleDecision(this,c,e);
-            LocalDate start = error.getOldChange().getDate();
-            LocalDate end = error.getOldChange().getEndDate();
+            LocalDate start = error.getOldChange().getStart();
+            LocalDate end = error.getOldChange().getEnd();
             if (start == null){
                 start = GlobalVars.CURRENT_DATE();
             }
@@ -216,7 +216,7 @@ public class Sandbox {
         }
         return standingChanges;
     }
-    public <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> void endSimulation(SandboxCode code, HT subject, LocalDate endDate, Set<StandingChange> standingChanges){
+    public <HT extends DateMutableEntity<HT>,HC extends TimelineContainer<HC>> void endSimulation(SandboxCode code, HT subject, LocalDate endDate, Set<StandingChange> standingChanges){
         //TODO write out later, basically parse SandboxCode, then run shutdown
         switch (code){
             case SandboxCode.END_DISCARD -> {
@@ -225,12 +225,12 @@ public class Sandbox {
                 break;
             }
             case SandboxCode.END_SAVE -> {
-                TimelineChange<HT> change = primary.state().change();
+                TimelineChange<HT> change = objective.state().change();
                 buildBreadcrumb(change,endDate,standingChanges);
             }
         }
     }
-    private <HT extends DateMutableEntity<HT,HC>,HC extends TimelineContainer<HC>> void buildBreadcrumb(TimelineChange<HT> change, LocalDate date, Collection<StandingChange> standingChanges){
+    private <HT extends DateMutableEntity<HT>,HC extends TimelineContainer<HC>> void buildBreadcrumb(TimelineChange<HT> change, LocalDate date, Collection<StandingChange> standingChanges){
         TimelineChange.Breadcrumb crumb = change.getBreadcrumb();
         crumb.addEndPoint(date);
         for (StandingChange sc : standingChanges){
@@ -256,7 +256,9 @@ public class Sandbox {
             //TODO add save in too
         }
     }
-
+    public Thread getThread(){
+        return thread;
+    }
     /**
      * A record representing a change in the state or timeline of the sandbox, encapsulating key metadata
      * about the triggering event, the specific change, and the resolution applied. This class serves as a
@@ -327,6 +329,7 @@ public class Sandbox {
         public static long parse(long eventKey, long privateKey){
             return Hashing.murmur3_128().newHasher().putLong(eventKey).putLong(privateKey).hash().asLong();
         }
+
         public long hash(long eventKey){
             return parse(eventKey,privateKey);
         }

@@ -10,8 +10,8 @@ import java.util.Date;
 import java.util.List;
 
 import static com.base.DateMutableEntity.buildJson;
-//TODO: here's the issue, this can't reference DateMutableEntitys directly..
-// Which means I need to create a new record for a reference to the DME that actually links to the Class type and the
+//TODO: here's the issue, this can't subject DateMutableEntitys directly..
+// Which means I need to create a new record for a subject to the DME that actually links to the Class type and the
 // UUID so I can find it..
 public record StateChangeKey(StateChangeType type, StateReference... variables) {
 

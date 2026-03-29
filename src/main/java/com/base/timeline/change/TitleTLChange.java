@@ -2,8 +2,7 @@ package com.base.timeline.change;
 
 import com.GlobalVars;
 import com.base.ObjectType;
-import com.base.flags.Errors;
-import com.base.flags.StateError;
+import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.Condition;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.base.flags.Errors.*;
 import static com.base.timeline.change.TimelineChange.ChangeTags.*;
 import static com.base.timeline.change.conditions.ApplyConditions.*;
 
@@ -31,7 +29,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         this.holder = character;
     }
     public boolean isSameTitle(TitleTLChange<?> t){
-        return t.getTitle().getUuid().equals(title.getUuid());
+        return t.getTitle().getID().equals(title.getID());
     }
 
     public DMEReference<T> getTitle() {
@@ -45,14 +43,14 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
     public boolean isSameHolder(TitleTLChange<?> t){
         if (holder.isEmpty() && t.getHolder().isEmpty()) return true;
         if (holder.isEmpty() || t.getHolder().isEmpty()) return false;
-        return holder.get().getUuid().equals(t.getHolder().get().getUuid());
+        return holder.get().getID().equals(t.getHolder().get().getID());
     }
 
     @Override
     public HashSet<DMEReference<?>> getScope() {
         Title<?> t = title.link();
         HashSet<DMEReference<?>> scope = new HashSet<>();
-        safeAddToSet(scope,ObjectType.TITLE, title.getUuid());
+        safeAddToSet(scope,ObjectType.TITLE, title.getID());
         for (Title<?> s : t.getChildren()){
             safeAddToSet(scope,ObjectType.TITLE,s.getId());
         }
@@ -60,9 +58,9 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         if (parent.isPresent()){
             safeAddToSet(scope,ObjectType.TITLE, parent.get().getId());
         }
-        if (holder.isPresent()) safeAddToSet(scope,ObjectType.CHARACTER, holder.get().getUuid());
+        if (holder.isPresent()) safeAddToSet(scope,ObjectType.CHARACTER, holder.get().getID());
         for (SuccessionEntry<?> entry : t.getSuccession().getAllEntries()){
-            safeAddToSet(scope,ObjectType.CHARACTER, entry.getSubject().getUuid());
+            safeAddToSet(scope,ObjectType.CHARACTER, entry.getSubject().getID());
             for (UUID los : entry.getLoS()){
                 safeAddToSet(scope,ObjectType.CHARACTER, los);
             }
