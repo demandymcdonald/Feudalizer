@@ -143,12 +143,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         }
     }
 
-    private void moveState(Timeline<T> timeline, TimelineState<T> d, TimelineChange<T> correctlyDatedChange, List<TimelineChange<T>> state){
-        for (TimelineChange<T> c : state){
-            c.
-        }
 
-    }
     public boolean isLoaded() {
         return isLoaded;
     }
