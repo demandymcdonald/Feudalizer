@@ -6,27 +6,28 @@ import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.flags.StateError;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.simulation.people.BookCharacter;
 import com.simulation.people.Family;
+import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import javax.management.relation.Relation;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public abstract class FamilyTLChange extends TimelineChange<Family> {
-    private ImmutableList<DMEReference<BookCharacter>> involved;
+    private LinkedHashMap<DMEReference<BookCharacter>, Family.Relationship> involved = new LinkedHashMap<>();
 
 
-    protected FamilyTLChange(DMEReference<Family> owner, LocalDate date, DMEReference<BookCharacter>... involves) {
+    protected FamilyTLChange(DMEReference<Family> owner, LocalDate date, Pair<DMEReference<BookCharacter>, Family.Relationship>... involves) {
         super(owner, date);
-        ArrayList<DMEReference<BookCharacter>> involved = new ArrayList<>();
-        for (DMEReference<BookCharacter> ref : involves) {
-            involved.add(ref);
+        for (Pair<DMEReference<BookCharacter>, Family.Relationship> ref : involves) {
+            involved.put(ref.getKey(),ref.getValue());
         }
-        this.involved = ImmutableList.copyOf(involved);
+        //this.involved = ImmutableList.copyOf(involved);
     }
     @Override
     protected ChangeTags[] getTags() {
@@ -43,23 +44,42 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
         return toReturn;
     }
     public DMEReference<BookCharacter> getCharacter(int index) {
-        return involved.get(index);
+        List<DMEReference<BookCharacter>> list = new ArrayList<>(involved.keySet());
+        return list.get(index);
+    }
+    public DMEReference<BookCharacter>[] getCharacter(Family.Relationship index) {
+        List<DMEReference<BookCharacter>> list = new ArrayList<>();
+        for (Map.Entry<DMEReference<BookCharacter>, Family.Relationship> entry : involved.entrySet()) {
+            if (entry.getValue() == index) list.add(entry.getKey());
+        }
+        return list.toArray(new DMEReference[0]);
     }
     @Override
     public JsonObject onLoad(JsonObject data) {
-        return null;
+        data.getAsJsonArray("FamilyTLData").forEach(o -> {
+            JsonObject o2 = (JsonObject) o;
+            involved.put(DMEReference.deserialize(o2.getAsJsonObject("character")), Family.Relationship.valueOf(o2.get("relationship").getAsString()));
+        });
+        return data;
     }
 
     @Override
     public void saveAdditional(JsonObject data) {
-        super
+        JsonArray o = new JsonArray();
+        for (Map.Entry<DMEReference<BookCharacter>, Family.Relationship> entry : involved.entrySet()) {
+            JsonObject o2 = new JsonObject();
+            o2.add("character",entry.getKey().serialize());
+            o2.addProperty("relationship",entry.getValue().name());
+            o.add(o2);
+        }
+        data.add("FamilyTLData",o);
     }
 
     public static class addMember extends FamilyTLChange{
-        private Family.Relationship relationship;
+
         public addMember(DMEReference<Family> owner, LocalDate date, DMEReference<BookCharacter> added, Family.Relationship relationship) {
             super(owner, date, added);
-            this.relationship = relationship;
+
         }
 
         @Override
