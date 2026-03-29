@@ -24,7 +24,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     private String givenName;
     private String surname;
     private Gender gender;
-    private Optional<House> house;
+    private DMEReference<House> house;
     private final HashMap<Family, FamilyRelationship> families = new HashMap<>();
     private List<Title<?>> Titles = new ArrayList<>();
     public BookCharacter(UUID id, String givenName, String surname, House house, LocalDate dateOfBirth, LocalDate dateOfDeath, Gender gender, Pair<Family,FamilyRelationship>... families) {

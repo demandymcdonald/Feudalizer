@@ -28,6 +28,9 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         this.title = title;
         this.holder = character;
     }
+    protected TitleTLChange(DMEReference<T> title, LocalDate date) {
+        super(title,date);
+    }
     public boolean isSameTitle(TitleTLChange<?> t){
         return t.getTitle().getID().equals(title.getID());
     }
@@ -96,6 +99,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         public Grant(DMEReference<T> title, DMEReference<BookCharacter> character, LocalDate date) {
             super(title, Optional.ofNullable(character),date);
         }
+
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
             entity.setHolder(getHolder().get().link());
@@ -116,10 +120,11 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         protected List<Condition<StateError, ?>> buildApplyConditions() {
             return List.of(IS_OPPOSITE,DUPLICATE,CAN_STILL_HOLD,WAS_REGRANTED,WAS_REVOKED);
         }
-
-        public static <T extends Title<T>> Grant<T> fromJson(LocalDate date, JsonObject json){
-            Pair<DMEReference<T>,Optional<DMEReference<BookCharacter>>> pair = getBase(json);
-            return new Grant<>(pair.getLeft(),pair.getRight().orElse(null),date);
+        public Grant(DMEReference<T> title, LocalDate date) {
+            super(title, Optional.empty(),date);
+        }
+        public static <T extends Title<T>> Grant<T> fromJson(LocalDate date, DMEReference<T> ref){
+            return new Grant<>(ref,date);
         }
 
 
@@ -129,6 +134,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         public Inherit(DMEReference<T> title, DMEReference<BookCharacter> character, LocalDate date) {
             super(title, Optional.ofNullable(character),date);
         }
+
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
             if (firstTime){
@@ -153,16 +159,20 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
             return List.of(INHERITS_TITLE(),DUPLICATE,WAS_REGRANTED,WAS_REVOKED);
         }
 
-        public static <T extends Title<T>> Grant<T> fromJson(LocalDate date, JsonObject json){
-            Pair<DMEReference<T>,Optional<DMEReference<BookCharacter>>> pair = getBase(json);
-            return new Grant<>(pair.getLeft(),pair.getRight().orElse(null),date);
-        }
+
         public boolean isFirstTime(){
             return firstTime;
         }
         public void setFirstTime(boolean firstTime) {
             this.firstTime = firstTime;
         }
+        public Inherit(DMEReference<T> title, LocalDate date) {
+            super(title, Optional.empty(),date);
+        }
+        public static <T extends Title<T>> Inherit<T> fromJson(LocalDate date, DMEReference<T> ref){
+            return new Inherit<>(ref,date);
+        }
+
     }
     public static class Revoke<T extends Title<T>> extends TitleTLChange<T> {
         public Revoke(DMEReference<T> title, DMEReference<BookCharacter> character, LocalDate date) {

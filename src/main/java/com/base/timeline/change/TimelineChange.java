@@ -48,7 +48,11 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         this.owner = owner;
         this.start = date;
     }
-
+    protected TimelineChange(DMEReference<T> owner, LocalDate date, JsonObject additionalData) {
+        this.owner = owner;
+        this.start = date;
+        onLoad(additionalData);
+    }
     protected enum ChangeTags{
         RELATIONSHIP_CHANGE,
         MARRIAGE_CHANGE,
@@ -98,11 +102,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
             entity.saveStateChange(state,null);
         }
     }
-    public final void undo(T entity, TimelineChange<T> newData){
-        TimelineState<T> state = onUndo(entity,newData);
-        doNullify(state);
-        entity.saveStateChange(state,null);
-    }
     public final void nullify(T entity, @Nullable TimelineChange<T> stateToNullify){
         TimelineState<T> state = onNullify(entity,stateToNullify);
         entity.saveStateChange(state,null);
@@ -128,7 +127,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
         return doNullify(entity.getCurrentState());
     }
-    protected abstract TimelineState<T> onUndo(T entity, TimelineChange<T> previousState);
     private TimelineState<T> doNullify(TimelineState<T> state){
         state.changeLog().remove(this);
         return state;
@@ -171,23 +169,30 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
 
     public abstract HashSet<DMEReference<?>> getScope();
     protected abstract String getText();
-    protected abstract JsonObject toJson();
     public final JsonObject serialize() {
         String type = this.getClass().getSimpleName();
         JsonObject object = new JsonObject();
-        JsonObject payload = toJson();
-        object.addProperty("type", type);
-        object.addProperty("date", start.toEpochDay());
+        JsonObject metadata = new JsonObject();
+        JsonObject payload = new JsonObject();
+        saveAdditional(payload);
+        metadata.add("subject", owner.serialize());
+        metadata.addProperty("type", type);
+        metadata.addProperty("date", start.toEpochDay());
+        metadata.add("breadcrumb", breadcrumb.toJson());
         object.add("payload", payload);
+        object.add("metadata", metadata);
         return object;
     }
     public static <R extends TimelineChange<T>,T extends DateMutableEntity<T>> R deserialize(JsonObject payload) {
         String type = payload.get("type").getAsString();
-        LocalDate date = LocalDate.ofEpochDay(payload.get("date").getAsLong());
         JsonObject payloadObject = payload.getAsJsonObject("payload");
+        JsonObject metadata = payload.getAsJsonObject("metadata");
         try {
             Class<R> clazz = (Class<R>) Class.forName(type);
-            return TLChanges.getChange(clazz,date,payloadObject);
+            LocalDate date = LocalDate.ofEpochDay(metadata.get("date").getAsLong());
+            DMEReference<T> owner = DMEReference.deserialize(metadata.getAsJsonObject("subject"));
+            R r = TLChanges.getChange(clazz,owner,date);
+            r.onLoad(payloadObject);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Could not deserialize timeline change: " + type);
@@ -332,7 +337,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
 
         @Override
-        public JsonObject toJson() {
+        public final JsonObject toJson() {
             JsonObject object = new JsonObject();
             if (endOfPropagation != null){
                 object.addProperty("eop",endOfPropagation.toEpochDay());
@@ -349,7 +354,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
 
         @Override
-        public void fromJson(JsonObject json) {
+        public final void fromJson(JsonObject json) {
             if (json.has("eop")){
                 this.endOfPropagation = LocalDate.ofEpochDay(json.get("eop").getAsLong());
             };

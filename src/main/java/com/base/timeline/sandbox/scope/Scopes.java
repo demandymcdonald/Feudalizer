@@ -53,7 +53,7 @@ public class Scopes {
                 }
 
             }
-            for (BookCharacter child : f.getChildren()){
+            for (BookCharacter child : f.getMembers()){
                 if (child != null && !child.equals(character) && !exclude.contains(child.getId())){
                     exclude.add(child.getId());
                     data.putAll(getPersonData(child,includeFullSpouse,false,exclude));

@@ -83,8 +83,8 @@ public class House extends DateMutableEntity<House> {
             characters.addAll(house.getAllCharacters());
         }
         for (Family family : DirectMembers) {
-            characters.addAll(family.getChildren());
-            characters.add(family.getPrimarySpouse());
+            characters.addAll(family.getMembers());
+            characters.add(family.getHeadofFamily());
             characters.add(family.getSecondarySpouse().orElse(null));
         }
         return characters;

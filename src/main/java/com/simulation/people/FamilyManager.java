@@ -109,7 +109,7 @@ public class FamilyManager extends AbstractMutableManager<Family,FamilyState> {
         while (primary != null) {
             for (Family family : getNuclear(primary)) {
                 families.add(family);
-                BookCharacter spouse1 = family.getPrimarySpouse();
+                BookCharacter spouse1 = family.getHeadofFamily();
                 BookCharacter spouse2 = family.getSecondarySpouse().orElse(null);
                 if (spouse2 != null && !spouse2.getId().equals(primary.getId())) {
                     nextChecks.add(spouse2);
@@ -135,7 +135,7 @@ public class FamilyManager extends AbstractMutableManager<Family,FamilyState> {
         }
         return dynasty;
     }
-//    public static HashMap<Family,FamilyRelationship> RebuildRelationshipMap(BookCharacter character){
+//    public static HashMap<Family,Relationship> RebuildRelationshipMap(BookCharacter character){
 //
 //    }
     @Override

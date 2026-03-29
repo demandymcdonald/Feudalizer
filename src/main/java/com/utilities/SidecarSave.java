@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 public interface SidecarSave{
 
 
-    JsonObject additionalData();
+    void saveAdditional(JsonObject data);
     JsonObject onLoad(JsonObject data);
 
 }
