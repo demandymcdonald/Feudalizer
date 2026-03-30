@@ -1,20 +1,13 @@
 package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
-import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
-import com.base.timeline.change.conditions.ApplyConditions;
 import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.google.gson.JsonObject;
-import com.simulation.character.BookCharacter;
-import com.simulation.people.Family;
-import com.simulation.people.House;
-import com.simulation.title.Title;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
 
 import static com.base.timeline.change.CauseOfDeath.NOT_LOADED;
@@ -57,12 +50,12 @@ public abstract class BoundaryChange<B extends BoundaryChange<B,T>,T extends Dat
     }
 
     @Override
-    public void saveAdditional(JsonObject data) {
+    public void additionalSave(JsonObject data) {
 
     }
 
     @Override
-    public void loadAdditional(JsonObject data) {
+    public void additionalLoad(JsonObject data) {
 
     }
 }

@@ -6,9 +6,9 @@ import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
-import com.simulation.character.BookCharacter;
-import com.simulation.people.Family;
-import com.simulation.people.House;
+import com.objects.character.BookCharacter;
+import com.objects.people.Family;
+import com.objects.people.House;
 
 import java.util.Optional;
 import java.util.UUID;

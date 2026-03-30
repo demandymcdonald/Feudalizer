@@ -1,7 +1,7 @@
 package com.display.geography;
 
 import com.google.common.collect.HashMultimap;
-import com.simulation.title.TitleManager;
+import com.objects.title.TitleManager;
 import javafx.geometry.Point2D;
 import javafx.util.Pair;
 import org.geotools.api.feature.Property;
@@ -15,7 +15,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.w3.xlink.Simple;
 
 import java.util.*;
 

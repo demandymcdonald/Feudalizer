@@ -1,9 +1,9 @@
 package com.display.windows.cards.edit;
 
 import com.base.DMRegistry;
-import com.simulation.character.BookCharacter;
-import com.simulation.character.CharacterManager;
-import com.simulation.people.House;
+import com.objects.character.BookCharacter;
+import com.objects.character.CharacterManager;
+import com.objects.people.House;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;

@@ -3,9 +3,9 @@ package com.base.timeline.change.conditions;
 import com.base.timeline.flags.Errors;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
-import com.simulation.factions.FactionManager;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
+import com.objects.factions.FactionManager;
+import com.objects.character.BookCharacter;
+import com.objects.title.Title;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.List;

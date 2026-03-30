@@ -15,7 +15,22 @@ public class TimelineHelper {
     public static <T extends DateMutableEntity<T>> TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, long breadcrumb, LocalDate date) {
         return timeline.getStateAt(date).getChange(breadcrumb);
     }
+    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline, Class<?> c, LocalDate startingDate) {
+        //TODO think on this. Potentially a 3 state if could get the same result. Though the id check would (I think) be undeniable.
+        while (true) {
+            TimelineState<T> state = timeline.getStateBefore(startingDate);
+            startingDate = state.getStart();
+            for (TimelineChange<? super T> change : state.getChanges()) {
+                long id = TimelineChange.generateID(c,startingDate,change.additionalIDVars());
+                if (change.getId() == id) {
+                    return Pair.of(id,startingDate);
+                }
+            }
+        }
 
+
+        return Pair.of(null,null);
+    }
     public static <T extends DateMutableEntity<T>> void BreadcrumbCleanup(Timeline<T> timeline, long breadcrumb, LocalDate startDate, LocalDate newEnd) {
         if (newEnd.isBefore(startDate)) {
             cleanInternal(timeline, breadcrumb, newEnd, startDate);
@@ -101,16 +116,16 @@ public class TimelineHelper {
         return changes.stream().filter(predicate).toList();
     }
 
-    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> getLastValidChange(Timeline<T> timeline, TimelineState<? super T> current, TimelineChange<? super T> soonToBeGone) {
+    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> getLastValidChange(Timeline<T> timeline, TimelineState<T> current, TimelineChange<? super T> soonToBeGone) {
         final boolean isPositive = soonToBeGone.isPositive();
-        List<Class<? super T>> opposites = (List<Class<? super T>>) soonToBeGone.oppositeChanges();
-        List<Class<? super T>> siblings = (List<Class<? super T>>) soonToBeGone.siblingChanges();
+        List<Class<TimelineChange<? super T>>> opposites = (List<Class<TimelineChange<? super T>>>) soonToBeGone.oppositeChanges();
+        List<Class<TimelineChange<? super T>>> siblings = (List<Class<TimelineChange<? super T>>>) soonToBeGone.siblingChanges();
         Class<? extends TimelineChange<? super T>> cClass = (Class<? extends TimelineChange<? super T>>) soonToBeGone.getClass();
         LocalDate currentDate = current.getStart();
         while (true) {
             TimelineState<T> next = timeline.getStateBefore(currentDate);
             for (TimelineChange<? super T> change : next.getChanges()) {
-                Class<? extends TimelineChange<T>> changeClass = (Class<? extends TimelineChange<T>>) change.getClass();
+                Class<TimelineChange<? super T>> changeClass = (Class<TimelineChange<? super T>>) change.getClass();
                 if ((isPositive && (changeClass.equals(cClass) || siblings.contains(changeClass))) ||
                         !isPositive && opposites.contains(changeClass)) {
                     return change;
@@ -141,5 +156,6 @@ public class TimelineHelper {
     public static <T extends DateMutableEntity<T>> HashMap<Long, LocalDate> extendTrail(Timeline<T> timeline, LocalDate date) {
         return extendTrail(timeline, timeline.getStateBefore(date), date);
     }
+
 }
 

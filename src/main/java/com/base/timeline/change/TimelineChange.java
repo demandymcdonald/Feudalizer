@@ -40,6 +40,8 @@ import java.util.function.Supplier;
  */
 public abstract class TimelineChange<T extends DateMutableEntity<T>> implements SuperclassSerializable {
     // Rules: TimelineChange implementations should only save/use StateReferences! Never use actual objects. This keeps them sandbox safe. Include this fact in documentation
+
+    //TODO Third kind of check: once per TimelineState (For things like: is still alive, or canHoldTitle, or Does this Religion exist?
     private LocalDate start;
     private final DMEReference<T> owner;
     private final Supplier<Long> id = Suppliers.memoize(this::generateID);
@@ -81,28 +83,27 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
             currentState.removeChange(beingOverwritten.getId());
             TimelineHelper.BreadcrumbCleanup(getOwner().get().getTimeline(),beingOverwritten.getId(),beingOverwritten.getStart(),beingOverwritten.getEnd());
         } else {
-            beingOverwritten.deactivate();
+            beingOverwritten.deactivate(true);
         }
         currentState.insertChange(this);
     }
     public final void nullify(T entity, TimelineState<T> state, TimelineChange<T> changeToNullify){
         onNullify(entity,state,changeToNullify);
-        changeToNullify.deactivate();
+        changeToNullify.deactivate(true);
     }
     public final void deactivate(boolean sandbox){
-        SandboxCode c = SandboxCode.CONTINUE;
-
+        SandboxCode c = SandboxCode.END_SAVE;
         if (sandbox){
-            SandboxHandler.SandboxApplyChange(new Objective<>(owner,this),start,null);
-        } else {
-
+            c = SandboxHandler.SandboxApplyChange(new Objective<>(owner,this),start,null);
         }
-        onDeactivate();
-        deactivated = true;
-        Timeline<T> tl = owner.get().getTimeline();
-        TimelineHelper.BreadcrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
-        TimelineChange<T> lastData = TimelineHelper.getLastValidChange(tl,tl.getStateAt(this.start),this);
-        lastData.moveChange(null,breadcrumb.getEndOfPropagation());
+        if (c == SandboxCode.END_SAVE){
+            onDeactivate();
+            deactivated = true;
+            Timeline<T> tl = owner.get().getTimeline();
+            TimelineHelper.BreadcrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
+            TimelineChange<? super T> lastData = (TimelineChange<? super T>) TimelineHelper.getLastValidChange(tl,tl.getStateAt(this.start),this);
+            lastData.moveChange(null,breadcrumb.getEndOfPropagation());
+        }
     }
     public void reactivate(boolean sandbox){
         onReactivate();
@@ -145,7 +146,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         return this.getClass().equals(state.getClass());
     }
     public abstract List<Class<TimelineChange<? super T>>> oppositeChanges();
-    public List<Class<? super T>> siblingChanges(){
+    public List<Class<TimelineChange<? super T>>> siblingChanges(){
         return new ArrayList<>();
     };
     public abstract boolean isPositive();
@@ -246,34 +247,42 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
             });
     protected abstract List<Condition<StateError,? super T>> buildApplyConditions();
     protected abstract List<Condition<ConditionResult.Nullify,? super T>> buildNullifyConditions();
-
-    @SuppressWarnings("UnstableApiUsage")
     private long generateID(){
+        return generateID(this.getClass(),start,additionalIDVars());
+    }
+    @SuppressWarnings("UnstableApiUsage")
+    public static long generateID(Class<?> c , LocalDate start, List<DMEReference<?>> additionalIDVars){
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putLong(start.toEpochDay());
-        hasher.putString(this.getClass().getSimpleName(), StandardCharsets.UTF_8);
-        hasher.putLong(owner.hash());
-        for (DMEReference<?> dme : additionalIDVars()) {
+        hasher.putString(c.getSimpleName(), StandardCharsets.UTF_8);
+        //hasher.putLong(owner.hash());
+        //The reason I'm removing the owner long is because it might make bug tracking harder on breadcrumbs, and I
+        //genuinely don't think it adds anything to the mix.
+        for (DMEReference<?> dme : additionalIDVars) {
             hasher.putLong(dme.hash());
         }
         return hasher.hash().asLong();
     }
+
     protected void setStatic(){
         isStatic = true;
     }
     public final boolean isStatic(){
         return isStatic;
     }
-    protected List<DMEReference<?>> additionalIDVars(){
+    public List<DMEReference<?>> additionalIDVars(){
         return new ArrayList<>();
     }
     @Override
-    public final void saveMain(JsonObject o) {
+    public void mainSave(JsonObject o) {
         o.add("breadcrumb", breadcrumb.toJson());
     }
-
     @Override
-    public final void saveMetadata(JsonObject o) {
+    public void mainLoad(JsonObject object) {
+        breadcrumb.fromJson(object.getAsJsonObject("breadcrumb"));
+    }
+    @Override
+    public final void metadataSave(JsonObject o) {
         o.add("subject", owner.serialize());
         o.addProperty("date", start.toEpochDay());
     }

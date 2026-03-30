@@ -2,7 +2,7 @@ package com.display.windows.cards.edit.title;
 
 import com.base.DMRegistry;
 import com.display.windows.cards.edit.BaseEditCard;
-import com.simulation.title.Title;
+import com.objects.title.Title;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;

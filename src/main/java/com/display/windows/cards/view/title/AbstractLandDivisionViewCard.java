@@ -1,7 +1,7 @@
 package com.display.windows.cards.view.title;
 
-import com.simulation.title.land.AbstractLandDivision;
-import com.simulation.title.Title;
+import com.objects.title.land.AbstractLandDivision;
+import com.objects.title.Title;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;

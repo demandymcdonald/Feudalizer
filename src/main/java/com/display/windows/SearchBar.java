@@ -1,7 +1,7 @@
 package com.display.windows;
 
 import com.base.DMRegistry;
-import com.simulation.character.BookCharacter;
+import com.objects.character.BookCharacter;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

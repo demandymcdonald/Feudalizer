@@ -37,6 +37,11 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     private volatile Pair<LocalDate,StateError> killBox;
     //TODO I need a way to have secondary saves pulled by default:
     // for example the parent in a deJure change also needs to be saved, even though they aren't the subject.
+
+    //TODO ensure that the change to the target object is applied to it's state at the END of the sandbox, not the beginning.
+    //TODO add special handling for TimelineMapChanges, because they're different. Namely: check if a change already exists
+    // in the state, and if so, merge the two. Also: set the leapfrog date for it (using a currently unwritten TL helper
+    // method probably.
     public Sandbox(Objective<T> obj) {
         this.objective = obj;
         this.subject = obj.subject();

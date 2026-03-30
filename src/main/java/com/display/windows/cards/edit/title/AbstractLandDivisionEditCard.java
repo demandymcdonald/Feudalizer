@@ -1,8 +1,8 @@
 package com.display.windows.cards.edit.title;
 
 import com.base.DMRegistry;
-import com.simulation.title.land.AbstractLandDivision;
-import com.simulation.character.BookCharacter;
+import com.objects.title.land.AbstractLandDivision;
+import com.objects.character.BookCharacter;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;

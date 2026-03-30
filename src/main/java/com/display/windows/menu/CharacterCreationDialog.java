@@ -1,9 +1,9 @@
 package com.display.windows.menu;
 
 import com.GlobalVars;
-import com.simulation.character.BookCharacter;
-import com.simulation.character.CharacterManager;
-import com.simulation.people.House;
+import com.objects.character.BookCharacter;
+import com.objects.character.CharacterManager;
+import com.objects.people.House;
 import com.base.DMRegistry;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

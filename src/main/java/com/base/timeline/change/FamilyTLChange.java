@@ -7,8 +7,8 @@ import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.flags.StateError;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.simulation.character.BookCharacter;
-import com.simulation.people.Family;
+import com.objects.character.BookCharacter;
+import com.objects.people.Family;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
@@ -51,7 +51,7 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
         return list.toArray(new DMEReference[0]);
     }
     @Override
-    public JsonObject loadAdditional(JsonObject data) {
+    public JsonObject additionalLoad(JsonObject data) {
         data.getAsJsonArray("FamilyTLData").forEach(o -> {
             JsonObject o2 = (JsonObject) o;
             involved.put(DMEReference.deserialize(o2.getAsJsonObject("character")), Family.Relationship.valueOf(o2.get("relationship").getAsString()));
@@ -60,7 +60,7 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
     }
 
     @Override
-    public void saveAdditional(JsonObject data) {
+    public void additionalSave(JsonObject data) {
         JsonArray o = new JsonArray();
         for (Map.Entry<DMEReference<BookCharacter>, Family.Relationship> entry : involved.entrySet()) {
             JsonObject o2 = new JsonObject();

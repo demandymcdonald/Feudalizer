@@ -35,9 +35,9 @@ public interface SuperclassSerializable {
         metadata.addProperty("isSuperSerialized",true);
         JsonObject main = new JsonObject();
         JsonObject subclass = new JsonObject();
-        saveMetadata(metadata);
-        saveMain(main);
-        saveAdditional(subclass);
+        metadataSave(metadata);
+        mainSave(main);
+        additionalSave(subclass);
         data.add("metadata",metadata);
         data.add("main",main);
         data.add("subclass",subclass);
@@ -46,11 +46,11 @@ public interface SuperclassSerializable {
     default void deserialize(JsonObject data){
         JsonObject main = data.get("main").getAsJsonObject();
         JsonObject subclass = data.get("subclass").getAsJsonObject();
-        loadMain(main);
-        loadAdditional(subclass);
+        mainLoad(main);
+        additionalLoad(subclass);
     }
 
-    default void saveMetadata(JsonObject data){
+    default void metadataSave(JsonObject data){
         data.add("metadata",new JsonObject());
     };
     static boolean isSuperSerialized(JsonObject data){
@@ -61,8 +61,8 @@ public interface SuperclassSerializable {
         if (!isSuperSerialized(data)) throw new IllegalArgumentException("Not a super serialized object: "+ data.toString());
         return data.get("metadata").getAsJsonObject();
     }
-    void saveMain(JsonObject object);
-    void loadMain(JsonObject object);
-    void saveAdditional(JsonObject data);
-    void loadAdditional(JsonObject data);
+    void mainSave(JsonObject object);
+    void mainLoad(JsonObject object);
+    void additionalSave(JsonObject data);
+    void additionalLoad(JsonObject data);
 }

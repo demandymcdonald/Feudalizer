@@ -7,8 +7,8 @@ import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TitleTLChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
+import com.objects.character.BookCharacter;
+import com.objects.title.Title;
 
 import java.time.LocalDate;
 

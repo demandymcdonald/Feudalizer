@@ -1,21 +1,11 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
-import com.base.timeline.flags.Errors;
 import com.base.timeline.flags.StateError;
-import com.base.reference.DMEReference;
-import com.base.timeline.TimelineChangeState;
-import com.base.timeline.change.BoundaryChange;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TitleTLChange;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
-import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.List;
 import java.util.Optional;
-
-import static com.base.timeline.flags.Errors.*;
 
 public class ApplyConditions {
 //    public static <T extends DateMutableEntity<T>> List<Condition<StateError,T>> BaseConditions(){

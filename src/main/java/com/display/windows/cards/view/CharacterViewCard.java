@@ -1,9 +1,9 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.UIComponents;
-import com.simulation.character.BookCharacter;
-import com.simulation.people.FamilyManager;
-import com.simulation.title.Title;
+import com.objects.character.BookCharacter;
+import com.objects.people.FamilyManager;
+import com.objects.title.Title;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

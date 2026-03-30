@@ -9,16 +9,15 @@ import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.change.conditions.NullifyConditions;
 import com.google.gson.JsonObject;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
-import com.simulation.title.succession.rules.SuccessionEntry;
+import com.objects.character.BookCharacter;
+import com.objects.title.Title;
+import com.objects.title.succession.rules.SuccessionEntry;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
 
 import static com.base.timeline.change.TimelineChange.ChangeTags.*;
-import static com.base.timeline.change.conditions.ApplyConditions.*;
 
 public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T> {
     private final DMEReference<T> title;

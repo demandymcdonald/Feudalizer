@@ -1,8 +1,8 @@
 package com.display.windows.cards.view.title;
 
-import com.simulation.title.land.resources.HabitableLand;
-import com.simulation.title.land.resources.Resource;
-import com.simulation.title.Title;
+import com.objects.title.land.resources.HabitableLand;
+import com.objects.title.land.resources.Resource;
+import com.objects.title.Title;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;

@@ -1,9 +1,9 @@
 package com.base;
 
-import com.simulation.character.BookCharacter;
-import com.simulation.people.Family;
-import com.simulation.people.House;
-import com.simulation.title.Title;
+import com.objects.character.BookCharacter;
+import com.objects.people.Family;
+import com.objects.people.House;
+import com.objects.title.Title;
 
 public enum ObjectType {
     CHARACTER("BookCharacter","Character", BookCharacter.class),

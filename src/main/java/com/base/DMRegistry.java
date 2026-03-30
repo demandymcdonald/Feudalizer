@@ -1,11 +1,11 @@
 package com.base;
 import com.GlobalVars;
 import com.base.reference.DMEReference;
-import com.simulation.character.CharacterManager;
+import com.objects.character.CharacterManager;
 import com.utilities.LoadingManager;
 import com.google.gson.JsonObject;
-import com.simulation.people.*;
-import com.simulation.title.TitleManager;
+import com.objects.people.*;
+import com.objects.title.TitleManager;
 import com.utilities.ThreadManager;
 import com.utilities.ThreadSpecific;
 

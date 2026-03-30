@@ -1,8 +1,8 @@
 package com.base.timeline.change.conditions;
 
 import com.base.reference.DMEReference;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
+import com.objects.character.BookCharacter;
+import com.objects.title.Title;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

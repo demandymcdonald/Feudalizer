@@ -1,0 +1,22 @@
+package com.objects;
+
+public class CauseOfEnd {
+    public enum BookCharacter {
+        CHARACTER_DISEASE_CHILD,
+        CHARACTER_DISEASE_ADULT,
+        CHARACTER_OLD_AGE,
+        CHARACTER_ACCIDENT,
+        CHARACTER_COMBAT,
+        CHARACTER_EXECUTION,
+        CHARACTER_STARVATION,
+        CHARACTER_NATURAL_DISASTER,
+        CHARACTER_POISONING,
+        CHARACTER_ANIMAL_ATTACK,
+        CHARACTER_CHILD_BIRTH,
+        CHARACTER_SUICIDE,
+        CHARACTER_FAMINE,
+        CHARACTER_ERROR,
+        CHARACTER_OTHER,
+    }
+
+}

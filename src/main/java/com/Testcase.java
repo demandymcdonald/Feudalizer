@@ -1,7 +1,7 @@
 package com;
 
-import com.simulation.character.BookCharacter;
-import com.simulation.character.CharacterManager;
+import com.objects.character.BookCharacter;
+import com.objects.character.CharacterManager;
 
 public class Testcase {
     public static final BookCharacter TESTIFICATE = CharacterManager.buildNoble("Testificate","Mojang", "Mojang", BookCharacter.Gender.Male);

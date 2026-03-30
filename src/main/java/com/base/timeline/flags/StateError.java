@@ -9,8 +9,8 @@ import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
+import com.objects.character.BookCharacter;
+import com.objects.title.Title;
 import org.apache.commons.lang3.tuple.Pair;
 
 

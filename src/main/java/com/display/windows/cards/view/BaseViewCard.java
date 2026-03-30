@@ -1,8 +1,8 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.cards.BaseCard;
-import com.simulation.character.BookCharacter;
-import com.simulation.title.Title;
+import com.objects.character.BookCharacter;
+import com.objects.title.Title;
 
 import java.util.function.Consumer;
 

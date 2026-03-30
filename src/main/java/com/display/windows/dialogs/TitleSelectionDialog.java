@@ -2,8 +2,7 @@ package com.display.windows.dialogs;
 
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
-import com.simulation.title.Title;
-import javafx.geometry.Insets;
+import com.objects.title.Title;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.Pair;

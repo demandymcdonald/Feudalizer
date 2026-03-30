@@ -1,10 +1,7 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
-import com.simulation.title.Title;
 import org.apache.commons.lang3.function.TriFunction;
-
-import java.util.function.BiFunction;
 
 public abstract class DMECondition<A extends DMECondition<A,T,U,V>, T extends DateMutableEntity<T>, U extends DateMutableEntity<U>, V extends DateMutableEntity<V>> implements iCondition {
     private final String id;
