@@ -25,24 +25,21 @@ import java.util.function.Supplier;
 public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable {
     private final UUID id;
     private final Timeline<T> timeline;
-    private final Supplier<DMEReference<T>> reference;
+    private final DMEReference<T> reference;
     public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<TimelineChange<? super T>> initialState) {
         this.id = id;
-        this.timeline = new Timeline<T>(getObjectType(),id,created,ended,initialState);
-        this.reference = Suppliers.memoize(() -> {return DMEReference.of(getObjectType(),id);});
-        DMRegistry.registerDateMutable(this);
+        this.reference = DMEReference.of(this.getClass(),id);
+        this.timeline = new Timeline<T>((T) this,reference,created,ended,initialState);
     }
     public DateMutableEntity(LocalDate created, @Nullable LocalDate ended, List<TimelineChange<? super T>> initialState) {
         this(UUID.randomUUID(), created, ended, initialState);
     }
     public DateMutableEntity(DMEReference<T> dme) {
-        if (dme.getType() != this.getObjectType()){
-            throw new IllegalArgumentException("Entity type mismatch between DME and class: " + dme.getType() + " vs " + this.getObjectType());
-        }
+        if (dme == null) throw new NullPointerException("DMEReference cannot be null");
+        if (!dme.getType().equals(this.getClass())) throw new IllegalArgumentException("DMEReference: "+ dme +" must be of type " + this.getClass());
         this.id = dme.getID();
         this.timeline = new Timeline<T>(dme);
-        this.reference = () -> {return dme;};
-        DMRegistry.registerDateMutable(this);
+        this.reference = dme;
     }
     //Note for subclasses. To keep nomenclature simple:
     // 1. setX is the way to trigger a statechange (and sandbox),
@@ -73,13 +70,17 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
         return timeline.getLatestDate();
     }
     public final DMEReference<T> getReference(){
-        return reference.get();
+        return reference;
     }
     //use to add any shortcut/linked entries to other objects (for example, family adding a shortcut link to itself in every member)
     public abstract void onLink();
     //Use to clear any shortcut/linked variables.
-    public abstract void onStateChange();
+    public abstract void doDateChange();
+    public void onDateChange(){
+        doDateChange();
+        timeline.doTimeChange((T)this,current());
 
+    }
     public void relink(){
 
     }
@@ -105,8 +106,6 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public final Timeline<T> getTimeline(){
         return timeline;
     }
-    protected final AbstractMutableManager<T> getManager(){
-        return DMRegistry.getManager(getObjectType());
-    };
+    public abstract <M extends AbstractMutableManager<M,T,?>> M getManager();
     public abstract ObjectType getObjectType();
 }

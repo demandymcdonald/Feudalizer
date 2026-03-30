@@ -32,7 +32,7 @@ public class TitleManager extends AbstractMutableManager<Title<?>, TitleContaine
 
     @Override
     public ObjectType getObjectType() {
-        return null;
+        return ObjectType.TITLE;
     }
 
     public Title<?> getOrCreateTitle(GeometryType geoType, String geometryId) {

@@ -2,13 +2,12 @@ package com;
 
 import com.base.DMRegistry;
 import com.utilities.LoadingManager;
-import com.utilities.ThreadSpecific;
+import com.utilities.ThreadMutable;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.function.Supplier;
 
-public class GlobalVars extends ThreadSpecific {
+public class GlobalVars implements ThreadMutable {
     public static final ThreadLocal<GlobalVars> INSTANCE = new ThreadLocal<>();
     private static GlobalVars gv() {
         return INSTANCE.get();
@@ -39,7 +38,7 @@ public class GlobalVars extends ThreadSpecific {
         return LOADING_MANAGER;
     }
     @Override
-    public Type specificTypeName() {
+    public Type uniqueKey() {
         return Type.GLOBAL_VARIABLE_CONTAINER;
     }
 

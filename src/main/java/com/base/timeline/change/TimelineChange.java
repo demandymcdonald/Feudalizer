@@ -73,11 +73,14 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
      * @param entity the entity on which the apply operation is being performed. This represents
      *               the target for timeline changes, ensuring accurate and consistent state updates.
      */
-    public final void apply(T entity, TimelineState<T> currentState){
+    public void apply(T entity, TimelineState<T> currentState){
         onApply(entity,currentState);
         //may merge with onApply if I don't need any additional logic in here
     }
-    public final void overwrite(TimelineState<T> currentState, TimelineChange<T> beingOverwritten, boolean destructive){
+    public void advance(TimelineState<T> currentState, TimelineChange<? super T> newState, boolean sandbox){
+
+    }
+    public void overwrite(TimelineState<T> currentState, TimelineChange<T> beingOverwritten, boolean destructive){
         onOverwrite(getOwner().get(),currentState,beingOverwritten,destructive);
         if (destructive){
             currentState.removeChange(beingOverwritten.getId());
@@ -87,11 +90,11 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
         currentState.insertChange(this);
     }
-    public final void nullify(T entity, TimelineState<T> state, TimelineChange<T> changeToNullify){
+    public void nullify(T entity, TimelineState<T> state, TimelineChange<? super T> changeToNullify){
         onNullify(entity,state,changeToNullify);
         changeToNullify.deactivate(true);
     }
-    public final void deactivate(boolean sandbox){
+    public void deactivate(boolean sandbox){
         SandboxCode c = SandboxCode.END_SAVE;
         if (sandbox){
             c = SandboxHandler.SandboxApplyChange(new Objective<>(owner,this),start,null);
@@ -129,15 +132,12 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     //What to do when the provided object is getting the change from this object applied to it.
     protected abstract void onApply(T entity, TimelineState<T> currentState);
 
-    protected void onOverwrite(T entity, TimelineState<T> currentState, TimelineChange<T> beingOverwritten, boolean destructive){
-
-    };
-    protected void onNullify(T entity, TimelineState<T> currentState, TimelineChange<T> beingOverwritten){
-
-    }
+    protected void onOverwrite(T entity, TimelineState<T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){};
+    protected void onNullify(T entity, TimelineState<T> currentState, TimelineChange<? super T> beingOverwritten){}
     protected void onDeactivate(){}
     protected void onReactivate(){}
-    protected void onMove(LocalDate newStart, LocalDate newEnd, TimelineState<T> oldState, TimelineState<T> newState){}
+    protected void onAdvance(){}
+    protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
 
     public boolean isOpposite(TimelineChange<?> state){
         return oppositeChanges().contains(state.getClass());
@@ -168,7 +168,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
         return hasYes;
     };
-    public final List<StateError> doesConflict(TimelineChange<?> state){
+    public final List<StateError> doesConflict(TimelineChange<? super T> state){
         List<StateError> currentErrors = new ArrayList<>();
         for (Condition<StateError,? super T> c : applyConditions.get()) {
             Optional<StateError> error = c.check(this.getOwner().get(),this,state);
@@ -180,7 +180,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     protected abstract String getText();
 
 
-    protected boolean containsMyTags(TimelineChange<?> state){
+    protected boolean containsMyTags(TimelineChange<? super T> state){
         return containsMyTags(state.getTags());
     }
     protected boolean containsMyTags(ChangeTags[] tags){

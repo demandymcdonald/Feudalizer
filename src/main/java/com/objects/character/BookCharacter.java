@@ -89,7 +89,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
         return ObjectType.CHARACTER;
     }
     @Override
-    public void onStateChange() {
+    public void doDateChange() {
         linked_house = Optional.empty();
         linked_families.clear();
         linked_titles.clear();

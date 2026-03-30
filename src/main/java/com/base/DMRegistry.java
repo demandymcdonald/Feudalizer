@@ -7,95 +7,64 @@ import com.google.gson.JsonObject;
 import com.objects.people.*;
 import com.objects.title.TitleManager;
 import com.utilities.ThreadManager;
-import com.utilities.ThreadSpecific;
 
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 import static com.base.ObjectType.*;
 
-public class DMRegistry extends ThreadSpecific {
-    private final HashMap<ObjectType,AbstractMutableManager<?>> registry = new HashMap<>();
-    private static ThreadLocal<DMRegistry> registryThreadLocal = new ThreadLocal<>();
-    private static DMRegistry reg() {
-        return registryThreadLocal.get();
-    }
-    private static HashMap<ObjectType,AbstractMutableManager<?>> map() {
-        if (reg() == null) {
-            throw new RuntimeException("DMRegistry not initialized for current thread!");
-        }
-        return reg().registry;
-    }
+public class DMRegistry {
+    private static final Map<Class<? extends DateMutableEntity<?>>,AbstractMutableManager<?,? extends DateMutableEntity<?>,? >> MANAGER_MAP = Collections.synchronizedMap(new HashMap<>());
+    private static final List<AbstractMutableManager<?,? extends DateMutableEntity<?>,?>> MANAGERS = Collections.synchronizedList(new ArrayList<>());
 
-    private static <T extends DateMutableEntity<T>, M extends AbstractMutableManager<T>> M get(ObjectType type){
-        return (M) map().get(type);
-    }
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<T>> void addEntry(ObjectType database, M manager) {
-        map().put(database, manager);
-    }
-    public static <T extends DateMutableEntity<T>> void registerDateMutable(DateMutableEntity<T> entity) {
-        AbstractMutableManager<T> manager = getManager(entity.getClass());
-        if (manager == null) {
-            throw new RuntimeException("Could not find entry for " + entity.getClass());
-        }
-        manager.register(entity);
-    }
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<T>> M getManager(Class<T> dmeclass){
-        ObjectType t = ObjectType.getByClass(dmeclass);
-        return get(t);
-    }
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<T>> M getManager(ObjectType type) {
-        return get(type);
-    }
-    @Deprecated
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<T>> M getManager(String dmeTypeName) {
-        return get(ObjectType.getByRegKey(dmeTypeName));
-    }
-    public static <T extends DateMutableEntity<T>> T getEntity(ObjectType type, UUID id){
-        return (T) getManager(type).get(id);
-    }
-    public static JsonObject getEntityData(ObjectType type, UUID id){
-        return getEntity(type,id).serialize();
-    }
 
-    public static void sandboxReInit() {
-        map().put(CHARACTER, new CharacterManager());
-        map().put(FAMILY, new FamilyManager());
-        map().put(HOUSE, new HouseManager());
-        map().put(TITLE, new TitleManager());
-    }
-
-    public static FamilyManager getFamilyManager() {
-        return (FamilyManager) map().get(FAMILY);
-    }
-    public static CharacterManager getCharacterManager() {
-        return (CharacterManager) map().get(CHARACTER);
-    }
-    public static HouseManager getHouseManager() {
-        return (HouseManager) map().get(HOUSE);
-    }
-    public static TitleManager getTitleManager() {
-        return (TitleManager) map().get(TITLE);
-    }
-
-    public static ObjectType getObjectType(DateMutableEntity<?> entity){
-        for (ObjectType type : ObjectType.values()) {
-            if (type.getBaseClass().isAssignableFrom(entity.getClass())){
-                return type;
+//    private static <T extends DateMutableEntity<T>, M extends AbstractMutableManager<M,T,?,?>> M get(Class<T> type){
+//
+//    }
+//    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<T>> void addEntry(ObjectType database, M manager) {
+//        map().put(database, manager);
+//    }
+//    public static <T extends DateMutableEntity<T>> void registerDateMutable(DateMutableEntity<T> entity) {
+//        AbstractMutableManager<T> manager = getManager(entity.getClass());
+//        if (manager == null) {
+//            throw new RuntimeException("Could not find entry for " + entity.getClass());
+//        }
+//        manager.register(entity);
+//    }
+    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> M getManager(Class<T> dmeclass){
+        if (MANAGER_MAP.containsKey(dmeclass)){
+            return (M) MANAGER_MAP.get(dmeclass);
+        } else {
+            for (AbstractMutableManager<?,? extends DateMutableEntity<?>,?> m : MANAGERS) {
+                if(m.accepts(dmeclass)){
+                    MANAGER_MAP.put(dmeclass,m);
+                    return (M) m;
+                }
             }
+            throw new RuntimeException("Could not find DME manager for " + dmeclass);
         }
-        return null;
     }
-    public static <T extends DateMutableEntity<T>> void load(DMEReference<T> header, JsonObject data){
-        AbstractMutableManager<T> manager = getManager(header.getType());
-        manager.deserializeEntity(header.getID(),data);
+    public static void registerManager(AbstractMutableManager<?,? extends DateMutableEntity<?>,?> manager){
+        MANAGERS.add(manager);
+    }
+
+
+    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> T getEntity(DMEReference<T> dme) {
+        M manager = getManager(dme.getType());
+        return manager.get(dme.getType(),dme.getID());
+    }
+
+
+
+    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> void load(DMEReference<T> header, JsonObject data){
+        M manager = getManager(header.getType());
+        manager.loadObject(header,data);
     }
     public static void onDateChange(){
         final LoadingManager lm = GlobalVars.getLoadingManager();
         //To my future self: they are separate to reflect that it's two different stages of loading :)
         final Runnable r2 = () -> {
-            for (AbstractMutableManager<?> m : map().values()) {
-                m.onGameStateChangeLink();
+            for (AbstractMutableManager<?,?,?> m : MANAGERS) {
+                m.onLink();
             }
         };
         final Runnable r = () -> {
@@ -120,12 +89,12 @@ public class DMRegistry extends ThreadSpecific {
 
 
     @Override
-    public Type specificTypeName() {
-        return Type.DM_REGISTRY;
+    public Type uniqueKey() {
+        return Type.REGISTRY;
     }
     @Override
     public void onThreadInit() {
-        registryThreadLocal.set(ThreadManager.getThreadSpecific(Type.DM_REGISTRY));
+        registryThreadLocal.set(ThreadManager.getThreadMutable(Type.REGISTRY));
         sandboxReInit();
     }
 

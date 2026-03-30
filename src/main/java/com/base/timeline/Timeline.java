@@ -22,9 +22,9 @@ public class Timeline<T extends DateMutableEntity<T>> {
     //TODO Caching for performance?
     public boolean isLoaded = false;
     private final DMEReference<T> owner;
-    public Timeline(ObjectType t, UUID id, LocalDate start, @Nullable LocalDate end, List<TimelineChange<? super T>> initialState) {
-        AbstractMutableManager<T> manager = DMRegistry.getManager(t);
-        owner = DMEReference.of(t,id);
+    public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<TimelineChange<? super T>> initialState) {
+        AbstractMutableManager<?,T,?> manager = o.getManager();
+        this.owner = owner;
         timeline.put(start, manager.buildBirth(owner,start, initialState));
         if (end == null){
             timeline.put(end, manager.buildDeath(owner, GlobalVars.MAX_DATE,initialState));
@@ -101,14 +101,12 @@ public class Timeline<T extends DateMutableEntity<T>> {
     }
     public void moveBirth(T ref, LocalDate date){
         LocalDate oldBirthDate = getEarliestDate();
-        final AbstractMutableManager<T> template = DMRegistry.getManager(ref.getObjectType());
+        final AbstractMutableManager<?,T,?> template = DMRegistry.getManager(owner.getType());
 
         if (oldBirthDate.isAfter(date)){
-            //TODO investigate if succession planning needs to be run on the parents IF they've died in this case?
+            //TODO FIX
             TimelineState<T> state = getStateAt(oldBirthDate);
-            final List<TimelineChange<T>> d= TimelineHelper.getChangesWhere(state.getAllChanges(), (c) -> {
-                return !(c instanceof BoundaryChange<?,?>);
-            });
+            final List<TimelineChange<T>> d=
             timeline.remove(oldBirthDate);
             timeline.put(date, template.buildBirth(owner,date,d));
         } else {
@@ -119,14 +117,9 @@ public class Timeline<T extends DateMutableEntity<T>> {
     }
     public void moveDeath(T ref, LocalDate date){
         LocalDate oldDeathDate = getLatestDate();
-        final AbstractMutableManager<T> template = DMRegistry.getManager(ref.getObjectType());
-
+        final AbstractMutableManager<?,T,?> template = DMRegistry.getManager(owner.getType());
+    //TODO FIX
         if (oldDeathDate.isBefore(date)){
-            //TODO investigate if SuccessionPlanner needs to be rerun in general?
-            TimelineState<T> state = getStateAt(oldDeathDate);
-            final List<TimelineChange<T>> d= TimelineHelper.getChangesWhere(state.getAllChanges(), (c) -> {
-                return !(c instanceof BoundaryChange<?,?>);
-            });
             timeline.remove(oldDeathDate);
             timeline.put(date, template.buildDeath(owner,date,d));
         } else {
@@ -139,7 +132,12 @@ public class Timeline<T extends DateMutableEntity<T>> {
     public boolean isLoaded() {
         return isLoaded;
     }
-
+    public void doTimeChange(T entity, LocalDate date){
+        final TimelineState<T> t = getStateAt(date);
+        for(TimelineChange<T> tc : t.getChanges(false)){
+            tc.apply(entity,t);
+        }
+    }
     public TimelineState<T> getStateNullable(LocalDate date){
         return timeline.floorEntry(date).getValue();
     }

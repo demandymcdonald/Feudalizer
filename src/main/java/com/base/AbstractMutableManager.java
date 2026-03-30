@@ -1,97 +1,43 @@
 package com.base;
 
-import com.Feudalizer;
-
-import com.GlobalVars;
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineContainer;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.TimelineChange;
-import com.utilities.LoadingManager;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonObject;
+import com.utilities.SuperclassRegistry;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-public abstract class AbstractMutableManager<T extends DateMutableEntity<T>> {
-    private final HashBiMap<UUID, T> ItemMap = HashBiMap.create();
-    private boolean isLoaded = false;
-    public abstract T deserializer(DMEReference<T> dme);
-    public abstract ObjectType getObjectType();
-    public void onRelink() {
-        for (T entity : ItemMap.values()) {
-            entity.relink(entity.getStateAt(entity.getCreated()));
-        }
+public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T,BA>,T extends DateMutableEntity<T>,BA>
+        extends SuperclassRegistry<M,T,UUID,BA> {
+    protected AbstractMutableManager(String uniqueKey) {
+        super(uniqueKey);
+        DMRegistry.registerManager(this);
     }
-    public T loadEntity(DMEReference<T> ref, JsonObject json) {
-        T start;
-        if (ItemMap.containsKey(ref.getID())){
-            start = ItemMap.get(ref.getID());
-        } else {
-            start = deserializer(ref);
-            ItemMap.put(ref.getID(), start);
+    public boolean accepts(DMEReference<?> dme){
+        return accepts(dme.getClass());
+    }
+    public boolean accepts(Class<?> clazz){
+        return instanceClass().isAssignableFrom(clazz);
+    }
+    public void onLink(){
+        doIterate(DateMutableEntity::onLink);
+    }
+    public void onDateChange(){
+        doIterate(DateMutableEntity::onLink);
+    }
+    public <R extends DateMutableEntity<R>> R loadObject(DMEReference<R> dme, JsonObject object) {
+        if (!accepts(dme)){
+            //This checks if this is the correct manager. It SHOULD always be by this phase.
+            throw new IllegalArgumentException("Cannot load object of type " + dme.getType() + " into " + this.getClass());
         }
-        if (start == null) {
-            throw new NullPointerException("Entity " + ref.getID() + " is null");
-        }
-        start.deserialize(json);
-        return t;
+        DMEReference<? extends T> td = (DMEReference<? extends T>) dme;
+        return  (R) super.loadObject(td.getType(), td.getID(), object);
     }
 
-    public void register(DateMutableEntity<?> entity) {
-        ItemMap.put(entity.getId(), (T) entity);
-    }
-    public T get(UUID id) {
-        T t = ItemMap.get(id);
-        if (t == null && DMRegistry.isMain()) {
-            Feudalizer.LOGGER.error("{} not found for manager {}", id, getClass().getName());
-        } else {
-            JsonObject object = DMRegistry.addPendingLoad(getObjectType(),id).join();
-            T obj = deserializer(id, object);
-            ItemMap.put(id, obj);
-            return obj;
-        }
-        return t;
-    }
-    public List<T> getAll() {
-        return new ArrayList<>(ItemMap.values());
-    }
-    public int getSize() {
-        return ItemMap.size();
-    }
-    public UUID getItemId(T entity) {
-        return ItemMap.inverse().get(entity);
-    }
-    public HashBiMap<UUID, T> getItemMap() {
-        return ItemMap;
-    }
-    public List<T> getWhere(Predicate<T> predicate) {
-        return new ArrayList<>(ItemMap.values()).stream().filter(predicate).collect(Collectors.toList());
-    }
-    public void onGameStateChangeLoad(LocalDate date) {
-        LoadingManager lm = GlobalVars.getLoadingManager();
-        lm.setTemporaryAppend(getObjectType().name());
-        for (T entity : ItemMap.values()) {
-            entity.setCurrentState(date);
-            lm.incrementLoading();
-        }
-        lm.restoreToMainState();
-    }
-    public void onGameStateChangeLink(){
-        LoadingManager lm = GlobalVars.getLoadingManager();
-        lm.setTemporaryAppend(getObjectType().name());
-        for (T entity : ItemMap.values()) {
-            entity.relink();
-            lm.incrementLoading();
-        }
-        lm.restoreToMainState();
-    }
+    public abstract Class<T> instanceClass();
     public abstract TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date);
     public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date);
     public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<TimelineChange<? super T>> defaults){
