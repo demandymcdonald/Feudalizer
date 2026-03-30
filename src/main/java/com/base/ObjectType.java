@@ -6,11 +6,12 @@ import com.objects.people.House;
 import com.objects.title.Title;
 
 public enum ObjectType {
-    CHARACTER("BookCharacter","Character", BookCharacter.class),
-    FAMILY("Family","Family","Famlies", Family.class),
-    HOUSE("House","House","Houses", House.class),
-    TITLE("Title","Title", Title.class);
-
+    CHARACTER("book_character","Character", BookCharacter.class),
+    FAMILY("family","Family","Famlies", Family.class),
+    HOUSE("house","House","Houses", House.class),
+    TITLE("title","Title", (Class<? extends DateMutableEntity<?>>) Title.class);
+    //CULTURE("culture","Culture",Culture.class),
+    //CULTURE_OBJECT("culture_object","Culture Object",(Class<? extends DateMutableEntity<?>>) CultureObject.class),
     private final String regKey;
     private final Class<? extends DateMutableEntity<?>> baseClass;
     private final String displayName;

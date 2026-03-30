@@ -51,7 +51,7 @@ public interface SuperclassSerializable {
     }
 
     default void metadataSave(JsonObject data){
-        data.add("metadata",new JsonObject());
+
     };
     static boolean isSuperSerialized(JsonObject data){
         JsonObject metadata = data.get("metadata").getAsJsonObject();
