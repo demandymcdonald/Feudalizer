@@ -9,23 +9,20 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.BoundaryChange;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
-import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class Timeline<T extends DateMutableEntity<T>> {
     private final TreeMap<LocalDate,TimelineState<T>> timeline = new TreeMap<>();
     //TODO Caching for performance?
     public boolean isLoaded = false;
     private final DMEReference<T> owner;
-    public Timeline(ObjectType t, UUID id, LocalDate start, @Nullable LocalDate end, List<TimelineChange<T>> initialState) {
+    public Timeline(ObjectType t, UUID id, LocalDate start, @Nullable LocalDate end, List<TimelineChange<? super T>> initialState) {
         AbstractMutableManager<T> manager = DMRegistry.getManager(t);
         owner = DMEReference.of(t,id);
         timeline.put(start, manager.buildBirth(owner,start, initialState));
@@ -37,10 +34,9 @@ public class Timeline<T extends DateMutableEntity<T>> {
         isLoaded = true;
     }
 
-    public Timeline(DMEReference<T> dme, JsonObject json){
+    public Timeline(DMEReference<T> dme){
         //FOR LOADING ONLY
         owner = dme;
-        deserialize(json);
     }
 //    public boolean safeInsertState(DateMutableEntity<T> entity, TimelineState<T> state, @Nullable TimelineChange<T> change){
 //        TimelineState<T> existing = timeline.floorEntry(state.start()).getValue();
@@ -79,15 +75,11 @@ public class Timeline<T extends DateMutableEntity<T>> {
     private void insertState(TimelineState<T> state){
         timeline.put(state.getStart(),state);
     }
-    @SafeVarargs
-    public final void insertState(LocalDate start, @Nullable LocalDate end, TimelineChange<T>... changes){
-
+    public void addChange(TimelineChange<T> change){
+        //This is the safe way to insert a change using propagation. It should be used by all runtime setters.
+        getOrMakeState(change.getStart()); //We just need a state at the exact start date.
+        SandboxHandler.SandboxApplyChange(new Objective<>(owner,change),change.getStart(),null);
     }
-
-
-
-
-
     public boolean isEmpty(){
         return timeline.isEmpty();
     }
@@ -114,7 +106,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         if (oldBirthDate.isAfter(date)){
             //TODO investigate if succession planning needs to be run on the parents IF they've died in this case?
             TimelineState<T> state = getStateAt(oldBirthDate);
-            final List<TimelineChange<T>> d= TimelineHelper.getChangesWhere(state.getAllDiffs(), (c) -> {
+            final List<TimelineChange<T>> d= TimelineHelper.getChangesWhere(state.getAllChanges(), (c) -> {
                 return !(c instanceof BoundaryChange<?,?>);
             });
             timeline.remove(oldBirthDate);
@@ -132,7 +124,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         if (oldDeathDate.isBefore(date)){
             //TODO investigate if SuccessionPlanner needs to be rerun in general?
             TimelineState<T> state = getStateAt(oldDeathDate);
-            final List<TimelineChange<T>> d= TimelineHelper.getChangesWhere(state.getAllDiffs(), (c) -> {
+            final List<TimelineChange<T>> d= TimelineHelper.getChangesWhere(state.getAllChanges(), (c) -> {
                 return !(c instanceof BoundaryChange<?,?>);
             });
             timeline.remove(oldDeathDate);
@@ -179,7 +171,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
     public TimelineState<T> getLastState(){
         return timeline.lastEntry().getValue();
     }
-    public JsonObject serialize(){
+    public JsonObject save(){
         JsonObject o = new JsonObject();
         //Seems wasteful to nest the array in the object, but I'm future proofing here incase TL gets some more variables :)
         JsonArray states = new JsonArray();
@@ -189,7 +181,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         o.add("states",states);
         return o;
     }
-    private void deserialize(JsonObject o){
+    public void load(JsonObject o){
         JsonArray states = o.getAsJsonArray("states");
         for (int i = 0; i < states.size(); i++) {
             TimelineState<T> state = TimelineState.deserialize(states.get(i).getAsJsonObject());
@@ -207,7 +199,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         if (before.isDuring(start)){
             before.setEnd(start.minusDays(1));
         }
-        HashMap<Long,LocalDate> breadcrumbs = new HashMap<>(before.getBreadcrumbs());
+        HashMap<Long,LocalDate> breadcrumbs = TimelineHelper.extendTrail(this,before,start);
         TimelineState<T> newState = new TimelineState<>(owner,start,after.getStart().minusDays(1),false,breadcrumbs,new HashMap<>());
         timeline.put(start,newState);
         return newState;
@@ -215,7 +207,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
     public void replaceTimeline(JsonObject o){
         isLoaded = false;
         timeline.clear();
-        deserialize(o);
+        load(o);
         isLoaded = true;
     }
 }

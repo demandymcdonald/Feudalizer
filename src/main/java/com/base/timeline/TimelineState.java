@@ -2,6 +2,7 @@ package com.base.timeline;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.TLChangeRegistry;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -9,15 +10,22 @@ import com.google.gson.JsonObject;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Represents the state of a timeline for an entity of type T, where T extends {@code DateMutableEntity<T>}.
+ * This class manages the timeline's start and end dates, breadcrumb mappings,
+ * associated changes, and its boundary state.
+ *
+ * @param <T> The type parameter extending {@code DateMutableEntity<T>}.
+ */
 public class TimelineState<T extends DateMutableEntity<T>>{
     private final DMEReference<T> owner;
     private LocalDate start;
     private LocalDate end;
     private final boolean isBoundary;
     private final HashMap<Long, LocalDate> breadcrumbs;
-    private final HashMap<Long, TimelineChange<T>> diffs;
+    private final HashMap<Long, TimelineChange<? super T>> diffs;
 
-    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, boolean isBoundary, HashMap<Long,LocalDate> breadcrumbs, HashMap<Long,TimelineChange<T>> diffs) {
+    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, boolean isBoundary, HashMap<Long,LocalDate> breadcrumbs, HashMap<Long,TimelineChange<? super T>> diffs) {
         this.owner = owner;
         this.start = start;
         this.end = end;
@@ -25,14 +33,14 @@ public class TimelineState<T extends DateMutableEntity<T>>{
         this.breadcrumbs = breadcrumbs;
         this.diffs = diffs;
     }
-    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, HashMap<Long, LocalDate> breadcrumbs, List<TimelineChange<T>> changeLog) {
+    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, HashMap<Long, LocalDate> breadcrumbs, List<TimelineChange<? super T>> changeLog) {
         this(owner,start, end, false, breadcrumbs, buildMap(changeLog));
     }
-    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, boolean isBoundary, List<TimelineChange<T>> changeLog) {
+    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, boolean isBoundary, List<TimelineChange<? super T>> changeLog) {
         this(owner,start, end, isBoundary, new HashMap<>(), buildMap(changeLog));
     }
 
-    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, HashMap<Long, LocalDate> breadcrumbs, HashMap<Long, TimelineChange<T>> changeLog) {
+    public TimelineState(DMEReference<T> owner, LocalDate start, LocalDate end, HashMap<Long, LocalDate> breadcrumbs, HashMap<Long, TimelineChange<? super T>> changeLog) {
         this(owner,start, end, false, breadcrumbs, changeLog);
     }
 
@@ -65,33 +73,33 @@ public class TimelineState<T extends DateMutableEntity<T>>{
     public void setEnd(LocalDate end) {
         this.end = end;
     }
-    public List<TimelineChange<T>> getDiffs() {
+    public List<TimelineChange<? super T>> getChanges() {
         return filterDiffs(diffs.values());
     }
-    private static <T extends DateMutableEntity<T>> List<TimelineChange<T>> filterDiffs(Collection<TimelineChange<T>> changes){
-        List<TimelineChange<T>> filtered = new ArrayList<>();
-        for (TimelineChange<T> t : changes){
+    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> filterDiffs(Collection<TimelineChange<? super T>> changes){
+        List<TimelineChange<? super T>> filtered = new ArrayList<>();
+        for (TimelineChange<? super T> t : changes){
             if (!t.isDeactivated()){
                 filtered.add(t);
             }
         }
         return filtered;
     }
-    public List<TimelineChange<T>> getAllDiffs() {
+    public List<TimelineChange<? super T>> getAllChanges() {
         return new ArrayList<>(diffs.values());
     }
-    public TimelineChange<T> getDiff(long id) {
-        TimelineChange<T> tlc = diffs.get(id);
+    public TimelineChange<? super T> getChange(long id) {
+        TimelineChange<? super T> tlc = diffs.get(id);
         if (tlc == null) {
             throw new IllegalArgumentException("No Change with ID: " + id);
         }
         return tlc;
     }
     public List<TimelineChange<T>> getChanges(boolean includeDeactivated) {
-        return TimelineHelper.getAllChanges(this.owner.link().getTimeline(), this,includeDeactivated);
+        return TimelineHelper.getAllChanges(this.owner.get().getTimeline(), this,includeDeactivated);
     }
     public void insertBreadcrumb(long id, LocalDate date){
-        TimelineChange<T> t = TimelineHelper.GetChangeByBreadcrumb(owner.link().getTimeline(),id,date);
+        TimelineChange<T> t = TimelineHelper.followBreadcrumb(owner.get().getTimeline(),id,date);
         insertBreadcrumb(t);
     }
     public void insertBreadcrumb(TimelineChange<T> change){
@@ -108,12 +116,12 @@ public class TimelineState<T extends DateMutableEntity<T>>{
     }
     public void insertChange(TimelineChange<T> change){
         diffs.put(change.getId(), change);
-        TimelineHelper.propagateBreadcrumb(owner.link().getTimeline(),change);
+        TimelineHelper.propagateBreadcrumb(owner.get().getTimeline(),change);
     }
     public void removeChange(long id){
-        TimelineChange<T> t = diffs.get(id);
+        TimelineChange<? super T> t = diffs.get(id);
         if (!t.isDeactivated()){
-            t.deactivate();
+            t.deactivate(false);
         }
         diffs.remove(id);
     }
@@ -139,7 +147,7 @@ public class TimelineState<T extends DateMutableEntity<T>>{
     }
     private JsonArray serializeDiffs() {
         JsonArray json = new JsonArray();
-        for (TimelineChange<T> t : diffs.values()) {
+        for (TimelineChange<? super T> t : diffs.values()) {
             json.add(t.serialize());
         }
         return json;
@@ -151,16 +159,16 @@ public class TimelineState<T extends DateMutableEntity<T>>{
         }
         return map;
     }
-    private static <T extends DateMutableEntity<T>> List<TimelineChange<T>> deserializeDiffs(JsonArray a) {
-        final List<TimelineChange<T>> list = new ArrayList<>();
+    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> deserializeDiffs(JsonArray a) {
+        final List<TimelineChange<? super T>> list = new ArrayList<>();
         for (int i = 0; i < a.size(); i++) {
-            list.add(TimelineChange.deserialize(a.get(i).getAsJsonObject()));
+            list.add((TimelineChange<? super T>) TLChangeRegistry.ChangeFactory(a.get(i).getAsJsonObject()));
         }
         return list;
     }
-    private static <T extends DateMutableEntity<T>> HashMap<Long, TimelineChange<T>> buildMap(List<TimelineChange<T>> l) {
-        HashMap<Long, TimelineChange<T>> map = new HashMap<>();
-        for (TimelineChange<T> change : l) {
+    private static <T extends DateMutableEntity<T>> HashMap<Long, TimelineChange<? super T>> buildMap(List<TimelineChange<? super T>> l) {
+        HashMap<Long, TimelineChange<? super T>> map = new HashMap<>();
+        for (TimelineChange<? super T> change : l) {
             map.put(change.getId(), change);
         }
         return map;
@@ -172,7 +180,7 @@ public class TimelineState<T extends DateMutableEntity<T>>{
         DMEReference<T> owner = DMEReference.deserialize(metadata.get("owner").getAsJsonObject());
         boolean immutable = metadata.get("immutable").getAsBoolean();
         HashMap<Long, LocalDate> breadcrumbs = deserializeBreadcrumbs(json.getAsJsonObject("breadcrumbs"));
-        List<TimelineChange<T>> diffs = deserializeDiffs(json.getAsJsonArray("diffs"));
+        List<TimelineChange<? super T>> diffs = deserializeDiffs(json.getAsJsonArray("diffs"));
         return new TimelineState<T>(owner,start, end, immutable, breadcrumbs, buildMap(diffs));
     }
 

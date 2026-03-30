@@ -1,4 +1,4 @@
-package com.simulation.people;
+package com.simulation.character;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
@@ -6,6 +6,8 @@ import com.base.timeline.TimelineContainer;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.simulation.people.Family;
+import com.simulation.people.House;
 import com.simulation.title.Title;
 
 import javax.annotation.Nullable;

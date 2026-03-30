@@ -5,16 +5,12 @@ import com.base.timeline.TimelineState;
 import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.flags.StateError;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.people.Family;
 import org.apache.commons.lang3.tuple.Pair;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
-import javax.management.relation.Relation;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -40,7 +36,7 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
     @Override
     public HashSet<DMEReference<?>> getScope() {
         HashSet<DMEReference<?>> toReturn = new HashSet<>();
-        toReturn.addAll(getOwner().link().getMembers());
+        toReturn.addAll(getOwner().get().getMembers());
         return toReturn;
     }
     public DMEReference<BookCharacter> getCharacter(int index) {
@@ -55,7 +51,7 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
         return list.toArray(new DMEReference[0]);
     }
     @Override
-    public JsonObject onLoad(JsonObject data) {
+    public JsonObject loadAdditional(JsonObject data) {
         data.getAsJsonArray("FamilyTLData").forEach(o -> {
             JsonObject o2 = (JsonObject) o;
             involved.put(DMEReference.deserialize(o2.getAsJsonObject("character")), Family.Relationship.valueOf(o2.get("relationship").getAsString()));
@@ -74,31 +70,23 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
         }
         data.add("FamilyTLData",o);
     }
-
-    public static class addMember extends FamilyTLChange{
-
-        public addMember(DMEReference<Family> owner, LocalDate date, DMEReference<BookCharacter> added, Family.Relationship relationship) {
-            super(owner, date, added);
+    public static class MemberChange extends FamilyTLChange {
+        public MemberChange(DMEReference<Family> owner, LocalDate date, Pair<DMEReference<BookCharacter>, Family.Relationship>... involves) {
+            super(owner, date, involves);
+        }
+        @Override
+        protected void onApply(Family entity, TimelineState<Family> currentState) {
 
         }
 
         @Override
-        protected TimelineState<Family> onApply(Family entity, boolean saveChangeToDiff) {
-            DMEReference<BookCharacter> bc = getCharacter(0);
-            entity.internal_AddMember(bc,relationship);
-            return entity.
+        public List<Class<? extends TimelineChange<Family>>> oppositeChanges() {
+            return List.of();
         }
 
         @Override
-        public JsonObject onLoad(JsonObject data) {
-            super.onLoad(data);
-            relationship = Family.Relationship.valueOf(data.get("relationship").getAsString());
-        }
-
-        @Override
-        public void saveAdditional(JsonObject data) {
-            super.saveAdditional(data);
-            data.addProperty("relationship",relationship.name());
+        public boolean isPositive() {
+            return false;
         }
 
         @Override

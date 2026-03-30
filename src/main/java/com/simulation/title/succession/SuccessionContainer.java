@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.TimelineContainer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.succession.rules.SuccessionEntry;
 
 
@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.UUID;
 
 public class SuccessionContainer implements TimelineContainer<SuccessionContainer> {
     TreeMap<LocalDate, SuccessionEntry<?>> entries = new TreeMap<>();

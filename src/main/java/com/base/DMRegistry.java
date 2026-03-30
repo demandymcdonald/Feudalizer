@@ -1,18 +1,16 @@
 package com.base;
 import com.GlobalVars;
 import com.base.reference.DMEReference;
+import com.simulation.character.CharacterManager;
 import com.utilities.LoadingManager;
 import com.google.gson.JsonObject;
 import com.simulation.people.*;
 import com.simulation.title.TitleManager;
 import com.utilities.ThreadManager;
 import com.utilities.ThreadSpecific;
-import org.apache.commons.lang3.tuple.Triple;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static com.base.ObjectType.*;
 

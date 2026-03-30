@@ -3,7 +3,7 @@ package com.simulation.title.land;
 import com.base.reference.StateReference;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 
 import java.time.LocalDate;
 import java.util.List;

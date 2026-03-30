@@ -22,16 +22,25 @@ import java.util.stream.Collectors;
 public abstract class AbstractMutableManager<T extends DateMutableEntity<T>> {
     private final HashBiMap<UUID, T> ItemMap = HashBiMap.create();
     private boolean isLoaded = false;
-    public abstract T deserializer(UUID id, JsonObject json);
+    public abstract T deserializer(DMEReference<T> dme);
     public abstract ObjectType getObjectType();
     public void onRelink() {
         for (T entity : ItemMap.values()) {
             entity.relink(entity.getStateAt(entity.getCreated()));
         }
     }
-    public T deserializeEntity(UUID id, JsonObject json) {
-        T t = deserializer(id, json);
-        ItemMap.put(id, t);
+    public T loadEntity(DMEReference<T> ref, JsonObject json) {
+        T start;
+        if (ItemMap.containsKey(ref.getID())){
+            start = ItemMap.get(ref.getID());
+        } else {
+            start = deserializer(ref);
+            ItemMap.put(ref.getID(), start);
+        }
+        if (start == null) {
+            throw new NullPointerException("Entity " + ref.getID() + " is null");
+        }
+        start.deserialize(json);
         return t;
     }
 
@@ -85,11 +94,11 @@ public abstract class AbstractMutableManager<T extends DateMutableEntity<T>> {
     }
     public abstract TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date);
     public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date);
-    public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<TimelineChange<T>> defaults){
+    public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<TimelineChange<? super T>> defaults){
         defaults.addFirst(getBirthChange(dme,date));
         return new TimelineState<T>(dme, date, date,true, defaults);
     };
-    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, List<TimelineChange<T>> defaults){
+    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, List<TimelineChange<? super T>> defaults){
         defaults.addFirst(getDeathChange(dme,date));
         return new TimelineState<T>(dme,date, date,true, defaults);
     };

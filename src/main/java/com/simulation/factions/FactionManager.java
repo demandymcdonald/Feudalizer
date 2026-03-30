@@ -1,7 +1,6 @@
 package com.simulation.factions;
 
-import com.simulation.people.BookCharacter;
-import com.simulation.people.House;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 
 import java.util.*;

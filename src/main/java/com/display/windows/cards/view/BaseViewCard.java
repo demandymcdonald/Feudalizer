@@ -1,12 +1,8 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.cards.BaseCard;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
-import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 
 import java.util.function.Consumer;
 

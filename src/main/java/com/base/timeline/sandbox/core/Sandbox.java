@@ -40,7 +40,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     public Sandbox(Objective<T> obj) {
         this.objective = obj;
         this.subject = obj.subject();
-        sandboxEndDate = obj.getEnd() == null ? obj.subject().link().getEnded() : obj.getEnd();
+        sandboxEndDate = obj.getEnd() == null ? obj.subject().get().getEnded() : obj.getEnd();
         if (sandboxEndDate == null) {
             sandboxEndDate = LocalDate.MAX;
         }
@@ -89,7 +89,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
         while (true){
             GlobalVars.setCurrentDate(date);
             TimelineState<T> state = host.getCurrentState();
-            for (TimelineChange<T> change : state.getDiffs()) {
+            for (TimelineChange<T> change : state.getChanges()) {
                 List<StandingChange> localSC = new ArrayList<>();
                 if (change.isDeactivated()) continue;
                 if (proposedChange.canNullify(change)) {
@@ -231,7 +231,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
         }
     }
     private <HT extends DateMutableEntity<HT>,HC extends TimelineContainer<HC>> void buildBreadcrumb(TimelineChange<HT> change, LocalDate date, Collection<StandingChange> standingChanges){
-        TimelineChange.Breadcrumb crumb = change.getBreadcrumb();
+        TimelineChange.SandboxBreadcrumb crumb = change.getBreadcrumb();
         crumb.addEndPoint(date);
         for (StandingChange sc : standingChanges){
             crumb.insertError(sc.fullKey(),sc.resolution());

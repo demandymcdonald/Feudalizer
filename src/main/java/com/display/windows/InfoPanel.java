@@ -5,7 +5,7 @@ import com.display.geography.GeometryType;
 import com.display.windows.cards.view.CharacterViewCard;
 import com.display.windows.cards.view.title.*;
 import com.simulation.title.land.*;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 import javafx.scene.*;
 import javafx.scene.layout.*;

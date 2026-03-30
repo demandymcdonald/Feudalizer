@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.land.County;
 
 import java.util.HashMap;

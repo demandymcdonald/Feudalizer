@@ -1,6 +1,6 @@
 package com.simulation.title.succession.rules;
 
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.people.Family;
 import com.simulation.people.FamilyManager;
 import com.simulation.title.Title;

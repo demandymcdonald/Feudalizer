@@ -2,7 +2,7 @@
 //
 //import com.base.subject.StateReference;
 //import com.google.gson.JsonObject;
-//import com.simulation.people.BookCharacter;
+//import com.simulation.character.BookCharacter;
 //
 //import java.util.Date;
 //import java.util.List;

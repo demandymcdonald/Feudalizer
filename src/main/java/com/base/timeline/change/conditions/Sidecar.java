@@ -1,8 +1,7 @@
 package com.base.timeline.change.conditions;
 
 import com.base.reference.DMEReference;
-import com.google.common.collect.ImmutableList;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 
 import javax.annotation.Nullable;
@@ -21,12 +20,12 @@ public abstract class Sidecar {
             this.holder = Optional.ofNullable(holder);
         }
         public <T extends Title<T>> TitleChange(DMEReference<T> subject, @Nullable DMEReference<BookCharacter> holder) {
-            this.subject = subject.link();
+            this.subject = subject.get();
             if (holder == null) {
                 this.holder = Optional.empty();
                 return;
             }
-            this.holder = Optional.ofNullable(holder.link());
+            this.holder = Optional.ofNullable(holder.get());
         }
         public Title<?> subject() {
             return subject;

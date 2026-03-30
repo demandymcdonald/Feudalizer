@@ -3,7 +3,7 @@ package com.simulation.title.succession.rules;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 
 import java.util.ArrayList;
@@ -30,10 +30,10 @@ public class CustomEntry extends SuccessionEntry<CustomEntry> {
     @Override
     public List<BookCharacter> getLoSFull() {
         List<BookCharacter> chs = new ArrayList<>();
-        Title<?> title = this.title.link();
+        Title<?> title = this.title.get();
         for (DMEReference<BookCharacter> ref : characters) {
-            if (title.canInherit(ref.link())){
-                chs.add(ref.link());
+            if (title.canInherit(ref.get())){
+                chs.add(ref.get());
             }
         }
         return chs;

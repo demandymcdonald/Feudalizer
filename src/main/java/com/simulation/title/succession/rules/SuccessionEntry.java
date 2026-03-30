@@ -4,7 +4,7 @@ import com.TypedSerialized;
 import com.base.reference.DMEReference;
 import com.utilities.JsonSerializable;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package com.display.windows;
 
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

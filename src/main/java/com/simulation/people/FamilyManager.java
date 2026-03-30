@@ -4,6 +4,7 @@ import com.Feudalizer;
 import com.GlobalVars;
 import com.base.AbstractMutableManager;
 import com.google.gson.JsonObject;
+import com.simulation.character.BookCharacter;
 import javafx.util.Pair;
 
 import java.time.LocalDate;

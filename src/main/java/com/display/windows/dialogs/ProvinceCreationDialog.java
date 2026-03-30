@@ -6,7 +6,7 @@ import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
 import com.simulation.title.land.Province;
 import com.simulation.title.land.Titles;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;

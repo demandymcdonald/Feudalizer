@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 import com.simulation.title.succession.SuccessionChecksum;
 
@@ -44,7 +44,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
 
     @Override
     public List<BookCharacter> getLoSFull() {
-        BookCharacter character = getSubject().link();
+        BookCharacter character = getSubject().get();
         LinkedHashMultimap<Type,BookCharacter> everyone = buildCharacterList(character);
         SuccessionChecksum checksum = SuccessionChecksum.of(everyone.values());
         if (currentChecksum != null && currentChecksum.equals(checksum)){
@@ -55,7 +55,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     }
     private List<BookCharacter> generate(LinkedHashMultimap<Type,BookCharacter> everyone){
         List<BookCharacter> ordered = new ArrayList<>();
-        Title<?> title = this.title.link();
+        Title<?> title = this.title.get();
         int childNumber = 0;
         for (Map.Entry<Type,BookCharacter> entry : everyone.entries()){
             Type type = entry.getKey();
@@ -102,7 +102,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     }
     private int doInsertCharacterList(Integer current, LinkedHashMultimap<Type,BookCharacter> finalList, BookCharacter toBeInserted, Type tbiType){
         if (additional.containsKey(current)){
-            finalList.put(Type.ADDED,handleIfDead(additional.get(current).link()));
+            finalList.put(Type.ADDED,handleIfDead(additional.get(current).get()));
             finalList.put(tbiType,toBeInserted);
             return 2;
         } else {

@@ -1,6 +1,6 @@
 package com.base;
 
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.people.Family;
 import com.simulation.people.House;
 import com.simulation.title.Title;

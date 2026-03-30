@@ -1,7 +1,7 @@
 package com.simulation.title.succession;
 
 import com.base.reference.DMEReference;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 
 import java.util.*;
 

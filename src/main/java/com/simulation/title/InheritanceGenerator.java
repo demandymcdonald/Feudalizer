@@ -1,5 +1,5 @@
 //package com.simulation.title;
-//import com.simulation.people.BookCharacter;
+//import com.simulation.character.BookCharacter;
 //
 //import java.util.List;
 //

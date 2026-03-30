@@ -1,15 +1,16 @@
-package com.simulation.people;
+package com.simulation.character;
 
 import com.GlobalVars;
 import com.base.AbstractMutableManager;
 import com.base.ObjectType;
 import com.google.gson.JsonObject;
+import com.simulation.people.House;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class CharacterManager extends AbstractMutableManager<BookCharacter,CharacterState> {
+public class CharacterManager extends AbstractMutableManager<BookCharacter, CharacterState> {
 
 
     public CharacterManager() {

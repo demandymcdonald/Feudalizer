@@ -3,6 +3,7 @@ package com.simulation.people;
 import com.base.AbstractMutableManager;
 import com.base.ObjectType;
 import com.google.gson.JsonObject;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 
 import java.util.HashSet;

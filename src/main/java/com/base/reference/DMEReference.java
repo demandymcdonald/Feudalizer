@@ -42,7 +42,7 @@ public class DMEReference<T extends DateMutableEntity<T>> extends StateReference
 //        this.type = (Class<T>) entity.getClass();
 //        this.uuid = entity.getId();
 //    }
-    public T link() {
+    public T get() {
         if (cachedEntity == null) {
             cachedEntity = (T) DMRegistry.getEntity(type,uuid);
         }
@@ -123,6 +123,6 @@ public class DMEReference<T extends DateMutableEntity<T>> extends StateReference
     }
     @Override
     public String parse() {
-        return link().toString();
+        return get().toString();
     }
 }

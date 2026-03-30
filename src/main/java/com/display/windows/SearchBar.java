@@ -1,17 +1,15 @@
 package com.display.windows;
 
 import com.base.DMRegistry;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.util.function.Consumer;

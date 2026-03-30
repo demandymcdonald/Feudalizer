@@ -6,7 +6,7 @@ import com.base.timeline.change.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.succession.SuccessionPlanner;
 
 import java.util.HashMap;

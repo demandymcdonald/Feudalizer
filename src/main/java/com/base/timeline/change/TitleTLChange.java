@@ -9,7 +9,7 @@ import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.change.conditions.NullifyConditions;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 import com.simulation.title.succession.rules.SuccessionEntry;
 import org.apache.commons.lang3.tuple.Pair;
@@ -51,7 +51,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
     @Override
     public HashSet<DMEReference<?>> getScope() {
-        Title<?> t = title.link();
+        Title<?> t = title.get();
         HashSet<DMEReference<?>> scope = new HashSet<>();
         safeAddToSet(scope,ObjectType.TITLE, title.getID());
         for (Title<?> s : t.getChildren()){
@@ -102,7 +102,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
-            entity.setHolder(getHolder().get().link());
+            entity.setHolder(getHolder().get().get());
             return entity.getCurrentState();
         }
 
@@ -181,7 +181,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
             if (getHolder().isPresent()){
-                entity.removeHolder(getHolder().get().link());
+                entity.removeHolder(getHolder().get().get());
             } else {
                 entity.removeCurrentHolder();
             }
@@ -211,14 +211,14 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
 
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
-            T newChild = this.getTitle().link();
+            T newChild = this.getTitle().get();
             Title<?> parent = newChild.getParent().orElse(null);
-            if (parent != null && !parent.getId().equals(newParent.link().getId())) {
-                parent.removeChild(newChild,loreFlag,newParent.link());
+            if (parent != null && !parent.getId().equals(newParent.get().getId())) {
+                parent.removeChild(newChild,loreFlag,newParent.get());
                 loreFlag = false;
             }
-            getTitle().link().addChild(newChild);
-            return getTitle().link().getCurrentState();
+            getTitle().get().addChild(newChild);
+            return getTitle().get().getCurrentState();
         }
 
         @Override
@@ -298,7 +298,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         }
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
-            entity.removeChild(newChild.link(),false,null);
+            entity.removeChild(newChild.get(),false,null);
             return entity.getCurrentState();
         }
         @Override
@@ -306,7 +306,7 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
             return "DeJure Drift: " + newChild.parse() + " is now the parent of " + newChild.parse() + ".";
         }
         public C getChild(){
-            return newChild.link();
+            return newChild.get();
         }
 
         public static <T extends Title<T>, C extends Title<C>,NP extends Title<NP>> DeJureDriftPassive<T,C,NP> fromJson(LocalDate date, JsonObject json){

@@ -4,7 +4,7 @@ package com.display.windows.cards.view.title;
 import com.Feudalizer;
 import com.display.windows.cards.view.BaseViewCard;
 import com.display.windows.UIComponents;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

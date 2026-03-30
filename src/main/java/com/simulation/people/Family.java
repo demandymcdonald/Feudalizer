@@ -9,8 +9,10 @@ import com.base.StateChangeKey;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.TimelineState;
+import com.base.timeline.change.FamilyTLChange;
 import com.google.gson.JsonObject;
-import javafx.util.Pair;
+import com.simulation.character.BookCharacter;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -50,18 +52,21 @@ public class Family extends DateMutableEntity<Family> {
     }
 
     //######
-    private HashMap<DMEReference<BookCharacter>, Relationship> Members = new HashMap<>();
+    private final HashMap<DMEReference<BookCharacter>, Relationship> members = new HashMap<>();
     private StateReference customName;
+    private Family(UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
+        super(created, ended, List.of(new FamilyTLChange.MemberChange(DMEReference.of(ObjectType.FAMILY,id), LocalDate.now(), buildPair(head, Relationship.HEAD_OF_FAMILY))));
+
+    }
     public Family(LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
-        super(created, ended, );
-        Members = children;
+        this(UUID.randomUUID(), created, ended, head);
     }
-
-    public Family(DMEReference<Family> dme, LocalDate) {
-        super(dme, saveData);
-        Members = children;
+    public Family(DMEReference<Family> dme, JsonObject payload) {
+        super(dme, payload);
     }
-
+    protected static Pair<DMEReference<BookCharacter>,Relationship> buildPair(DMEReference<BookCharacter> member, Relationship rel){
+        return Pair.of(member,rel);
+    }
     public DMEReference<BookCharacter> getHeadofFamily() {
         return getMembersMatching(Relationship.HEAD_OF_FAMILY)[0];
     }
@@ -69,11 +74,11 @@ public class Family extends DateMutableEntity<Family> {
         return getMembersMatching(Relationship.SPOUSE)[0];
     }
     private DMEReference<BookCharacter>[] getMembersMatching(Relationship rel) {
-        return Members.entrySet().stream().filter(
+        return members.entrySet().stream().filter(
                 e -> e.getValue() == rel).map(Map.Entry::getKey).toArray(DMEReference[]::new);
     };
     public int getNumberOf(MemberType type) {
-        return (int) Members.entrySet().stream().filter(e -> e.getValue().type == type).count();
+        return (int) members.entrySet().stream().filter(e -> e.getValue().type == type).count();
     }
     public int getMaxAllowed(Relationship rel) {
         return rel.maxInUnit;
@@ -81,9 +86,12 @@ public class Family extends DateMutableEntity<Family> {
     public boolean hasSpaceFor(Relationship rel) {
         return getNumberOf(rel.type) < getMaxAllowed(rel);
     }
+    public int getSlotsLeftFor(Relationship rel) {
+        return getMaxAllowed(rel) - getNumberOf(rel.type);
+    }
     public void internal_AddMember(DMEReference<BookCharacter> member, Relationship rel) {
         if (hasSpaceFor(rel)) {
-            Members.put(member, rel);
+            members.put(member, rel);
         } else {
             Feudalizer.LOGGER.error("Family " + this.toString() + " is at it's limit for members of type {}!", rel.type);
         }
@@ -94,25 +102,14 @@ public class Family extends DateMutableEntity<Family> {
     }
 
     @Override
-    public void saveAdditional(JsonObject data) {
-
-    }
+    public void saveAdditional(JsonObject data) {}
     private static TimelineState<Family> buildInitial(Family dme, LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
 
     }
     @Override
-    public JsonObject onLoad(JsonObject data) {
-        return null;
-    }
-
-
-
-
-
-
-
+    public void loadAdditional(JsonObject data) {}
     public List<DMEReference<BookCharacter>> getMembers(){
-        return Members.keySet().stream().toList();
+        return members.keySet().stream().toList();
     }
 
 
@@ -141,7 +138,7 @@ public class Family extends DateMutableEntity<Family> {
 
     public Relationship getFamilyRelationship(BookCharacter person) {
         Relationship relationship;
-        if (Members.stream().anyMatch(p -> p.getId() == person.getId())) {
+        if (members.stream().anyMatch(p -> p.getId() == person.getId())) {
             return Relationship.CHILD;
         }
         else if (person == HeadofFamily) {
@@ -154,7 +151,7 @@ public class Family extends DateMutableEntity<Family> {
         }
     }
     public boolean isMember(BookCharacter person) {
-        return  person == HeadofFamily || person == SecondarySpouse.orElse(HeadofFamily) || Members.stream().anyMatch(p -> p.getId() == person.getId());
+        return  person == HeadofFamily || person == SecondarySpouse.orElse(HeadofFamily) || members.stream().anyMatch(p -> p.getId() == person.getId());
     };
 
     @Override
@@ -167,7 +164,7 @@ public class Family extends DateMutableEntity<Family> {
         return (getChildrenOrdered(true));
     }
     public List<BookCharacter> getChildrenOrdered(boolean oldestToYoungest) {
-        List<BookCharacter> children = new ArrayList<>(Members);
+        List<BookCharacter> children = new ArrayList<>(members);
         if (oldestToYoungest) {
             return children;
         } else {
@@ -197,10 +194,10 @@ public class Family extends DateMutableEntity<Family> {
         BookCharacter child;
         if (primarySurname || (HeadofFamily.isNoble() && !secSpouse.isNoble())) {
             child = new BookCharacter(UUID.randomUUID(),name, HeadofFamily.getSurname(),this.PrimaryHouse.orElse(null), GlobalVars.CURRENT_DATE(),null,gender,defaultFam);
-            Members.add(child);
+            members.add(child);
         } else {
             child = new BookCharacter(UUID.randomUUID(),name,secSpouse.getSurname(),this.PrimaryHouse.orElse(null), GlobalVars.CURRENT_DATE(),null,gender,defaultFam);
-            Members.add(child);
+            members.add(child);
         }
         doChildReorder();
         addStateChange(GlobalVars.CURRENT_DATE(), StateChangeKey.hadChild(HeadofFamily,SecondarySpouse.orElse(null),child));
@@ -215,7 +212,7 @@ public class Family extends DateMutableEntity<Family> {
         return ordered;
     }
     private void doChildReorder(){
-        Members.sort(Comparator.comparing(BookCharacter::getCreated));
+        members.sort(Comparator.comparing(BookCharacter::getCreated));
     }
     @Override
     protected JsonObject serializeData(FamilyState data) {

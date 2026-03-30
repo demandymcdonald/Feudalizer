@@ -2,8 +2,8 @@
 //
 //
 //import com.google.gson.JsonObject;
-//import com.simulation.people.BookCharacter;
-//import com.simulation.people.CharacterManager;
+//import com.simulation.character.BookCharacter;
+//import com.simulation.character.CharacterManager;
 //
 //import java.util.*;
 //

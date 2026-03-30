@@ -1,7 +1,6 @@
 package com;
 
-import com.simulation.people.BookCharacter;
-import com.simulation.people.CharacterSuccessionContainer;
+import com.simulation.character.BookCharacter;
 import com.simulation.title.Title;
 import com.simulation.title.succession.rules.CommonLawEntry;
 import com.simulation.title.succession.rules.CustomEntry;
@@ -9,7 +8,6 @@ import com.simulation.title.succession.rules.SuccessionEntry;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.HashMap;
-import java.util.function.BiFunction;
 
 public class TypedSerialized {
     private static final HashMap<Class<? extends SuccessionEntry<?>>, SuccessionEntry<?>> REGISTERED_SUCCESSION_RULES = new HashMap<>();

@@ -9,15 +9,13 @@ import com.base.timeline.change.TitleTLChange;
 import com.base.timeline.change.conditions.CanHoldTitleCondition;
 import com.base.timeline.change.conditions.DMEResult;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
-import com.simulation.people.CharacterManager;
+import com.simulation.character.BookCharacter;
+import com.simulation.character.CharacterManager;
 import com.simulation.title.succession.SuccessionContainer;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     private Optional<BookCharacter> Holder = Optional.empty();
@@ -117,8 +115,8 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
         //holder.addTitle(this);
     }
     public void setInherit(TitleTLChange.Inherit<T> inherit, LocalDate date, boolean isFirst) {
-        Holder = Optional.of(inherit.getHolder().orElseThrow().link());
-        Title<?> t = inherit.getTitle().link();
+        Holder = Optional.of(inherit.getHolder().orElseThrow().get());
+        Title<?> t = inherit.getTitle().get();
         Holder.get().addToTitleList(t);
         addStateChange(date,isFirst, inherit);
         //Holder.addTitle(this);

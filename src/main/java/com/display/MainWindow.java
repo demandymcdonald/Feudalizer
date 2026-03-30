@@ -6,7 +6,7 @@ import com.display.windows.MapDisplay;
 import com.display.windows.SearchBar;
 import com.display.windows.menu.AppMenuBar;
 import com.display.windows.menu.CharacterCreationDialog;
-import com.simulation.people.BookCharacter;
+import com.simulation.character.BookCharacter;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
