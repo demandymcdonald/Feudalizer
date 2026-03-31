@@ -26,7 +26,7 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
         doIterate(DateMutableEntity::onLink);
     }
     public void onDateChange(){
-        doIterate(DateMutableEntity::onLink);
+        doIterate(DateMutableEntity::onDateChange);
     }
     public <R extends DateMutableEntity<R>> R loadObject(DMEReference<R> dme, JsonObject object) {
         if (!accepts(dme)){

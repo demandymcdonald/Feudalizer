@@ -89,7 +89,7 @@ public class Opinion implements JsonSerializable<Opinion> {
         final Pair<Integer,Integer> totals = calculateOpinionTotal(reasons);
         final Triple<TimelineState<BookCharacter>,CharacterMapChanges.OpinionChange,Opinion> triple = getOrMake(t,time,t,target,target,reasons);
         final Runnable runnable = () -> {
-            Pair<Long,LocalDate> f = TimelineHelper.findBreadcrumb(t, CharacterMapChanges.OpinionChange.class, time, TimelineHelper.Direction.FORWARD,false);
+            Pair<Long,LocalDate> f = TimelineHelper.findBreadcrumb(t,CharacterMapChanges.OpinionChange.class, time, TimelineHelper.Direction.FORWARD,false);
             if (f != null){
                 CharacterMapChanges.OpinionChange c = (CharacterMapChanges.OpinionChange) TimelineHelper.followBreadcrumb(t,f.getKey(),f.getValue());
                 c.setLeapFrog(triple.getMiddle().makeLeapFrog());

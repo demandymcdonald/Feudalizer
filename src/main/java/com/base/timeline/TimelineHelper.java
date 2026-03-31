@@ -4,6 +4,8 @@ import com.Feudalizer;
 import com.base.DateMutableEntity;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineMapChange;
+import com.objects.character.BookCharacter;
+import com.objects.character.CharacterMapChanges;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
@@ -15,13 +17,16 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 public class TimelineHelper {
+
+
     public enum Direction {
         FORWARD, BACKWARD
     }
     public static <T extends DateMutableEntity<T>> TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, long breadcrumb, LocalDate date) {
-            return timeline.getStateAt(date).getChange(breadcrumb);
+            return (TimelineChange<? super T>) timeline.getStateAt(date).getChange(breadcrumb);
     }
-    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline, Class<TimelineChange<? super T>> c, LocalDate startingDate, Direction direction, boolean shouldThrow) {
+    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline,
+       Class<? extends TimelineChange<? super T>> c, LocalDate startingDate, Direction direction, boolean shouldThrow) {
         //TODO think on this. Potentially a 3 state if could get the same result. Though the reasonID check would (I think) be undeniable.
         while (true) {
             TimelineState<T> state;
@@ -78,7 +83,7 @@ public class TimelineHelper {
 
 
 
-    public static <T extends DateMutableEntity<T>> void propagateBreadcrumb(Timeline<T> timeline, TimelineChange<T> tc) {
+    public static <T extends DateMutableEntity<T>> void propagateBreadcrumb(Timeline<? extends T> timeline, TimelineChange<? super T> tc) {
         if (tc.isDeactivated()) {
             Feudalizer.LOGGER.error("Tried to propagate on deactivated change: " + tc);
             return;
@@ -91,7 +96,7 @@ public class TimelineHelper {
         final LocalDate endDate = tc.getEnd();
         final long breadcrumb = tc.getId();
 
-        TimelineState<T> state = timeline.getStateAt(startDate);
+        TimelineState<? extends T> state = timeline.getStateAt(startDate);
         LocalDate currentDate = startDate;
         while ((currentDate.isBefore(endDate) || currentDate.isEqual(endDate)) && state != null) {
             state.forceInsertBC(breadcrumb, startDate);
@@ -106,7 +111,7 @@ public class TimelineHelper {
             tc.addEnd(state.getStart());
         }
     }
-
+    //No ? extends T because they will always be T
     public static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> getAllChanges(Timeline<T> timeline, TimelineState<T> ts, boolean includeInactive) {
         List<TimelineChange<? super T>> baseChanges;
         HashMap<Long, LocalDate> passiveChanges = ts.getBreadcrumbs();
@@ -169,14 +174,14 @@ public class TimelineHelper {
         return extendTrail(timeline, timeline.getStateBefore(date), date);
     }
 
-    public static <M extends TimelineMapChange<M,K,V,T>,K,V,T extends DateMutableEntity<T>,R> R doMapChangeLeapFrog(
+    public static <M extends TimelineMapChange<M,K,V,? extends T>,K,V,T extends DateMutableEntity<T>,R> R doMapChangeLeapFrog(
             Timeline<T> t, Pair<Long, LocalDate> firstLF, BiFunction<M, R, Integer> getCurrent, Class<M> mClass,
             final int total, BiConsumer<M, R> makeChange, R result, boolean completeLastCycle, Direction direction){
-
+        Class<TimelineChange>
         int current = 0;
         Pair<Long, LocalDate> currentLeapFrog = firstLF;
         while(current < total){
-            TimelineChange<? super T> n = (TimelineChange<? super T>) followBreadcrumb(t,currentLeapFrog.getKey(),currentLeapFrog.getValue());
+            TimelineChange<? super T> n = TimelineHelper.<T>followBreadcrumb(t,currentLeapFrog.getKey(),currentLeapFrog.getValue());
             if (mClass.equals(n.getClass())){
                 M m = (M) n;
                 current += getCurrent.apply(m,result);
@@ -185,7 +190,7 @@ public class TimelineHelper {
                 }
                 makeChange.accept(m,result);
                 if (direction == Direction.FORWARD){
-                    currentLeapFrog = findBreadcrumb(t,mClass,n.getEnd(),Direction.FORWARD,false);
+                    currentLeapFrog = TimelineHelper.<T>findBreadcrumb(t,mClass,n.getEnd(),Direction.FORWARD,false);
                 } else {
                     currentLeapFrog = m.getPreviousLeapFrog();
                 }

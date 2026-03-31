@@ -1,109 +1,121 @@
-package com.base;
+package com.base
 
-import com.Global;
-import com.base.reference.DMEReference;
-import com.base.timeline.Timeline;
-import com.base.timeline.TimelineState;
-import com.base.timeline.change.TimelineChange;
-import com.google.gson.JsonObject;
-import com.utilities.SuperclassSerializable;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.util.*;
+import com.Global
+import com.base.reference.DMEReference
+import com.base.timeline.Timeline
+import com.base.timeline.TimelineState
+import com.base.timeline.change.TimelineChange
+import com.google.gson.JsonObject
+import com.utilities.SuperclassSerializable
+import java.time.LocalDate
+import java.util.*
 
 /**
  * Represents an abstract class for date-aware mutable entities that track state changes over time.
- * This class maintains a timeline of states, which are stored as objects of the nested {@code DateState} record.
+ * This class maintains a timeline of states, which are stored as objects of the nested `DateState` record.
  * Each state includes metadata such as creation and end dates, associated keys for state changes, and a payload
  * representing the state value.
  *
- * @param <T> The type representing the state of the entity.
+ * @param T The type representing the state of the entity.
  */
-public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable {
-    private final UUID id;
-    private final Timeline<T> timeline;
-    private final DMEReference<T> reference;
-    public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<TimelineChange<? super T>> initialState) {
-        this.id = id;
-        this.reference = DMEReference.of(this.getClass(),id);
-        this.timeline = new Timeline<T>((T) this,reference,created,ended,initialState);
-    }
-    public DateMutableEntity(LocalDate created, @Nullable LocalDate ended, List<TimelineChange<? super T>> initialState) {
-        this(UUID.randomUUID(), created, ended, initialState);
-    }
-    public DateMutableEntity(DMEReference<T> dme) {
-        if (dme == null) throw new NullPointerException("DMEReference cannot be null");
-        if (!dme.getType().equals(this.getClass())) throw new IllegalArgumentException("DMEReference: "+ dme +" must be of type " + this.getClass());
-        this.id = dme.getID();
-        this.timeline = new Timeline<T>(dme);
-        this.reference = dme;
-    }
-    //Note for subclasses. To keep nomenclature simple:
-    // 1. setX is the way to trigger a statechange (and sandbox),
-    // it should EXCLUSIVELY create a new TLChange and pass it to the timeline with: addChange(TLChange).
-    // setX Methods are used by the UI to trigger state changes and sandboxing.
-    // 2. internalX should actually modify the variable on the runtime object. they should NEVER touch the timeline.
-    // 3. linkX is built for objects to add shortcut links to to an object (for example: BookCharacter has a fleeting
-    // list of the Family's it's a part of. For safety, any linked variable should be cleared on reload
+abstract class DateMutableEntity<T : DateMutableEntity<T>> : SuperclassSerializable {
+    private val id: UUID
+    private val timeline: Timeline<T>
+    private val reference: DMEReference<T>
 
+    constructor(
+        id: UUID,
+        created: LocalDate,
+        ended: LocalDate?,
+        initialState: List<TimelineChange<in T>>
+    ) {
+        this.id = id
+        this.reference = DMEReference.of(this::class.java, id)
+        this.timeline = Timeline(this as T, reference, created, ended, initialState)
+    }
 
+    constructor(
+        created: LocalDate,
+        ended: LocalDate?,
+        initialState: List<TimelineChange<in T>>
+    ) : this(UUID.randomUUID(), created, ended, initialState)
 
-    public final UUID getId() {
-        return id;
-    }
-    @Override
-    public final void mainSave(JsonObject json) {
-        json.add("timeline", timeline.save());
-    }
-    @Override
-    public final void mainLoad(JsonObject json) {
-        JsonObject timelineJson = json.get("timeline").getAsJsonObject();
-        timeline.load(timelineJson);
-    }
-    public LocalDate getCreated(){
-        return timeline.getEarliestDate();
-    };
-    public LocalDate getEnded(){
-        return timeline.getLatestDate();
-    }
-    public final DMEReference<T> getReference(){
-        return reference;
-    }
-    //use to add any shortcut/linked entries to other objects (for example, family adding a shortcut link to itself in every member)
-    public abstract void onLink();
-    //Use to clear any shortcut/linked variables.
-    public abstract void doDateChange();
-    public void onDateChange(){
-        doDateChange();
-        timeline.doTimeChange((T)this,current());
-
-    }
-    public void relink(){
-
-    }
-    protected final LocalDate current(){
-        return Global.getDate();
-    }
-    protected final void setCreated(LocalDate created){
-        timeline.moveBirth((T) this,created);
-    }
-    protected final void setEnded(LocalDate ended){
-        timeline.moveDeath((T) this,ended);
-    }
-    public TimelineState<T>[] getAllStates(){
-        return timeline.getStates();
-    }
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj instanceof DateMutableEntity<?> dme && this.getClass().equals(dme.getClass())) {
-            return this.getId().equals(dme.getId());
+    constructor(dme: DMEReference<T>) {
+        requireNotNull(dme) { "DMEReference cannot be null" }
+        require(dme.type == this::class.java) {
+            "DMEReference: $dme must be of type ${this::class.java}"
         }
-        return false;
+        this.id = dme.id
+        this.timeline = Timeline(dme)
+        this.reference = dme
     }
-    public final Timeline<T> getTimeline(){
-        return timeline;
+
+    val entityId: UUID
+        get() = id
+
+    override fun mainSave(json: JsonObject) {
+        json.add("timeline", timeline.save())
     }
-    public abstract <M extends AbstractMutableManager<M,T,?>> M getManager();
-    public abstract ObjectType getObjectType();
+
+    override fun mainLoad(json: JsonObject) {
+        val timelineJson = json["timeline"].asJsonObject
+        timeline.load(timelineJson)
+    }
+
+    val createdDate: LocalDate
+        get() = timeline.earliestDate
+
+    val endedDate: LocalDate
+        get() = timeline.latestDate
+
+    val dmeReference: DMEReference<T>
+        get() = reference
+
+    // Use to add any shortcut/linked entries to other objects (e.g., family adding a shortcut link to itself in every member)
+    abstract fun onLink()
+
+    // Use to clear any shortcut/linked variables.
+    abstract fun doDateChange()
+
+    fun onDateChange() {
+        doDateChange()
+        timeline.doTimeChange(this, current())
+    }
+
+    fun relink() {
+        // Placeholder for implementation in subclasses
+    }
+
+    protected fun current(): LocalDate {
+        return Global.date
+    }
+
+    protected fun setCreated(created: LocalDate) {
+        timeline.moveBirth(this as T, created)
+    }
+
+    protected Thanfun setEnded(ended: LocalDate) {
+        timeline.moveDeath(this as T, ended)
+    }
+
+    fun getAllStates(): Array<TimelineState<T>> {
+        return timeline.states
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is DateMutableEntity<*> && this::class == other::class) {
+            this.entityId == other.entityId
+        } else false
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    fun getTimeline(): Timeline<T> {
+        return timeline
+    }
+
+    abstract fun <M : AbstractMutableManager<M, T, *>> getManager(): M
+
 }
