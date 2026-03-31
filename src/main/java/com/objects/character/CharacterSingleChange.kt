@@ -1,408 +1,303 @@
-package com.objects.character;
+package com.objects.character
 
-import com.base.timeline.TimelineState;
-import com.base.timeline.change.TimelineChange;
-import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.change.conditions.Condition;
-import com.base.timeline.change.conditions.ConditionResult;
-import com.base.timeline.flags.StateError;
-import com.google.gson.JsonObject;
-import com.objects.CauseOfEnd;
+import com.base.timeline.TimelineState
+import com.base.timeline.change.TimelineChange
+import com.base.reference.DMEReference
+import com.base.timeline.change.TimelineSingleChange
+import com.base.timeline.change.conditions.Condition
+import com.base.timeline.change.conditions.ConditionResult
+import com.base.timeline.flags.StateError
+import com.google.gson.JsonObject
+import com.objects.CauseOfEnd
+import java.time.LocalDate
+import java.util.Optional
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import com.base.timeline.change.conditions.NullifyConditions.NEVER_NULLIFY
 
-import static com.base.timeline.change.conditions.NullifyConditions.NEVER_NULLIFY;
+abstract class CharacterSingleChange(primary: DMEReference<BookCharacter>, date: LocalDate) :
+    TimelineSingleChange<BookCharacter>(primary, date) {
 
-public abstract class CharacterSingleChange extends TimelineSingleChange<BookCharacter> {
-    protected CharacterSingleChange(DMEReference<BookCharacter> primary, LocalDate date) {
-        super(primary,date);
 
-    }
+    class Birth(primary: DMEReference<BookCharacter>, date: LocalDate) :
+        CharacterSingleChange(primary, date) {
 
-    @Override
-    protected boolean containsMyTags(ChangeTags[] tags) {
-        return super.containsMyTags(tags);
-    }
-
-    @Override
-    protected boolean containsMyTags(TimelineChange<?> state) {
-        return super.containsMyTags(state);
-    }
-
-    @Override
-    protected ChangeTags[] getTags() {
-        return new ChangeTags[0];
-    }
-
-    @Override
-    public HashSet<DMEReference<?>> getScope() {
-        HashSet<DMEReference<?>> toReturn = new HashSet<>();
-        toReturn.add(this.getOwner());
-        return toReturn;
-    }
-
-    //=================================================================================================================
-    // Start of Subclasses
-    //=================================================================================================================
-
-    public static class Birth extends CharacterSingleChange {
-        public Birth(DMEReference<BookCharacter> primary, LocalDate date) {
-            super(primary,date);
+        override fun onApply(entity: BookCharacter, currentState: TimelineState<BookCharacter>) {
         }
 
-        @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-
+        override fun oppositeChanges(): List<Class<TimelineChange<in BookCharacter>>> {
+            return listOf()
         }
 
-        @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
-            return List.of();
+        override fun isPositive(): Boolean {
+            return true
         }
 
-
-        @Override
-        public boolean isPositive() {
-            return true;
+        override fun buildApplyConditions(): List<Condition<StateError, in BookCharacter>> {
+            return listOf()
         }
 
-
-        @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
-            return List.of();
+        override fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in BookCharacter>> {
+            return listOf(NEVER_NULLIFY as Condition<ConditionResult.Nullify, in BookCharacter>)
         }
 
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of((Condition<ConditionResult.Nullify,? super BookCharacter>) NEVER_NULLIFY);
+        override fun getText(): String {
+            return "${getOwner()} was born."
         }
 
-
-        @Override
-        protected String getText() {
-            return getOwner().toString() + "was born.";
+        override fun additionalSave(data: JsonObject) {
         }
 
-        @Override
-        public void additionalSave(JsonObject data) {
-
-        }
-
-        @Override
-        public void additionalLoad(JsonObject data) {
-
+        override fun additionalLoad(data: JsonObject) {
         }
     }
-    public static class Death extends CharacterSingleChange {
-        CauseOfEnd.BookCharacter cause;
-        public Death(DMEReference<BookCharacter> primary, LocalDate date, CauseOfEnd.BookCharacter cause) {
-            super(primary,date);
-            this.cause = cause;
+
+    class Death(primary: DMEReference<BookCharacter>, date: LocalDate, private var cause: CauseOfEnd.BookCharacter) :
+        CharacterSingleChange(primary, date) {
+
+        override fun onApply(entity: BookCharacter, currentState: TimelineState<BookCharacter>) {
         }
 
-        @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-
+        override fun oppositeChanges(): List<Class<TimelineChange<in BookCharacter>>> {
+            return listOf()
         }
 
-        @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
-            return List.of();
+        override fun isPositive(): Boolean {
+            return true
         }
 
-
-        @Override
-        public boolean isPositive() {
-            return true;
+        override fun buildApplyConditions(): List<Condition<StateError, in BookCharacter>> {
+            return listOf()
         }
 
-        @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
-            return List.of();
+        override fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in BookCharacter>> {
+            return listOf(NEVER_NULLIFY as Condition<ConditionResult.Nullify, in BookCharacter>)
         }
 
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of((Condition<ConditionResult.Nullify,? super BookCharacter>) NEVER_NULLIFY);
-        }
-        @Override
-        protected String getText() {
-            return getOwner().toString() + "died ";
+        override fun getText(): String {
+            return "${getOwner()} died"
         }
 
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("cause",cause.name());
+        override fun additionalSave(data: JsonObject) {
+            data.addProperty("cause", cause.name)
         }
 
-        @Override
-        public void additionalLoad(JsonObject data) {
-            if(data.has("cause")){
-                cause = CauseOfEnd.BookCharacter.valueOf(data.get("cause").getAsString());
+        override fun additionalLoad(data: JsonObject) {
+            cause = if (data.has("cause")) {
+                CauseOfEnd.BookCharacter.valueOf(data.get("cause").asString)
             } else {
-                cause = CauseOfEnd.BookCharacter.CHARACTER_ERROR;
+                CauseOfEnd.BookCharacter.CHARACTER_ERROR
             }
         }
     }
-    public static class setForename extends CharacterSingleChange {
-        private String forename;
-        private Optional<String> old;
-        public setForename(DMEReference<BookCharacter> primary, LocalDate date, String forename) {
-            super(primary,date);
-            this.forename = forename;
-            this.old = Optional.ofNullable(primary.get().getForename());
-        }
-        public setForename(DMEReference<BookCharacter> primary, LocalDate date) {
-            super(primary,date);
-        }
-        @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-            entity.internalSetForename(forename);
+
+    class SetForename(
+        primary: DMEReference<BookCharacter>,
+        date: LocalDate,
+        private var forename: String? = null,
+        private var old: Optional<String> = Optional.empty()
+    ) : CharacterSingleChange(primary, date) {
+
+        constructor(primary: DMEReference<BookCharacter>, date: LocalDate, forename: String) : this(
+            primary, date, forename, Optional.ofNullable(primary.get().forename)
+        )
+
+        override fun onApply(entity: BookCharacter, currentState: TimelineState<BookCharacter>) {
+            entity.internalSetForename(forename.orEmpty())
         }
 
-        @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
-            return List.of();
+        override fun oppositeChanges(): List<Class<TimelineChange<in BookCharacter>>> {
+            return listOf()
         }
 
-        @Override
-        public boolean isPositive() {
-            return true;
+        override fun isPositive(): Boolean {
+            return true
         }
 
-        @Override
-        protected String getText() {
-            String second = getOwner().get().getSurname();
-            if(old.isPresent()){
-                return  old.get() + " " +second + " changed their forename to: " + forename;
+        override fun getText(): String {
+            val second = getOwner().get().surname
+            return if (old.isPresent) {
+                "${old.get()} $second changed their forename to: $forename"
             } else {
-                return forename + " " + second +" changed their forename";
+                "$forename $second changed their forename"
             }
         }
 
-        @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
-            return List.of();
+        override fun buildApplyConditions(): List<Condition<StateError, in BookCharacter>> {
+            return listOf()
         }
 
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of();
+        override fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in BookCharacter>> {
+            return listOf()
         }
 
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("forename",forename);
-            if (old.isPresent()){
-                data.addProperty("old",old.get());
-                return;
-            }
+        override fun additionalSave(data: JsonObject) {
+            data.addProperty("forename", forename)
+            old.ifPresent { data.addProperty("old", it) }
         }
-        @Override
-        public void additionalLoad(JsonObject data) {
-            if(data.has("forename")){
-                forename = data.get("forename").getAsString();
-            }
-            if(data.has("old")){
-                old = Optional.of(data.get("old").getAsString());
+
+        override fun additionalLoad(data: JsonObject) {
+            forename = data["forename"]?.asString
+            old = if (data.has("old")) Optional.of(data.get("old").asString) else Optional.empty()
+        }
+    }
+
+    class SetSurname(
+        primary: DMEReference<BookCharacter>,
+        date: LocalDate,
+        private var surname: String? = null,
+        private var old: Optional<String> = Optional.empty()
+    ) : CharacterSingleChange(primary, date) {
+
+        constructor(primary: DMEReference<BookCharacter>, date: LocalDate, surname: String) : this(
+            primary, date, surname, Optional.ofNullable(primary.get().forename)
+        )
+
+        override fun onApply(entity: BookCharacter, currentState: TimelineState<BookCharacter>) {
+            entity.internalSetSurname(surname.orEmpty())
+        }
+
+        override fun oppositeChanges(): List<Class<TimelineChange<in BookCharacter>>> {
+            return listOf()
+        }
+
+        override fun isPositive(): Boolean {
+            return true
+        }
+
+        override fun getText(): String {
+            val second = getOwner().get().surnameProperty
+            return if (old.isPresent) {
+                "$second ${old.get()} changed their surname to: $surname"
             } else {
-                old = Optional.empty();
+                "$second ${old.get()} changed their surname."
+            }
+        }
+
+        override fun buildApplyConditions(): List<Condition<StateError, in BookCharacter>> {
+            return listOf()
+        }
+
+        override fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in BookCharacter>> {
+            return listOf()
+        }
+
+        override fun additionalSave(data: JsonObject) {
+            data.addProperty("surname", surname)
+            old.ifPresent { data.addProperty("old", it) }
+        }
+
+        override fun additionalLoad(data: JsonObject) {
+            surname = data["surname"]?.asString
+            old = if (data.has("old")) Optional.of(data.get("old").asString) else Optional.empty()
+        }
+    }
+
+    class SetGender(
+        primary: DMEReference<BookCharacter>,
+        date: LocalDate,
+        private var gender: BookCharacter.Gender,
+        private var old: Optional<BookCharacter.Gender> = Optional.empty()
+    ) : CharacterSingleChange(primary, date) {
+
+        constructor(primary: DMEReference<BookCharacter>, date: LocalDate, gender: BookCharacter.Gender) : this(
+            primary, date, gender, Optional.ofNullable(primary.get().characterGender)
+        )
+
+        override fun onApply(entity: BookCharacter, currentState: TimelineState<BookCharacter>) {
+            entity.internalSetGender(gender)
+        }
+
+        override fun oppositeChanges(): List<Class<TimelineChange<in BookCharacter>>> {
+            return listOf()
+        }
+
+        override fun isPositive(): Boolean {
+            return true
+        }
+
+        override fun getText(): String {
+            val name = getOwner().get().fullName
+            return if (old.isPresent) {
+                "$name changed their gender from: ${old.get()}, to: ${gender.getFlavor()}."
+            } else {
+                "$name changed their gender to: ${gender.getFlavor()}."
+            }
+        }
+
+        override fun buildApplyConditions(): List<Condition<StateError, in BookCharacter>> {
+            return listOf()
+        }
+
+        override fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in BookCharacter>> {
+            return listOf()
+        }
+
+        override fun additionalSave(data: JsonObject) {
+            data.addProperty("gender", gender.name)
+            old.ifPresent { data.addProperty("old", it.name) }
+        }
+
+        override fun additionalLoad(data: JsonObject) {
+            gender = BookCharacter.Gender.valueOf(data["gender"].asString)
+            old = if (data.has("old")) {
+                Optional.of(BookCharacter.Gender.valueOf(data.get("old").asString))
+            } else {
+                Optional.empty()
             }
         }
     }
-    public static class setSurname extends CharacterSingleChange {
-        private String surname;
-        private Optional<String> old;
-        public setSurname(DMEReference<BookCharacter> primary, LocalDate date, String surname) {
-            super(primary,date);
-            this.surname = surname;
-            this.old = Optional.ofNullable(primary.get().getForename());
-        }
-        public setSurname(DMEReference<BookCharacter> primary, LocalDate date) {
-            super(primary,date);
-        }
-        @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-            entity.internalSetSurname(surname);
+
+    class SetOrientation(
+        primary: DMEReference<BookCharacter>,
+        date: LocalDate,
+        private var orientation: BookCharacter.Orientation,
+        private var old: Optional<BookCharacter.Orientation> = Optional.empty()
+    ) : CharacterSingleChange(primary, date) {
+
+        constructor(primary: DMEReference<BookCharacter>, date: LocalDate, orientation: BookCharacter.Orientation) : this(
+            primary, date, orientation, Optional.ofNullable(primary.get().sexualOrientation)
+        )
+
+        override fun onApply(entity: BookCharacter, currentState: TimelineState<BookCharacter>) {
+            entity.internalSetOrientation(orientation)
         }
 
-        @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
-            return List.of();
+        override fun oppositeChanges(): List<Class<TimelineChange<in BookCharacter>>> {
+            return listOf()
         }
 
-        @Override
-        public boolean isPositive() {
-            return true;
+        override fun isPositive(): Boolean {
+            return true
         }
 
-        @Override
-        protected String getText() {
-            String second = getOwner().get().getSurname();
-            if(old.isPresent()){
-                return  second + " " +old.get() + " changed their surname to: " + surname;
+        override fun getText(): String {
+            val name = getOwner().get().fullName
+            return if (old.isPresent) {
+                "$name changed their sexual orientation from: ${old.get()}, to: ${orientation.getFlavor()}."
             } else {
-                return second + " " + old.get() +" changed their surname.";
+                "$name changed their sexual orientation to: ${orientation.getFlavor()}."
             }
         }
 
-        @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
-            return List.of();
+        override fun buildApplyConditions(): List<Condition<StateError, in BookCharacter>> {
+            return listOf()
         }
 
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of();
+        override fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in BookCharacter>> {
+            return listOf()
         }
 
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("surname",surname);
-            if (old.isPresent()){
-                data.addProperty("old",old.get());
-                return;
-            }
+        override fun additionalSave(data: JsonObject) {
+            data.addProperty("orientation", orientation.name)
+            old.ifPresent { data.addProperty("old", it.name) }
         }
-        @Override
-        public void additionalLoad(JsonObject data) {
-                surname = data.get("surname").getAsString();
-            if(data.has("old")){
-                old = Optional.of(data.get("old").getAsString());
+
+        override fun additionalLoad(data: JsonObject) {
+            orientation = BookCharacter.Orientation.valueOf(data["orientation"].asString)
+            old = if (data.has("old")) {
+                Optional.of(BookCharacter.Orientation.valueOf(data.get("old").asString))
             } else {
-                old = Optional.empty();
-            }
-        }
-    }
-    public static class setGender extends CharacterSingleChange {
-        private BookCharacter.Gender gender;
-        private Optional<BookCharacter.Gender> old;
-        public setGender(DMEReference<BookCharacter> primary, LocalDate date, BookCharacter.Gender gender) {
-            super(primary,date);
-            this.gender = gender;
-            this.old = Optional.ofNullable(primary.get().getGender());
-        }
-        public setGender(DMEReference<BookCharacter> primary, LocalDate date) {
-            super(primary,date);
-        }
-        @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-            entity.internalSetGender(gender);
-        }
-
-        @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
-            return List.of();
-        }
-
-        @Override
-        public boolean isPositive() {
-            return true;
-        }
-
-        @Override
-        protected String getText() {
-            String name = getOwner().get().getFullName();
-            if(old.isPresent()){
-                return  name + " changed their gender from: "+old.get()+", to: " + gender.getFlavor() + ".";
-            } else {
-                return name + " changed their gender to: " + gender.getFlavor()+ ".";
-            }
-        }
-
-        @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
-            return List.of();
-        }
-
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of();
-        }
-
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("gender",gender.name());
-            if (old.isPresent()){
-                data.addProperty("old",old.get().name());
-                return;
-            }
-        }
-        @Override
-        public void additionalLoad(JsonObject data) {
-            gender = BookCharacter.Gender.valueOf(data.get("gender").getAsString());
-            if(data.has("old")){
-                old = Optional.of(BookCharacter.Gender.valueOf(data.get("old").getAsString()));
-            } else {
-                old = Optional.empty();
-            }
-        }
-    }
-    public static class setOrientation extends CharacterSingleChange {
-        private BookCharacter.Orientation orientation;
-        private Optional<BookCharacter.Orientation> old;
-        public setOrientation(DMEReference<BookCharacter> primary, LocalDate date, BookCharacter.Orientation orientation) {
-            super(primary,date);
-            this.orientation = orientation;
-            this.old = Optional.ofNullable(primary.get().getOrientation());
-        }
-        public setOrientation(DMEReference<BookCharacter> primary, LocalDate date) {
-            super(primary,date);
-        }
-        @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-            entity.internalSetOrientation(orientation);
-        }
-
-        @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
-            return List.of();
-        }
-
-        @Override
-        public boolean isPositive() {
-            return true;
-        }
-
-        @Override
-        protected String getText() {
-            String name = getOwner().get().getFullName();
-            if(old.isPresent()){
-                return  name + " changed their sexual orientation from: "+old.get()+", to: " + orientation.getFlavor() + ".";
-            } else {
-                return name + " changed their sexual orientation to: " + orientation.getFlavor()+ ".";
-            }
-        }
-
-        @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
-            return List.of();
-        }
-
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of();
-        }
-
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("orientation",orientation.name());
-            if (old.isPresent()){
-                data.addProperty("old",old.get().name());
-                return;
-            }
-        }
-        @Override
-        public void additionalLoad(JsonObject data) {
-            orientation = BookCharacter.Orientation.valueOf(data.get("orientation").getAsString());
-            if(data.has("old")){
-                old = Optional.of(BookCharacter.Orientation.valueOf(data.get("old").getAsString()));
-            } else {
-                old = Optional.empty();
+                Optional.empty()
             }
         }
     }

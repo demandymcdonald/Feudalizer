@@ -1,24 +1,20 @@
-package com.base.timeline.change;
+package com.base.timeline.change
 
-import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
-import com.google.gson.JsonObject;
+import com.base.DateMutableEntity
+import com.base.reference.DMEReference
+import com.google.gson.JsonObject
+import java.time.LocalDate
 
-import java.time.LocalDate;
+abstract class TimelineSingleChange<T : DateMutableEntity<T>>(
+    owner: DMEReference<T>,
+    date: LocalDate
+) : TimelineChange<T>(owner, date) {
 
-public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> extends TimelineChange<T> {
-    protected TimelineSingleChange(DMEReference<T> owner, LocalDate date) {
-        super(owner, date);
+    final override fun mainSave(o: JsonObject) {
+        super.mainSave(o)
     }
 
-
-    @Override
-    public final void mainSave(JsonObject o) {
-        super.mainSave(o);
-    }
-
-    @Override
-    public final void mainLoad(JsonObject object) {
-        super.mainLoad(object);
+    final override fun mainLoad(`object`: JsonObject) {
+        super.mainLoad(`object`)
     }
 }

@@ -1,144 +1,144 @@
-package com.base.reference;
+package com.base.reference
 
-import com.Feudalizer;
+import com.Feudalizer
+import com.base.DMRegistry
+import com.base.DateMutableEntity
+import com.base.ObjectType
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
+import com.google.common.hash.Hashing
+import com.google.gson.JsonObject
+import java.nio.charset.StandardCharsets
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
-import com.base.DMRegistry;
-import com.base.DateMutableEntity;
-import com.base.ObjectType;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
-import com.google.gson.JsonObject;
+class DMEReference<T : DateMutableEntity<T>> private constructor(
+    private val type: Class<T>,
+    private val uuid: UUID
+) : StateReference() {
+    private val cachedEntity: ThreadLocal<T?> = ThreadLocal()
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-public class DMEReference<T extends DateMutableEntity<T>> extends StateReference {
-    private final Class<T> type;
-    private final UUID uuid;
-    private transient ThreadLocal<T> cachedEntity = new ThreadLocal<>();
-    private static final Cache<Long, DMEReference<?>> CACHE = CacheBuilder.newBuilder()
+    companion object {
+        private val CACHE: Cache<Long, DMEReference<*>> = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
             .maximumSize(1000)
-            .build();
-    private static final Cache<String, Class<? extends DateMutableEntity<?>>> CLASS_CACHE = CacheBuilder.newBuilder()
+            .build()
+
+        private val CLASS_CACHE: Cache<String, Class<out DateMutableEntity<*>>> = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
             .maximumSize(1000)
-            .build();
-    private DMEReference(Class<T> type, UUID uuid) {
-        this.type = type;
-        this.uuid = uuid;
-    }
-    private DMEReference(T e) {
-        this.type = (Class<T>) e.getClass();
-        this.uuid = e.getId();
+            .build()
+
+        fun <T : DateMutableEntity<T>> of(entity: T): DMEReference<T> {
+            val hash = doHash(entity.id, entity.javaClass)
+            @Suppress("UNCHECKED_CAST")
+            var cached = CACHE.getIfPresent(hash) as DMEReference<T>?
+            if (cached == null) {
+                cached = DMEReference(entity)
+                CACHE.put(hash, cached)
+            }
+            return cached
+        }
+
+        fun <T : DateMutableEntity<T>> of(vararg entities: T): Array<DMEReference<T>> {
+            return Array(entities.size) { of(entities[it]) }
+        }
+
+        fun <T : DateMutableEntity<T>> of(type: Class<T>, uuid: UUID): DMEReference<T> {
+            val hash = doHash(uuid, type)
+            @Suppress("UNCHECKED_CAST")
+            var cached = CACHE.getIfPresent(hash) as DMEReference<T>?
+            if (cached == null) {
+                cached = DMEReference(type, uuid)
+                CACHE.put(hash, cached)
+            }
+            return cached
+        }
+
+        fun <T : DateMutableEntity<T>> deserialize(jsonObject: JsonObject): DMEReference<T> {
+            val name = jsonObject.get("dme_type").asString
+            @Suppress("UNCHECKED_CAST")
+            var clazz = CLASS_CACHE.getIfPresent(name) as Class<T>?
+            if (clazz == null) {
+                clazz = buildClass(name)
+            }
+            val uuid = jsonObject.get("uuid").asString
+            return if (uuid.isNotEmpty() && clazz != null) {
+                DMEReference(clazz, UUID.fromString(uuid))
+            } else {
+                throw RuntimeException("Could not deserialize DMEReference: $jsonObject")
+            }
+        }
+
+        private fun <T : DateMutableEntity<T>> buildClass(name: String): Class<T> {
+            return try {
+                @Suppress("UNCHECKED_CAST")
+                val clazz = Class.forName(name) as Class<T>
+                CLASS_CACHE.put(name, clazz)
+                clazz
+            } catch (e: ClassNotFoundException) {
+                Feudalizer.LOGGER.error(e.message)
+                throw RuntimeException("Could not find class $name", e)
+            }
+        }
+
+        private fun <T : DateMutableEntity<T>> doHash(uuid: UUID, type: Class<T>): Long {
+            val hasher = Hashing.murmur3_128().newHasher()
+            hasher.putLong(uuid.mostSignificantBits)
+            hasher.putLong(uuid.leastSignificantBits)
+            hasher.putString(type.name, StandardCharsets.UTF_8)
+            return hasher.hash().asLong()
+        }
+
+        private fun doHash(reference: DMEReference<*>): Long {
+            return reference.hash()
+        }
     }
 
+    private constructor(entity: T) : this(entity.javaClass, entity.id)
 
-    //    public <R extends DateMutableEntity<R,?>> DMEReference(R entity) {
-//        this.type = (Class<T>) entity.getClass();
-//        this.uuid = entity.getId();
-//    }
-    public T get() {
+    fun get(): T {
         if (cachedEntity.get() == null) {
-            cachedEntity.set(DMRegistry.getEntity(type,uuid));;
+            cachedEntity.set(DMRegistry.getEntity(type, uuid))
         }
-        return cachedEntity.get();
+        return cachedEntity.get()!!
     }
-    public JsonObject serialize(){
-        JsonObject object = new JsonObject();
-        object.addProperty("Type", "DMEReference");
-        object.addProperty("uuid", uuid.toString());
-        object.addProperty("dme_type", type.getName());
-        return object;
-    }
-    public static <T extends DateMutableEntity<T>> DMEReference<T> deserialize(JsonObject object) {
 
-        String name = object.get("dme_type").getAsString();
-        Class<T> r = (Class<T>) CLASS_CACHE.getIfPresent(name);
-        if (r == null) {
-            r = buildClass(name);
-        }
-        String uuid = object.get("uuid").getAsString();
-        if (!uuid.isEmpty() && r != null) {
-            return new DMEReference<>(r,UUID.fromString(uuid));
-        } else {
-            throw new RuntimeException("Could not deserialize DMEReference: " + object.toString() + ".");
+    override fun serialize(): JsonObject {
+        return JsonObject().apply {
+            addProperty("Type", "DMEReference")
+            addProperty("uuid", uuid.toString())
+            addProperty("dme_type", type.name)
         }
     }
-    private static <T extends DateMutableEntity<T>> Class<T> buildClass(String name){
-        try {
-            Class<T> t = (Class<T>) Class.forName(name);
-            CLASS_CACHE.put(name,t);
-        } catch (ClassNotFoundException e) {
-            Feudalizer.LOGGER.error(e.getMessage());
-        }
-        throw new RuntimeException("Could not find class " + name);
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DMEReference<*>) return false
+        return uuid == other.uuid && type == other.type
     }
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof DMEReference<?> other)) return false;
-        return this.uuid.equals(other.uuid) && this.type.equals(other.type);
+
+    fun equals(type: Class<out DMEReference<*>>, uuid: UUID): Boolean {
+        return this.uuid == uuid && this.type == type
     }
-    public boolean equals(ObjectType type, UUID uuid){
-        return this.uuid.equals(uuid) && this.type.equals(type);
+
+    override fun hashCode(): Int {
+        return hash().toInt()
     }
-    @Override
-    public int hashCode() {
-        return (int) hash();
+
+    fun getType(): Class<T> {
+        return type
     }
-    public Class<T> getType() {
-        return type;
+
+    fun getID(): UUID {
+        return uuid
     }
-    public UUID getID() {
-        return uuid;
+
+    fun hash(): Long {
+        return doHash(uuid, type)
     }
-//    public ObjectType getType() {
-//        return type;
-//    }
-//    public static <T extends Title<T>> DMEReference<T> of(T tTitle) {
-//        return new DMEReference<>(tTitle,true);
-//    }
-    public static <T extends DateMutableEntity<T>> DMEReference<T> of(T entity){
-        long h = doHash(entity.getId(),entity.getClass());
-        DMEReference<T> cached = (DMEReference<T>) CACHE.getIfPresent(h);
-        if (cached == null) {
-            cached = new DMEReference<>(entity);
-            CACHE.put(h,cached);
-        }
-         return cached;
-    }
-    public static <T extends DateMutableEntity<T>> DMEReference<T>[] of(T... entity){
-        DMEReference<T>[] references = new DMEReference[entity.length];
-        for (int i = 0; i < entity.length; i++) references[i] = of(entity[i]);
-        return references;
-    }
-    public static <T extends DateMutableEntity<T>> DMEReference<T> of(Class<T> type, UUID uuid){
-        long h = doHash(uuid,type);
-        DMEReference<T> cached = (DMEReference<T>) CACHE.getIfPresent(h);
-        if (cached == null) {
-            cached = new DMEReference<T>(type,uuid);
-            CACHE.put(h,cached);
-        }
-        return cached;
-    }
-    public long hash(){
-        return doHash(uuid,type);
-    }
-    private static <T extends DateMutableEntity<T>> long doHash(UUID uuid, Class<T> type){
-        Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putLong(uuid.getMostSignificantBits());
-        hasher.putLong(uuid.getLeastSignificantBits());
-        hasher.putString(type.forName(), StandardCharsets.UTF_8);
-        return hasher.hash().asLong();
-    }
-    private static long doHash(DMEReference<?> reference){
-        return reference.hash();
-    }
-    @Override
-    public String parse() {
-        return get().toString();
+
+    override fun parse(): String {
+        return get().toString()
     }
 }

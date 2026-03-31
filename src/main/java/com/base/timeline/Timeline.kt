@@ -1,224 +1,183 @@
-package com.base.timeline;
+package com.base.timeline
 
-import com.Global;
-import com.base.AbstractMutableManager;
-import com.base.DMRegistry;
-import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.sandbox.core.Objective;
-import com.base.timeline.sandbox.core.SandboxHandler;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.Global
+import com.base.AbstractMutableManager
+import com.base.DMRegistry
+import com.base.DateMutableEntity
+import com.base.reference.DMEReference
+import com.base.timeline.change.TimelineChange
+import com.base.timeline.sandbox.core.Objective
+import com.base.timeline.sandbox.core.SandboxHandler
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import java.time.LocalDate
+import java.util.*
 
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.util.*;
+class Timeline<T : DateMutableEntity<T>> {
 
-public class Timeline<T extends DateMutableEntity<T>> {
-    private final TreeMap<LocalDate,TimelineState<T>> timeline = new TreeMap<>();
-    //TODO Caching for performance?
-    public boolean isLoaded = false;
-    private final DMEReference<T> owner;
-    public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<TimelineChange<? super T>> initialState) {
-        AbstractMutableManager<?,T,?> manager = o.getManager();
-        this.owner = owner;
-        timeline.put(start, manager.buildBirth(owner,start, initialState));
-        if (end == null){
-            timeline.put(end, manager.buildDeath(owner, Global.MAX_DATE,initialState));
+    private val timeline: TreeMap<LocalDate, TimelineState<T>> = TreeMap()
+    var isLoaded = false
+        private set
+    private val owner: DMEReference<T>
+
+    constructor(o: T, owner: DMEReference<T>, start: LocalDate, end: LocalDate?, initialState: List<TimelineChange<in T>>) {
+        val manager = o.getManager()
+        this.owner = owner
+        timeline[start] = manager.buildBirth(owner, start, initialState)
+        timeline[end ?: Global.MAX_DATE] = manager.buildDeath(owner, end ?: Global.MAX_DATE, initialState)
+        isLoaded = true
+    }
+
+    constructor(dme: DMEReference<T>) {
+        owner = dme
+    }
+
+    fun unsafeInsertState(state: TimelineState<T>) {
+        insertState(state)
+    }
+
+    fun getTimelineMin(): LocalDate = timeline.firstKey()
+
+    fun getTimelineMax(): LocalDate = timeline.lastEntry().value.end
+
+    fun addChange(change: TimelineChange<T>) {
+        getOrMakeState(change) // We just need a state at the exact start date.
+        SandboxHandler.SandboxApplyChange(Objective(owner, change), change.start, null)
+    }
+
+    fun isEmpty(): Boolean = timeline.isEmpty()
+
+    private fun insertState(state: TimelineState<T>) {
+        timeline[state.start] = state
+    }
+
+    private fun removeState(state: TimelineState<T>) {
+        timeline.remove(state.start)
+    }
+
+    private fun removeState(start: LocalDate) {
+        timeline.remove(start)
+    }
+
+    fun getEarliestDate(): LocalDate = timeline.firstKey()
+
+    fun getLatestDate(): LocalDate = timeline.lastKey()
+
+    fun isLast(date: LocalDate): Boolean {
+        return timeline.lastEntry().value.start.isBefore(date)
+    }
+
+    fun moveBirth(ref: T, date: LocalDate) {
+        val oldBirthDate = getEarliestDate()
+        val template = DMRegistry.getManager(owner.type)
+
+        if (oldBirthDate.isAfter(date)) {
+            val state = getStateAt(oldBirthDate)
+            timeline.remove(oldBirthDate)
+            timeline[date] = template.buildBirth(owner, date, state.changes(true))
         } else {
-            timeline.put(end, manager.buildDeath(owner,end,initialState));
+            val bt = template.getBirthChange(owner, date)
+            SandboxHandler.SandboxApplyChange(Objective(owner, bt), oldBirthDate, null)
+            // TODO Sandbox out moving the birth later
         }
-        isLoaded = true;
     }
 
-    public Timeline(DMEReference<T> dme){
-        //FOR LOADING ONLY
-        owner = dme;
-    }
-//    public boolean safeInsertState(DateMutableEntity<T> entity, TimelineState<T> state, @Nullable TimelineChange<T> change){
-//        TimelineState<T> existing = timeline.floorEntry(state.start()).getValue();
-//        if(existing == null){
-//            insertState(state);
-//        } else {
-//            TimelineState<T> newExisting = resolveExistingState(existing,state);
-//            TimelineState<T> nextState = timeline.higherEntry(state.start()).getValue();
-//            if (nextState != null && change != null){
-//                //TODO propagation sandbox here
-//                LocalDate end = getTimelineMax();
-//                TimelineChangeState<T> changeState = new TimelineChangeState<>(state.start(), Optional.of(end), change);
-//                Sandbox s = new Sandbox(new Objective(entity.getObjectType(),entity.getId(),changeState));
-//                CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future = s.getFuture();
-//                s.startSimulation();
-//            } else {
-//                removeState(existing);
-//                insertState(newExisting);
-//                insertState(state);
-//            }
-//        }
-//        //TODO REDO Once Sandbox is working!
-//    }
-    public void unsafeInsertState(TimelineState<T> state){
-        insertState(state);
-    }
-    public LocalDate getTimelineMin(){
-        return timeline.firstKey();
-    }
-    public LocalDate getTimelineMax(){
-        TimelineState<T> last = timeline.lastEntry().getValue();
-        return last.getEnd();
-    }
-    //Note: Sandbox methods should never be used outside of a sandbox's worker thread! Probably wouldn't break anything, but it's not built for main thread use!
+    fun moveDeath(ref: T, date: LocalDate) {
+        val oldDeathDate = getLatestDate()
+        val template = DMRegistry.getManager(owner.type)
 
-    private void insertState(TimelineState<T> state){
-        timeline.put(state.getStart(),state);
-    }
-    public void addChange(TimelineChange<T> change){
-        //This is the safe way to insert a change using propagation. It should be used by all runtime setters.
-        getOrMakeState(change.getStart()); //We just need a state at the exact start date.
-        SandboxHandler.SandboxApplyChange(new Objective<>(owner,change),change.getStart(),null);
-    }
-    public boolean isEmpty(){
-        return timeline.isEmpty();
-    }
-    private void removeState(TimelineState<T> state){
-        timeline.remove(state.getStart());
-    }
-    private void removeState(LocalDate start){
-        timeline.remove(start);
-    }
-
-    public LocalDate getEarliestDate(){
-        return timeline.firstKey();
-    }
-    public LocalDate getLatestDate(){
-        return timeline.lastKey();
-    }
-    public boolean isLast(LocalDate date){
-        return timeline.lastEntry().getValue().getStart().isBefore(date);
-    }
-    public void moveBirth(T ref, LocalDate date){
-        LocalDate oldBirthDate = getEarliestDate();
-        final AbstractMutableManager<?,T,?> template = DMRegistry.getManager(owner.getType());
-
-        if (oldBirthDate.isAfter(date)){
-            //TODO FIX
-            TimelineState<T> state = getStateAt(oldBirthDate);
-            final List<TimelineChange<T>> d=
-            timeline.remove(oldBirthDate);
-            timeline.put(date, template.buildBirth(owner,date,d));
+        if (oldDeathDate.isBefore(date)) {
+            val state = getStateAt(oldDeathDate)
+            timeline.remove(oldDeathDate)
+            timeline[date] = template.buildDeath(owner, date, state.changes(true))
         } else {
-            TimelineChange<T> bt = template.getBirthChange(owner,date);
-            SandboxHandler.SandboxApplyChange(new Objective<>(owner,bt),oldBirthDate,null);
-            //TODO Sandbox out moving the birth later
-        }
-    }
-    public void moveDeath(T ref, LocalDate date){
-        LocalDate oldDeathDate = getLatestDate();
-        final AbstractMutableManager<?,T,?> template = DMRegistry.getManager(owner.getType());
-    //TODO FIX
-        if (oldDeathDate.isBefore(date)){
-            timeline.remove(oldDeathDate);
-            timeline.put(date, template.buildDeath(owner,date,d));
-        } else {
-            TimelineChange<T> bt = template.getDeathChange(owner,date);
-            SandboxHandler.SandboxApplyChange(new Objective<>(owner,oldDeathDate,bt),date,null);
+            val bt = template.getDeathChange(owner, date)
+            SandboxHandler.SandboxApplyChange(Objective(owner, oldDeathDate, bt), date, null)
         }
     }
 
+    fun doTimeChange(entity: T, date: LocalDate) {
+        val t = getStateAt(date)
+        t.getChanges(false).forEach { it.apply(entity, t) }
+    }
 
-    public boolean isLoaded() {
-        return isLoaded;
+    fun getStateNullable(date: LocalDate): TimelineState<T>? = timeline.floorEntry(date)?.value
+
+    fun getNextState(date: LocalDate): TimelineState<T>? = timeline.higherEntry(date)?.value
+
+    fun getStateAt(date: LocalDate): TimelineState<T> {
+        return timeline.floorEntry(date)?.value
+            ?: throw IllegalArgumentException("No state found at $date")
     }
-    public void doTimeChange(T entity, LocalDate date){
-        final TimelineState<T> t = getStateAt(date);
-        for(TimelineChange<T> tc : t.getChanges(false)){
-            tc.apply(entity,t);
+
+    fun getStateAtExact(date: LocalDate, throwIfNotFound: Boolean): TimelineState<T>? {
+        val state = timeline[date]
+        if (state == null && throwIfNotFound) {
+            throw IllegalArgumentException("No state found at $date")
+        }
+        return state
+    }
+
+    fun getStateBefore(date: LocalDate): TimelineState<T> {
+        val state = timeline.floorEntry(date.minusDays(1))?.value
+        return timeline.floorEntry(state?.start?.minusDays(1))?.value ?: state!!
+    }
+
+    fun getStateAfter(date: LocalDate): TimelineState<T> {
+        val state = timeline.ceilingEntry(date.plusDays(1))?.value
+        return timeline.floorEntry(state?.start?.minusDays(1) ?: date)?.value ?: state!!
+    }
+
+    fun getOrMakeState(d: LocalDate): TimelineState<T> {
+        return timeline[d] ?: makeNewState(d)
+    }
+
+    fun getStates(): Array<TimelineState<T>> {
+        return timeline.values.toTypedArray()
+    }
+
+    fun getLastState(): TimelineState<T> {
+        return timeline.lastEntry().value
+    }
+
+    fun save(): JsonObject {
+        val obj = JsonObject()
+        val states = JsonArray()
+        timeline.forEach { (_, value) -> states.add(value.serialize()) }
+        obj.add("states", states)
+        return obj
+    }
+
+    fun load(obj: JsonObject) {
+        val states = obj.getAsJsonArray("states")
+        for (i in 0 until states.size()) {
+            val state = TimelineState.deserialize(states[i].asJsonObject)
+            timeline[state.start] = state
         }
     }
-    public TimelineState<T> getStateNullable(LocalDate date){
-        return timeline.floorEntry(date).getValue();
-    }
-    public TimelineState<T> getNextState(LocalDate date){
-        return timeline.higherEntry(date).getValue();
-    }
-    public TimelineState<T> getStateAt(LocalDate date){
-        TimelineState<T> state = timeline.floorEntry(date).getValue();
-        if (state == null){
-            throw new IllegalArgumentException("No state found at " + date);
+
+    fun makeNewState(start: LocalDate): TimelineState<T> {
+        val before = timeline.floorEntry(start.minusDays(1))?.value
+        val after = timeline.ceilingEntry(start.plusDays(1))?.value
+        if (before?.start == start) return before
+        if (after?.start == start) return after
+
+        if (before?.isDuring(start) == true) {
+            before.setEnd(start.minusDays(1))
         }
-        return state;
+
+        val breadcrumbs = TimelineHelper.extendTrail(this, before, start)
+        val newState = TimelineState(owner, start, after?.start?.minusDays(1), false, breadcrumbs, HashMap())
+        timeline[start] = newState
+        return newState
     }
-    public TimelineState<T> getStateAtExact(LocalDate date, boolean throwIfNotFound){
-        TimelineState<T> state = timeline.get(date);
-        if (state == null && throwIfNotFound){
-            throw new IllegalArgumentException("No state found at " + date);
-        }
-        return state;
+
+    fun replaceTimeline(obj: JsonObject) {
+        isLoaded = false
+        timeline.clear()
+        load(obj)
+        isLoaded = true
     }
-    public TimelineState<T> getStateBefore(LocalDate date){
-        TimelineState<T> state = timeline.floorEntry(date.minusDays(1)).getValue();
-        date = state.getStart().minusDays(1);
-        return timeline.floorEntry(date).getValue();
-    }
-    public TimelineState<T> getStateAfter(LocalDate date){
-        TimelineState<T> state = timeline.ceilingEntry(date.plusDays(1)).getValue();
-        date = state.getStart().minusDays(1);
-        return timeline.floorEntry(date).getValue();
-    }
-    public TimelineState<T> getOrMakeState(LocalDate d){
-        TimelineState<T> state = timeline.get(d);
-        if (state == null){
-            return makeNewState(d);
-        }
-        return state;
-    }
-    public TimelineState<T>[] getStates(){
-        return timeline.values().toArray(TimelineState[]::new);
-    }
-    public TimelineState<T> getLastState(){
-        return timeline.lastEntry().getValue();
-    }
-    public JsonObject save(){
-        JsonObject o = new JsonObject();
-        //Seems wasteful to nest the array in the object, but I'm future proofing here incase TL gets some more variables :)
-        JsonArray states = new JsonArray();
-        for (Map.Entry<LocalDate, TimelineState<T>> entry : timeline.entrySet()) {
-            states.add(entry.getValue().serialize());
-        }
-        o.add("states",states);
-        return o;
-    }
-    public void load(JsonObject o){
-        JsonArray states = o.getAsJsonArray("states");
-        for (int i = 0; i < states.size(); i++) {
-            TimelineState<T> state = TimelineState.deserialize(states.get(i).getAsJsonObject());
-            timeline.put(state.getStart(),state);
-        }
-    }
-    public TimelineState<T> makeNewState(LocalDate start){
-        TimelineState<T> before = timeline.floorEntry(start.minusDays(1)).getValue();
-        TimelineState<T> after = timeline.ceilingEntry(start.plusDays(1)).getValue();
-        if (before.getStart().equals(start)){
-            return before;
-        } else if(after.getStart().equals(start)) {
-            return after;
-        }
-        if (before.isDuring(start)){
-            before.setEnd(start.minusDays(1));
-        }
-        HashMap<Long,LocalDate> breadcrumbs = TimelineHelper.extendTrail(this,before,start);
-        TimelineState<T> newState = new TimelineState<>(owner,start,after.getStart().minusDays(1),false,breadcrumbs,new HashMap<>());
-        timeline.put(start,newState);
-        return newState;
-    }
-    public void replaceTimeline(JsonObject o){
-        isLoaded = false;
-        timeline.clear();
-        load(o);
-        isLoaded = true;
-    }
-    public DMEReference<T> getOwner() {
-        return owner;
-    }
+
+    fun getOwner(): DMEReference<T> = owner
 }

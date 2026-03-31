@@ -1,359 +1,297 @@
-package com.base.timeline.change;
+package com.base.timeline.change
 
-import com.base.DateMutableEntity;
-import com.base.ObjectType;
-import com.base.timeline.Timeline;
-import com.base.timeline.TimelineHelper;
-import com.base.timeline.flags.SandboxCode;
-import com.base.timeline.flags.StateError;
-import com.base.reference.DMEReference;
-import com.base.timeline.TimelineState;
-import com.base.timeline.change.conditions.*;
-import com.base.timeline.sandbox.core.Objective;
-import com.base.timeline.sandbox.core.SandboxHandler;
-import com.google.common.base.Suppliers;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
-import com.utilities.JsonSerializable;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.utilities.SuperclassSerializable;
-import org.apache.commons.lang3.tuple.Pair;
+import com.base.DateMutableEntity
+import com.base.ObjectType
+import com.base.reference.DMEReference
+import com.base.timeline.Timeline
+import com.base.timeline.TimelineHelper
+import com.base.timeline.TimelineState
+import com.base.timeline.change.conditions.ApplyConditions
+import com.base.timeline.change.conditions.Condition
+import com.base.timeline.change.conditions.ConditionResult
+import com.base.timeline.change.conditions.NullifyConditions
+import com.base.timeline.flags.SandboxCode
+import com.base.timeline.flags.StateError
+import com.base.timeline.sandbox.core.Objective
+import com.base.timeline.sandbox.core.SandboxHandler
+import com.google.common.base.Suppliers
+import com.google.common.hash.Hashing
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.utilities.JsonSerializable
+import com.utilities.SuperclassSerializable
+import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
-import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.function.Supplier;
+abstract class TimelineChange<T : DateMutableEntity<T>>(val owner: DMEReference<out T>, initialDate: LocalDate) : SuperclassSerializable {
+    private var start: LocalDate = initialDate
+    private val id: Long by lazy { generateID() }
+    private val breadcrumb = SandboxBreadcrumb()
+    private var deactivated: Boolean = false
+    private var isStatic: Boolean = false
+    
+    fun getId(): Long = id
+
+    fun getOwner(): DMEReference<out T> = owner
 
 
-/**
- * Represents an abstract base class for all types of timeline changes.
- * Subclasses of {@code TimelineChange} are responsible for defining specific
- * changes that can be applied to a timeline state. Each change should handle
- * its application, serialization, conflicts, and nullification.
- *
- * TimelineChange implementations should only save or use {@code StateReferences}
- * and never use actual objects directly to ensure sandbox execution safety.
- *
- * @param <T> the type of mutable state the change is applied to
- */
-public abstract class TimelineChange<T extends DateMutableEntity<T>> implements SuperclassSerializable {
-    // Rules: TimelineChange implementations should only save/use StateReferences! Never use actual objects. This keeps them sandbox safe. Include this fact in documentation
+    // ==== Base Methods
+    fun apply(entity: DMEReference<out T>, currentState: TimelineState<out T>) {
+        onApply(entity.get(), currentState)
+    }
 
-    //TODO Third kind of check: once per TimelineState (For things like: is still alive, or canHoldTitle, or Does this Religion exist?
-    private LocalDate start;
-    private final DMEReference<? extends T> owner;
-    private final Supplier<Long> id = Suppliers.memoize(this::generateID);
-    private SandboxBreadcrumb breadcrumb = new SandboxBreadcrumb();
-    private boolean deactivated = false;
-    private boolean isStatic = false;
-    protected TimelineChange(DMEReference<? extends T> owner, LocalDate date) {
-        this.owner = owner;
-        this.start = date;
+    fun advance(currentState: TimelineState<out T>, newState: TimelineChange<in T>, sandbox: Boolean) {
+        // Implementation of advance logic
+        onAdvance()
     }
-    protected enum ChangeTags{
-        RELATIONSHIP_CHANGE,
-        MARRIAGE_CHANGE,
-        FAMILY_MEMBERSHIP_CHANGE,
-        TITLE_CHANGE,
-        HOUSE_EMPLOYMENT_CHANGE,
-        CHARACTER_DEATH;
-    }
-    public final long getId(){
-        return id.get();
-    }
-    public final DMEReference<? extends T> getOwner(){
-        return owner;
-    }
-    /**
-     * Applies changes to the specified entity by invoking the {@code onApply} method to handle
-     * timeline state transitions. Additional logic can be implemented here if necessary.
-     *
-     * @param entity the entity on which the apply operation is being performed. This represents
-     *               the target for timeline changes, ensuring accurate and consistent state updates.
-     */
-    public void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
-        onApply(entity,currentState);
-        //may merge with onApply if I don't need any additional logic in here
-    }
-    public void advance(TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean sandbox){
 
-    }
-    public void overwrite(TimelineState<? extends T> currentState, TimelineChange<? extends T> beingOverwritten, boolean destructive){
-        onOverwrite(getOwner().get(),currentState,beingOverwritten,destructive);
-        if (destructive){
-            currentState.removeChange(beingOverwritten.getId());
-            TimelineHelper.BreadcrumbCleanup(getOwner().get().getTimeline(),beingOverwritten.getId(),beingOverwritten.getStart(),beingOverwritten.getEnd());
+    fun overwrite(currentState: TimelineState<out T>, beingOverwritten: TimelineChange<out T>, destructive: Boolean) {
+        onOverwrite(owner.get(), currentState, beingOverwritten, destructive)
+        if (destructive) {
+            currentState.removeChange(beingOverwritten.getId())
+            TimelineHelper.breadcrumbCleanup(owner.get().timeline, beingOverwritten.getId(), beingOverwritten.getStart(), beingOverwritten.getEnd())
         } else {
-            beingOverwritten.deactivate(true);
+            beingOverwritten.deactivate(true)
         }
-        currentState.insertChange(this);
+        currentState.insertChange(this)
     }
-    public void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> changeToNullify){
-        onNullify(entity,state,changeToNullify);
-        changeToNullify.deactivate(true);
-    }
-    public void deactivate(boolean sandbox){
-        SandboxCode c = SandboxCode.END_SAVE;
-        if (sandbox){
-            c = SandboxHandler.SandboxApplyChange(new Objective<>(owner,this),start,null);
-        }
-        if (c == SandboxCode.END_SAVE){
-            onDeactivate();
-            deactivated = true;
-            Timeline<? super T> tl = owner.get().getTimeline();
-            TimelineHelper.BreadcrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
-            TimelineChange<? super T> lastData =  TimelineHelper.getLastValidChange(tl,tl.getStateAt(this.start),this);
-            lastData.moveChange(null,breadcrumb.getEndOfPropagation());
-        }
-    }
-    public void reactivate(boolean sandbox){
-        onReactivate();
-        deactivated = false;
-    }
-    public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
-        final LocalDate setStart = start;
-        final LocalDate setEnd = breadcrumb.getEndOfPropagation();
-        Timeline<? extends T> timeline = owner.get().getTimeline();
-        if (newStart != null){
-            start = newStart;
-            TimelineState<? extends T> state = timeline.getOrMakeState(newStart);
-            TimelineState<? extends T> removeFrom = timeline.getStateAt(setStart);
-            removeFrom.removeChange(this.getId());
-            state.insertChange(this);
-        }
-        if (newEnd != null){
-            breadcrumb.addEndPoint(newEnd);
-        }
-        TimelineHelper.BreadcrumbCleanup(timeline,getId(), setStart,setEnd);
-        TimelineHelper.propagateBreadcrumb(timeline,this);
-    }
-    //What to do when the provided object is getting the change from this object applied to it.
-    protected abstract void onApply(T entity, TimelineState<T> currentState);
 
-    protected void onOverwrite(T entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){};
-    protected void onNullify(T entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten){}
-    protected void onDeactivate(){}
-    protected void onReactivate(){}
-    protected void onAdvance(){}
-    protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
+    fun nullify(entity: DMEReference<out T>, state: TimelineState<out T>, changeToNullify: TimelineChange<in T>) {
+        onNullify(entity.get(), state, changeToNullify)
+        changeToNullify.deactivate(true)
+    }
 
-    public boolean isOpposite(TimelineChange<? super T> state){
-        return oppositeChanges().contains(state.getClass());
+    fun deactivate(sandbox: Boolean) {
+        var code = SandboxCode.END_SAVE
+        if (sandbox) {
+            code = SandboxHandler.sandboxApplyChange(Objective(owner, this), start, null)
+        }
+        if (code == SandboxCode.END_SAVE) {
+            onDeactivate()
+            deactivated = true
+            val timeline: Timeline<in T> = owner.get().timeline
+            TimelineHelper.breadcrumbCleanup(timeline, id, start, breadcrumb.getEndOfPropagation())
+            val lastData = TimelineHelper.getLastValidChange(
+                timeline, timeline.getStateAt(this.start), this
+            )
+            lastData.moveChange(null, breadcrumb.getEndOfPropagation())
+        }
     }
-    public boolean isSame(TimelineChange<? super T> state){
-        return this.getClass().equals(state.getClass());
+
+    fun reactivate(sandbox: Boolean) {
+        onReactivate()
+        deactivated = false
     }
-    public abstract List<Class<TimelineChange<? super T>>> oppositeChanges();
-    public List<Class<TimelineChange<? super T>>> siblingChanges(){
-        return new ArrayList<>();
-    };
-    public abstract boolean isPositive();
-    public void onContinue(){}
-    protected abstract ChangeTags[] getTags();
-    public final boolean canNullify(TimelineChange<? super T> toNullify){
-        boolean hasYes = false;
-        for (Condition<ConditionResult.Nullify,? super T> c : nullConditions.get()) {
-            final ConditionResult.Nullify result = c.check(this.getOwner().get(),this,toNullify).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
-            if (result.canNullify()){
-                hasYes = true;
-                if (!result.isOr()){
-                    return true;
-                }
-                continue;
-            } else if(!result.isOr()){
-                return false;
+
+    fun moveChange(newStart: LocalDate?, newEnd: LocalDate?) {
+        val currentStart = start
+        val currentEnd = breadcrumb.getEndOfPropagation()
+        val timeline = owner.get().timeline
+        if (newStart != null) {
+            start = newStart
+            val newState = timeline.getOrMakeState(newStart)
+            timeline.getStateAt(currentStart).removeChange(this.id)
+            newState.insertChange(this)
+        }
+        if (newEnd != null) {
+            breadcrumb.addEndPoint(newEnd)
+        }
+        TimelineHelper.breadcrumbCleanup(timeline, id, currentStart, currentEnd)
+        TimelineHelper.propagateBreadcrumb(timeline, this)
+    }
+
+
+    ///
+
+    abstract fun onApply(entity: T, currentState: TimelineState<T>)
+
+    protected open fun onOverwrite(
+        entity: T,
+        currentState: TimelineState<out T>,
+        beingOverwritten: TimelineChange<in T>,
+        destructive: Boolean
+    ) {}
+
+    protected open fun onNullify(entity: T, currentState: TimelineState<out T>, beingNullified: TimelineChange<in T>) {}
+
+    protected open fun onDeactivate() {}
+
+    protected open fun onReactivate() {}
+
+    open fun onAdvance() {}
+
+    protected open fun onMove(
+        newStart: LocalDate,
+        newEnd: LocalDate,
+        newState: TimelineState<T>,
+        oldState: TimelineState<in T>
+    ) {}
+
+    fun isOpposite(state: TimelineChange<in T>): Boolean = oppositeChanges().contains(state::class.java)
+
+    fun isSame(state: TimelineChange<in T>): Boolean = this::class.java == state::class.java
+
+    abstract fun oppositeChanges(): List<Class<out TimelineChange<in T>>>
+
+    open fun siblingChanges(): List<Class<out TimelineChange<in T>>> = emptyList()
+
+    abstract fun isPositive(): Boolean
+
+
+    fun canNullify(toNullify: TimelineChange<in T>): Boolean {
+        var hasYes = false
+        for (condition in nullConditions.get()) {
+            val result = condition.check(owner.get(), this, toNullify).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE)
+            if (result.canNullify()) {
+                hasYes = true
+                if (!result.isOr()) return true
+            } else if (!result.isOr()) return false
+        }
+        return hasYes
+    }
+
+    fun doesConflict(state: TimelineChange<in T>): List<StateError> {
+        val errors = mutableListOf<StateError>()
+        for (condition in applyConditions.get()) {
+            condition.check(owner.get(), this, state)?.let { errors.add(it) }
+        }
+        return errors
+    }
+
+    fun getScope(): HashSet<DMEReference<*>> = hashSetOf(owner)
+
+    protected abstract fun getText(): String
+
+    private val nullConditions by lazy {
+        listOf<Condition<ConditionResult.Nullify, in T>>(
+            *NullifyConditions.baseConditions(),
+            *buildNullifyConditions().toTypedArray()
+        )
+    }
+
+    private val applyConditions by lazy {
+        listOf<Condition<StateError, in T>>(
+            *ApplyConditions.baseConditions(),
+            *buildApplyConditions().toTypedArray()
+        )
+    }
+
+    protected abstract fun buildApplyConditions(): List<Condition<StateError, in T>>
+
+    protected abstract fun buildNullifyConditions(): List<Condition<ConditionResult.Nullify, in T>>
+
+    private fun generateID(): Long {
+        return generateID(this.javaClass, start, additionalIDVars())
+    }
+
+    companion object {
+        fun <T : DateMutableEntity<T>> generateID(
+            clazz: Class<out TimelineChange<T>>,
+            start: LocalDate,
+            additionalVars: List<DMEReference<*>>
+        ): Long {
+            val hasher = Hashing.murmur3_128().newHasher()
+            hasher.putLong(start.toEpochDay())
+            hasher.putString(clazz.simpleName, StandardCharsets.UTF_8)
+            additionalVars.forEach { hasher.putLong(it.hash()) }
+            return hasher.hash().asLong()
+        }
+    }
+
+    fun shouldSandbox(): Boolean = true
+
+    protected open fun setStaticFlag() {
+        isStatic = true
+    }
+
+    fun isStatic(): Boolean = isStatic
+
+    open fun additionalIDVars(): List<DMEReference<*>> = emptyList()
+
+    override fun mainSave(o: JsonObject) {
+        o.add("breadcrumb", breadcrumb.toJson())
+    }
+
+    override fun mainLoad(o: JsonObject) {
+        breadcrumb.fromJson(o.get("breadcrumb").asJsonObject)
+    }
+
+    override fun metadataSave(o: JsonObject) {
+        o.add("subject", owner.serialize())
+        o.addProperty("date", start.toEpochDay())
+    }
+
+    val
+
+
+
+
+    class SandboxBreadcrumb : JsonSerializable<SandboxBreadcrumb> {
+        private var endOfPropagation: LocalDate? = null
+        private val errorLog = HashMap<Long, String>()
+
+        fun addEndPoint(date: LocalDate) {
+            endOfPropagation = date
+        }
+
+        fun insertError(
+            error: StateError,
+            newChange: TimelineChange<*>,
+            existingChange: TimelineChange<*>,
+            proceduralInteger: Int?,
+            resolutionCode: String
+        ) {
+            errorLog[error.generateID(newChange, existingChange, proceduralInteger)] = resolutionCode
+        }
+
+        fun insertError(errorID: Long, resolutionCode: String) {
+            errorLog[errorID] = resolutionCode
+        }
+
+        fun getResolutionCode(errorID: Long): Optional<String> = Optional.ofNullable(errorLog[errorID])
+
+        fun getResolutionCode(
+            error: StateError,
+            newChange: TimelineChange<*>,
+            existingChange: TimelineChange<*>,
+            proceduralInteger: Int?
+        ): Optional<String> {
+            return getResolutionCode(error.generateID(newChange, existingChange, proceduralInteger))
+        }
+
+        fun isComplete(): Boolean = endOfPropagation != null
+
+        fun getEndOfPropagation(): LocalDate = endOfPropagation ?: throw IllegalStateException("End of propagation not set")
+
+        override fun toJson(): JsonObject {
+            val jsonObject = JsonObject()
+            endOfPropagation?.let { jsonObject.addProperty("eop", it.toEpochDay()) }
+            val jsonErrors = JsonArray()
+            errorLog.forEach { (id, resolution) ->
+                val errorObj = JsonObject()
+                errorObj.addProperty("i", id)
+                errorObj.addProperty("r", resolution)
+                jsonErrors.add(errorObj)
             }
-        }
-        return hasYes;
-    };
-    public final List<StateError> doesConflict(TimelineChange<? super T> state){
-        List<StateError> currentErrors = new ArrayList<>();
-        for (Condition<StateError,? super T> c : applyConditions.get()) {
-            Optional<StateError> error = c.check(this.getOwner().get(),this,state);
-            error.ifPresent(currentErrors::add);
-        }
-        return currentErrors;
-    };
-    public HashSet<DMEReference<?>> getScope(){
-        HashSet<DMEReference<?>> toReturn = new HashSet<>();
-        toReturn.add(this.getOwner());
-        return toReturn;
-    };
-    protected abstract String getText();
-
-
-    protected boolean containsMyTags(TimelineChange<? super T> state){
-        return containsMyTags(state.getTags());
-    }
-    protected boolean containsMyTags(ChangeTags[] tags){
-        for (ChangeTags tag : tags) {
-            if (tag.equals(this.getTags()[0])) return false;
-        }
-        return true;
-    }
-    public LocalDate getStart() {
-        return start;
-    }
-
-    public final LocalDate getEnd(){
-        return breadcrumb.getEndOfPropagation();
-    }
-    /**
-     * Safely adds a {@link DMEReference} of the given {@link ObjectType} and {@link UUID} to the provided
-     * {@code HashSet} if it is not already present. This method ensures duplicates are avoided in the set.
-     *
-     * @param map the {@code HashSet} to which the {@code DMEReference} object is to be added
-     * @param type the {@code ObjectType} of the entity associated with the {@code DMEReference}
-     * @param uuid the {@code UUID} of the entity associated with the {@code DMEReference}
-     */
-    protected static <Tt extends DateMutableEntity<Tt>> void safeAddToSet(HashSet<DMEReference<?>> map, Class<Tt> type, UUID uuid){
-        //Internal method exclusively used by getScope to safely build DMES and add to the scope set
-        DMEReference<Tt> reference = DMEReference.of(type,uuid);
-        if (map.contains(reference)) return;
-        map.add(reference);
-    }
-
-    //Handling deactivation
-    public boolean isDeactivated(){
-        return deactivated;
-    }
-
-
-    public final Pair<Long,LocalDate> buildStateBreadcrumb(){
-        return Pair.of(getId(),getStart());
-    }
-    //Wrapper functions for breadcrumb.
-    public final SandboxBreadcrumb getBreadcrumb(){
-        return breadcrumb;
-    }
-    public final void addEnd(LocalDate date){
-        breadcrumb.addEndPoint(date);
-    }
-    public final void addError(StateError error, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, @Nullable Integer proceduralInteger, String resolutionCode){
-        breadcrumb.insertError(error,newChange,existingChange,proceduralInteger,resolutionCode);
-    }
-
-    private final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
-            Suppliers.memoize(() -> {
-                List<Condition<ConditionResult.Nullify,? super T>> conditions = new ArrayList<>();
-                conditions.addAll(NullifyConditions.BaseConditions());
-                conditions.addAll(this.buildNullifyConditions());
-                return conditions;
-            });
-    private final Supplier<List<Condition<StateError,? super T>>> applyConditions =
-            Suppliers.memoize(() -> {
-                List<Condition<StateError,? super T>> conditions = new ArrayList<>();
-                conditions.addAll(ApplyConditions.BaseConditions());
-                conditions.addAll(this.buildApplyConditions());
-                return conditions;
-            });
-    protected abstract List<Condition<StateError,? super T>> buildApplyConditions();
-    protected abstract List<Condition<ConditionResult.Nullify,? super T>> buildNullifyConditions();
-    private long generateID(){
-        return generateID(this.getClass(),start,additionalIDVars());
-    }
-    @SuppressWarnings("UnstableApiUsage")
-    public static <T extends DateMutableEntity<T>> long generateID(Class<TimelineChange<T>> c , LocalDate start, List<DMEReference<?>> additionalIDVars){
-        Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putLong(start.toEpochDay());
-        hasher.putString(c.getSimpleName(), StandardCharsets.UTF_8);
-        //hasher.putLong(owner.hash());
-        //The reason I'm removing the owner long is because it might make bug tracking harder on breadcrumbs, and I
-        //genuinely don't think it adds anything to the mix.
-        for (DMEReference<?> dme : additionalIDVars) {
-            hasher.putLong(dme.hash());
-        }
-        return hasher.hash().asLong();
-    }
-    public boolean shouldSandbox(){
-        return true;
-    }
-    protected void setStatic(){
-        isStatic = true;
-    }
-    public final boolean isStatic(){
-        return isStatic;
-    }
-    public List<DMEReference<?>> additionalIDVars(){
-        return new ArrayList<>();
-    }
-    @Override
-    public void mainSave(JsonObject o) {
-        o.add("breadcrumb", breadcrumb.toJson());
-    }
-    @Override
-    public void mainLoad(JsonObject object) {
-        breadcrumb.fromJson(object.getAsJsonObject("breadcrumb"));
-    }
-    @Override
-    public final void metadataSave(JsonObject o) {
-        o.add("subject", owner.serialize());
-        o.addProperty("date", start.toEpochDay());
-    }
-    public static class SandboxBreadcrumb implements JsonSerializable<SandboxBreadcrumb>{
-        private LocalDate endOfPropagation;
-        private final HashMap<Long,String> errorResolutionLog = new HashMap<>();
-        public SandboxBreadcrumb() {}
-
-        public void addEndPoint(LocalDate date){
-            endOfPropagation = date;
-        }
-        public void insertError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode) {
-            errorResolutionLog.put(error.generateID(newChange, existingChange, proceduralInteger), resolutionCode);
-        }
-        public void insertError(long fullId, String resolutionCode) {
-            errorResolutionLog.put(fullId, resolutionCode);
-        }
-        public Optional<String> getResolutionCode(long id){
-            return Optional.ofNullable(errorResolutionLog.get(id));
-        }
-        public Optional<String> getResolutionCode(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger){
-            return getResolutionCode(error.generateID(newChange, existingChange, proceduralInteger));
+            jsonObject.add("errors", jsonErrors)
+            return jsonObject
         }
 
-        public final boolean isComplete(){
-            return endOfPropagation != null;
-        }
-        public LocalDate getEndOfPropagation(){
-            return endOfPropagation;
-        }
-
-        @Override
-        public final JsonObject toJson() {
-            JsonObject object = new JsonObject();
-            if (endOfPropagation != null){
-                object.addProperty("eop",endOfPropagation.toEpochDay());
-            }
-            JsonArray errors = new JsonArray();
-            for (Map.Entry<Long, String> entry : errorResolutionLog.entrySet()) {
-                JsonObject error = new JsonObject();
-                error.addProperty("i",entry.getKey());
-                error.addProperty("r",entry.getValue());
-                errors.add(error);
-            }
-            object.add("errors",errors);
-            return object;
-        }
-
-        @Override
-        public final void fromJson(JsonObject json) {
-            if (json.has("eop")){
-                this.endOfPropagation = LocalDate.ofEpochDay(json.get("eop").getAsLong());
-            };
-            JsonArray errors = json.getAsJsonArray("errors");
-            for (int i = 0; i < errors.size(); i++) {
-                JsonObject error = errors.get(i).getAsJsonObject();
-                long id = error.get("i").getAsLong();
-                String resolution = error.get("r").getAsString();
-                errorResolutionLog.put(id,resolution);
+        override fun fromJson(json: JsonObject) {
+            json.get("eop")?.let { this.endOfPropagation = LocalDate.ofEpochDay(it.asLong) }
+            val jsonErrors = json.getAsJsonArray("errors")
+            for (errorElem in jsonErrors) {
+                val error = errorElem.asJsonObject
+                val id = error["i"].asLong
+                val resolution = error["r"].asString
+                errorLog[id] = resolution
             }
         }
 
-        @Override
-        public SandboxBreadcrumb empty() {
-            return new SandboxBreadcrumb();
-        }
+        override fun empty(): SandboxBreadcrumb = SandboxBreadcrumb()
     }
 }

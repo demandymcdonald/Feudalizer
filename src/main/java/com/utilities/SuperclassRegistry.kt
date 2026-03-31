@@ -1,96 +1,108 @@
-package com.utilities;
+package com.utilities
 
-import com.google.gson.JsonObject;
-import org.slf4j.Logger;
+import com.google.gson.JsonObject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
+import java.util.function.Consumer
+import kotlin.collections.HashMap
 
-import java.util.*;
-import java.util.function.Consumer;
+abstract class SuperclassRegistry<R : SuperclassRegistry<R, T, OK, BA>, T : SuperclassSerializable, OK, BA>(
+    private val uniqueKey: String
+) : ThreadMutable<R, ObjectRegistry<T, OK>> {
 
-public abstract class SuperclassRegistry <R extends SuperclassRegistry<R,T,OK,BA>,T extends SuperclassSerializable,OK, BA> implements ThreadMutable<R,
-        ObjectRegistry<T,OK>> {
-     private final Map<Class<? extends T>,Factory<? extends T>> factory_registry = Collections.synchronizedMap(new HashMap<>());
-     private final ThreadLocal<ObjectRegistry<T,OK>> object_registry = ThreadLocal.withInitial(ObjectRegistry::new);
-     private final String uniqueKey;
-     public static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SuperclassRegistry.class);
-     protected SuperclassRegistry(String uniqueKey){
-          this.uniqueKey = uniqueKey;
-          ts_init();
-     }
-     @SuppressWarnings("unchecked")
-     protected <tT extends T> Factory<tT> getFactory(Class<tT> subclass){
-          Factory<tT> f = (Factory<tT>) factory_registry.get(subclass);
-          if (f == null){
-               throw new RuntimeException("No factory registered for " + subclass.getName());
-          }
-          return f;
-     }
-     protected <tT extends T> void registerFactory(Class<tT> subclass,Factory<tT> factory){
-          factory_registry.put(subclass,factory);
-     }
-     public <tT extends T> tT loadObject(Class<tT> subclass,OK key, JsonObject object){
-          tT t = getFactory(subclass).load(object);
-          afterLoad(t);
-          object_registry.get().put(subclass,key,t);
-          return t;
-     }
-     public <tT extends T> tT createObject(Class<tT> subclass,OK key,BA argumentContainer){
-          tT t = getFactory(subclass).create(argumentContainer);
-          afterLoad(t);
-          object_registry.get().put(subclass,key,t);
-          return t;
-     }
-     public <tT extends T> void remove(Class<tT> subclass,OK key){
-          object_registry.get().remove(subclass,key);
-     }
-     public <tT extends T> void remove(OK key){
-          object_registry.get().remove(key);
-     }
-     public <tT extends T> void clear(){
-          object_registry.get().clear();
-     }
-     public <tT extends T> void clearSingle(Class<tT> subclass){
-          object_registry.get().clearSingle(subclass);
-     }
-     public <tT extends T> tT get(Class<tT> subclass,OK key){
-          tT t = object_registry.get().get(subclass,key);
-          if (t == null){
-               throw new RuntimeException("No object of type " + subclass.getName() + " with key " + key);
-          }
-          return t;
-     }
-     public Collection<? extends T> getAll(){
-          return object_registry.get().getAllValues();
-     }
-     public void doIterate(Consumer<T> consumer){
+    private val factoryRegistry: MutableMap<Class<out T>, Factory<out T>> = Collections.synchronizedMap(HashMap())
+    private val objectRegistry: ThreadLocal<ObjectRegistry<T, OK>> = ThreadLocal.withInitial { ObjectRegistry() }
 
-     }
-     public <Tt extends T> void doSpecificIterate(Class<Tt> clas, Consumer<Tt> consumer){
+    init {
+        ts_init()
+    }
 
-     }
-     @Override
-     public final ObjectRegistry<T, OK> share() {
-          return object_registry.get();
-     }
+    @Suppress("UNCHECKED_CAST")
+    protected fun <tT : T> getFactory(subclass: Class<tT>): Factory<tT> {
+        val factory = factoryRegistry[subclass] as? Factory<tT>
+        return factory ?: throw RuntimeException("No factory registered for ${subclass.name}")
+    }
 
-     @Override
-     public final void receiveShared(ObjectRegistry<T, OK> shared) {
-          object_registry.set(shared);
-     }
+    protected fun <tT : T> registerFactory(subclass: Class<tT>, factory: Factory<tT>) {
+        factoryRegistry[subclass] = factory
+    }
 
-     @Override
-     public final String uniqueKey() {
-          return uniqueKey;
-     }
+    fun <tT : T> loadObject(subclass: Class<tT>, key: OK, obj: JsonObject): tT {
+        val instance = getFactory(subclass).load(obj)
+        afterLoad(instance)
+        objectRegistry.get().put(subclass, key, instance)
+        return instance
+    }
 
-     protected abstract class Factory<tT extends T>{
-          Class<tT> subclassReference;
-          abstract tT create(BA argumentContainer);
-          abstract tT load(JsonObject object);
-     }
-     protected <tT extends T> void afterCreate(tT t){
+    fun <tT : T> createObject(subclass: Class<tT>, key: OK, argumentContainer: BA): tT {
+        val instance = getFactory(subclass).create(argumentContainer)
+        afterLoad(instance)
+        objectRegistry.get().put(subclass, key, instance)
+        return instance
+    }
 
-     }
-     protected <tT extends T> void afterLoad(tT t){
+    fun <tT : T> remove(subclass: Class<tT>, key: OK) {
+        objectRegistry.get().remove(subclass, key)
+    }
 
-     }
+    fun remove(key: OK) {
+        objectRegistry.get().remove(key)
+    }
+
+    fun clear() {
+        objectRegistry.get().clear()
+    }
+
+    fun <tT : T> clearSingle(subclass: Class<tT>) {
+        objectRegistry.get().clearSingle(subclass)
+    }
+
+    fun <tT : T> get(subclass: Class<tT>, key: OK): tT {
+        val instance = objectRegistry.get().get(subclass, key)
+        return instance ?: throw RuntimeException("No object of type ${subclass.name} with key $key")
+    }
+
+    fun getAll(): Collection<out T> {
+        return objectRegistry.get().getAllValues()
+    }
+
+    fun doIterate(consumer: Consumer<T>) {
+        // Placeholder for functionality
+    }
+
+    fun <Tt : T> doSpecificIterate(clazz: Class<Tt>, consumer: Consumer<Tt>) {
+        // Placeholder for functionality
+    }
+
+    override fun share(): ObjectRegistry<T, OK> {
+        return objectRegistry.get()
+    }
+
+    override fun receiveShared(shared: ObjectRegistry<T, OK>) {
+        objectRegistry.set(shared)
+    }
+
+    override fun uniqueKey(): String {
+        return uniqueKey
+    }
+
+    protected abstract inner class Factory<tT : T>(
+        val subclassReference: Class<tT>
+    ) {
+        abstract fun create(argumentContainer: BA): tT
+        abstract fun load(obj: JsonObject): tT
+    }
+
+    protected open fun <tT : T> afterCreate(instance: tT) {
+        // Can be implemented by subclasses
+    }
+
+    protected open fun <tT : T> afterLoad(instance: tT) {
+        // Can be implemented by subclasses
+    }
+
+    companion object {
+        val LOGGER: Logger = LoggerFactory.getLogger(SuperclassRegistry::class.java)
+    }
 }

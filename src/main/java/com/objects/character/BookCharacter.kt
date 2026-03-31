@@ -1,29 +1,27 @@
-package com.objects.character;
+package com.objects.character
 
-import com.base.*;
-import com.base.reference.DMEReference;
-import com.google.common.collect.Maps;
-import com.google.gson.JsonObject;
-import com.objects.character.opinion.Opinion;
-import com.objects.people.Family;
-import com.objects.people.House;
-import com.objects.title.Title;
+import com.base.*
+import com.base.reference.DMEReference
+import com.google.common.collect.Maps
+import com.google.gson.JsonObject
+import com.objects.character.opinion.Opinion
+import com.objects.people.Family
+import com.objects.people.House
+import com.objects.title.Title
+import java.time.LocalDate
+import java.util.*
 
-import java.time.LocalDate;
-import java.util.*;
+class BookCharacter : DateMutableEntity<BookCharacter> {
 
-public class BookCharacter extends DateMutableEntity<BookCharacter> {
-    @Override
-    public void additionalSave(JsonObject data) {
-
+    override fun additionalSave(data: JsonObject) {
+        // Implement additional save logic here
     }
 
-    @Override
-    public void additionalLoad(JsonObject data) {
-
+    override fun additionalLoad(data: JsonObject) {
+        // Implement additional load logic here
     }
 
-    public enum Gender {
+    enum class Gender(val display: String) {
         Male("Male"),
         Female("Female"),
         Trans_Male("Trans-Male"),
@@ -31,15 +29,10 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
         Non_Binary("Non-Binary"),
         Other("Other");
 
-        private final String display;
-        Gender(String d){
-            display = d;
-        }
-        public String getFlavor(){
-            return display;
-        }
+        fun getFlavor(): String = display
     }
-    public enum Orientation {
+
+    enum class Orientation(val display: String) {
         Heterosexual("Heterosexual"),
         Homosexual("Homosexual"),
         Bisexual("Bisexual"),
@@ -47,120 +40,110 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
         Questioning("Questioning"),
         Other("Other");
 
-        private final String display;
-        Orientation(String d){
-            display = d;
-        }
-        public String getFlavor(){
-            return display;
-        }
-    }
-    private String givenName;
-    private String surname;
-    private Gender gender;
-    private Orientation orientation;
-    private final HashMap<UUID, Opinion> opinions = new HashMap<>();
-
-    //TODO Add: Religion, Culture, Political Ideology.
-
-    private Optional<House> linked_house;
-    private final Map<Family, Family.Relationship> linked_families = Maps.newHashMap();
-    private final List<Title<?>> linked_titles = new ArrayList<>();
-
-
-    public BookCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
-                         Gender gender, Orientation orientation) {
-        super(dateOfBirth,dateOfDeath,);
-        this.givenName = givenName;
-        this.surname = surname;
-        this.gender = gender;
-    }
-    public BookCharacter(DMEReference<BookCharacter> ref) {
-        super(ref);
+        fun getFlavor(): String = display
     }
 
-    @Override
-    public void onLink() {
-        //I Don't think Character will ever call out to any objects. Most objects should populate it?
+    private var givenName: String? = null
+    private var surname: String? = null
+    private var gender: Gender? = null
+    private var orientation: Orientation? = null
+    private val opinions: MutableMap<UUID, Opinion> = HashMap()
+
+    // TODO Add: Religion, Culture, Political Ideology.
+
+    private var linkedHouse: Optional<House> = Optional.empty()
+    private val linkedFamilies: MutableMap<Family, Family.Relationship> = Maps.newHashMap()
+    private val linkedTitles: MutableList<Title<*>> = mutableListOf()
+
+    constructor(
+        givenName: String,
+        surname: String,
+        dateOfBirth: LocalDate,
+        dateOfDeath: LocalDate?,
+        gender: Gender,
+        orientation: Orientation
+    ) : super(dateOfBirth, dateOfDeath) {
+        this.givenName = givenName
+        this.surname = surname
+        this.gender = gender
+        this.orientation = orientation
     }
 
+    constructor(ref: DMEReference<BookCharacter>) : super(ref)
 
-    @Override
-    public final ObjectType getObjectType() {
-        return ObjectType.CHARACTER;
-    }
-    @Override
-    public void doDateChange() {
-        linked_house = Optional.empty();
-        linked_families.clear();
-        linked_titles.clear();
+    override fun onLink() {
+        // I don't think Character will ever call out to any objects. Most objects should populate it?
     }
 
-    @Override
-    public <M extends AbstractMutableManager<M, BookCharacter, ?>> M getManager() {
-        return null;
+    override fun getObjectType(): ObjectType = ObjectType.CHARACTER
+
+    override fun doDateChange() {
+        linkedHouse = Optional.empty()
+        linkedFamilies.clear()
+        linkedTitles.clear()
     }
 
+    override fun <M : AbstractMutableManager<M, BookCharacter, *>> getManager(): M? = null
 
-    public void setForename(String name) {
-        getTimeline().addChange(new CharacterSingleChange.setForename(getReference(),current(),name));
-    }
-    public void setSurname(String name) {
-        getTimeline().addChange(new CharacterSingleChange.setSurname(getReference(),current(),name));
-    }
-    public void setGender(Gender gender) {
-        getTimeline().addChange(new CharacterSingleChange.setGender(getReference(),current(),gender));
-    }
-    public void setSexualOrientation(Orientation orientation) {
-        getTimeline().addChange(new CharacterSingleChange.setOrientation(getReference(),current(),orientation));
+    fun setForename(name: String) {
+        timeline.addChange(CharacterSingleChange.SetForename(dmeReference, current(), name))
     }
 
-
-
-    public void linkHouse(House house){
-        linked_house = Optional.of(house);
-    }
-    public void linkFamily(Family family, Family.Relationship rel){
-        linked_families.put(family, rel);
-    }
-    public void linkTitle(Title<?> title){
-        linked_titles.add(title);
+    fun setSurname(name: String) {
+        timeline.addChange(CharacterSingleChange.SetSurname(dmeReference, current(), name))
     }
 
-
-
-    public void internalSetForename(String forename){
-        this.givenName = forename;
-    }
-    public void internalSetSurname(String surname){
-        this.surname = surname;
-    }
-    public void internalSetGender(Gender gender){
-        this.gender = gender;
-    }
-    public void internalSetOrientation(Orientation orientation){
-        this.orientation = orientation;
+    fun setGender(gender: Gender) {
+        timeline.addChange(CharacterSingleChange.SetGender(dmeReference, current(), gender))
     }
 
+    fun setSexualOrientation(orientation: Orientation) {
+        timeline.addChange(CharacterSingleChange.SetOrientation(dmeReference, current(), orientation))
+    }
 
+    fun linkHouse(house: House) {
+        linkedHouse = Optional.of(house)
+    }
 
-    public String getFullName(){
-        //TODO When culture gets implemented, we'll flip have a rule setting how this'll be handled.
-        return givenName + " " + surname;
+    fun linkFamily(family: Family, rel: Family.Relationship) {
+        linkedFamilies[family] = rel
     }
-    public String getForename(){
-        return givenName;
+
+    fun linkTitle(title: Title<*>) {
+        linkedTitles.add(title)
     }
-    public String getSurname(){
-        return surname;
+
+    fun internalSetForename(forename: String) {
+        this.givenName = forename
     }
-    public Gender getGender(){
-        return gender;
+
+    fun internalSetSurname(surname: String) {
+        this.surname = surname
     }
-    public Orientation getOrientation(){
-        return orientation;
+
+    fun internalSetGender(gender: Gender) {
+        this.gender = gender
     }
-    public Map<UUID,Opinion> getOpinions(){
-        return opinions;
+
+    fun internalSetOrientation(orientation: Orientation) {
+        this.orientation = orientation
     }
+
+    val fullName: String
+        get() = "$givenName $surname" // TODO When culture gets implemented, add rules for name formatting.
+
+    val forename: String?
+        get() = givenName
+
+    val surnameProperty: String?
+        get() = surname
+
+    val characterGender: Gender?
+        get() = gender
+
+    val sexualOrientation: Orientation?
+        get() = orientation
+
+    val characterOpinions: Map<UUID, Opinion>
+        get() = opinions
 }

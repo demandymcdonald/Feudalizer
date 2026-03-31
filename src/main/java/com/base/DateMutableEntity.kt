@@ -94,7 +94,7 @@ abstract class DateMutableEntity<T : DateMutableEntity<T>> : SuperclassSerializa
         timeline.moveBirth(this as T, created)
     }
 
-    protected Thanfun setEnded(ended: LocalDate) {
+    protected fun setEnded(ended: LocalDate) {
         timeline.moveDeath(this as T, ended)
     }
 
