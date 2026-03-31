@@ -3,22 +3,34 @@ package com.base.timeline;
 import com.Feudalizer;
 import com.base.DateMutableEntity;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.TimelineMapChange;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 public class TimelineHelper {
-    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, long breadcrumb, LocalDate date) {
-        return timeline.getStateAt(date).getChange(breadcrumb);
+    public enum Direction {
+        FORWARD, BACKWARD
     }
-    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline, Class<?> c, LocalDate startingDate) {
-        //TODO think on this. Potentially a 3 state if could get the same result. Though the id check would (I think) be undeniable.
+    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, long breadcrumb, LocalDate date) {
+            return timeline.getStateAt(date).getChange(breadcrumb);
+    }
+    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline, Class<TimelineChange<? super T>> c, LocalDate startingDate, Direction direction, boolean shouldThrow) {
+        //TODO think on this. Potentially a 3 state if could get the same result. Though the reasonID check would (I think) be undeniable.
         while (true) {
-            TimelineState<T> state = timeline.getStateBefore(startingDate);
+            TimelineState<T> state;
+            if (direction == Direction.FORWARD) {
+                state = timeline.getStateAfter(startingDate);
+            } else {
+                state = timeline.getStateBefore(startingDate);
+            }
+
             startingDate = state.getStart();
             for (TimelineChange<? super T> change : state.getChanges()) {
                 long id = TimelineChange.generateID(c,startingDate,change.additionalIDVars());
@@ -26,10 +38,10 @@ public class TimelineHelper {
                     return Pair.of(id,startingDate);
                 }
             }
+            if (state.isBoundary()) {
+                throw new IllegalStateException("Could not find a valid change for " + c + " starting at " + startingDate + " and going " + direction + ".");
+            }
         }
-
-
-        return Pair.of(null,null);
     }
     public static <T extends DateMutableEntity<T>> void BreadcrumbCleanup(Timeline<T> timeline, long breadcrumb, LocalDate startDate, LocalDate newEnd) {
         if (newEnd.isBefore(startDate)) {
@@ -88,7 +100,7 @@ public class TimelineHelper {
         }
     }
 
-    public static <T extends DateMutableEntity<T>> void insertBreadcrumb(TimelineState<T> state, TimelineChange<T> tc) {
+    public static <T extends DateMutableEntity<T>> void insertBreadcrumb(TimelineState<? super T> state, TimelineChange<? super T> tc) {
         state.forceInsertBC(tc.getId(), tc.getStart());
         if (tc.getEnd() == null || tc.getEnd().isBefore(state.getStart())) {
             tc.addEnd(state.getStart());
@@ -157,5 +169,36 @@ public class TimelineHelper {
         return extendTrail(timeline, timeline.getStateBefore(date), date);
     }
 
+    public static <M extends TimelineMapChange<M,K,V,T>,K,V,T extends DateMutableEntity<T>,R> R doMapChangeLeapFrog(
+            Timeline<T> t, Pair<Long, LocalDate> firstLF, BiFunction<M, R, Integer> getCurrent, Class<M> mClass,
+            final int total, BiConsumer<M, R> makeChange, R result, boolean completeLastCycle, Direction direction){
+
+        int current = 0;
+        Pair<Long, LocalDate> currentLeapFrog = firstLF;
+        while(current < total){
+            TimelineChange<? super T> n = (TimelineChange<? super T>) followBreadcrumb(t,currentLeapFrog.getKey(),currentLeapFrog.getValue());
+            if (mClass.equals(n.getClass())){
+                M m = (M) n;
+                current += getCurrent.apply(m,result);
+                if (current >= total && !completeLastCycle){
+                    break;
+                }
+                makeChange.accept(m,result);
+                if (direction == Direction.FORWARD){
+                    currentLeapFrog = findBreadcrumb(t,mClass,n.getEnd(),Direction.FORWARD,false);
+                } else {
+                    currentLeapFrog = m.getPreviousLeapFrog();
+                }
+                if (currentLeapFrog == null){
+                    Feudalizer.LOGGER.error("Leapfrog completed before count was complete for: " + mClass);
+                    return result;
+                    //throw new IllegalStateException("Could not find a leapfrog for " + m);
+                }
+            } else {
+                throw new RuntimeException("Tried to do a leapfrog on a non-map change" + n);
+            }
+        }
+        return result;
+    }
 }
 

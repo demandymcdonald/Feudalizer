@@ -1,6 +1,6 @@
 package com.objects.title;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.*;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
@@ -106,7 +106,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     }
     public void setHolder(BookCharacter holder) {
         Holder = Optional.of(holder);
-        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Grant<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
+        addStateChange(Global.CURRENT_DATE(), new TitleTLChange.Grant<>(DMEReference.of(this), DMEReference.of(holder), Global.CURRENT_DATE()));
         holder.addTitle(this);
     }
     public void setInherit(BookCharacter holder, LocalDate date, boolean isFirst) {
@@ -123,7 +123,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     }
     public void removeHolder(BookCharacter holder){
         Holder = Optional.empty();
-        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.Revoke<>(DMEReference.of(this), DMEReference.of(holder), GlobalVars.CURRENT_DATE()));
+        addStateChange(Global.CURRENT_DATE(), new TitleTLChange.Revoke<>(DMEReference.of(this), DMEReference.of(holder), Global.CURRENT_DATE()));
         holder.revokeTitle(this);
     }
     public void removeCurrentHolder(){
@@ -148,19 +148,19 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public void addChild(Title<?> child) {
         Children.add(child);
         child.setParent(this);
-        final TitleTLChange.DeJureDriftPassive<?,?,?> changes = new TitleTLChange.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),GlobalVars.CURRENT_DATE());
-        addStateChange(GlobalVars.CURRENT_DATE(), (TimelineChange<T>) changes);
+        final TitleTLChange.DeJureDriftPassive<?,?,?> changes = new TitleTLChange.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child), Global.CURRENT_DATE());
+        addStateChange(Global.CURRENT_DATE(), (TimelineChange<T>) changes);
     }
     public
     public  void removeChild(Title<?> child, boolean canon, @Nullable Title<?> newParent) {
         if (Children.contains(child)) {
             Children.remove(child);
-            addStateChange(GlobalVars.CURRENT_DATE(),canon, new TitleTLChange.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),DMEReference.of(newParent),GlobalVars.CURRENT_DATE()));
+            addStateChange(Global.CURRENT_DATE(),canon, new TitleTLChange.DeJureDriftPassive<>(DMEReference.of(this),DMEReference.of(child),DMEReference.of(newParent), Global.CURRENT_DATE()));
         }
     }
     public void setParent(Title<?> parent) {
         Parent = Optional.of(parent);
-        addStateChange(GlobalVars.CURRENT_DATE(), new TitleTLChange.DeJureDrift<>(DMEReference.of(this),DMEReference.of(parent),GlobalVars.CURRENT_DATE()));
+        addStateChange(Global.CURRENT_DATE(), new TitleTLChange.DeJureDrift<>(DMEReference.of(this),DMEReference.of(parent), Global.CURRENT_DATE()));
     }
     public boolean hasParent() {
         return Parent.isPresent();

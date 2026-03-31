@@ -1,6 +1,6 @@
 package com.base.timeline.sandbox.core;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.timeline.flags.SandboxCode;
@@ -92,7 +92,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
         TimelineChange<T> proposedChange = objective.state().change();
         LocalDate date = objective.state().start();
         while (true){
-            GlobalVars.setCurrentDate(date);
+            Global.setCurrentDate(date);
             TimelineState<T> state = host.getCurrentState();
             for (TimelineChange<T> change : state.getChanges()) {
                 List<StandingChange> localSC = new ArrayList<>();
@@ -204,7 +204,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
             LocalDate start = error.getOldChange().getStart();
             LocalDate end = error.getOldChange().getEnd();
             if (start == null){
-                start = GlobalVars.CURRENT_DATE();
+                start = Global.CURRENT_DATE();
             }
             if (end == null){
                 end = sandboxEndDate;

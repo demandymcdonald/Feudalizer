@@ -1,6 +1,6 @@
 package com.display.windows.menu;
 
-import com.GlobalVars;
+import com.Global;
 import com.objects.character.BookCharacter;
 import com.objects.character.CharacterManager;
 import com.objects.people.House;
@@ -133,7 +133,7 @@ public class CharacterCreationDialog extends Dialog<BookCharacter> {
         String surname = surnameField.getText().trim();
         BookCharacter.Gender gender = genderCombo.getValue();
 
-        LocalDate dob = parseDate(dobField.getText(), GlobalVars.CURRENT_DATE());
+        LocalDate dob = parseDate(dobField.getText(), Global.CURRENT_DATE());
         if (dob == null) return null;
 
         LocalDate dod = parseDate(dodField.getText(), null);

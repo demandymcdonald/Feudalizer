@@ -1,6 +1,6 @@
 package com.base.timeline.change;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.ObjectType;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
@@ -137,11 +137,11 @@ public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T
         @Override
         protected TimelineState<T> onApply(T entity, boolean saveChangeToDiff) {
             if (firstTime){
-                entity.setInherit(this, GlobalVars.CURRENT_DATE(),true);
+                entity.setInherit(this, Global.CURRENT_DATE(),true);
                 firstTime = false;
                 return entity.getCurrentState();
             }
-            entity.setInherit(this, GlobalVars.CURRENT_DATE(),false);
+            entity.setInherit(this, Global.CURRENT_DATE(),false);
             return entity.getCurrentState();
         }
         @Override

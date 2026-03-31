@@ -4,6 +4,7 @@ import com.base.*;
 import com.base.reference.DMEReference;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
+import com.objects.character.opinion.Opinion;
 import com.objects.people.Family;
 import com.objects.people.House;
 import com.objects.title.Title;
@@ -58,7 +59,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     private String surname;
     private Gender gender;
     private Orientation orientation;
-
+    private final HashMap<UUID, Opinion> opinions = new HashMap<>();
 
     //TODO Add: Religion, Culture, Political Ideology.
 
@@ -93,6 +94,11 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
         linked_house = Optional.empty();
         linked_families.clear();
         linked_titles.clear();
+    }
+
+    @Override
+    public <M extends AbstractMutableManager<M, BookCharacter, ?>> M getManager() {
+        return null;
     }
 
 
@@ -153,5 +159,8 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     }
     public Orientation getOrientation(){
         return orientation;
+    }
+    public Map<UUID,Opinion> getOpinions(){
+        return opinions;
     }
 }

@@ -1,6 +1,6 @@
 package com.objects.people;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.StateChangeKey;
 import com.base.reference.DMEReference;
 import com.objects.character.BookCharacter;
@@ -22,7 +22,7 @@ public class House extends DateMutableEntity<House> {
 
 
     public House(String name, BookCharacter headOfHouse) {
-        super(UUID.randomUUID(), GlobalVars.CURRENT_DATE(),null);
+        super(UUID.randomUUID(), Global.CURRENT_DATE(),null);
         this.Name = name;
         this.HeadOfHouse = headOfHouse;
         init();

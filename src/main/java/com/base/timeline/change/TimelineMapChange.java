@@ -4,7 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineHelper;
-import com.base.timeline.TimelineState;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
 
 public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     //Plan:
@@ -24,13 +22,14 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     //Full modifier history is reconstructable via scrub-back if needed, but not stored redundantly in every keyframe
     //Forward propagation handles expected-size consistency automatically — adding/removing a relationship mid-timeline just increments/decrements an int during the existing propagation pass
     //The same pattern applies recursively to the diff history within each relationship entry
-
+    private final Class<M> base;
     private Pair<Long, LocalDate> leapfrog;
     private int leapfrogSize;
     private Map<K,V> changes = new HashMap<>();
 
-    private TimelineMapChange(DMEReference<T> owner, LocalDate date) {
+    protected TimelineMapChange(Class<M> base,DMEReference<T> owner,  LocalDate date) {
         super(owner, date);
+        this.base = base;
     }
 
     public final Map<K,V> buildMap(Timeline<T> t){
@@ -39,7 +38,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         final BiConsumer<M,Map<K,V>> consumer = new BiConsumer<>() {
             @Override
             public void accept(M m, Map<K, V> kvMap) {
-                Map<K,V> newMap = m.getChanges();
+                Map<K,V> newMap = m.getChangeFragment();
                 for (Map.Entry<K,V> e : newMap.entrySet()){
                     if (!kvMap.containsKey(e.getKey())){
                         kvMap.put(e.getKey(),e.getValue());
@@ -48,7 +47,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
             }
         };
         final BiFunction<M,Map<K,V>,Integer> function = (m, r) -> {
-            Map<K,V> newMap = m.getChanges();
+            Map<K,V> newMap = m.getChangeFragment();
             int fresh = 0;
             for (Map.Entry<K,V> e : newMap.entrySet()) {
                 if (!r.containsKey(e.getKey())){
@@ -57,28 +56,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
             }
             return fresh;
         };
-        return doLeapFrog(t,leapfrog,function,finalTotal,consumer,toReturn,true);
-    }
-    protected static <M extends TimelineMapChange<M,K,V,T>,K,V,T extends DateMutableEntity<T>,R> R doLeapFrog(
-            Timeline<T> t, Pair<Long, LocalDate> firstLF, BiFunction<M,R,Integer> getCurrent,
-            final int total, BiConsumer<M,R> makeChange, R result, boolean completeLastCycle){
-        int current = 0;
-        Pair<Long, LocalDate> currentLeapFrog = firstLF;
-        while(current < total){
-            TimelineChange<? super T> n = (TimelineChange<? super T>) TimelineHelper.followBreadcrumb(t,currentLeapFrog.getKey(),currentLeapFrog.getValue());
-            if (n instanceof TimelineMapChange<?,?,?,?>){
-                M m = (M) n;
-                current += getCurrent.apply(m,result);
-                if (current >= total && !completeLastCycle){
-                    break;
-                }
-                makeChange.accept(m,result);
-                currentLeapFrog = m.getLeapFrog();
-            } else {
-                throw new RuntimeException("Tried to do a leapfrog on a non-map change" + n);
-            }
-        }
-        return result;
+        return TimelineHelper.doMapChangeLeapFrog(t,leapfrog,function,base,finalTotal,consumer,toReturn,true,TimelineHelper.Direction.BACKWARD);
     }
 
     private void addChange(Pair<K,V>... changes){
@@ -91,16 +69,24 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         }
         //TODO finish once I figure out how commits will work XD I think I need a commit method in TLChange.
     }
-
+    public Map<K,V> getFullMap(){
+        return changes;
+    }
 
 
     public void merge(M combine){
 
     }
-    protected Pair<Long, LocalDate> getLeapFrog(){
+    public Pair<Long, LocalDate> getPreviousLeapFrog(){
         return leapfrog;
     }
-    protected Map<K,V> getChanges(){
+    public Pair<Long, LocalDate> makeLeapFrog(){
+        return Pair.of(this.getId(),this.getStart());
+    }
+    public void setLeapFrog(Pair<Long, LocalDate> leapFrog){
+        this.leapfrog = leapFrog;
+    }
+    public Map<K,V> getChangeFragment(){
         return changes;
     }
 
@@ -113,8 +99,11 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     public final void mainLoad(JsonObject object) {
         super.mainLoad(object);
     }
-    protected abstract JsonObject serializeK(K k);
-    protected abstract K deserializeK(JsonObject m);
-    protected abstract V deserializeV(JsonObject m);
-    protected abstract JsonObject serializeV(V v);
+    protected abstract JsonElement serializeK(K k);
+    protected abstract K deserializeK(JsonElement m);
+    protected abstract V deserializeV(JsonElement m);
+    protected abstract JsonElement serializeV(V v);
+
+
+
 }

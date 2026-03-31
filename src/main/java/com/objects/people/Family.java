@@ -3,7 +3,7 @@ package com.objects.people;
 import com.Feudalizer;
 
 import com.base.DateMutableEntity;
-import com.GlobalVars;
+import com.Global;
 import com.base.ObjectType;
 import com.base.StateChangeKey;
 import com.base.reference.DMEReference;
@@ -193,14 +193,14 @@ public class Family extends DateMutableEntity<Family> {
         //Feudalizer.LOGGER.info("family tie established");
         BookCharacter child;
         if (primarySurname || (HeadofFamily.isNoble() && !secSpouse.isNoble())) {
-            child = new BookCharacter(UUID.randomUUID(),name, HeadofFamily.getSurname(),this.PrimaryHouse.orElse(null), GlobalVars.CURRENT_DATE(),null,gender,defaultFam);
+            child = new BookCharacter(UUID.randomUUID(),name, HeadofFamily.getSurname(),this.PrimaryHouse.orElse(null), Global.CURRENT_DATE(),null,gender,defaultFam);
             members.add(child);
         } else {
-            child = new BookCharacter(UUID.randomUUID(),name,secSpouse.getSurname(),this.PrimaryHouse.orElse(null), GlobalVars.CURRENT_DATE(),null,gender,defaultFam);
+            child = new BookCharacter(UUID.randomUUID(),name,secSpouse.getSurname(),this.PrimaryHouse.orElse(null), Global.CURRENT_DATE(),null,gender,defaultFam);
             members.add(child);
         }
         doChildReorder();
-        addStateChange(GlobalVars.CURRENT_DATE(), StateChangeKey.hadChild(HeadofFamily,SecondarySpouse.orElse(null),child));
+        addStateChange(Global.CURRENT_DATE(), StateChangeKey.hadChild(HeadofFamily,SecondarySpouse.orElse(null),child));
     }
     public static List<BookCharacter> orderByAge(boolean oldestToYoungest, Collection<BookCharacter> toBeOrdered) {
         List<BookCharacter> ordered = new ArrayList<>(toBeOrdered);

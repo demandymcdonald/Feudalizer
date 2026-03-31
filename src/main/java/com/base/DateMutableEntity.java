@@ -1,18 +1,16 @@
 package com.base;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineState;
 import com.base.timeline.change.TimelineChange;
-import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import com.utilities.SuperclassSerializable;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * Represents an abstract class for date-aware mutable entities that track state changes over time.
@@ -85,7 +83,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
 
     }
     protected final LocalDate current(){
-        return GlobalVars.getDate();
+        return Global.getDate();
     }
     protected final void setCreated(LocalDate created){
         timeline.moveBirth((T) this,created);

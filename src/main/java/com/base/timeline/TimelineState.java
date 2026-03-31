@@ -95,14 +95,22 @@ public class TimelineState<T extends DateMutableEntity<T>>{
         }
         return tlc;
     }
-    public List<TimelineChange<T>> getChanges(boolean includeDeactivated) {
+    public <C extends TimelineChange<T>> C getChange(Class<C> clazz){
+        for (TimelineChange<? super T> tlc : diffs.values()){
+            if (clazz.equals(tlc.getClass())){
+                return (C) tlc;
+            }
+        }
+        return null;
+    }
+    public List<TimelineChange<? super T>> getChanges(boolean includeDeactivated) {
         return TimelineHelper.getAllChanges(this.owner.get().getTimeline(), this,includeDeactivated);
     }
     public void insertBreadcrumb(long id, LocalDate date){
-        TimelineChange<T> t = TimelineHelper.followBreadcrumb(owner.get().getTimeline(),id,date);
+        TimelineChange<? super T> t = (TimelineChange<? super T>) TimelineHelper.followBreadcrumb(owner.get().getTimeline(),id,date);
         insertBreadcrumb(t);
     }
-    public void insertBreadcrumb(TimelineChange<T> change){
+    public void insertBreadcrumb(TimelineChange<? super T> change){
         TimelineHelper.insertBreadcrumb(this,change);
     }
     public void forceInsertBC(long id, LocalDate date){
@@ -114,7 +122,7 @@ public class TimelineState<T extends DateMutableEntity<T>>{
     public LocalDate getBreadcrumbStart(long id){
         return breadcrumbs.get(id);
     }
-    public void insertChange(TimelineChange<T> change){
+    public void insertChange(TimelineChange<? super T> change){
         diffs.put(change.getId(), change);
         TimelineHelper.propagateBreadcrumb(owner.get().getTimeline(),change);
     }

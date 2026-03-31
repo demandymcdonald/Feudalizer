@@ -1,12 +1,10 @@
 package com.base.timeline;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.AbstractMutableManager;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
-import com.base.ObjectType;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.BoundaryChange;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
@@ -27,7 +25,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         this.owner = owner;
         timeline.put(start, manager.buildBirth(owner,start, initialState));
         if (end == null){
-            timeline.put(end, manager.buildDeath(owner, GlobalVars.MAX_DATE,initialState));
+            timeline.put(end, manager.buildDeath(owner, Global.MAX_DATE,initialState));
         } else {
             timeline.put(end, manager.buildDeath(owner,end,initialState));
         }
@@ -151,8 +149,20 @@ public class Timeline<T extends DateMutableEntity<T>> {
         }
         return state;
     }
+    public TimelineState<T> getStateAtExact(LocalDate date, boolean throwIfNotFound){
+        TimelineState<T> state = timeline.get(date);
+        if (state == null && throwIfNotFound){
+            throw new IllegalArgumentException("No state found at " + date);
+        }
+        return state;
+    }
     public TimelineState<T> getStateBefore(LocalDate date){
-        TimelineState<T> state = timeline.floorEntry(date).getValue();
+        TimelineState<T> state = timeline.floorEntry(date.minusDays(1)).getValue();
+        date = state.getStart().minusDays(1);
+        return timeline.floorEntry(date).getValue();
+    }
+    public TimelineState<T> getStateAfter(LocalDate date){
+        TimelineState<T> state = timeline.ceilingEntry(date.plusDays(1)).getValue();
         date = state.getStart().minusDays(1);
         return timeline.floorEntry(date).getValue();
     }
@@ -187,8 +197,8 @@ public class Timeline<T extends DateMutableEntity<T>> {
         }
     }
     public TimelineState<T> makeNewState(LocalDate start){
-        TimelineState<T> before = timeline.floorEntry(start).getValue();
-        TimelineState<T> after = timeline.ceilingEntry(start).getValue();
+        TimelineState<T> before = timeline.floorEntry(start.minusDays(1)).getValue();
+        TimelineState<T> after = timeline.ceilingEntry(start.plusDays(1)).getValue();
         if (before.getStart().equals(start)){
             return before;
         } else if(after.getStart().equals(start)) {
@@ -207,5 +217,8 @@ public class Timeline<T extends DateMutableEntity<T>> {
         timeline.clear();
         load(o);
         isLoaded = true;
+    }
+    public DMEReference<T> getOwner() {
+        return owner;
     }
 }

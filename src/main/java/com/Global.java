@@ -7,9 +7,9 @@ import com.utilities.ThreadMutable;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
-public class GlobalVars implements ThreadMutable {
-    public static final ThreadLocal<GlobalVars> INSTANCE = new ThreadLocal<>();
-    private static GlobalVars gv() {
+public class Global implements ThreadMutable {
+    public static final ThreadLocal<Global> INSTANCE = new ThreadLocal<>();
+    private static Global gv() {
         return INSTANCE.get();
     }
     //---- Static Globals ----
@@ -40,6 +40,21 @@ public class GlobalVars implements ThreadMutable {
     @Override
     public Type uniqueKey() {
         return Type.GLOBAL_VARIABLE_CONTAINER;
+    }
+
+    @Override
+    public void onThreadInit(boolean shared) {
+
+    }
+
+    @Override
+    public Object share() {
+        return null;
+    }
+
+    @Override
+    public void receiveShared(Object shared) {
+
     }
 
     @Override

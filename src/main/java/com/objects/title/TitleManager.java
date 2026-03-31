@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.GlobalVars.CONFEDERACY_FOUNDED;
+import static com.Global.CONFEDERACY_FOUNDED;
 
 public class TitleManager extends AbstractMutableManager<Title<?>, TitleContainer> {
     private Cache<Integer,Title<?>> titleLookupCache = CacheBuilder.newBuilder().expireAfterAccess(10, java.util.concurrent.TimeUnit.MINUTES).maximumSize(256).build();

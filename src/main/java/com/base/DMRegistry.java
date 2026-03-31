@@ -1,21 +1,22 @@
 package com.base;
-import com.GlobalVars;
+import com.Global;
 import com.base.reference.DMEReference;
 import com.objects.character.CharacterManager;
 import com.utilities.LoadingManager;
 import com.google.gson.JsonObject;
 import com.objects.people.*;
 import com.objects.title.TitleManager;
-import com.utilities.ThreadManager;
 
 import java.util.*;
-
-import static com.base.ObjectType.*;
 
 public class DMRegistry {
     private static final Map<Class<? extends DateMutableEntity<?>>,AbstractMutableManager<?,? extends DateMutableEntity<?>,? >> MANAGER_MAP = Collections.synchronizedMap(new HashMap<>());
     private static final List<AbstractMutableManager<?,? extends DateMutableEntity<?>,?>> MANAGERS = Collections.synchronizedList(new ArrayList<>());
 
+    public static final CharacterManager CHARACTER_MANAGER = new CharacterManager();
+    public static final TitleManager TITLE_MANAGER = new TitleManager();
+    public static final FamilyManager FAMILY_MANAGER = new FamilyManager();
+    public static final HouseManager HOUSE_MANAGER = new HouseManager();
 
 //    private static <T extends DateMutableEntity<T>, M extends AbstractMutableManager<M,T,?,?>> M get(Class<T> type){
 //
@@ -60,7 +61,7 @@ public class DMRegistry {
         manager.loadObject(header,data);
     }
     public static void onDateChange(){
-        final LoadingManager lm = GlobalVars.getLoadingManager();
+        final LoadingManager lm = Global.getLoadingManager();
         //To my future self: they are separate to reflect that it's two different stages of loading :)
         final Runnable r2 = () -> {
             for (AbstractMutableManager<?,?,?> m : MANAGERS) {
@@ -68,8 +69,8 @@ public class DMRegistry {
             }
         };
         final Runnable r = () -> {
-            for (AbstractMutableManager<?> m : map().values()) {
-                m.onGameStateChangeLoad(GlobalVars.getDate());
+            for (AbstractMutableManager<?,?,?> m : MANAGERS) {
+                m.onDateChange();
             }
             lm.forceComplete();//Only added for the logging and since these actions are chained together.
             lm.newStage("Linking Entities",getTotalRegistered(),r2,true);
@@ -78,8 +79,8 @@ public class DMRegistry {
     }
     public static int getTotalRegistered(){
         int total = 0;
-        for (AbstractMutableManager<?> m : map().values()) {
-            total += m.getSize();
+        for (AbstractMutableManager<?,?,?> m : MANAGERS) {
+            total += m.getAll().size();
         }
         return total;
     }
@@ -88,15 +89,6 @@ public class DMRegistry {
 //    }
 
 
-    @Override
-    public Type uniqueKey() {
-        return Type.REGISTRY;
-    }
-    @Override
-    public void onThreadInit() {
-        registryThreadLocal.set(ThreadManager.getThreadMutable(Type.REGISTRY));
-        sandboxReInit();
-    }
 
 //    protected record MutableEntry<R, T extends DateMutableEntity<R>,M extends AbstractMutableManager<R,T>>(M manager, Function<>) {
 //

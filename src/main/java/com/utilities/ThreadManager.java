@@ -33,7 +33,7 @@ public class ThreadManager {
                     tm.onShutdown(true);
                 }
             };
-            full_name = "tm_shared_p:"+ parent.getName() + "_"+ name;
+            full_name = "tm_shared_"+ parent.getName() + "::" +  name+ ";" ;
         } else {
             wrapper= () -> {
                 for (ThreadMutable<?,?> tm : thread_mutables.values()){

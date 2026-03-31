@@ -130,7 +130,7 @@ public class GeographyManager {
             }
         }
 
-        System.err.println("GeographyManager: No feature found for type=" + type + ", id=" + id);
+        System.err.println("GeographyManager: No feature found for type=" + type + ", reasonID=" + id);
         return null;
     }
     public static void excludeGeometry(GeometryType type, String id) {

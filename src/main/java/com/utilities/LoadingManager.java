@@ -83,9 +83,9 @@ public class LoadingManager {
         }
         Thread t;
         if (pullFromParent) {
-            t = ThreadManager.buildThreadFromParent("LoadManager-" + currentLoading, payload);
+            t = ThreadManager.BuildThread("LoadManager-" + currentLoading, payload, Thread.currentThread());
         } else {
-            t = ThreadManager.buildThread("LoadManager-" + currentLoading, payload);
+            t = ThreadManager.BuildThread("LoadManager-" + currentLoading, payload,null);
         }
         if (isLoading.get()) {
             th.complete(t);
@@ -157,10 +157,7 @@ public class LoadingManager {
     }
 
     private void cullThread(){
-        if (subjectThread != null){
-            ThreadManager.cullInstance(subjectThread.get());
-            subjectThread = null;
-        }
+
     }
     public boolean isLoading(){
         return isLoading.get();

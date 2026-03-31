@@ -1,6 +1,6 @@
 package com.display.windows.dialogs;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.DMRegistry;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
@@ -99,7 +99,7 @@ public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
         // Handles placing geometry in proper featurecontainer/map and saving it to disk
         SimpleFeature feature = registerCustomGeometry(name, GeometryType.CUST_P, merged);
         // Create province
-        Province province = Titles.createProvince(name, GlobalVars.CURRENT_DATE(), null, GeometryType.CUST_P,feature.getID());
+        Province province = Titles.createProvince(name, Global.CURRENT_DATE(), null, GeometryType.CUST_P,feature.getID());
         province.setHolder(holder);
         // Exclude counties
         for (Pair<com.display.geography.GeometryType, String> county : selectedCounties) {

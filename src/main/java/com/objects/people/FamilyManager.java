@@ -1,7 +1,7 @@
 package com.objects.people;
 
 import com.Feudalizer;
-import com.GlobalVars;
+import com.Global;
 import com.base.AbstractMutableManager;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
@@ -35,7 +35,7 @@ public class FamilyManager extends AbstractMutableManager<Family,FamilyState> {
 
     public static Family getCurrentFamily(BookCharacter bookCharacter) {
         for (Family family : getNuclear(bookCharacter)) {
-            if (family.getEnded().isAfter(GlobalVars.CURRENT_DATE())){
+            if (family.getEnded().isAfter(Global.CURRENT_DATE())){
                 return family;
             }
         }
@@ -57,7 +57,7 @@ public class FamilyManager extends AbstractMutableManager<Family,FamilyState> {
             primary = spouse;
             secondary = main;
         }
-        Family nf = new Family(UUID.randomUUID(), GlobalVars.CURRENT_DATE(), primary, secondary, new ArrayList<>());
+        Family nf = new Family(UUID.randomUUID(), Global.CURRENT_DATE(), primary, secondary, new ArrayList<>());
         primary.addFamily(nf, FamilyRelationship.PRIMARY_SPOUSE);
         secondary.addFamily(nf, FamilyRelationship.SECONDARY_SPOUSE);
         return nf;

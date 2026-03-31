@@ -12,12 +12,12 @@
 //    Title<?> parent;
 //    int position;
 //    boolean isSubinfeudationGrant = false;
-//    public Claim(UUID id, Date created, Date ended, Title<?> parent, int position, boolean isSubinfeudationGrant) {
-//        super(id, created, ended);
+//    public Claim(UUID reasonID, Date created, Date ended, Title<?> parent, int position, boolean isSubinfeudationGrant) {
+//        super(reasonID, created, ended);
 //    }
 //
-//    public Claim(UUID id, Date created,  Title<?> parent, int position) {
-//        this(id, created, null, parent, position, false);
+//    public Claim(UUID reasonID, Date created,  Title<?> parent, int position) {
+//        this(reasonID, created, null, parent, position, false);
 //    }
 //
 //    public Claim(JsonObject payload) {

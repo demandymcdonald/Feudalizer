@@ -6,12 +6,12 @@
 //import java.util.UUID;
 //
 //public abstract class CompositeLandDivision extends HabitableLand {
-//    public CompositeLandDivision(UUID id, Date created, Date ended) {
-//        super(id, created, ended);
+//    public CompositeLandDivision(UUID reasonID, Date created, Date ended) {
+//        super(reasonID, created, ended);
 //    }
 //
-//    public CompositeLandDivision(UUID id, Date created, Date ended, JsonObject additionalData) {
-//        super(id, created, ended, additionalData);
+//    public CompositeLandDivision(UUID reasonID, Date created, Date ended, JsonObject additionalData) {
+//        super(reasonID, created, ended, additionalData);
 //    }
 //
 //    public CompositeLandDivision(JsonObject payload) {
