@@ -13,15 +13,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class BookCharacter extends DateMutableEntity<BookCharacter> {
-    @Override
-    public void additionalSave(JsonObject data) {
 
-    }
-
-    @Override
-    public void additionalLoad(JsonObject data) {
-
-    }
 
     public enum Gender {
         Male("Male"),
@@ -59,7 +51,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     private String surname;
     private Gender gender;
     private Orientation orientation;
-    private final Map<UUID, Opinion> opinions = new HashMap<>();
+    //private final Map<UUID, Opinion> opinions = new HashMap<>();
 
     //TODO Add: Religion, Culture, Political Ideology.
 
@@ -74,6 +66,7 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
         this.givenName = givenName;
         this.surname = surname;
         this.gender = gender;
+        this.orientation = orientation;
     }
     public BookCharacter(DMEReference<BookCharacter> ref) {
         super(ref);
@@ -141,10 +134,10 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     public void internalSetOrientation(Orientation orientation){
         this.orientation = orientation;
     }
-    public void internalSetOpinion(Map<UUID, Opinion> opinions){
-        this.opinions.clear();
-        this.opinions.putAll(opinions);
-    }
+//    public void internalSetOpinion(Map<UUID, Opinion> opinions){
+//        this.opinions.clear();
+//        this.opinions.putAll(opinions);
+//    }
 
     public String getFullName(){
         //TODO When culture gets implemented, we'll flip have a rule setting how this'll be handled.
@@ -162,7 +155,17 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     public Orientation getOrientation(){
         return orientation;
     }
-    public Map<UUID,Opinion> getOpinions(){
-        return opinions;
+    //public Map<UUID,Opinion> getOpinions(){
+//        return opinions;
+//    }
+
+    @Override
+    public void additionalSave(JsonObject data) {
+
+    }
+
+    @Override
+    public void additionalLoad(JsonObject data) {
+
     }
 }

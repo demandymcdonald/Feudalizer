@@ -2,11 +2,13 @@ package com.base;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineState;
+import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.utilities.SuperclassRegistry;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,12 +42,20 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
     public abstract Class<T> instanceClass();
     public abstract TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date);
     public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date);
-    public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<TimelineChange<? super T>> defaults){
-        defaults.addFirst(getBirthChange(dme,date));
-        return new TimelineState<T>(dme, date, date,true, defaults);
+    public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
+        List<TimelineChange<? super T>> changes = buildChangeList(getBirthChange(dme,date),date,dme,defaults);
+        return new TimelineState<T>(dme, date, date,true, changes);
     };
-    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, List<TimelineChange<? super T>> defaults){
-        defaults.addFirst(getDeathChange(dme,date));
-        return new TimelineState<T>(dme,date, date,true, defaults);
+    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
+        List<TimelineChange<? super T>> changes = buildChangeList(getDeathChange(dme,date),date,dme,defaults);
+        return new TimelineState<T>(dme,date, date,true, changes);
     };
+    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> buildChangeList(
+            TimelineChange<T> first, LocalDate date, DMEReference<T> ref, List<ChangeSupplier<T,?>> defaults){
+        List<TimelineChange<? super T>> Changes = new ArrayList<>();
+        Changes.add(first);
+        for (ChangeSupplier<T,?> c : defaults) {
+            Changes.add(c.supply(date,ref));
+        }
+    }
 }

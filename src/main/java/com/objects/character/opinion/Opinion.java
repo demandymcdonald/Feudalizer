@@ -5,6 +5,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineHelper;
 import com.base.timeline.TimelineState;
+import com.base.timeline.change.TimelineMapChange;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
@@ -19,6 +20,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
+import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
 
 public class Opinion implements JsonSerializable<Opinion> {
@@ -46,6 +48,7 @@ public class Opinion implements JsonSerializable<Opinion> {
         for (OpinionReason reason : subReasons){
             total += reason.change();
         }
+        return total;
     }
 
 
@@ -53,10 +56,26 @@ public class Opinion implements JsonSerializable<Opinion> {
         subReasons.addAll(List.of(reasons));
     }
 
+    public Map<LocalDate,OpinionReason> getFullTargetHistory(CharacterMapChanges.OpinionChange oc){
+        final BiConsumer<CharacterMapChanges.OpinionChange,Map<LocalDate,OpinionReason>> consumer = new BiConsumer<>() {
+            @Override
+            public void accept(CharacterMapChanges.OpinionChange oc ,Map<LocalDate,OpinionReason> orm) {
+                for (Opinion o : oc.getChangeFragment().values()){
+                    if (o.other.equals(other)){
+                        for (OpinionReason r : o.subReasons){
+                            orm.put(oc.getStart(),r);
+                        }
+                        return;
+                    }
+                }
+            }
+        };
+        Map<LocalDate,OpinionReason> orm = new HashMap<>();
+        TimelineHelper.doMapChangeLeapFrog(oc.getOwner().get().getTimeline(),oc.getPreviousLeapFrog(),function,
+                CharacterMapChanges.OpinionChange.class,1, consumer,orm, true,BACKWARD,false);
+        return orm;
+    }
 
-
-
-    public void relink()
 
 
     @Override
@@ -88,13 +107,8 @@ public class Opinion implements JsonSerializable<Opinion> {
         return null;
     }
 
-
-
-    private static final BiFunction<CharacterMapChanges.OpinionChange,Pair<Integer,Integer>,Integer> forwardIterator = (oc,i) ->{
+    private static final BiFunction<CharacterMapChanges.OpinionChange,Map<LocalDate,OpinionReason>,Integer> function = (m, r) -> {
         return 0;
-    };
-    private static final BiConsumer<CharacterMapChanges.OpinionChange,Pair<Integer,Integer>> makeChangeForward = (oc, i) ->{
-        oc.
     };
 
     private static Triple<TimelineState<BookCharacter>,CharacterMapChanges.OpinionChange,Opinion> getOrMake(Timeline<BookCharacter> t, LocalDate date, Timeline<BookCharacter> tl, DMEReference<BookCharacter> us, DMEReference<BookCharacter> other, OpinionReason... reasons){
@@ -126,7 +140,4 @@ public class Opinion implements JsonSerializable<Opinion> {
         return Pair.of(total,cont);
     }
 
-    public static int buildSize(Timeline<BookCharacter> tl, LocalDate time, DMEReference<BookCharacter> target) {
-        TimelineHelper.findBreadcrumb(tl, CharacterMapChanges.OpinionChange.class,time,)
-    }
 }

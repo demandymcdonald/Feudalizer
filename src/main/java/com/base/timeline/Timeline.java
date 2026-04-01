@@ -5,11 +5,13 @@ import com.base.AbstractMutableManager;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.utilities.DateUtilities;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -20,7 +22,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
     //TODO Caching for performance?
     public boolean isLoaded = false;
     private final DMEReference<T> owner;
-    public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<TimelineChange<? super T>> initialState) {
+    public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<ChangeSupplier<T,?>> initialState) {
         AbstractMutableManager<?,T,?> manager = o.getManager();
         this.owner = owner;
         timeline.put(start, manager.buildBirth(owner,start, initialState));
@@ -97,32 +99,23 @@ public class Timeline<T extends DateMutableEntity<T>> {
     public boolean isLast(LocalDate date){
         return timeline.lastEntry().getValue().getStart().isBefore(date);
     }
-    public void moveBirth(T ref, LocalDate date){
-        LocalDate oldBirthDate = getEarliestDate();
-        final AbstractMutableManager<?,T,?> template = DMRegistry.getManager(owner.getType());
-
-        if (oldBirthDate.isAfter(date)){
-            //TODO FIX
-            TimelineState<T> state = getStateAt(oldBirthDate);
-            final List<TimelineChange<? super T>> d= state.getAllChanges();
-            timeline.remove(oldBirthDate);
-            timeline.put(date, template.buildBirth(owner,date,d));
-        } else {
-            TimelineChange<T> bt = template.getBirthChange(owner,date);
-            SandboxHandler.SandboxApplyChange(new Objective<>(owner,bt),oldBirthDate,null);
-            //TODO Sandbox out moving the birth later
+    public boolean moveBirth(LocalDate date){
+        if (date.equals(getEarliestDate())){
+            return true;
         }
+        TimelineState<T> state = getNextState(getEarliestDate());
+
+        if ((date.isAfter(getEarliestDate()) && DateUtilities.isBetween(date,getEarliestDate(),state.getStart())){
+
+        } else if (date.isBefore(getEarliestDate())){
+
+        }
+
+
     }
-    public void moveDeath(T ref, LocalDate date){
-        LocalDate oldDeathDate = getLatestDate();
-        final AbstractMutableManager<?,T,?> template = DMRegistry.getManager(owner.getType());
-    //TODO FIX
-        if (oldDeathDate.isBefore(date)){
-            timeline.remove(oldDeathDate);
-            timeline.put(date, template.buildDeath(owner,date,d));
-        } else {
-            TimelineChange<T> bt = template.getDeathChange(owner,date);
-            SandboxHandler.SandboxApplyChange(new Objective<>(owner,oldDeathDate,bt),date,null);
+    public boolean moveDeath(LocalDate date){
+        if (date.equals(getLatestDate())){
+            return true;
         }
     }
 

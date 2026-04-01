@@ -4,6 +4,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineState;
+import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.utilities.SuperclassSerializable;
@@ -24,7 +25,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     private final UUID id;
     private final Timeline<T> timeline;
     private final DMEReference<T> reference;
-    public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<TimelineChange<? super T>> initialState) {
+    public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T,?>> initialState) {
         this.id = id;
         this.reference = DMEReference.of(this.getClass(),id);
         this.timeline = new Timeline<T>((T) this,reference,created,ended,initialState);
@@ -85,11 +86,11 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     protected final LocalDate current(){
         return Global.getDate();
     }
-    protected final void setCreated(LocalDate created){
-        timeline.moveBirth((T) this,created);
+    protected final boolean  setCreated(LocalDate created){
+        return timeline.moveBirth(created);
     }
-    protected final void setEnded(LocalDate ended){
-        timeline.moveDeath((T) this,ended);
+    protected final boolean setEnded(LocalDate ended){
+        return timeline.moveDeath(ended);
     }
     public TimelineState<T>[] getAllStates(){
         return timeline.getStates();

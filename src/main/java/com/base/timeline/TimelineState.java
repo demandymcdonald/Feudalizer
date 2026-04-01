@@ -191,6 +191,14 @@ public class TimelineState<T extends DateMutableEntity<T>>{
         List<TimelineChange<? super T>> diffs = deserializeDiffs(json.getAsJsonArray("diffs"));
         return new TimelineState<T>(owner,start, end, immutable, breadcrumbs, buildMap(diffs));
     }
-
+    public void internalChangeDate(LocalDate startDate, LocalDate endDate){
+        if (startDate != null){
+            start = startDate;
+            for (TimelineChange<? super T> change : diffs.values()) {
+                change.moveChange(startDate,endDate);
+                //TOOD update breadcrumb date to new start :-<
+            }
+        }
+    }
 }
 
