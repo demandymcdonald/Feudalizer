@@ -22,14 +22,14 @@ public class CharacterMapChanges {
 
     public static class OpinionChange extends TimelineMapChange<OpinionChange, UUID, Opinion,BookCharacter>{
         public OpinionChange(DMEReference<BookCharacter> owner, LocalDate date) {
-            super(owner, date);
+            super(OpinionChange.class,owner, date);
         }
 
+
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
-            Map<UUID,Opinion> map = getFullMap();
-            entity.getOpinions().clear();
-            entity.getOpinions().putAll(map);
+        protected void onApply(DMEReference<? extends BookCharacter> entity, TimelineState<? extends BookCharacter> currentState) {
+            BookCharacter b = entity.get();
+            b.internalSetOpinion(this.buildMap(b.getTimeline()));
         }
 
         @Override
@@ -39,17 +39,9 @@ public class CharacterMapChanges {
 
         @Override
         public boolean isPositive() {
-            return true;
+            return false;
         }
 
-        @Override
-        protected ChangeTags[] getTags() {
-            return new ChangeTags[0];
-        }
-        @Override
-        public boolean shouldSandbox(){
-            return true;
-        }
 
         @Override
         protected String getText() {
@@ -67,14 +59,16 @@ public class CharacterMapChanges {
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
+        public void additionalSave(JsonObject data) {
 
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
+        public void additionalLoad(JsonObject data) {
 
         }
+
+
 
         @Override
         protected JsonElement serializeV(Opinion opinion) {
@@ -95,6 +89,7 @@ public class CharacterMapChanges {
         protected UUID deserializeK(JsonElement m) {
             return UUID.fromString(m.getAsString());
         }
+
     }
 
 

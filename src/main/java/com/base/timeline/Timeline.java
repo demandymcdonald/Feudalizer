@@ -104,7 +104,7 @@ public class Timeline<T extends DateMutableEntity<T>> {
         if (oldBirthDate.isAfter(date)){
             //TODO FIX
             TimelineState<T> state = getStateAt(oldBirthDate);
-            final List<TimelineChange<T>> d=
+            final List<TimelineChange<? super T>> d= state.getAllChanges();
             timeline.remove(oldBirthDate);
             timeline.put(date, template.buildBirth(owner,date,d));
         } else {

@@ -10,6 +10,9 @@ public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subjec
     public Objective(DMEReference<T> subject, TimelineChange<T> change){
         this(subject, change.getStart(), change);
     }
+    public static <T extends DateMutableEntity<T>> Objective<T> build(DMEReference<? extends T> subject, TimelineChange<T> change){
+       return new Objective<>((DMEReference<T>) subject, change);
+    }
     public LocalDate getStart(){
         return change.getStart();
     }

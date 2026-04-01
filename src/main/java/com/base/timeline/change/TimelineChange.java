@@ -52,20 +52,18 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         this.owner = owner;
         this.start = date;
     }
-    protected enum ChangeTags{
-        RELATIONSHIP_CHANGE,
-        MARRIAGE_CHANGE,
-        FAMILY_MEMBERSHIP_CHANGE,
-        TITLE_CHANGE,
-        HOUSE_EMPLOYMENT_CHANGE,
-        CHARACTER_DEATH;
-    }
+
     public final long getId(){
         return id.get();
     }
     public final DMEReference<? extends T> getOwner(){
         return owner;
     }
+
+    //==================================================================================================================
+
+
+
     /**
      * Applies changes to the specified entity by invoking the {@code onApply} method to handle
      * timeline state transitions. Additional logic can be implemented here if necessary.
@@ -77,11 +75,13 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         onApply(entity,currentState);
         //may merge with onApply if I don't need any additional logic in here
     }
-    public void advance(TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean sandbox){
+    public void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean isFirstAdvance){
+        onAdvance(currentState,newState,isFirstAdvance);
 
     }
-    public void overwrite(TimelineState<? extends T> currentState, TimelineChange<? extends T> beingOverwritten, boolean destructive){
-        onOverwrite(getOwner().get(),currentState,beingOverwritten,destructive);
+
+    public void overwrite(TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){
+        onOverwrite(getOwner(),currentState,beingOverwritten,destructive);
         if (destructive){
             currentState.removeChange(beingOverwritten.getId());
             TimelineHelper.BreadcrumbCleanup(getOwner().get().getTimeline(),beingOverwritten.getId(),beingOverwritten.getStart(),beingOverwritten.getEnd());
@@ -97,14 +97,14 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public void deactivate(boolean sandbox){
         SandboxCode c = SandboxCode.END_SAVE;
         if (sandbox){
-            c = SandboxHandler.SandboxApplyChange(new Objective<>(owner,this),start,null);
+            c = SandboxHandler.SandboxApplyChange(Objective.build(owner,this),start,null);
         }
         if (c == SandboxCode.END_SAVE){
             onDeactivate();
             deactivated = true;
-            Timeline<? super T> tl = owner.get().getTimeline();
-            TimelineHelper.BreadcrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
-            TimelineChange<? super T> lastData =  TimelineHelper.getLastValidChange(tl,tl.getStateAt(this.start),this);
+            Timeline<? extends T> tl = owner.get().getTimeline();
+            TimelineHelper.changeBreacrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
+            TimelineChange<? super T> lastData =  (TimelineChange<? super T>) TimelineHelper.changeGetLastValidChange(tl,tl.getStateAt(this.start),this);
             lastData.moveChange(null,breadcrumb.getEndOfPropagation());
         }
     }
@@ -126,17 +126,21 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         if (newEnd != null){
             breadcrumb.addEndPoint(newEnd);
         }
-        TimelineHelper.BreadcrumbCleanup(timeline,getId(), setStart,setEnd);
-        TimelineHelper.propagateBreadcrumb(timeline,this);
+        TimelineHelper.changeBreacrumbCleanup(timeline,getId(), setStart,setEnd);
+        TimelineHelper.changePropagateBreadcrumb(timeline,this);
     }
-    //What to do when the provided object is getting the change from this object applied to it.
-    protected abstract void onApply(T entity, TimelineState<T> currentState);
 
-    protected void onOverwrite(T entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){};
-    protected void onNullify(T entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten){}
+
+
+    //==================================================================================================================
+    //What to do when the provided object is getting the change from this object applied to it.
+    protected abstract void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState);
+
+    protected void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){};
+    protected void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten){}
     protected void onDeactivate(){}
     protected void onReactivate(){}
-    protected void onAdvance(){}
+    protected void onAdvance(TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean isFirstAdvance){}
     protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
 
     public boolean isOpposite(TimelineChange<? super T> state){
@@ -151,7 +155,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     };
     public abstract boolean isPositive();
     public void onContinue(){}
-    protected abstract ChangeTags[] getTags();
     public final boolean canNullify(TimelineChange<? super T> toNullify){
         boolean hasYes = false;
         for (Condition<ConditionResult.Nullify,? super T> c : nullConditions.get()) {
@@ -184,15 +187,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     protected abstract String getText();
 
 
-    protected boolean containsMyTags(TimelineChange<? super T> state){
-        return containsMyTags(state.getTags());
-    }
-    protected boolean containsMyTags(ChangeTags[] tags){
-        for (ChangeTags tag : tags) {
-            if (tag.equals(this.getTags()[0])) return false;
-        }
-        return true;
-    }
+
     public LocalDate getStart() {
         return start;
     }
@@ -252,13 +247,17 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     protected abstract List<Condition<StateError,? super T>> buildApplyConditions();
     protected abstract List<Condition<ConditionResult.Nullify,? super T>> buildNullifyConditions();
     private long generateID(){
-        return generateID(this.getClass(),start,additionalIDVars());
+        return generateID((Class<TimelineChange<T>>) this.getClass(),start,additionalIDVars());
     }
-    @SuppressWarnings("UnstableApiUsage")
     public static <T extends DateMutableEntity<T>> long generateID(Class<TimelineChange<T>> c , LocalDate start, List<DMEReference<?>> additionalIDVars){
+        return generateID(c.getName(),start,additionalIDVars);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static <T extends DateMutableEntity<T>> long generateID(String c , LocalDate start, List<DMEReference<?>> additionalIDVars){
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putLong(start.toEpochDay());
-        hasher.putString(c.getSimpleName(), StandardCharsets.UTF_8);
+        hasher.putString(c, StandardCharsets.UTF_8);
         //hasher.putLong(owner.hash());
         //The reason I'm removing the owner long is because it might make bug tracking harder on breadcrumbs, and I
         //genuinely don't think it adds anything to the mix.

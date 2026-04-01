@@ -124,7 +124,7 @@ public class TimelineState<T extends DateMutableEntity<T>>{
     }
     public void insertChange(TimelineChange<? super T> change){
         diffs.put(change.getId(), change);
-        TimelineHelper.propagateBreadcrumb(owner.get().getTimeline(),change);
+        TimelineHelper.PropagateBreadcrumb(owner.get().getTimeline(),change);
     }
     public void removeChange(long id){
         TimelineChange<? super T> t = diffs.get(id);

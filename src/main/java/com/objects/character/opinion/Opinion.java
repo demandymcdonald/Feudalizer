@@ -16,6 +16,10 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+
+import static com.Global.TimeDirection.FORWARD;
 
 public class Opinion implements JsonSerializable<Opinion> {
     //TODO replace once I write the Basecode for psuedo-enums.
@@ -84,22 +88,15 @@ public class Opinion implements JsonSerializable<Opinion> {
         return null;
     }
 
-    //NOTE: DON"T FORGET TO change the first future's breadcrumb.
-    public static CharacterMapChanges.OpinionChange builder(Timeline<BookCharacter> t, LocalDate time, DMEReference<BookCharacter> target, OpinionReason... reasons) {
-        final Pair<Integer,Integer> totals = calculateOpinionTotal(reasons);
-        final Triple<TimelineState<BookCharacter>,CharacterMapChanges.OpinionChange,Opinion> triple = getOrMake(t,time,t,target,target,reasons);
-        final Runnable runnable = () -> {
-            Pair<Long,LocalDate> f = TimelineHelper.findBreadcrumb(t, CharacterMapChanges.OpinionChange.class, time, TimelineHelper.Direction.FORWARD,false);
-            if (f != null){
-                CharacterMapChanges.OpinionChange c = (CharacterMapChanges.OpinionChange) TimelineHelper.followBreadcrumb(t,f.getKey(),f.getValue());
-                c.setLeapFrog(triple.getMiddle().makeLeapFrog());
-                TimelineHelper.doMapChangeLeapFrog(t,c.getPreviousLeapFrog(),)
-            }
-        }
-        LoadingManager lm = Global.getLoadingManager();
 
 
-    }
+    private static final BiFunction<CharacterMapChanges.OpinionChange,Pair<Integer,Integer>,Integer> forwardIterator = (oc,i) ->{
+        return 0;
+    };
+    private static final BiConsumer<CharacterMapChanges.OpinionChange,Pair<Integer,Integer>> makeChangeForward = (oc, i) ->{
+        oc.
+    };
+
     private static Triple<TimelineState<BookCharacter>,CharacterMapChanges.OpinionChange,Opinion> getOrMake(Timeline<BookCharacter> t, LocalDate date, Timeline<BookCharacter> tl, DMEReference<BookCharacter> us, DMEReference<BookCharacter> other, OpinionReason... reasons){
         TimelineState<BookCharacter> s = t.getOrMakeState(date);
         CharacterMapChanges.OpinionChange oc = s.getChange(CharacterMapChanges.OpinionChange.class);

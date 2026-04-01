@@ -7,7 +7,7 @@ import com.utilities.ThreadMutable;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
-public class Global implements ThreadMutable {
+public class Global implements ThreadMutable<Global,LocalDate> {
     public static final ThreadLocal<Global> INSTANCE = new ThreadLocal<>();
     private static Global gv() {
         return INSTANCE.get();
@@ -37,9 +37,11 @@ public class Global implements ThreadMutable {
     public static LoadingManager getLoadingManager() {
         return LOADING_MANAGER;
     }
+
+
     @Override
-    public Type uniqueKey() {
-        return Type.GLOBAL_VARIABLE_CONTAINER;
+    public String uniqueKey() {
+        return "";
     }
 
     @Override
@@ -48,17 +50,18 @@ public class Global implements ThreadMutable {
     }
 
     @Override
-    public Object share() {
+    public LocalDate share() {
         return null;
     }
 
     @Override
-    public void receiveShared(Object shared) {
+    public void receiveShared(LocalDate shared) {
 
     }
 
-    @Override
-    public void onThreadInit() {
-        INSTANCE.set(this);
+
+    public enum TimeDirection {
+        FORWARD, BACKWARD
     }
+
 }

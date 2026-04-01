@@ -1,18 +1,25 @@
 package com.base.timeline.change;
 
+import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineHelper;
+import com.base.timeline.TimelineState;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+
+import static com.Global.TimeDirection.BACKWARD;
+import static com.Global.TimeDirection.FORWARD;
 
 public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     //Plan:
@@ -24,7 +31,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     //The same pattern applies recursively to the diff history within each relationship entry
     private final Class<M> base;
     private Pair<Long, LocalDate> leapfrog;
-    private int leapfrogSize;
+    private int cumulitiveSize;
     private Map<K,V> changes = new HashMap<>();
 
     protected TimelineMapChange(Class<M> base,DMEReference<T> owner,  LocalDate date) {
@@ -32,9 +39,9 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         this.base = base;
     }
 
-    public final Map<K,V> buildMap(Timeline<T> t){
+    public final Map<K,V> buildMap(Timeline<? extends T> t){
         Map<K,V> toReturn = new HashMap<>();
-        final int finalTotal = leapfrogSize + changes.size();
+        final int finalTotal = cumulitiveSize + changes.size();
         final BiConsumer<M,Map<K,V>> consumer = new BiConsumer<>() {
             @Override
             public void accept(M m, Map<K, V> kvMap) {
@@ -56,7 +63,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
             }
             return fresh;
         };
-        return TimelineHelper.doMapChangeLeapFrog(t,leapfrog,function,base,finalTotal,consumer,toReturn,true,TimelineHelper.Direction.BACKWARD);
+        return TimelineHelper.doMapChangeLeapFrog(t,leapfrog,function,base,finalTotal,consumer,toReturn,true,BACKWARD,true);
     }
 
     private void addChange(Pair<K,V>... changes){
@@ -83,27 +90,93 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     public Pair<Long, LocalDate> makeLeapFrog(){
         return Pair.of(this.getId(),this.getStart());
     }
+    public void internalAddToTotal(int amount){
+        this.cumulitiveSize += amount;
+    }
     public void setLeapFrog(Pair<Long, LocalDate> leapFrog){
         this.leapfrog = leapFrog;
     }
     public Map<K,V> getChangeFragment(){
         return changes;
     }
-
-
-    @Override
-    public final void mainSave(JsonObject o) {
-        super.mainSave(o);
+    public int getTotalSize(){
+        return cumulitiveSize + changes.size();
     }
-    @Override
-    public final void mainLoad(JsonObject object) {
-        super.mainLoad(object);
-    }
+
     protected abstract JsonElement serializeK(K k);
     protected abstract K deserializeK(JsonElement m);
     protected abstract V deserializeV(JsonElement m);
     protected abstract JsonElement serializeV(V v);
 
+    @Override
+    public final void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean isFirstAdvance) {
+        if (isFirstAdvance) {
+            Pair<Long,LocalDate> last = TimelineHelper.changeFindBreadcrumb(entity.get().getTimeline(), this.getClass().getName(), this.getStart(), BACKWARD,false);
+            if (last != null){
+                this.leapfrog = last;
+                TimelineChange<? super T> tlc = (TimelineChange<? super T>) TimelineHelper.changeFollowBreadcrumb(entity.get().getTimeline(), leapfrog.getKey(),leapfrog.getValue());
+                if (tlc instanceof TimelineMapChange<?,?,?,?> tmc && tmc.getClass().equals(this.getClass())){
+                    this.cumulitiveSize = tmc.getTotalSize();
+                }
+            }
+            TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) currentState.getChange(this.getClass());
+            if (tlc != null){
+                tlc.internalAddToTotal(this.getChangeFragment().size());
+                if (Objects.equals(tlc.getPreviousLeapFrog().getKey(), this.getPreviousLeapFrog().getKey()) && tlc.getPreviousLeapFrog().getValue().equals(this.getPreviousLeapFrog().getValue())){
+                    tlc.setLeapFrog(this.makeLeapFrog());
+                }
+            }
+        }
+        super.advance(entity,currentState, newState, isFirstAdvance);
+    }
 
+    @Override
+    public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        super.apply(entity, currentState);
+    }
+
+    @Override
+    public final void deactivate(boolean sandbox) {
+        super.deactivate(sandbox);
+        DMEReference<? extends T> entity = getOwner();
+        TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) entity.get().getTimeline().getNextState(this.getStart()).getChange(this.getClass());
+        if (tlc != null){
+            tlc.internalAddToTotal(this.getChangeFragment().size() * -1);
+            tlc.setLeapFrog(this.getPreviousLeapFrog());
+        }
+    }
+    @Override
+    public final void reactivate(boolean sandbox) {
+        Do opposite of reactivate
+        super.reactivate(sandbox);
+    }
+    @Override
+    public final void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> changeToNullify) {
+        super.nullify(entity, state, changeToNullify);
+    }
+
+    @Override
+    public final void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd) {
+        super.moveChange(newStart, newEnd);
+    }
+
+    @Override
+    public final void overwrite(TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive) {
+        super.overwrite(currentState, beingOverwritten, destructive);
+    }
+
+
+
+    @Override
+    public final void mainSave(JsonObject o) {
+        super.mainSave(o);
+        add stuff here
+    }
+
+    @Override
+    public final void mainLoad(JsonObject object) {
+        super.mainLoad(object);
+        add stuff here
+    }
 
 }
