@@ -3,10 +3,11 @@ package com.base.timeline.sandbox.core;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.sandbox.check.SandboxCheck;
 
 import java.time.LocalDate;
 
-public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subject, LocalDate start, TimelineChange<T> change) {
+public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subject, LocalDate start, TimelineChange<T> change, SandboxCheck<T>... toCheck) {
     public Objective(DMEReference<T> subject, TimelineChange<T> change){
         this(subject, change.getStart(), change);
     }

@@ -4,7 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.SimpleReference;
 import com.base.timeline.TimelineChangeState;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TitleTLChange;
+import com.base.timeline.change.changes.TitleTLChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.objects.character.BookCharacter;

@@ -5,7 +5,7 @@ import com.base.*;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TitleTLChange;
+import com.base.timeline.change.changes.TitleTLChange;
 import com.base.timeline.change.conditions.CanHoldTitleCondition;
 import com.base.timeline.change.conditions.DMEResult;
 import com.google.gson.JsonObject;

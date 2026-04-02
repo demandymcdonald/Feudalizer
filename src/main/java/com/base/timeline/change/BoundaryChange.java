@@ -2,7 +2,7 @@ package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.google.gson.JsonObject;

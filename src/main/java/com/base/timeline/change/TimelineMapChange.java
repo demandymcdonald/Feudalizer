@@ -1,11 +1,10 @@
 package com.base.timeline.change;
 
-import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineHelper;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,7 +18,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import static com.Global.TimeDirection.BACKWARD;
-import static com.Global.TimeDirection.FORWARD;
 
 public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     //Plan:
@@ -88,7 +86,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         return leapfrog;
     }
     public Pair<Long, LocalDate> makeLeapFrog(){
-        return Pair.of(this.getId(),this.getStart());
+        return Pair.of(this.getFullID(),this.getStart());
     }
     public void internalAddToTotal(int amount){
         this.cumulitiveSize += amount;
@@ -119,7 +117,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
                     this.cumulitiveSize = tmc.getTotalSize();
                 }
             }
-            TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) currentState.getChange(this.getClass());
+            TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) currentState.getChangeByID(this.getClass());
             if (tlc != null){
                 tlc.internalAddToTotal(this.getChangeFragment().size());
                 if (Objects.equals(tlc.getPreviousLeapFrog().getKey(), this.getPreviousLeapFrog().getKey()) && tlc.getPreviousLeapFrog().getValue().equals(this.getPreviousLeapFrog().getValue())){
@@ -139,7 +137,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     public final void deactivate(boolean sandbox) {
         super.deactivate(sandbox);
         DMEReference<? extends T> entity = getOwner();
-        TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) entity.get().getTimeline().getNextState(this.getStart()).getChange(this.getClass());
+        TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) entity.get().getTimeline().getNextState(this.getStart()).getChangeByID(this.getClass());
         if (tlc != null){
             tlc.internalAddToTotal(this.getChangeFragment().size() * -1);
             tlc.setLeapFrog(this.getPreviousLeapFrog());

@@ -4,6 +4,7 @@ import com.Feudalizer;
 import com.base.DateMutableEntity;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineMapChange;
+import com.base.timeline.state.TimelineState;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
@@ -17,10 +18,11 @@ import static com.Global.*;
 import static com.Global.TimeDirection.FORWARD;
 @SuppressWarnings("unchecked")
 public class TimelineHelper {
+    @Deprecated(forRemoval = true)
     public static <T extends DateMutableEntity<T>> void changeBreacrumbCleanup(Timeline<? extends T> timeline, long breadcrumb, LocalDate startDate, LocalDate newEnd) {
         BreadcrumbCleanup((Timeline<T>) timeline,breadcrumb,startDate,newEnd);
     }
-
+    @Deprecated(forRemoval = true)
     public static <T extends DateMutableEntity<T>> void BreadcrumbCleanup(Timeline<T> timeline, long breadcrumb, LocalDate startDate, LocalDate newEnd) {
         if (newEnd.isBefore(startDate)) {
             cleanInternal(timeline, breadcrumb, newEnd, startDate);
@@ -29,19 +31,8 @@ public class TimelineHelper {
         }
     }
 
-    public static <T extends DateMutableEntity<T>> void UpdateBreadcrumbDate(Timeline<T> timeline, LocalDate startDate, LocalDate endDate, long breadcrumb, LocalDate newDate) {
-        TimelineState<T> state = timeline.getStateAt(startDate);
-        TimelineChange<? super T> change = state.getChange(breadcrumb);
-        if (change.isStatic()) {
-            return;
-        }
-        LocalDate currentDate = startDate;
-        while ((currentDate.isBefore(endDate) || currentDate.isEqual(endDate)) && state != null) {
-            state.removeBreadcrumb(breadcrumb);
-            state.insertBreadcrumb(breadcrumb, newDate);
-        }
-    }
 
+    @Deprecated(forRemoval = true)
     private static <T extends DateMutableEntity<T>> void cleanInternal(Timeline<T> timeline, long breadcrumb, LocalDate startDate, LocalDate newEnd) {
         TimelineState<T> state = timeline.getStateAt(startDate);
         LocalDate currentDate = startDate;
@@ -54,11 +45,11 @@ public class TimelineHelper {
         change.addEnd(newEnd);
     }
 
-
+    @Deprecated(forRemoval = true)
     public static <T extends DateMutableEntity<T>> void changePropagateBreadcrumb(Timeline<? extends T> timeline, TimelineChange<? super T> tc) {
         PropagateBreadcrumb((Timeline<T>) timeline,tc);
     }
-
+    @Deprecated(forRemoval = true)
     public static <T extends DateMutableEntity<T>> void PropagateBreadcrumb(Timeline<T> timeline, TimelineChange<? super T> tc) {
         if (tc.isDeactivated()) {
             Feudalizer.LOGGER.error("Tried to propagate on deactivated change: " + tc);
@@ -70,7 +61,7 @@ public class TimelineHelper {
 
         final LocalDate startDate = tc.getStart();
         final LocalDate endDate = tc.getEnd();
-        final long breadcrumb = tc.getId();
+        final long breadcrumb = tc.getFullID();
 
         TimelineState<T> state = timeline.getStateAt(startDate);
         LocalDate currentDate = startDate;
@@ -81,12 +72,6 @@ public class TimelineHelper {
         }
     }
 
-    public static <T extends DateMutableEntity<T>> void insertBreadcrumb(TimelineState<T> state, TimelineChange<? super T> tc) {
-        state.forceInsertBC(tc.getId(), tc.getStart());
-        if (tc.getEnd() == null || tc.getEnd().isBefore(state.getStart())) {
-            tc.addEnd(state.getStart());
-        }
-    }
 
     public static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> getAllChanges(Timeline<T> timeline, TimelineState<T> ts, boolean includeInactive) {
         List<TimelineChange<? super T>> baseChanges;
@@ -94,7 +79,7 @@ public class TimelineHelper {
         if (!includeInactive) {
             baseChanges = ts.getChanges();
         } else {
-            baseChanges = ts.getAllChanges();
+            baseChanges = ts.getAllCurrentChanges();
         }
         for (Map.Entry<Long, LocalDate> change : passiveChanges.entrySet()) {
             TimelineChange<? super T> c = (TimelineChange<? super T>) followBreadcrumb(timeline, change.getKey(), change.getValue());
@@ -134,24 +119,24 @@ public class TimelineHelper {
         }
     }
 
-    public static <T extends DateMutableEntity<T>> HashMap<Long, LocalDate> extendTrail(Timeline<T> timeline, TimelineState<T> lastState, LocalDate newState) {
-        HashMap<Long, LocalDate> breadcrumbs = new HashMap<>();
-        for (Map.Entry<Long, LocalDate> entry : lastState.getBreadcrumbs().entrySet()) {
-            breadcrumbs.put(entry.getKey(), entry.getValue());
-            TimelineChange<? super T> change = (TimelineChange<? super T>) followBreadcrumb(timeline, entry.getKey(), entry.getValue());
-            change.addEnd(newState);
-        }
-        for (TimelineChange<? super T> change : lastState.getChanges()) {
-            Pair<Long, LocalDate> pair = change.buildStateBreadcrumb();
-            breadcrumbs.put(pair.getLeft(), pair.getRight());
-            change.addEnd(newState);
-        }
-        return breadcrumbs;
-    }
-
-    public static <T extends DateMutableEntity<T>> HashMap<Long, LocalDate> extendTrail(Timeline<T> timeline, LocalDate date) {
-        return extendTrail(timeline, timeline.getStateBefore(date), date);
-    }
+//    public static <T extends DateMutableEntity<T>> HashMap<Long, LocalDate> extendTrail(Timeline<T> timeline, TimelineState<T> lastState, LocalDate newState) {
+//        HashMap<Long, LocalDate> breadcrumbs = new HashMap<>();
+//        for (Map.Entry<Long, LocalDate> entry : lastState.getBreadcrumbs().entrySet()) {
+//            breadcrumbs.put(entry.getKey(), entry.getValue());
+//            TimelineChange<? super T> change = (TimelineChange<? super T>) followBreadcrumb(timeline, entry.getKey(), entry.getValue());
+//            change.addEnd(newState);
+//        }
+//        for (TimelineChange<? super T> change : lastState.getChanges()) {
+//            Pair<Long, LocalDate> pair = change.buildStateBreadcrumb();
+//            breadcrumbs.put(pair.getLeft(), pair.getRight());
+//            change.addEnd(newState);
+//        }
+//        return breadcrumbs;
+//    }
+//
+//    public static <T extends DateMutableEntity<T>> HashMap<Long, LocalDate> extendTrail(Timeline<T> timeline, LocalDate date) {
+//        return extendTrail(timeline, timeline.getStateBefore(date), date);
+//    }
 //    public static <M extends TimelineMapChange<M,K,V,? super T>,K,V,T extends DateMutableEntity<T>,R> R doMapChangeLeapFrog(
 //            Timeline<? extends T> t, Pair<Long, LocalDate> firstLF, BiFunction<M, R, Integer> getCurrent, Class<M> mClass,
 //            final int total, BiConsumer<M, R> makeChange, R result, boolean completeLastCycle, TimeDirection direction, boolean throwIfIncomplete, boolean pointless){
@@ -197,42 +182,42 @@ public class TimelineHelper {
         }
         return result;
     }
-    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> changeFollowBreadcrumb(Timeline<? extends T> timeline, long breadcrumb, LocalDate date) {
-        return (TimelineChange<? super T>) followBreadcrumb((Timeline<T>) timeline, breadcrumb, date);
-    }
-    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, long breadcrumb, LocalDate date) {
-        return timeline.getStateAt(date).getChange(breadcrumb);
-    }
-    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> changeFindBreadcrumb(Timeline<? extends T> timeline, String mClass, LocalDate startingDate, TimeDirection direction, boolean shouldThrow) {
-        return findBreadcrumb((Timeline<T>) timeline,mClass,startingDate,direction,shouldThrow);
-    }
-    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline, String mClass, LocalDate startingDate, TimeDirection direction, boolean shouldThrow) {
-        //TODO think on this. Potentially a 3 state if could get the same result. Though the reasonID check would (I think) be undeniable.
-        while (true) {
-            TimelineState<T> state;
-            if (direction == FORWARD) {
-                state = timeline.getStateAfter(startingDate);
-            } else {
-                state = timeline.getStateBefore(startingDate);
-            }
-
-            startingDate = state.getStart();
-            for (TimelineChange<? super T> change : state.getChanges()) {
-                long id = TimelineChange.generateID(mClass,startingDate,change.additionalIDVars());
-                if (change.getId() == id) {
-                    return Pair.of(id,startingDate);
-                }
-            }
-            if (state.isBoundary()) {
-                if (!shouldThrow) {
-                    throw new IllegalStateException("Could not find a valid change for " + mClass + " starting at " + startingDate + " and going " + direction + ".");
-                } else {
-                    return null;
-                }
-
-            }
-        }
-    }
+//    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> changeFollowBreadcrumb(Timeline<? extends T> timeline, long breadcrumb, LocalDate date) {
+//        return (TimelineChange<? super T>) followBreadcrumb((Timeline<T>) timeline, breadcrumb, date);
+//    }
+//    public static <T extends DateMutableEntity<T>> TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, ChangeID breadcrumb, LocalDate date) {
+//        return timeline.getStateAt(date).getChange(breadcrumb);
+//    }
+//    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> changeFindBreadcrumb(Timeline<? extends T> timeline, String mClass, LocalDate startingDate, TimeDirection direction, boolean shouldThrow) {
+//        return findBreadcrumb((Timeline<T>) timeline,mClass,startingDate,direction,shouldThrow);
+//    }
+//    public static <T extends DateMutableEntity<T>> Pair<Long,LocalDate> findBreadcrumb(Timeline<T> timeline, String mClass, LocalDate startingDate, TimeDirection direction, boolean shouldThrow) {
+//        //TODO think on this. Potentially a 3 state if could get the same result. Though the reasonID check would (I think) be undeniable.
+//        while (true) {
+//            TimelineState<T> state;
+//            if (direction == FORWARD) {
+//                state = timeline.getStateAfter(startingDate);
+//            } else {
+//                state = timeline.getStateBefore(startingDate);
+//            }
+//
+//            startingDate = state.getStart();
+//            for (TimelineChange<? super T> change : state.getChanges()) {
+//                long id = TimelineChange.generateID(mClass,startingDate,change.additionalIDVars());
+//                if (change.getFullID() == id) {
+//                    return Pair.of(id,startingDate);
+//                }
+//            }
+//            if (state.isBoundary()) {
+//                if (!shouldThrow) {
+//                    throw new IllegalStateException("Could not find a valid change for " + mClass + " starting at " + startingDate + " and going " + direction + ".");
+//                } else {
+//                    return null;
+//                }
+//
+//            }
+//        }
+//    }
 
 
 

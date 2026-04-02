@@ -1,7 +1,7 @@
 package com.objects.character;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineMapChange;
 import com.base.timeline.change.conditions.Condition;
@@ -14,7 +14,6 @@ import com.objects.character.opinion.Opinion;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class CharacterMapChanges {

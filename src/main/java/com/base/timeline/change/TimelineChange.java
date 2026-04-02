@@ -7,7 +7,7 @@ import com.base.timeline.TimelineHelper;
 import com.base.timeline.flags.SandboxCode;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.conditions.*;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
@@ -44,17 +44,24 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     //TODO Third kind of check: once per TimelineState (For things like: is still alive, or canHoldTitle, or Does this Religion exist?
     private LocalDate start;
     private final DMEReference<? extends T> owner;
-    private final Supplier<Long> id = Suppliers.memoize(this::generateID);
+    private final ChangeID id;
     private SandboxBreadcrumb breadcrumb = new SandboxBreadcrumb();
     private boolean deactivated = false;
     private boolean isStatic = false;
     protected TimelineChange(DMEReference<? extends T> owner, LocalDate date) {
         this.owner = owner;
         this.start = date;
+        this.id = new ChangeID(this,date);
     }
 
-    public final long getId(){
-        return id.get();
+    public final long getFullID(){
+        return id.getFullID();
+    }
+    public final long getClassID(){
+        return id.getClassID();
+    }
+    public final ChangeID getID(){
+        return id;
     }
     public final DMEReference<? extends T> getOwner(){
         return owner;
@@ -75,22 +82,21 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         onApply(entity,currentState);
         //may merge with onApply if I don't need any additional logic in here
     }
-    public void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean isFirstAdvance){
-        onAdvance(currentState,newState,isFirstAdvance);
+    public void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> change, boolean isFirstAdvance){
+        onAdvance(currentState,change,isFirstAdvance);
 
     }
 
-    public void overwrite(TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){
+    public void overwrite(TimelineState<? extends T> currentState, TimelineChange<?>  beingOverwritten, boolean destructive){
         onOverwrite(getOwner(),currentState,beingOverwritten,destructive);
         if (destructive){
-            currentState.removeChange(beingOverwritten.getId());
-            TimelineHelper.BreadcrumbCleanup(getOwner().get().getTimeline(),beingOverwritten.getId(),beingOverwritten.getStart(),beingOverwritten.getEnd());
+            currentState.removeChange(beingOverwritten.getID());
         } else {
             beingOverwritten.deactivate(true);
         }
         currentState.insertChange(this);
     }
-    public void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> changeToNullify){
+    public void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<?> changeToNullify){
         onNullify(entity,state,changeToNullify);
         changeToNullify.deactivate(true);
     }
@@ -102,10 +108,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         if (c == SandboxCode.END_SAVE){
             onDeactivate();
             deactivated = true;
-            Timeline<? extends T> tl = owner.get().getTimeline();
-            TimelineHelper.changeBreacrumbCleanup(tl,getId(), start,breadcrumb.getEndOfPropagation());
-            TimelineChange<? super T> lastData =  (TimelineChange<? super T>) TimelineHelper.changeGetLastValidChange(tl,tl.getStateAt(this.start),this);
-            lastData.moveChange(null,breadcrumb.getEndOfPropagation());
         }
     }
     public void reactivate(boolean sandbox){
@@ -113,40 +115,34 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         deactivated = false;
     }
     public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
-        final LocalDate setStart = start;
-        final LocalDate setEnd = breadcrumb.getEndOfPropagation();
-        Timeline<? extends T> timeline = owner.get().getTimeline();
         if (newStart != null){
             start = newStart;
-            TimelineState<? extends T> state = timeline.getOrMakeState(newStart);
-            TimelineState<? extends T> removeFrom = timeline.getStateAt(setStart);
-            removeFrom.removeChange(this.getId());
-            state.insertChange(this);
         }
         if (newEnd != null){
             breadcrumb.addEndPoint(newEnd);
         }
-        TimelineHelper.changeBreacrumbCleanup(timeline,getId(), setStart,setEnd);
-        TimelineHelper.changePropagateBreadcrumb(timeline,this);
     }
+    public final TimelineChange<? super T> helper(TimelineChange<? super T> change){
+        return change;
 
+    }
 
 
     //==================================================================================================================
     //What to do when the provided object is getting the change from this object applied to it.
     protected abstract void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState);
 
-    protected void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive){};
-    protected void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten){}
-    protected void onDeactivate(){}
-    protected void onReactivate(){}
-    protected void onAdvance(TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean isFirstAdvance){}
-    protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
+    protected <T extends DateMutableEntity<T>> void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingOverwritten, boolean destructive){};
+    protected <T extends DateMutableEntity<T>> void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingNullified){}
+    protected <T extends DateMutableEntity<T>> void onDeactivate(){}
+    protected <T extends DateMutableEntity<T>> void onReactivate(){}
+    protected <T extends DateMutableEntity<T>> void onAdvance(TimelineState<? extends T> currentState, TimelineChange<?> passingtChange, boolean isFirstAdvance){}
+    protected <T extends DateMutableEntity<T>> void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
 
-    public boolean isOpposite(TimelineChange<? super T> state){
+    public boolean isOpposite(TimelineChange<?>state){
         return oppositeChanges().contains(state.getClass());
     }
-    public boolean isSame(TimelineChange<? super T> state){
+    public boolean isSame(TimelineChange<?> state){
         return this.getClass().equals(state.getClass());
     }
     public abstract List<Class<TimelineChange<? super T>>> oppositeChanges();
@@ -155,7 +151,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     };
     public abstract boolean isPositive();
     public void onContinue(){}
-    public final boolean canNullify(TimelineChange<? super T> toNullify){
+
+
+    public final boolean canNullify(TimelineChange<?> toNullify){
         boolean hasYes = false;
         for (Condition<ConditionResult.Nullify,? super T> c : nullConditions.get()) {
             final ConditionResult.Nullify result = c.check(this.getOwner().get(),this,toNullify).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
@@ -171,7 +169,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
         return hasYes;
     };
-    public final List<StateError> doesConflict(TimelineChange<? super T> state){
+    public final List<StateError> doesConflict(TimelineChange<?> state){
         List<StateError> currentErrors = new ArrayList<>();
         for (Condition<StateError,? super T> c : applyConditions.get()) {
             Optional<StateError> error = c.check(this.getOwner().get(),this,state);
@@ -217,7 +215,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
 
 
     public final Pair<Long,LocalDate> buildStateBreadcrumb(){
-        return Pair.of(getId(),getStart());
+        return Pair.of(getFullID(),getStart());
     }
     //Wrapper functions for breadcrumb.
     public final SandboxBreadcrumb getBreadcrumb(){

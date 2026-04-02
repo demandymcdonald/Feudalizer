@@ -2,8 +2,6 @@ package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TitleTLChange;
-import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +27,7 @@ public class NullifyConditions {
 
         @Override
         protected Optional<ConditionResult.Nullify> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T> checkAgainst) {
-            if( thisChange.getId() == checkAgainst.getId() && thisChange.hashCode() != checkAgainst.hashCode()) {
+            if( thisChange.getFullID() == checkAgainst.getFullID() && thisChange.hashCode() != checkAgainst.hashCode()) {
                 return Optional.of(NULLIFY);
             } else {
                 return Optional.of(NOT_NULLIFY_NON_EXCLUSIVE);

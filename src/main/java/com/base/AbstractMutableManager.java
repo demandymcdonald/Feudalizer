@@ -1,7 +1,7 @@
 package com.base;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
@@ -44,11 +44,11 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
     public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date);
     public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
         List<TimelineChange<? super T>> changes = buildChangeList(getBirthChange(dme,date),date,dme,defaults);
-        return new TimelineState<T>(dme, date, date,true, changes);
+        return new TimelineState<T>(dme.get().getTimeline(), date, date,true, changes);
     };
     public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
         List<TimelineChange<? super T>> changes = buildChangeList(getDeathChange(dme,date),date,dme,defaults);
-        return new TimelineState<T>(dme,date, date,true, changes);
+        return new TimelineState<T>(dme.get().getTimeline(),date, date,true, changes);
     };
     private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> buildChangeList(
             TimelineChange<T> first, LocalDate date, DMEReference<T> ref, List<ChangeSupplier<T,?>> defaults){

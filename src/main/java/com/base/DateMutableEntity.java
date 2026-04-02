@@ -3,7 +3,7 @@ package com.base;
 import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
@@ -55,18 +55,18 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     }
     @Override
     public final void mainSave(JsonObject json) {
-        json.add("timeline", timeline.save());
+        json.add("timeline", timeline.toJson());
     }
     @Override
     public final void mainLoad(JsonObject json) {
         JsonObject timelineJson = json.get("timeline").getAsJsonObject();
-        timeline.load(timelineJson);
+        timeline.fromJson(timelineJson);
     }
     public LocalDate getCreated(){
-        return timeline.getEarliestDate();
+        return timeline.getStart();
     };
     public LocalDate getEnded(){
-        return timeline.getLatestDate();
+        return timeline.getEnd();
     }
     public final DMEReference<T> getReference(){
         return reference;
@@ -87,10 +87,10 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
         return Global.getDate();
     }
     protected final boolean  setCreated(LocalDate created){
-        return timeline.moveBirth(created);
+        return timeline.moveStart(created);
     }
     protected final boolean setEnded(LocalDate ended){
-        return timeline.moveDeath(ended);
+        return timeline.moveEnd(ended);
     }
     public TimelineState<T>[] getAllStates(){
         return timeline.getStates();

@@ -1,6 +1,6 @@
 package com.objects.character;
 
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;

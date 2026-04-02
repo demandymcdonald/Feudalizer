@@ -59,10 +59,11 @@ public class SandboxHandler<T extends DateMutableEntity<T>> {
     ///  Main Method To be Utilized
     public static <T extends DateMutableEntity<T>> SandboxCode SandboxApplyChange(Objective<T> objective, @Nullable LocalDate endDate, @Nullable SandboxHandler<?> parent){
         Sandbox<T> sandbox;
+        final Thread parentThread = parent != null ? parent.sandboxThread : null;
         if (endDate == null){
-            sandbox = new Sandbox<>(objective);
+            sandbox = new Sandbox<>(objective,parentThread);
         } else {
-            sandbox = new Sandbox<>(objective, endDate);
+            sandbox = new Sandbox<>(objective, endDate,parentThread);
         }
         SandboxHandler<T> handler = new SandboxHandler<>(sandbox.getThread(),sandbox);
         boolean parentFlag = parent != null;

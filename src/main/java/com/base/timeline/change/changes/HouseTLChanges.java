@@ -1,7 +1,8 @@
-package com.base.timeline.change;
+package com.base.timeline.change.changes;
 
 import com.base.DMRegistry;
 import com.base.ObjectType;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;

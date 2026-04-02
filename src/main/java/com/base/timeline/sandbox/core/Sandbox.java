@@ -3,12 +3,15 @@ package com.base.timeline.sandbox.core;
 import com.Global;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
+import com.base.timeline.change.ChangeID;
+import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.flags.SandboxCode;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineContainer;
-import com.base.timeline.TimelineState;
+import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
+import com.google.common.collect.HashMultimap;
 import com.utilities.DateUtilities;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
@@ -16,16 +19,18 @@ import com.google.gson.JsonObject;
 import com.utilities.ThreadManager;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BiFunction;
 
 public class Sandbox<T extends DateMutableEntity<T>> {
     private CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future  = new CompletableFuture<>();
     private final HashMap<DMEReference<?>, JsonObject> dirty = new HashMap<>();
     private HashMap<DMEReference<?>, JsonObject> Scope = new HashMap<>();
-    private final ConcurrentLinkedDeque<StateError> ProblemQueue = new ConcurrentLinkedDeque<>();
+    private HashMultimap<ChangeID,StateError> standingChanges = new HashMap<>();
 
 
     private SandboxHandler<T> handler;
@@ -42,23 +47,17 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     //TODO add special handling for TimelineMapChanges, because they're different. Namely: check if a change already exists
     // in the state, and if so, merge the two. Also: set the leapfrog date for it (using a currently unwritten TL helper
     // method probably.
-    public Sandbox(Objective<T> obj) {
-        this.objective = obj;
-        this.subject = obj.subject();
-        sandboxEndDate = obj.getEnd() == null ? obj.subject().get().getEnded() : obj.getEnd();
-        if (sandboxEndDate == null) {
-            sandboxEndDate = LocalDate.MAX;
-        }
-        thread = ThreadManager.buildThread("Sandbox-" + subject.getID(), this::main);
+    public Sandbox(Objective<T> obj, @Nullable Thread parent) {
+        this(obj, obj.getEnd() == null ? obj.subject().get().getEnded() : obj.getEnd(),parent);
     }
-    public Sandbox(Objective<T> obj, LocalDate endDate) {
+    public Sandbox(Objective<T> obj, LocalDate endDate, @Nullable Thread parent) {
         this.objective = obj;
         this.subject = obj.subject();
         sandboxEndDate = endDate;
-        thread = ThreadManager.buildThread("Sandbox-" + subject.getID(), this::main);
+        thread = ThreadManager.BuildThread("sandbox_" + subject.getID(), this::main,parent);
     }
     public void startSimulation() {
-        startup();
+        startup(handler);
     }
     public synchronized CompletableFuture<HashMap<DMEReference<?>, JsonObject>> getFuture() {
         return future;
@@ -74,7 +73,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
 
     private void populateSandbox() {
         for (DMEReference<?> type : objective.change().getScope()) {
-            Scope.put(type,DMRegistry.getEntityData(type.getType(),type.getID()));
+            Scope.put(type,DMRegistry.getEntity(type).serialize());
         }
     }
     private void loadSandbox() {
@@ -86,59 +85,80 @@ public class Sandbox<T extends DateMutableEntity<T>> {
         return status;
     }
     @SuppressWarnings("unchecked")
-    private  void runSimulation() {
+    private void runSimulation(){
         HashSet<StandingChange> standingChanges = new HashSet<>();
-        T host = DMRegistry.getEntity(objective.type(), objective.id());
-        TimelineChange<T> proposedChange = objective.state().change();
-        LocalDate date = objective.state().start();
-        while (true){
-            Global.setCurrentDate(date);
-            TimelineState<T> state = host.getCurrentState();
-            for (TimelineChange<T> change : state.getChanges()) {
-                List<StandingChange> localSC = new ArrayList<>();
-                if (change.isDeactivated()) continue;
-                if (proposedChange.canNullify(change)) {
-                    change.nullify(host,proposedChange);
-                }
-                //boolean allClear = false;
-                while (true){
-                    List<StateError> errors = proposedChange.doesConflict(change);
-                    if (errors.isEmpty()){
-                        break;
-                    }
-                    HashMap<StateError,String> autoResolve = new HashMap<>();
-                    for (StateError error : errors){
-                        if (error.canAutoResolve()){
-                            autoResolve.put(error,"");
-                        }
-                        long thisKey = StandingChange.generateEventKey(error);
-                        for (StandingChange sc : standingChanges){
-                            //Pretty sure the isBetween is overkill, but better to be safe than sorry!.
-                            if (sc.isMatch(thisKey) && DateUtilities.isBetween(date,sc.start(),sc.endDate())){
-                                autoResolve.put(error,sc.resolution());
-                                break;
-                            }
-                        }
-                    }
-                    errors.removeAll(autoResolve.keySet());
-                    Map<StandingChange,StateError> handled = handleError(change,host,errors,autoResolve);
-                    localSC.addAll(handled.keySet());
-                    if (killBox != null){
-                        endSimulation(status,host, killBox.getKey(),standingChanges);
-                        return;
-                    }
-                    standingChanges.addAll(handled.keySet());
-                }
-            }
-            LocalDate nextDate = host.getNextDate();
-            if (nextDate == null || DateUtilities.floor(nextDate,sandboxEndDate).equals(sandboxEndDate)){
-                break;
-            } else {
-                date = nextDate;
-            }
+        T liveSubject = DMRegistry.getEntity(subject);
+        LocalDate currentDate = objective.change().getStart();
+        List<TriF<TimelineChange<T>,TimelineChange<? super T>>, Optional<SandboxCode>> toCheck = new ArrayList<>();
+        while (currentDate != null){
+
+
         }
-        endSimulation(SandboxCode.END_SAVE,host,DateUtilities.ceiling(date,sandboxEndDate),standingChanges);
+
     }
+
+    public void handleErrors(List<StateError> errors){
+        for (StateError error : errors){
+            long errorKey = error.
+        }
+
+
+
+
+    }
+//    private  void runSimulation() {
+//        HashSet<StandingChange> standingChanges = new HashSet<>();
+//        T host = DMRegistry.getEntity(objective.type(), objective.id());
+//        TimelineChange<T> proposedChange = objective.state().change();
+//        LocalDate date = objective.state().start();
+//        while (true){
+//            Global.setCurrentDate(date);
+//            TimelineState<T> state = host.getCurrentState();
+//            for (TimelineChange<T> change : state.getChanges()) {
+//                List<StandingChange> localSC = new ArrayList<>();
+//                if (change.isDeactivated()) continue;
+//                if (proposedChange.canNullify(change)) {
+//                    change.nullify(host,proposedChange);
+//                }
+//                //boolean allClear = false;
+//                while (true){
+//                    List<StateError> errors = proposedChange.doesConflict(change);
+//                    if (errors.isEmpty()){
+//                        break;
+//                    }
+//                    HashMap<StateError,String> autoResolve = new HashMap<>();
+//                    for (StateError error : errors){
+//                        if (error.canAutoResolve()){
+//                            autoResolve.put(error,"");
+//                        }
+//                        long thisKey = StandingChange.generateEventKey(error);
+//                        for (StandingChange sc : standingChanges){
+//                            //Pretty sure the isBetween is overkill, but better to be safe than sorry!.
+//                            if (sc.isMatch(thisKey) && DateUtilities.isBetween(date,sc.start(),sc.endDate())){
+//                                autoResolve.put(error,sc.resolution());
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    errors.removeAll(autoResolve.keySet());
+//                    Map<StandingChange,StateError> handled = handleError(change,host,errors,autoResolve);
+//                    localSC.addAll(handled.keySet());
+//                    if (killBox != null){
+//                        endSimulation(status,host, killBox.getKey(),standingChanges);
+//                        return;
+//                    }
+//                    standingChanges.addAll(handled.keySet());
+//                }
+//            }
+//            LocalDate nextDate = host.getNextDate();
+//            if (nextDate == null || DateUtilities.floor(nextDate,sandboxEndDate).equals(sandboxEndDate)){
+//                break;
+//            } else {
+//                date = nextDate;
+//            }
+//        }
+//        endSimulation(SandboxCode.END_SAVE,host,DateUtilities.ceiling(date,sandboxEndDate),standingChanges);
+//    }
     private void main(){
         loadSandbox();
         runSimulation();
@@ -263,6 +283,9 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     }
     public Thread getThread(){
         return thread;
+    }
+    protected void setHandler(SandboxHandler<T> handler){
+        this.handler = handler;
     }
     /**
      * A record representing a change in the state or timeline of the sandbox, encapsulating key metadata
