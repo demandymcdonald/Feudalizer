@@ -23,7 +23,7 @@ public abstract class ErrorResolution {
     public int getPriority(){
         return priority;
     }
-    public abstract <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, TimelineChange<T> oldChange, T entity, boolean saveToDiff);
+    public abstract <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change, TimelineChange<?> oldChange, DMEReference<T> entity);
     public String tooltip(){
         return getCode();
     };
@@ -40,7 +40,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             change.overwrite(entity,saveToDiff,oldChange);
             return SandboxCode.CONTINUE;
         }
@@ -55,7 +55,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             change.apply(entity,saveToDiff);
             return SandboxCode.CONTINUE;
         }
@@ -71,7 +71,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             return SandboxCode.END_SAVE;
         }
     }
@@ -85,7 +85,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             return SandboxCode.END_DISCARD;
         }
 
@@ -100,7 +100,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             change.apply(entity,saveToDiff);
             return SandboxCode.CONTINUE;
         }
@@ -115,7 +115,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             change.nullify(entity,oldChange);
             return SandboxCode.CONTINUE;
         }
@@ -130,7 +130,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             change.onContinue();
             change.apply(entity,saveToDiff);
             return SandboxCode.CONTINUE;
@@ -151,7 +151,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             return resolveWithSandbox(sandbox,objective);
         }
     }
@@ -167,7 +167,7 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
             final TimelineChange<T> newChange = (TimelineChange<T>) replace;
             newChange.overwrite(entity,saveToDiff,change);
             return SandboxCode.CONTINUE;
@@ -185,13 +185,13 @@ public abstract class ErrorResolution {
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox sandbox, TimelineChange<T> change, TimelineChange<T> oldChange, T entity, boolean saveToDiff) {
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change, TimelineChange<?> oldChange, DMEReference<T> entity) {
             SuccessionPlanner.executeSuccession(objective,change.getStart());
             return null;
         }
     }
 
-    public static <T extends DateMutableEntity<T>> SandboxCode resolveWithSandbox(Sandbox currentSandbox, Objective objective){
+    public static <T extends DateMutableEntity<T>> SandboxCode resolveWithSandbox(Sandbox<T> currentSandbox, Objective<T> objective){
         Sandbox branch = new Sandbox(objective);
         CompletableFuture<HashMap<DMEReference<?>, JsonObject>> payload = branch.getFuture();
         branch.startSimulation();

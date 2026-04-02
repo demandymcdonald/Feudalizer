@@ -53,6 +53,9 @@ public class SandboxHandler<T extends DateMutableEntity<T>> {
              }
         }
     }
+    public void addError(StateError error){
+        CurrentErrors.add(error);
+    }
     private HashMap<DMEReference<?>, JsonObject> getCompletedData(){
         return CompletedData.join();
     }

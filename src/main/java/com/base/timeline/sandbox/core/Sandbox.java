@@ -4,7 +4,7 @@ import com.Global;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.timeline.change.ChangeID;
-import com.base.timeline.change.conditions.ConditionResult;
+import com.base.timeline.flags.ErrorResolution;
 import com.base.timeline.flags.SandboxCode;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
@@ -12,7 +12,6 @@ import com.base.timeline.TimelineContainer;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.HashMultimap;
-import com.utilities.DateUtilities;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.gson.JsonObject;
@@ -24,13 +23,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.BiFunction;
 
 public class Sandbox<T extends DateMutableEntity<T>> {
-    private CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future  = new CompletableFuture<>();
+    private CompletableFuture<HashMap<DMEReference<?>, JsonObject>> future = new CompletableFuture<>();
     private final HashMap<DMEReference<?>, JsonObject> dirty = new HashMap<>();
     private HashMap<DMEReference<?>, JsonObject> Scope = new HashMap<>();
-    private HashMultimap<ChangeID,StateError> standingChanges = new HashMap<>();
+    private HashMultimap<ChangeID, StateError> standingChanges = HashMultimap.create();
 
 
     private SandboxHandler<T> handler;
@@ -39,7 +37,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     private final DMEReference<T> subject;
     private volatile LocalDate sandboxEndDate;
     private volatile SandboxCode status = SandboxCode.CONTINUE;
-    private volatile Pair<LocalDate,StateError> killBox;
+    private volatile Pair<LocalDate, StateError> killBox;
     //TODO I need a way to have secondary saves pulled by default:
     // for example the parent in a deJure change also needs to be saved, even though they aren't the subject.
 
@@ -48,17 +46,20 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     // in the state, and if so, merge the two. Also: set the leapfrog date for it (using a currently unwritten TL helper
     // method probably.
     public Sandbox(Objective<T> obj, @Nullable Thread parent) {
-        this(obj, obj.getEnd() == null ? obj.subject().get().getEnded() : obj.getEnd(),parent);
+        this(obj, obj.getEnd() == null ? obj.subject().get().getEnded() : obj.getEnd(), parent);
     }
+
     public Sandbox(Objective<T> obj, LocalDate endDate, @Nullable Thread parent) {
         this.objective = obj;
         this.subject = obj.subject();
         sandboxEndDate = endDate;
-        thread = ThreadManager.BuildThread("sandbox_" + subject.getID(), this::main,parent);
+        thread = ThreadManager.BuildThread("sandbox_" + subject.getID(), this::main, parent);
     }
+
     public void startSimulation() {
         startup(handler);
     }
+
     public synchronized CompletableFuture<HashMap<DMEReference<?>, JsonObject>> getFuture() {
         return future;
     }
@@ -73,39 +74,68 @@ public class Sandbox<T extends DateMutableEntity<T>> {
 
     private void populateSandbox() {
         for (DMEReference<?> type : objective.change().getScope()) {
-            Scope.put(type,DMRegistry.getEntity(type).serialize());
+            Scope.put(type, DMRegistry.getEntity(type).serialize());
         }
     }
+
     private void loadSandbox() {
-        for (Map.Entry<DMEReference<?>,JsonObject> object : Scope.entrySet()) {
-            DMRegistry.load(object.getKey(),object.getValue());
+        for (Map.Entry<DMEReference<?>, JsonObject> object : Scope.entrySet()) {
+            DMRegistry.load(object.getKey(), object.getValue());
         }
     }
+
     public SandboxCode getStatus() {
         return status;
     }
+
     @SuppressWarnings("unchecked")
-    private void runSimulation(){
+    private void runSimulation() {
         HashSet<StandingChange> standingChanges = new HashSet<>();
         T liveSubject = DMRegistry.getEntity(subject);
         LocalDate currentDate = objective.change().getStart();
-        List<TriF<TimelineChange<T>,TimelineChange<? super T>>, Optional<SandboxCode>> toCheck = new ArrayList<>();
-        while (currentDate != null){
+
+        while (currentDate != null) {
 
 
         }
 
     }
 
-    public void handleErrors(List<StateError> errors){
-        for (StateError error : errors){
-            long errorKey = error.
+    private Optional<SandboxCode> tryResolveError(TimelineState<T> ts, TimelineChange<? super T> newChange, StateError error) {
+        TimelineChange<?> existingChange = ts.getChange(error.getExistingChange().getID());
+        if (error.canAutoResolve()) {
+            ErrorResolution resolution = error.getAutoResolution();
+            return Optional.of(resolution.resolve(this, newChange, existingChange, subject));
+        }
+        if(standingChanges.containsKey(existingChange.getID())){
+            for (StateError sc : standingChanges.get(existingChange.getID())){
+                if(sc.getID().equals(error.getID())){
+                    ErrorResolution resolution = error.getResolutionIfComplete();
+                    return Optional.of(resolution.resolve(this, newChange, existingChange, subject));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+
+    public List<SandboxCode> handleErrors(TimelineState<T> ts, List<StateError> errors) {
+        List<SandboxCode> codes = new ArrayList<>();
+        List<StateError> handled = new ArrayList<>();
+        for (StateError error : errors) {
+            Optional<SandboxCode> code = tryResolveError(ts, ts.getChange(error.getExistingChange().getID()), error);
+            if (code.isPresent()) {
+                codes.add(code.get());
+                continue;
+            }
+            handler.addError(error);
+            handled.add(error);
         }
 
-
-
-
     }
+
+
+
 //    private  void runSimulation() {
 //        HashSet<StandingChange> standingChanges = new HashSet<>();
 //        T host = DMRegistry.getEntity(objective.type(), objective.id());
@@ -221,8 +251,8 @@ public class Sandbox<T extends DateMutableEntity<T>> {
             final StateError error = entry.getValue().getLeft();
             final String response = entry.getValue().getRight();
             final SandboxCode code = error.handleDecision(this,c,e);
-            LocalDate start = error.getOldChange().getStart();
-            LocalDate end = error.getOldChange().getEnd();
+            LocalDate start = error.getExistingChange().getStart();
+            LocalDate end = error.getExistingChange().getEnd();
             if (start == null){
                 start = Global.CURRENT_DATE();
             }
@@ -236,7 +266,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
                 killBox = Pair.of(start,error);
                 return standingChanges;
             }
-            StandingChange sc = new StandingChange(error,c,error.getOldChange(),null,start,end,response);
+            StandingChange sc = new StandingChange(error,c,error.getExistingChange(),null,start,end,response);
             standingChanges.put(sc,error);
         }
         return standingChanges;

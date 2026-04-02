@@ -1,27 +1,19 @@
 package com.base.timeline.flags;
 
-import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.sandbox.core.Objective;
-import com.base.timeline.sandbox.core.Sandbox;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
-import com.objects.character.BookCharacter;
-import com.objects.title.Title;
 import org.apache.commons.lang3.tuple.Pair;
 
 
-import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 
 public class StateError implements ConditionResult {
+    private final String id;
         private final TimelineChange<?> oldChange;
         private final CompletableFuture<String> response;
         private final Map<String,ErrorResolution> options;
@@ -29,28 +21,17 @@ public class StateError implements ConditionResult {
         private final StateReference message;
         private boolean shouldSaveToDiff = false;
 
-    public StateError(StateReference message,TimelineChange<?> oldChange, ErrorResolution... options) {
+    public StateError(String id, StateReference message,TimelineChange<?> existingChange, ErrorResolution... options) {
+        this.id = id;
         this.message = message;
         response = new CompletableFuture<>();
         Pair<Map<String,ErrorResolution>, Map<String,String>> p = buildOptionsString(options);
         this.options = p.getLeft();
         uiMap = p.getRight();
-        this.oldChange = oldChange;
+        this.oldChange = existingChange;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public long generateID(TimelineChange<?> change, TimelineChange<?> existing, @Nullable Integer proceduralInteger){
-        if (proceduralInteger == null){
-            proceduralInteger = 69;
-        }
-        Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putString(message.parse(), StandardCharsets.UTF_8);
-        hasher.putLong(buildForTLC(change));
-        hasher.putLong(buildForTLC(existing));
-        hasher.putLong(proceduralInteger);
-        return hasher.hash().asLong();
-    }
-    public TimelineChange<?> getOldChange() {
+    public TimelineChange<?> getExistingChange() {
         return oldChange;
     }
     public static long buildForTLC(TimelineChange<?> change){
@@ -70,23 +51,32 @@ public class StateError implements ConditionResult {
     public CompletableFuture<String> getResponse() {
         return response;
     }
-    public <T extends DateMutableEntity<T>> SandboxCode handleDecision(Sandbox sandbox, TimelineChange<T> change, T entity){
-        if (options.size() == 1){
-            return executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
-        }
-        return executeDecision(response.join(),sandbox,change,(TimelineChange<T>)oldChange,entity);
-    }
-    private <T extends DateMutableEntity<T>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange,  T entity){
-        if (!uiMap.keySet().contains(code)){
-            throw new IllegalArgumentException("Invalid code: " + code);
-        }
-        return options.get(code).resolve(sandbox,change,oldChange,entity,shouldSaveToDiff);
-    }
+//    public <T extends DateMutableEntity<T>> SandboxCode handleDecision(Sandbox sandbox, TimelineChange<?> change, T entity){
+//        if (options.size() == 1){
+//            return executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
+//        }
+//        return executeDecision(response.join(),sandbox,change,(TimelineChange<T>)oldChange,entity);
+//    }
+//    private <T extends DateMutableEntity<T>> SandboxCode executeDecision(String code, Sandbox sandbox, TimelineChange<T> change,TimelineChange<T> oldChange,  T entity){
+//        if (!uiMap.keySet().contains(code)){
+//            throw new IllegalArgumentException("Invalid code: " + code);
+//        }
+//        return options.get(code).resolve(sandbox,change,oldChange,entity,shouldSaveToDiff);
+//    }
     public boolean canAutoResolve(){
         return options.size() == 1;
     }
-    public <T extends DateMutableEntity<T>> void autoResolve(Sandbox sandbox, TimelineChange<T> change, T entity){
-        executeDecision(options.keySet().iterator().next(),sandbox,change,(TimelineChange<T>) oldChange,entity);
+    public String getID() {
+        return id;
+    }
+    public ErrorResolution getAutoResolution(){
+        return getResolutions().values().stream().findFirst().orElse(null);
+    }
+    public ErrorResolution getResolutionIfComplete(){
+        if (response.isDone()){
+            return getOrDefault(response.join());
+        }
+        return null;
     }
     public StateError saveToDiff(){
         shouldSaveToDiff = true;
@@ -98,11 +88,11 @@ public class StateError implements ConditionResult {
     public int getResolutionPriority(String resolutionID){
         return getOrDefault(resolutionID).getPriority();
     }
-    public StateError addCharacterLeaveFaction(BookCharacter character, Title<?> title){
-
+    public Map<String,ErrorResolution> getResolutions(){
+        return options;
     }
-    public StateError addTitleChangeFaction(BookCharacter character, Title<?> title){
-
+    public String getMessage() {
+        return message.parse();
     }
     public ErrorResolution getOrDefault(String resolutionID){
         ErrorResolution er = options.get(resolutionID);
@@ -134,22 +124,12 @@ public class StateError implements ConditionResult {
     public StateError addBranchingSuccessionPlanning(Objective o) {
         return addOption(new ErrorResolution.SandboxBranching("succession_planning",o));
     }
-    public StateError addReplaceWithNew(TimelineChange<?> replace){
-        return addOption(new ErrorResolution.ReplaceWithNew(replace));
-    }
-    public StateError fixWithSuccessionPlanning(Objective o){
-        return addOption(new ErrorResolution.);//TODO Finish
-    }
+
     public StateError addOption(ErrorResolution option){
         options.put(option.getCode(),option);
         uiMap.put(option.getCode(),option.tooltip());
         return this;
     }
-    public StateError runSuccessionPlanning(DMEReference<? extends Title<?>> title, DMEReference<BookCharacter> newHolder){
 
-    }
-    public String getMessage() {
-        return message.parse();
-    }
 }
 
