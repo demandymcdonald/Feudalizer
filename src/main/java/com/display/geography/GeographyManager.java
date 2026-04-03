@@ -195,4 +195,17 @@ public class GeographyManager {
             }
             return new DefaultFeatureCollection(type.toString(), customFeatureType);
     }
+    public static SimpleFeatureCollection get(GeometryType type, String geoID) {
+        Collection<SimpleFeatureCollection> collections = FeatureMap.get(type);
+        for (SimpleFeatureCollection collection : collections) {
+            SimpleFeatureIterator iterator = collection.features();
+            while (iterator.hasNext()) {
+                SimpleFeature feature = iterator.next();
+                if (feature.getAttribute("geometryID").equals(geoID)) {
+                    return collection;
+                }
+            }
+        }
+        return null;
+    }
 }
