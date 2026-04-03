@@ -17,8 +17,8 @@ import com.objects.title.condition.CanHoldCondition;
 import com.objects.title.condition.CanInheritCondition;
 import com.objects.title.succession.SuccessionContainer;
 import com.objects.title.succession.rules.SuccessionEntry;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -35,13 +35,18 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     private DMEReference<BookCharacter> holder = null;
     private Map<DMEReference<? extends Title<?>>,Relationship> relationships = new HashMap<>();
     private SuccessionContainer succession = new SuccessionContainer();
-    public Title(UUID id, LocalDate created, LocalDate ended, List<ChangeSupplier<T,?>> initialState) {
-        super(id, created, ended,initialState);
+
+    public Title(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
+        super(id, created, ended, initialState);
     }
+
+    public Title(LocalDate created, LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
+        super(created, ended, initialState);
+    }
+
     public Title(DMEReference<T> dme) {
         super(dme);
     }
-
 
     public abstract List<CanHoldCondition<? super T>> getCanHoldConditions();
     public abstract List<CanInheritCondition<? super T>> getCanInheritConditions();
