@@ -1,6 +1,7 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class NullifyConditions {
         }
 
         @Override
-        protected Optional<ConditionResult.Nullify> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T> checkAgainst) {
+        protected Optional<ConditionResult.Nullify> doCheck(DMEReference<? extends T>  entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
             if( thisChange.getFullID() == checkAgainst.getFullID() && thisChange.hashCode() != checkAgainst.hashCode()) {
                 return Optional.of(NULLIFY);
             } else {
@@ -41,10 +42,11 @@ public class NullifyConditions {
         }
 
         @Override
-        protected Optional<ConditionResult.Nullify> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T> checkAgainst) {
+        protected Optional<ConditionResult.Nullify> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
             if (thisChange.oppositeChanges().contains(checkAgainst.getClass()) && thisChange.getStart() == checkAgainst.getStart()) {
                 return Optional.of(NULLIFY);
             }
+            return Optional.empty();
         }
     }
     public static class AlwaysNullify<T extends DateMutableEntity<T>> extends Condition<ConditionResult.Nullify, T> {
@@ -53,7 +55,7 @@ public class NullifyConditions {
         }
 
         @Override
-        protected Optional<ConditionResult.Nullify> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T> checkAgainst) {
+        protected Optional<ConditionResult.Nullify> doCheck(DMEReference<? extends T>  entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
             return Optional.of(NULLIFY);
         }
     }
@@ -63,7 +65,7 @@ public class NullifyConditions {
         }
 
         @Override
-        protected Optional<ConditionResult.Nullify> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T> checkAgainst) {
+        protected Optional<ConditionResult.Nullify> doCheck(DMEReference<? extends T>  entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
             return Optional.of(NOT_NULLIFY_EXCLUSIVE);
         }
     }

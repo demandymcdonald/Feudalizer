@@ -44,19 +44,22 @@ public class LoadingManager {
             LOGGER.debug("Loading Status: " + currentLoading.get() + " " + loading + "/" + maxLoading);
         }
     }
-    private Thread prepLoad(String currentLoading, int maxLoading, Thread t){
+    private Thread prepLoad(String currentLoading, AtomicInteger maxLoading, Thread t){
         LOGGER.debug("Starting Load: " + currentLoading + "... Total Items: " + maxLoading + ".");
         this.currentLoading.set(currentLoading);
-        this.maxLoading.set(maxLoading);
+        this.maxLoading = maxLoading;
         loading.set(0);
         isLoading.set(true);
         subjectThread = new WeakReference<>(t);
         return t;
     }
-    private Thread prepLoad(String currentLoading, int maxLoading, CompletableFuture<Thread> t){
+    private Thread prepLoad(String currentLoading, AtomicInteger maxLoading, CompletableFuture<Thread> t){
         return prepLoad(currentLoading, maxLoading, t.join());
     }
     public Thread newStage(String currentLoading, int maxLoading, Runnable toLoad, boolean pullFromParent){
+        return newStage(currentLoading, new AtomicInteger(maxLoading), toLoad, pullFromParent);
+    }
+    public Thread newStage(String currentLoading, AtomicInteger maxLoading, Runnable toLoad, boolean pullFromParent){
         //final CompletableFuture<Runnable> runnable = new CompletableFuture<>();
         final CompletableFuture<Thread> th = new CompletableFuture<>();
         final Runnable payload;

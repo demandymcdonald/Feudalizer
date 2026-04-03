@@ -1,5 +1,6 @@
 package com.base.timeline.sandbox.core;
 
+import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
@@ -7,12 +8,10 @@ import com.base.timeline.sandbox.check.SandboxCheck;
 
 import java.time.LocalDate;
 
-public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subject, LocalDate start, TimelineChange<T> change, SandboxCheck<T>... toCheck) {
-    public Objective(DMEReference<T> subject, TimelineChange<T> change){
-        this(subject, change.getStart(), change);
-    }
-    public static <T extends DateMutableEntity<T>> Objective<T> build(DMEReference<? extends T> subject, TimelineChange<T> change){
-       return new Objective<>((DMEReference<T>) subject, change);
+public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subject, Global.TimeDirection start, TimelineChange<? super T> change, SandboxCheck<T>... toCheck) {
+
+    public static <T extends DateMutableEntity<T>> Objective<T> build(DMEReference<? extends T> subject, Global.TimeDirection direction, TimelineChange<? super T> change, SandboxCheck<T>... toCheck){
+       return new Objective<>((DMEReference<T>) subject, direction,change,toCheck);
     }
     public LocalDate getStart(){
         return change.getStart();

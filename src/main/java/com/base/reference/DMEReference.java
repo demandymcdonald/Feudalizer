@@ -43,7 +43,7 @@ public class DMEReference<T extends DateMutableEntity<T>> extends StateReference
 //    }
     public T get() {
         if (cachedEntity.get() == null) {
-            cachedEntity.set(DMRegistry.getEntity(type,uuid));;
+            cachedEntity.set(DMRegistry.getEntity(this));;
         }
         return cachedEntity.get();
     }
@@ -131,7 +131,7 @@ public class DMEReference<T extends DateMutableEntity<T>> extends StateReference
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putLong(uuid.getMostSignificantBits());
         hasher.putLong(uuid.getLeastSignificantBits());
-        hasher.putString(type.forName(), StandardCharsets.UTF_8);
+        hasher.putString(type.getName(), StandardCharsets.UTF_8);
         return hasher.hash().asLong();
     }
     private static long doHash(DMEReference<?> reference){

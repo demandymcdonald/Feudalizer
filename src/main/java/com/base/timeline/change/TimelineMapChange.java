@@ -134,8 +134,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     }
 
     @Override
-    public final void deactivate(boolean sandbox) {
-        super.deactivate(sandbox);
+    public final void deactivate(boolean isSandbox) {
+        super.deactivate(isSandbox);
         DMEReference<? extends T> entity = getOwner();
         TimelineMapChange<M,K,V,T> tlc = (TimelineMapChange<M,K,V,T>) entity.get().getTimeline().getNextState(this.getStart()).getChangeByID(this.getClass());
         if (tlc != null){
@@ -144,9 +144,9 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         }
     }
     @Override
-    public final void reactivate(boolean sandbox) {
+    public final void reactivate(boolean isSandbox) {
         Do opposite of reactivate
-        super.reactivate(sandbox);
+        super.reactivate(isSandbox);
     }
     @Override
     public final void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> changeToNullify) {
@@ -160,7 +160,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
 
     @Override
     public final void overwrite(TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive) {
-        super.overwrite(currentState, beingOverwritten, destructive);
+        super.override(currentState, beingOverwritten, destructive);
     }
 
 

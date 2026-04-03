@@ -1,27 +1,23 @@
 package com.base.timeline.change;
 
+import com.Global;
 import com.base.DateMutableEntity;
 import com.base.ObjectType;
-import com.base.timeline.Timeline;
-import com.base.timeline.TimelineHelper;
 import com.base.timeline.flags.SandboxCode;
 import com.base.timeline.flags.StateError;
 import com.base.reference.DMEReference;
+import com.base.timeline.sandbox.check.SandboxChecks;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.conditions.*;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.google.common.base.Suppliers;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
-import com.utilities.JsonSerializable;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.utilities.SuperclassSerializable;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Supplier;
@@ -42,12 +38,15 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     // Rules: TimelineChange implementations should only save/use StateReferences! Never use actual objects. This keeps them sandbox safe. Include this fact in documentation
 
     //TODO Third kind of check: once per TimelineState (For things like: is still alive, or canHoldTitle, or Does this Religion exist?
-    private LocalDate start;
+
     private final DMEReference<? extends T> owner;
     private final ChangeID id;
-    private SandboxBreadcrumb breadcrumb = new SandboxBreadcrumb();
+    private LocalDate start;
+    private List<DMEReference<?>> sandbox_newSaves = new ArrayList<>();
+    private LocalDate end;
     private boolean deactivated = false;
     private boolean isStatic = false;
+    private final Map<Long,String> resolutionLog = new HashMap<>();
     protected TimelineChange(DMEReference<? extends T> owner, LocalDate date) {
         this.owner = owner;
         this.start = date;
@@ -83,61 +82,74 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         //may merge with onApply if I don't need any additional logic in here
     }
     public void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> change, boolean isFirstAdvance){
-        onAdvance(currentState,change,isFirstAdvance);
+        onAdvance(entity, currentState,change,isFirstAdvance);
 
     }
 
-    public void overwrite(TimelineState<? extends T> currentState, TimelineChange<?>  beingOverwritten, boolean destructive){
+    public void override(TimelineState<? extends T> currentState, TimelineChange<?>  beingOverwritten, boolean isSandbox, boolean destructive){
         onOverwrite(getOwner(),currentState,beingOverwritten,destructive);
         if (destructive){
             currentState.removeChange(beingOverwritten.getID());
         } else {
             beingOverwritten.deactivate(true);
         }
-        currentState.insertChange(this);
+        currentState.removeBreadcrumb(beingOverwritten.getID());
+        if (!isSandbox){
+            currentState.insertAndPropagateBreadcrumb(this);
+        }
     }
     public void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<?> changeToNullify){
         onNullify(entity,state,changeToNullify);
         changeToNullify.deactivate(true);
     }
-    public void deactivate(boolean sandbox){
+    public void deactivate(boolean isSandbox){
         SandboxCode c = SandboxCode.END_SAVE;
-        if (sandbox){
-            c = SandboxHandler.SandboxApplyChange(Objective.build(owner,this),start,null);
+        if (!isSandbox){
+            c = SandboxHandler.StartSandbox(Objective.build(owner, Global.TimeDirection.FORWARD,this,new SandboxChecks.canDeactivate<>()),end.plusDays(2),null);
         }
         if (c == SandboxCode.END_SAVE){
             onDeactivate();
             deactivated = true;
         }
     }
-    public void reactivate(boolean sandbox){
-        onReactivate();
-        deactivated = false;
+    public void reactivate(boolean isSandbox){
+        SandboxCode c = SandboxCode.END_SAVE;
+        if (!isSandbox){
+            c = SandboxHandler.StartSandbox(Objective.build(owner, Global.TimeDirection.FORWARD,this,new SandboxChecks.canAddChange<>()),end.plusDays(2),null);
+        }
+        if (c == SandboxCode.END_SAVE){
+            onReactivate();
+            deactivated = true;
+        }
     }
     public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
         if (newStart != null){
             start = newStart;
         }
         if (newEnd != null){
-            breadcrumb.addEndPoint(newEnd);
+            end = newEnd;
         }
     }
-    public final TimelineChange<? super T> helper(TimelineChange<? super T> change){
-        return change;
-
+    public List<DMEReference<?>> getNewSaves(){
+        List<DMEReference<?>> toReturn = new ArrayList<>(sandbox_newSaves);
+        sandbox_newSaves.clear();
+        return toReturn;
+    }
+    public void addNewSave(DMEReference<?> newSave){
+        sandbox_newSaves.add(newSave);
     }
 
 
     //==================================================================================================================
     //What to do when the provided object is getting the change from this object applied to it.
     protected abstract void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState);
-
-    protected <T extends DateMutableEntity<T>> void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingOverwritten, boolean destructive){};
-    protected <T extends DateMutableEntity<T>> void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingNullified){}
-    protected <T extends DateMutableEntity<T>> void onDeactivate(){}
-    protected <T extends DateMutableEntity<T>> void onReactivate(){}
-    protected <T extends DateMutableEntity<T>> void onAdvance(TimelineState<? extends T> currentState, TimelineChange<?> passingtChange, boolean isFirstAdvance){}
-    protected <T extends DateMutableEntity<T>> void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
+    protected void onContinue(){}
+    protected void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingOverwritten, boolean destructive){};
+    protected void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingNullified){}
+    protected void onDeactivate(){}
+    protected void onReactivate(){}
+    protected void onAdvance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> passingtChange, boolean isFirstAdvance){}
+    protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
 
     public boolean isOpposite(TimelineChange<?>state){
         return oppositeChanges().contains(state.getClass());
@@ -150,13 +162,13 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         return new ArrayList<>();
     };
     public abstract boolean isPositive();
-    public void onContinue(){}
+
 
 
     public final boolean canNullify(TimelineChange<?> toNullify){
         boolean hasYes = false;
         for (Condition<ConditionResult.Nullify,? super T> c : nullConditions.get()) {
-            final ConditionResult.Nullify result = c.check(this.getOwner().get(),this,toNullify).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
+            final ConditionResult.Nullify result = c.check(this.getOwner(),this,toNullify).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
             if (result.canNullify()){
                 hasYes = true;
                 if (!result.isOr()){
@@ -169,14 +181,23 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
         return hasYes;
     };
-    public final List<StateError> doesConflict(TimelineChange<?> state){
-        List<StateError> currentErrors = new ArrayList<>();
-        for (Condition<StateError,? super T> c : applyConditions.get()) {
-            Optional<StateError> error = c.check(this.getOwner().get(),this,state);
-            error.ifPresent(currentErrors::add);
-        }
-        return currentErrors;
+    public final List<StateError> doesConflict(TimelineChange<?> checkAgainst){
+        return doCheck(applyConditions.get(),this.getOwner(),this,checkAgainst);
     };
+    public final List<StateError> canBeDeactivated(TimelineChange<?> checkAgainst){
+        return doCheck(deactivateConditions.get(),this.getOwner(),this,checkAgainst);
+    }
+    private static <T extends DateMutableEntity<T>,R extends ConditionResult> List<R> doCheck(
+            final List<Condition<R,? super T>> conditions, DMEReference<? extends T> entity, TimelineChange<T> change, TimelineChange<?> checkAgainst){
+        List<R> results = new ArrayList<>();
+        for (Condition<R,? super T> c : conditions) {
+            Optional<R> result = c.check(entity,change,checkAgainst);
+            result.ifPresent(results::add);
+        }
+        return results;
+    }
+
+
     public HashSet<DMEReference<?>> getScope(){
         HashSet<DMEReference<?>> toReturn = new HashSet<>();
         toReturn.add(this.getOwner());
@@ -191,7 +212,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     }
 
     public final LocalDate getEnd(){
-        return breadcrumb.getEndOfPropagation();
+        return end;
     }
     /**
      * Safely adds a {@link DMEReference} of the given {@link ObjectType} and {@link UUID} to the provided
@@ -208,24 +229,20 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         map.add(reference);
     }
 
-    //Handling deactivation
     public boolean isDeactivated(){
         return deactivated;
     }
 
 
-    public final Pair<Long,LocalDate> buildStateBreadcrumb(){
-        return Pair.of(getFullID(),getStart());
+    public final void setEnd(LocalDate date){
+        end = date;
     }
-    //Wrapper functions for breadcrumb.
-    public final SandboxBreadcrumb getBreadcrumb(){
-        return breadcrumb;
+
+    public String getResolutionCode(StateError error){
+        return resolutionLog.get(error.getLongID());
     }
-    public final void addEnd(LocalDate date){
-        breadcrumb.addEndPoint(date);
-    }
-    public final void addError(StateError error, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, @Nullable Integer proceduralInteger, String resolutionCode){
-        breadcrumb.insertError(error,newChange,existingChange,proceduralInteger,resolutionCode);
+    public void addResolution(StateError error, String resolutionCode){
+        resolutionLog.put(error.getLongID(),resolutionCode);
     }
 
     private final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
@@ -242,28 +259,23 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
                 conditions.addAll(this.buildApplyConditions());
                 return conditions;
             });
+    private final Supplier<List<Condition<StateError,? super T>>> deactivateConditions =
+            Suppliers.memoize(() -> {
+                List<Condition<StateError,? super T>> conditions = new ArrayList<>();
+                //conditions.addAll(DeactivateConditions.BaseConditions());
+                conditions.addAll(this.buildCanDeactivateConditions());
+                return conditions;
+            });
     protected abstract List<Condition<StateError,? super T>> buildApplyConditions();
     protected abstract List<Condition<ConditionResult.Nullify,? super T>> buildNullifyConditions();
-    private long generateID(){
-        return generateID((Class<TimelineChange<T>>) this.getClass(),start,additionalIDVars());
-    }
-    public static <T extends DateMutableEntity<T>> long generateID(Class<TimelineChange<T>> c , LocalDate start, List<DMEReference<?>> additionalIDVars){
-        return generateID(c.getName(),start,additionalIDVars);
-    }
+    protected abstract List<Condition<StateError,? super T>> buildCanDeactivateConditions();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static <T extends DateMutableEntity<T>> long generateID(String c , LocalDate start, List<DMEReference<?>> additionalIDVars){
-        Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putLong(start.toEpochDay());
-        hasher.putString(c, StandardCharsets.UTF_8);
-        //hasher.putLong(owner.hash());
-        //The reason I'm removing the owner long is because it might make bug tracking harder on breadcrumbs, and I
-        //genuinely don't think it adds anything to the mix.
-        for (DMEReference<?> dme : additionalIDVars) {
-            hasher.putLong(dme.hash());
-        }
-        return hasher.hash().asLong();
-    }
+
+
+
+
+
+
     public boolean shouldSandbox(){
         return true;
     }
@@ -273,84 +285,107 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public final boolean isStatic(){
         return isStatic;
     }
-    public List<DMEReference<?>> additionalIDVars(){
-        return new ArrayList<>();
-    }
+
+
+
+
     @Override
     public void mainSave(JsonObject o) {
-        o.add("breadcrumb", breadcrumb.toJson());
+        o.addProperty("end",end.toEpochDay());
+        o.addProperty("deactivated",deactivated);
+        o.addProperty("isStatic",isStatic);
+        o.add("resLog", serializeResolutionLog());
     }
     @Override
     public void mainLoad(JsonObject object) {
-        breadcrumb.fromJson(object.getAsJsonObject("breadcrumb"));
+        end = LocalDate.ofEpochDay(object.get("end").getAsLong());
+        deactivated = object.get("deactivated").getAsBoolean();
+        isStatic = object.get("isStatic").getAsBoolean();
+        deserializeResolutionLog(object.getAsJsonArray("resLog"));
     }
+    private JsonArray serializeResolutionLog(){
+        JsonArray userChoices = new JsonArray();
+        for(Map.Entry<Long, String> change : resolutionLog.entrySet()){
+            JsonObject choice = new JsonObject();
+            choice.addProperty("id",change.getKey());
+            choice.addProperty("resolution",change.getValue());
+            userChoices.add(choice);
+        }
+        return userChoices;
+    }
+    private void deserializeResolutionLog(JsonArray array){
+        for(JsonElement choice : array){
+            JsonObject choiceObject = choice.getAsJsonObject();
+            resolutionLog.put(choiceObject.get("id").getAsLong(), choiceObject.get("resolution").getAsString());
+        }
+    }
+
     @Override
     public final void metadataSave(JsonObject o) {
         o.add("subject", owner.serialize());
         o.addProperty("date", start.toEpochDay());
     }
-    public static class SandboxBreadcrumb implements JsonSerializable<SandboxBreadcrumb>{
-        private LocalDate endOfPropagation;
-        private final HashMap<Long,String> errorResolutionLog = new HashMap<>();
-        public SandboxBreadcrumb() {}
-
-        public void addEndPoint(LocalDate date){
-            endOfPropagation = date;
-        }
-        public void insertError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode) {
-            errorResolutionLog.put(error.generateID(newChange, existingChange, proceduralInteger), resolutionCode);
-        }
-        public void insertError(long fullId, String resolutionCode) {
-            errorResolutionLog.put(fullId, resolutionCode);
-        }
-        public Optional<String> getResolutionCode(long id){
-            return Optional.ofNullable(errorResolutionLog.get(id));
-        }
-        public Optional<String> getResolutionCode(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger){
-            return getResolutionCode(error.generateID(newChange, existingChange, proceduralInteger));
-        }
-
-        public final boolean isComplete(){
-            return endOfPropagation != null;
-        }
-        public LocalDate getEndOfPropagation(){
-            return endOfPropagation;
-        }
-
-        @Override
-        public final JsonObject toJson() {
-            JsonObject object = new JsonObject();
-            if (endOfPropagation != null){
-                object.addProperty("eop",endOfPropagation.toEpochDay());
-            }
-            JsonArray errors = new JsonArray();
-            for (Map.Entry<Long, String> entry : errorResolutionLog.entrySet()) {
-                JsonObject error = new JsonObject();
-                error.addProperty("i",entry.getKey());
-                error.addProperty("r",entry.getValue());
-                errors.add(error);
-            }
-            object.add("errors",errors);
-            return object;
-        }
-
-        @Override
-        public final void fromJson(JsonObject json) {
-            if (json.has("eop")){
-                this.endOfPropagation = LocalDate.ofEpochDay(json.get("eop").getAsLong());
-            };
-            JsonArray errors = json.getAsJsonArray("errors");
-            for (int i = 0; i < errors.size(); i++) {
-                JsonObject error = errors.get(i).getAsJsonObject();
-                long id = error.get("i").getAsLong();
-                String resolution = error.get("r").getAsString();
-                errorResolutionLog.put(id,resolution);
-            }
-        }
-
-        @Override
-        public SandboxBreadcrumb empty() {
-            return new SandboxBreadcrumb();
-        }
-    }
+//    public static class SandboxBreadcrumb implements JsonSerializable<SandboxBreadcrumb>{
+//
+//        public SandboxBreadcrumb() {}
+//
+//        public void addEndPoint(LocalDate date){
+//            endOfPropagation = date;
+//        }
+//        public void insertError(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger, String resolutionCode) {
+//            errorResolutionLog.put(error.generateID(newChange, existingChange, proceduralInteger), resolutionCode);
+//        }
+//        public void insertError(long fullId, String resolutionCode) {
+//            errorResolutionLog.put(fullId, resolutionCode);
+//        }
+//        public Optional<String> getResolutionCode(long id){
+//            return Optional.ofNullable(errorResolutionLog.get(id));
+//        }
+//        public Optional<String> getResolutionCode(StateError error, TimelineChange<?> newChange, TimelineChange<?> existingChange, @Nullable Integer proceduralInteger){
+//            return getResolutionCode(error.generateID(newChange, existingChange, proceduralInteger));
+//        }
+//
+//        public final boolean isComplete(){
+//            return endOfPropagation != null;
+//        }
+//        public LocalDate getEndOfPropagation(){
+//            return endOfPropagation;
+//        }
+//
+//        @Override
+//        public final JsonObject toJson() {
+//            JsonObject object = new JsonObject();
+//            if (endOfPropagation != null){
+//                object.addProperty("eop",endOfPropagation.toEpochDay());
+//            }
+//            JsonArray errors = new JsonArray();
+//            for (Map.Entry<Long, String> entry : errorResolutionLog.entrySet()) {
+//                JsonObject error = new JsonObject();
+//                error.addProperty("i",entry.getKey());
+//                error.addProperty("r",entry.getValue());
+//                errors.add(error);
+//            }
+//            object.add("errors",errors);
+//            return object;
+//        }
+//
+//        @Override
+//        public final void fromJson(JsonObject json) {
+//            if (json.has("eop")){
+//                this.endOfPropagation = LocalDate.ofEpochDay(json.get("eop").getAsLong());
+//            };
+//            JsonArray errors = json.getAsJsonArray("errors");
+//            for (int i = 0; i < errors.size(); i++) {
+//                JsonObject error = errors.get(i).getAsJsonObject();
+//                long id = error.get("i").getAsLong();
+//                String resolution = error.get("r").getAsString();
+//                errorResolutionLog.put(id,resolution);
+//            }
+//        }
+//
+//        @Override
+//        public SandboxBreadcrumb empty() {
+//            return new SandboxBreadcrumb();
+//        }
+//    }
 }

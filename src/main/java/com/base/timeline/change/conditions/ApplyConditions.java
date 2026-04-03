@@ -1,6 +1,7 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
 import com.base.timeline.flags.StateError;
 import com.base.timeline.change.TimelineChange;
 
@@ -21,17 +22,17 @@ public class ApplyConditions {
         }
 
         @Override
-        protected Optional<StateError> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T>  checkAgainst) {
+        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?>  checkAgainst) {
             return Optional.empty();
         }
     }
-    public static class Never<T extends DateMutableEntity<T>> extends Condition<StateError, T>{
+    public static class Never<T extends DateMutableEntity<T>> extends Condition<StateError,T>{
         private Never() {
-            super("apply_gen_always", true);
+            super("apply_gen_never", true);
         }
 
         @Override
-        protected Optional<StateError> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T>  checkAgainst) {
+        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?>  checkAgainst) {
             return Optional.empty();
         }
     }

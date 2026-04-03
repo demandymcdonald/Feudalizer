@@ -1,6 +1,7 @@
 package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
 import org.apache.commons.lang3.function.TriFunction;
 
@@ -28,14 +29,17 @@ public abstract class Condition<R extends ConditionResult, T extends DateMutable
         this.id = id;
         this.shouldInvalidate = shouldInvalidate;
     }
+
+    public static <R extends ConditionResult, T extends DateMutableEntity<T>> Optional<R> checkHelper(Condition<R,T> condition, DMEReference<? extends T> entity, TimelineChange<?> thisChange, TimelineChange<?> checkAgainst){
+        return condition.doCheck(entity, (TimelineChange<T>) thisChange, checkAgainst);
+    }
+
     @SuppressWarnings("unchecked")
-    public final Optional<R> check(T entity, TimelineChange<?> thisChange, TimelineChange<?> checkAgainst){
-        TimelineChange<? super T> thisChangeTyped = (TimelineChange<? super T>) thisChange;
-        TimelineChange<? super T> checkAgainstTyped = (TimelineChange<? super T>) checkAgainst;
-        return doCheck(entity, thisChangeTyped, checkAgainstTyped);
+    public final Optional<R> check(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst){
+        return doCheck(entity, thisChange, checkAgainst);
     };
 
-    protected abstract Optional<R> doCheck(T entity, TimelineChange<? super T> thisChange, TimelineChange<? super T> checkAgainst);
+    protected abstract Optional<R> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst);
     public final boolean shouldInvalidate() {
         return shouldInvalidate;
     }

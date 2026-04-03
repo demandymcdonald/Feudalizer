@@ -26,26 +26,26 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     private LocalDate end;
     private final boolean isBoundary;
     private final List<ChangeID> breadcrumbs;
-    private final Map<ChangeID, TimelineChange<? super T>> currentChanges;
+    private final Map<ChangeID, TimelineChange<? super T>> activeChanges;
 
-    public TimelineState(Timeline<T> timeline, LocalDate start, LocalDate end, boolean isBoundary, List<ChangeID> breadcrumbs, Map<ChangeID,TimelineChange<? super T>> currentChanges) {
+    public TimelineState(Timeline<T> timeline, LocalDate start, LocalDate end, boolean isBoundary, List<ChangeID> breadcrumbs, Map<ChangeID,TimelineChange<? super T>> activeChanges) {
         super(timeline.getOwner());
         this.timeline = timeline;
         this.start = start;
         this.end = end;
         this.isBoundary = isBoundary;
         this.breadcrumbs = breadcrumbs;
-        this.currentChanges = currentChanges;
+        this.activeChanges = activeChanges;
     }
-    public TimelineState(Timeline<T> timeline,  LocalDate start, LocalDate end, List<ChangeID> breadcrumbs, List<TimelineChange<? super T>> currentChanges) {
-        this(timeline,start, end, false, breadcrumbs, buildMap(currentChanges));
+    public TimelineState(Timeline<T> timeline,  LocalDate start, LocalDate end, List<ChangeID> breadcrumbs, List<TimelineChange<? super T>> activeChanges) {
+        this(timeline,start, end, false, breadcrumbs, buildMap(activeChanges));
     }
-    public TimelineState(Timeline<T> timeline, LocalDate start, LocalDate end, boolean isBoundary, List<TimelineChange<? super T>> currentChanges) {
-        this(timeline,start, end, isBoundary, new ArrayList<>(), buildMap(currentChanges));
+    public TimelineState(Timeline<T> timeline, LocalDate start, LocalDate end, boolean isBoundary, List<TimelineChange<? super T>> activeChanges) {
+        this(timeline,start, end, isBoundary, new ArrayList<>(), buildMap(activeChanges));
     }
 
-    public TimelineState(Timeline<T> owner,  LocalDate start, LocalDate end, List<ChangeID> breadcrumbs, Map<ChangeID, TimelineChange<? super T>>  currentChanges) {
-        this(owner,start, end, false, breadcrumbs, currentChanges);
+    public TimelineState(Timeline<T> owner,  LocalDate start, LocalDate end, List<ChangeID> breadcrumbs, Map<ChangeID, TimelineChange<? super T>> activeChanges) {
+        this(owner,start, end, false, breadcrumbs, activeChanges);
     }
 
 
@@ -73,7 +73,7 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     }
     public void setStart(LocalDate start) {
         this.start = start;
-        for (TimelineChange<? super T> change : currentChanges.values()) {
+        for (TimelineChange<? super T> change : activeChanges.values()) {
             change.moveChange(start,end);
             moveBreadcrumbStart(timeline,change);
         }
@@ -82,9 +82,9 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
         this.end = end;
     }
     public List<TimelineChange<? super T>> getChanges() {
-        return filterDiffs(currentChanges.values());
+        return filterChanges(activeChanges.values());
     }
-    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> filterDiffs(Collection<TimelineChange<? super T>> changes){
+    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> filterChanges(Collection<TimelineChange<? super T>> changes){
         List<TimelineChange<? super T>> filtered = new ArrayList<>();
         for (TimelineChange<? super T> t : changes){
             if (!t.isDeactivated()){
@@ -95,26 +95,21 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     }
     public List<TimelineChange<? super T>> getAllCurrentChanges(boolean includeDeactivated) {
         if (includeDeactivated){
-            return new ArrayList<>(currentChanges.values());
+            return new ArrayList<>(activeChanges.values());
         } else {
             return getActiveOnly();
         }
     }
     public List<TimelineChange<? super T>> getAllChanges(boolean includeDeactivated) {
-        final List<TimelineChange<? super T>> all = new ArrayList<>(currentChanges.values());
+        final List<TimelineChange<? super T>> all = new ArrayList<>(activeChanges.values());
         for (ChangeID i : breadcrumbs){
             all.add(followBreadcrumb(timeline,i));
         }
         if (includeDeactivated){
+
             return all;
         } else {
-            List<TimelineChange<? super T>> active = new ArrayList<>();
-            for (TimelineChange<? super T> t : all){
-                if (!t.isDeactivated()){
-                    active.add(t);
-                }
-            }
-            return active;
+            return filterChanges(all);
         }
     }
     public List<TimelineChange<? super T>> getChangesWhere(boolean all, boolean active, Predicate<TimelineChange<? super T>> predicate) {
@@ -128,7 +123,7 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     }
     private List<TimelineChange<? super T>> getActiveOnly(){
         List<TimelineChange<? super T>> active = new ArrayList<>();
-        for (TimelineChange<? super T> t : currentChanges.values()){
+        for (TimelineChange<? super T> t : activeChanges.values()){
             if (!t.isDeactivated()){
                 active.add(t);
             }
@@ -138,53 +133,60 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
 
 
     public TimelineChange<? super T> getChange(long fullID) {
-        for (ChangeID t : currentChanges.keySet()) {
+        for (ChangeID t : activeChanges.keySet()) {
             if (t.getFullID() == (fullID)){
-                return currentChanges.get(t);
+                return activeChanges.get(t);
             }
         }
         return null;
     }
     public TimelineChange<? super T> getChange(ChangeID id){
-        return currentChanges.get(id);
+        return activeChanges.get(id);
     }
 
     public <C extends TimelineChange<? super T>> TimelineChange<? super T> getChange(Class<C> clazz){
         long classID = ChangeID.buildChangeClassID(clazz.getName());
         return getChange(classID);
     }
-    public TimelineChange<? super T> getChangeByClassID(long id){
-        for(ChangeID t : currentChanges.keySet()){
+    public List<TimelineChange<? super T>> getChangesByClassID(long id){
+        List<TimelineChange<? super T>> toReturn = new ArrayList<>();
+        for(ChangeID t : activeChanges.keySet()){
             if (t.getClassID() == id){
-                return currentChanges.get(t);
+                 toReturn.add(activeChanges.get(t));
             }
         }
-        return null;
+        return toReturn;
     }
 
     public void insertBreadcrumb(ChangeID id){
         breadcrumbs.add(id);
     }
-//    public void forceInsertBC(long id, LocalDate date){
-//        breadcrumbs.put(id, date);
-//    }
-    public void removeBreadcrumb(ChangeID id){
-        breadcrumbs.remove(id);
-    }
-
-    public void insertChange(TimelineChange<? super T> change){
-        currentChanges.put(change.getID(), change);
+    public void insertAndPropagateBreadcrumb(TimelineChange<? super T> change){
+        insertBreadcrumb(change.getID());
         propagateBreadcrumbs(timeline,change);
     }
+    public void removeBreadcrumb(ChangeID id){
+        breadcrumbs.remove(id);
+
+    }
+    public boolean isActiveChange(TimelineChange<?> change){
+        return activeChanges.containsValue(change);
+    }
+    public boolean isBreadcrumbChange(TimelineChange<?> change){
+        return breadcrumbs.contains(change.getID());
+    }
+    public void insertChange(TimelineChange<? super T> change){
+        activeChanges.put(change.getID(), change);
+    }
     public void removeChange(ChangeID id){
-        currentChanges.remove(id);
+        activeChanges.remove(id);
     }
 
     public void deactivateChange(ChangeID id, boolean sandbox){
         TimelineChange<? super T> c = getChange(id);
         if (c != null){
             c.deactivate(sandbox);
-            cleanBreadcrumbs(timeline,c);
+            removeBreadcrumbs(timeline,c,sandbox);
         }
     }
 
@@ -201,7 +203,7 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
         metadata.addProperty("immutable", isBoundary);
         json.add("metadata", metadata);
         json.add("breadcrumbs", serializeBreadcrumbs());
-        json.add("diffs", serializeDiffs());
+        json.add("diffs", serializeActiveChanges());
         return json;
     }
     private JsonArray serializeBreadcrumbs() {
@@ -211,9 +213,9 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
         }
         return json;
     }
-    private JsonArray serializeDiffs() {
+    private JsonArray serializeActiveChanges() {
         JsonArray json = new JsonArray();
-        for (TimelineChange<? super T> t : currentChanges.values()) {
+        for (TimelineChange<? super T> t : activeChanges.values()) {
             json.add(t.serialize());
         }
         return json;
@@ -225,7 +227,7 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
         }
         return map;
     }
-    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> deserializeCurrentChanges(JsonArray a) {
+    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> deserializeActiveChanges(JsonArray a) {
         final List<TimelineChange<? super T>> list = new ArrayList<>();
         for (int i = 0; i < a.size(); i++) {
             list.add((TimelineChange<? super T>) TLChangeRegistry.ChangeFactory(a.get(i).getAsJsonObject()));
@@ -245,8 +247,11 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
         LocalDate end = LocalDate.parse(metadata.get("end").getAsString());
         boolean immutable = metadata.get("immutable").getAsBoolean();
         List<ChangeID> breadcrumbs = deserializeBreadcrumbs(json.getAsJsonArray("breadcrumbs"));
-        List<TimelineChange<? super T>> diffs = deserializeCurrentChanges(json.getAsJsonArray("diffs"));
+        List<TimelineChange<? super T>> diffs = deserializeActiveChanges(json.getAsJsonArray("diffs"));
         return new TimelineState<T>(timeline,start, end, immutable, breadcrumbs, buildMap(diffs));
+    }
+    public boolean isEmpty(){
+        return activeChanges.isEmpty();
     }
 }
 

@@ -24,26 +24,26 @@ public class SandboxChecks {
     public static class canAddChange<T extends DateMutableEntity<T>> extends SandboxCheck<T>{
         @Override
         public SandboxCode check(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange) {
-            while (true) {
-                List<StateError> errors = newChange.doesConflict(existingChange);
-                if (errors.isEmpty()) {
-                    return SandboxCode.CONTINUE;
-                }
-                SandboxCode code = resolve(sandbox, entity, state, newChange, existingChange, errors);
+            List<StateError> errors = newChange.doesConflict(existingChange);
+            if (errors.isEmpty()) {
+                return SandboxCode.CONTINUE;
             }
-
-
-            return SandboxCode.CONTINUE;
-        }
-
-        private static <T extends DateMutableEntity<T>> SandboxCode resolve(
-            Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange,
-            TimelineChange<? super T> existingChange, List<StateError> errors){
-            sandbox.
-
-
+            return resolveStateErrors(sandbox, state, newChange, errors);
         }
     }
-
+    public static class canDeactivate<T extends DateMutableEntity<T>> extends SandboxCheck<T>{
+        @Override
+        public SandboxCode check(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange) {
+            List<StateError> errors = newChange.canBeDeactivated(existingChange);
+            if (errors.isEmpty()) {
+                return SandboxCode.CONTINUE;
+            }
+            return resolveStateErrors(sandbox, state, newChange, errors);
+        }
+    }
+    protected static <T extends DateMutableEntity<T>> SandboxCode resolveStateErrors(
+            Sandbox<T> sandbox, TimelineState<T> state, TimelineChange<? super T> newChange, List<StateError> errors){
+        return sandbox.handleErrors(state,newChange,errors);
+    }
 
 }

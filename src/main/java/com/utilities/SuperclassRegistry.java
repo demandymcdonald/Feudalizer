@@ -27,13 +27,23 @@ public abstract class SuperclassRegistry <R extends SuperclassRegistry<R,T,OK,BA
      protected <tT extends T> void registerFactory(Class<tT> subclass,Factory<tT> factory){
           factory_registry.put(subclass,factory);
      }
-     public <tT extends T> tT loadObject(Class<tT> subclass,OK key, JsonObject object){
+     protected <tT extends T> tT updateOrLoad(Class<tT> subclass,OK key, JsonObject object) {
+         tT tt =  object_registry.get().get(subclass,key);
+         if (tt != null){
+              tt.deserialize(object);
+              return tt;
+         } else {
+              return loadObject(subclass,key,object);
+         }
+     }
+     protected <tT extends T> tT loadObject(Class<tT> subclass,OK key, JsonObject object){
+
           tT t = getFactory(subclass).load(object);
           afterLoad(t);
           object_registry.get().put(subclass,key,t);
           return t;
      }
-     public <tT extends T> tT createObject(Class<tT> subclass,OK key,BA argumentContainer){
+     protected <tT extends T> tT createObject(Class<tT> subclass,OK key,BA argumentContainer){
           tT t = getFactory(subclass).create(argumentContainer);
           afterLoad(t);
           object_registry.get().put(subclass,key,t);
@@ -52,7 +62,7 @@ public abstract class SuperclassRegistry <R extends SuperclassRegistry<R,T,OK,BA
           object_registry.get().clearSingle(subclass);
      }
      public <tT extends T> tT get(Class<tT> subclass,OK key){
-          tT t = object_registry.get().get(subclass,key);
+          tT t = object_registry.get().get((Class<tT>) subclass,key);
           if (t == null){
                throw new RuntimeException("No object of type " + subclass.getName() + " with key " + key);
           }

@@ -43,37 +43,57 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
         }
         return tc;
     }
-    protected final ChangeID findBreadcrumbByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, Long classID){
-        BiFunction<Long,TimelineState<T>, Optional<ChangeID>> change = (l,ts) -> {
-            TimelineChange<? super T> tc = ts.getChangeByClassID(l);
-            if (tc == null){
+    protected final List<TimelineChange<? super T>> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, Class<TimelineChange<?>> classType,
+                                                       final boolean includeDeactivated) {
+        return findChangeByClassID(timeline,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType.getName()));
+    }
+    protected final List<TimelineChange<? super T>> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, final boolean includeDeactivated, Long classID){
+        BiFunction<Long,TimelineState<T>, Optional<List<TimelineChange<? super T>>>> change = (l,ts) -> {
+            List<TimelineChange<? super T>> tc = ts.getChangesByClassID(l);
+            if (!includeDeactivated){
+                tc.removeIf(TimelineChange::isDeactivated);
+            }
+            if (tc.isEmpty()){
                 return Optional.empty();
             }
-            return Optional.of(tc.getID());
+            return Optional.of(tc);
         };
         return iterateAndFind(timeline,starting,direction,change,classID);
     }
-    protected final ChangeID findBreadcrumbByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, Class<TimelineChange<? super T>> classType){
-        long classID = ChangeID.buildChangeClassID(classType.getName());
-        BiFunction<Long,TimelineState<T>, Optional<ChangeID>> change = (l,ts) -> {
-            TimelineChange<? super T> tc = ts.getChangeByClassID(l);
-            if (tc == null){
-                return Optional.empty();
-            }
-            return Optional.of(tc.getID());
-        };
-        return iterateAndFind(timeline,starting,direction,change,classID);
+    protected final ChangeID[] findBreadcrumbByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, final boolean includeDeactivated, Long classID){
+        List<TimelineChange<? super T>> changes = findChangeByClassID(timeline,starting,direction,includeDeactivated,classID);
+        if (changes == null){
+            return new ChangeID[0];
+        } else {
+            return changes.stream().map(TimelineChange::getID).toArray(ChangeID[]::new);
+        }
+    }
+    protected final ChangeID[] findBreadcrumbByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, Class<TimelineChange<?>> classType,
+             final boolean includeDeactivated){
+        return findBreadcrumbByClassID(timeline,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType.getName()));
     }
 
     private final BiPredicate<ChangeID,TimelineState<T>> predicate = (id,ts) -> {
         return ts == null || ts.getChange(id) == null;
     };
-    protected final void cleanBreadcrumbs(Timeline<T> timeline, TimelineChange<? super T> change){
-        BiConsumer<ChangeID,TimelineState<T>> consumer = (id,ts) -> {
-            ts.removeBreadcrumb(id);
-        };
-        final ChangeID id = change.getID();
-        iterateAndDo(timeline,change,TimeDirection.FORWARD,consumer,predicate,id);
+    protected final void removeBreadcrumbs(Timeline<T> timeline, TimelineChange<? super T> changeBeingRemoved, boolean replaceWithLast){
+        BiConsumer<ChangeID,TimelineState<T>> consumer;
+        if (!replaceWithLast){
+            final TimelineChange<?> find = timeline.findChangeByClassID(timeline,changeBeingRemoved.getStart().minusDays(1),
+                    TimeDirection.BACKWARD,(Class<TimelineChange<?>>) changeBeingRemoved.getClass(), false).get(0);
+            find.setEnd(changeBeingRemoved.getEnd());
+            consumer = (id,ts) -> {
+                ts.removeBreadcrumb(id);
+                ts.insertBreadcrumb(find.getID());
+            };
+        } else {
+            consumer = (id,ts) -> {
+                ts.removeBreadcrumb(id);
+
+            };
+        }
+        final ChangeID id = changeBeingRemoved.getID();
+        iterateAndDo(timeline,changeBeingRemoved,TimeDirection.FORWARD,consumer,predicate,id);
     }
     protected final void propagateBreadcrumbs(Timeline<T> timeline, TimelineChange<? super T> change){
         BiConsumer<ChangeID,TimelineState<T>> consumer = (id,ts) -> {

@@ -24,8 +24,8 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> exten
     }
 
     @Override
-    public final void deactivate(boolean sandbox) {
-        super.deactivate(sandbox);
+    public final void deactivate(boolean isSandbox) {
+        super.deactivate(isSandbox);
     }
 
     @Override
@@ -40,12 +40,12 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> exten
 
     @Override
     public final void overwrite(TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive) {
-        super.overwrite(currentState, beingOverwritten, destructive);
+        super.override(currentState, beingOverwritten, destructive);
     }
 
     @Override
-    public final void reactivate(boolean sandbox) {
-        super.reactivate(sandbox);
+    public final void reactivate(boolean isSandbox) {
+        super.reactivate(isSandbox);
     }
 
     @Override

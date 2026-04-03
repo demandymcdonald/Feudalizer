@@ -42,7 +42,7 @@ public class TimelineHelper {
             state = timeline.getNextState(currentDate);
             currentDate = state.getStart();
         }
-        change.addEnd(newEnd);
+        change.setEnd(newEnd);
     }
 
     @Deprecated(forRemoval = true)

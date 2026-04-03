@@ -2,12 +2,12 @@ package com.base.timeline;
 
 import com.Global;
 import com.base.AbstractMutableManager;
-import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.flags.SandboxCode;
+import com.base.timeline.sandbox.check.SandboxChecks;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
@@ -17,6 +17,7 @@ import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> {
     private final TreeMap<LocalDate, TimelineState<T>> timeline = new TreeMap<>();
@@ -47,12 +48,22 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         return last.getEnd();
     }
     //Note: Sandbox methods should never be used outside of a sandbox's worker thread! Probably wouldn't break anything, but it's not built for main thread use!
-
-
     public void addChange(TimelineChange<T> change){
         //This is the safe way to insert a change using propagation. It should be used by all runtime setters.
         getOrMakeState(change.getStart()); //We just need a state at the exact start date.
-        SandboxCode c = SandboxHandler.SandboxApplyChange(new Objective<>(owner,change),change.getStart(),null);
+        Consumer<SandboxCode> afterChange = (code) -> {
+            TimelineState<T> state = getStateAt(change.getStart());
+            if (state.isEmpty()){
+                removeState(change.getStart());
+                TimelineState<T> before = getStateBefore(state.getStart());
+                TimelineState<T> after = getStateAfter(state.getStart());
+                if (before != null && after != null){
+                    before.setEnd(after.getStart().minusDays(1));
+                }
+            }
+        };
+        SandboxHandler.StartSandbox(new Objective<>(owner,Global.TimeDirection.FORWARD,change,
+                new SandboxChecks.canAddChange<>()),getEnd(),null,afterChange);
     }
     public boolean isEmpty(){
         return timeline.isEmpty();
