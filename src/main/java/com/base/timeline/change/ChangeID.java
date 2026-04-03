@@ -57,7 +57,7 @@ public class ChangeID {
         json.addProperty("state",state.toEpochDay());
         return json;
     }
-    public static ChangeID fronJson(JsonObject json){
+    public static ChangeID fromJson(JsonObject json){
         return new ChangeID(json.get("classID").getAsLong(), LocalDate.ofEpochDay(json.get("state").getAsLong()));
     }
 

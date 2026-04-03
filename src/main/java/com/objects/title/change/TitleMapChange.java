@@ -25,21 +25,23 @@ public class TitleMapChange {
             super(owner, date);
         }
 
-
-
         @Override
-        public Class<SetRelationship<T>> getBase() {
-            return (Class<SetRelationship<T>>) this.getClass();
+        protected JsonElement serializeK(DMEReference<? extends Title<?>> dmeReference) {
+            return dmeReference.serialize();
+        }
+        @Override
+        protected DMEReference<? extends Title<?>> deserializeK(JsonElement m) {
+            return DMEReference.deserialize(m.getAsJsonObject());
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
-
+        protected Title.Relationship deserializeV(JsonElement m) {
+            return Title.Relationship.valueOf(m.getAsString());
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-
+        protected JsonElement serializeV(Title.Relationship relationship) {
+            return new JsonPrimitive(relationship.name());
         }
 
         @Override
@@ -54,17 +56,12 @@ public class TitleMapChange {
 
         @Override
         public boolean isPositive() {
-            return false;
+            return true;
         }
 
         @Override
         protected String getText() {
-            return "";
-        }
-
-        @Override
-        protected List<Condition<StateError, ? super T>> buildApplyConditions() {
-            return List.of();
+            return "De Jure Drift";
         }
 
         @Override
@@ -76,24 +73,15 @@ public class TitleMapChange {
         protected List<Condition<StateError, ? super T>> buildCanDeactivateConditions() {
             return List.of();
         }
+
         @Override
-        protected JsonElement serializeK(DMEReference<? extends Title<?>> dmeReference) {
-            return dmeReference.serialize();
+        public void additionalSave(JsonObject data) {
+
         }
 
         @Override
-        protected DMEReference<? extends Title<?>> deserializeK(JsonElement m) {
-            return DMEReference.deserialize(m.getAsJsonObject());
-        }
+        public void additionalLoad(JsonObject data) {
 
-        @Override
-        protected Title.Relationship deserializeV(JsonElement m) {
-            return Title.Relationship.valueOf(m.getAsString());
-        }
-
-        @Override
-        protected JsonElement serializeV(Title.Relationship relationship) {
-            return new JsonPrimitive(relationship.name());
         }
     }
 }

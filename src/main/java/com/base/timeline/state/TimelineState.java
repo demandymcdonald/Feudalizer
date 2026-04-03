@@ -132,27 +132,27 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     }
 
 
-    public TimelineChange<? super T> getChange(long fullID) {
+    public <TC extends TimelineChange<? super T>> TC getChange(long fullID) {
         for (ChangeID t : activeChanges.keySet()) {
             if (t.getFullID() == (fullID)){
-                return activeChanges.get(t);
+                return (TC) activeChanges.get(t);
             }
         }
         return null;
     }
-    public TimelineChange<? super T> getChange(ChangeID id){
-        return activeChanges.get(id);
+    public <TC extends TimelineChange<? super T>> TC getChange(ChangeID id){
+        return (TC) activeChanges.get(id);
     }
 
-    public <C extends TimelineChange<? super T>> TimelineChange<? super T> getChange(Class<C> clazz){
+    public <TC extends TimelineChange<? super T>> TC getChange(Class<TC> clazz){
         long classID = ChangeID.buildChangeClassID(clazz.getName());
         return getChange(classID);
     }
-    public List<TimelineChange<? super T>> getChangesByClassID(long id){
-        List<TimelineChange<? super T>> toReturn = new ArrayList<>();
+    public <TC extends TimelineChange<? super T>> List<TC> getChangesByClassID(long id){
+        List<TC> toReturn = new ArrayList<>();
         for(ChangeID t : activeChanges.keySet()){
             if (t.getClassID() == id){
-                 toReturn.add(activeChanges.get(t));
+                 toReturn.add((TC) activeChanges.get(t));
             }
         }
         return toReturn;
@@ -223,7 +223,7 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     private static List<ChangeID> deserializeBreadcrumbs(JsonArray json) {
         List<ChangeID> map = new ArrayList<>();
         for (int i = 0; i < json.size(); i++) {
-            map.add(ChangeID.fronJson(json.get(i).getAsJsonObject()));
+            map.add(ChangeID.fromJson(json.get(i).getAsJsonObject()));
         }
         return map;
     }

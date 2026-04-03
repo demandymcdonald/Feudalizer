@@ -11,10 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
 
@@ -30,30 +32,30 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
 
 
     protected static final Logger logger = LoggerFactory.getLogger(TimelineObject.class);
-    public final TimelineChange<? super T> followBreadcrumb(Timeline<T> timeline, ChangeID breadcrumb) {
+    public final <TC extends TimelineChange<? super T>> TC followBreadcrumb(Timeline<T> timeline, ChangeID breadcrumb) {
         TimelineState<T> ts = timeline.getStateAtExact(breadcrumb.getDate(),false);
         if (ts == null){
             logger.warn("Tried to follow breadcrumb whose state doesn't exist: " + breadcrumb);
             return null;
         }
-        TimelineChange<? super T> tc = ts.getChange(breadcrumb);
+        TC tc = ts.getChange(breadcrumb);
         if (tc == null){
             logger.warn("Tried to follow breadcrumb whose change doesn't exist: " + breadcrumb);
             return null;
         }
         return tc;
     }
-    public final List<TimelineChange<? super T>> findChangeByClassID(LocalDate starting, TimeDirection direction, String classType,
-                                                                     final boolean includeDeactivated) {
-        return findChangeByClassID(this.owner.get().getTimeline(), starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType));
+    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, TC example,
+                                                                                     final boolean includeDeactivated) {
+        return findChangeByClassID(timeline,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(example.getClass().getName()));
     }
-    public final List<TimelineChange<? super T>> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, Class<TimelineChange<?>> classType,
+    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, Class<TC> classType,
                                                        final boolean includeDeactivated) {
         return findChangeByClassID(timeline,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType.getName()));
     }
-    public final List<TimelineChange<? super T>> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, final boolean includeDeactivated, Long classID){
-        BiFunction<Long,TimelineState<T>, Optional<List<TimelineChange<? super T>>>> change = (l,ts) -> {
-            List<TimelineChange<? super T>> tc = ts.getChangesByClassID(l);
+    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(Timeline<T> timeline, LocalDate starting, TimeDirection direction, final boolean includeDeactivated, Long classID){
+        BiFunction<Long,TimelineState<T>, Optional<List<TC>>> change = (l,ts) -> {
+            List<TC> tc = ts.getChangesByClassID(l);
             if (!includeDeactivated){
                 tc.removeIf(TimelineChange::isDeactivated);
             }
@@ -80,11 +82,11 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
     private final BiPredicate<ChangeID,TimelineState<T>> predicate = (id,ts) -> {
         return ts == null || ts.getChange(id) == null;
     };
-    public final void removeBreadcrumbs(Timeline<T> timeline, TimelineChange<? super T> changeBeingRemoved, boolean replaceWithLast){
+    public final <TC extends TimelineChange<? super T>> void removeBreadcrumbs(Timeline<T> timeline, TC changeBeingRemoved, boolean replaceWithLast){
         BiConsumer<ChangeID,TimelineState<T>> consumer;
         if (!replaceWithLast){
             final TimelineChange<?> find = timeline.findChangeByClassID(timeline,changeBeingRemoved.getStart().minusDays(1),
-                    TimeDirection.BACKWARD,(Class<TimelineChange<?>>) changeBeingRemoved.getClass(), false).get(0);
+                    TimeDirection.BACKWARD, getChangeClass(changeBeingRemoved), false).get(0);
             find.setEnd(changeBeingRemoved.getEnd());
             consumer = (id,ts) -> {
                 ts.removeBreadcrumb(id);
@@ -139,8 +141,23 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
         }
         return toReturn;
     }
-    public static <T extends DateMutableEntity<T>,TL extends Timeline<T>,S> void iterateAndDo(
-            TL t, TimelineChange<? super T> change, TimeDirection direction,
+    /**
+     * Iterates over the timeline states based on a specified {@code TimelineChange}, performs operations using a
+     * {@code BiConsumer}, and determines when to stop based on a {@code BiPredicate}.
+     *
+     * @param <T>        The type of the timeline entity, extending {@code DateMutableEntity<T>}.
+     * @param <TL>       The type of the timeline, extending {@code Timeline<T>}.
+     * @param <S>        The type of the external state used by the {@code BiConsumer} and {@code BiPredicate}.
+     * @param t          The timeline containing the entities to iterate over.
+     * @param change     The {@code TimelineChange} defining the interval in the timeline for iteration.
+     * @param direction  The direction of iteration, either forward or backward through the timeline.
+     * @param consumer   A {@code BiConsumer} that performs operations using the external state and the current timeline state.
+     * @param shouldEnd  A {@code BiPredicate} that determines whether the iteration should terminate based on the external
+     *                   state and the current timeline state.
+     * @param s          The external state used by the {@code BiConsumer} and {@code BiPredicate}.
+     */
+    public static <T extends DateMutableEntity<T>,TL extends Timeline<T>,TC extends TimelineChange<? super T>,S> void iterateAndDo(
+            TL t, TC change, TimeDirection direction,
             BiConsumer<S,TimelineState<T>> consumer, BiPredicate<S, TimelineState<T>> shouldEnd, final S s){
         LocalDate currentDate = change.getStart().minusDays(2);
         final LocalDate endDate = change.getEnd();
@@ -205,6 +222,58 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
         } else {
             return null;
         }
+    }
+
+
+    /**
+     * Iterates over a map based on the timeline state changes and performs specified operations.
+     *
+     * @param <T>         The type of the timeline entity, which must extend {@code DateMutableEntity<T>}.
+     * @param <TC>        The type of the timeline change, which must extend {@code TimelineChange<? super T>}.
+     * @param <K>         The type of the map's keys.
+     * @param <V>         The type of the map's values.
+     * @param getNext     A function that determines the next {@code ChangeID} in the timeline based on the current timeline state
+     *                    and timeline change.
+     * @param toDo        A consumer that performs an operation using the current timeline change and the provided map.
+     * @param shouldContinue A predicate that determines whether the iteration should continue based on the current date
+     *                       and the provided map.
+     * @param timeline    The timeline of entities to iterate over.
+     * @param starting    The starting {@code ChangeID} to begin the iteration.
+     * @param map         The map to be utilized and potentially modified during the iteration.
+     * @param shouldThrow A flag indicating whether exceptions should be thrown in case of errors, or logged and handled gracefully.
+     */
+    public static <T extends DateMutableEntity<T>,TC extends TimelineChange<? super T>,K,V> void iterateMap(
+            BiFunction<Timeline<T>,TC,ChangeID> getNext, BiConsumer<TC,Map<K,V>> toDo, BiPredicate<LocalDate, Map<K,V>> shouldContinue,
+            Timeline<T> timeline, ChangeID starting, Map<K,V> map, boolean shouldThrow){
+        ChangeID current = starting;
+        boolean contin = true;
+        while(current != null && contin){
+            TC tc = (TC) timeline.followBreadcrumb(current);
+            toDo.accept(tc,map);
+            current = getNext.apply(timeline,tc);
+            try {
+                //Literally here in case I forget that shouldContinue probably shouldn't do a timeline check.
+                //But anything that uses the change SHOULD check for nulls.
+                contin = shouldContinue.test(current.getDate(), map);
+            } catch (Exception e){
+                if (shouldThrow){
+                    throw new IllegalStateException("Could not find a state for " + e);
+                } else {
+                    logger.error("Error suppressed on iterateMap: ",e);
+                    contin = false;
+                }
+            }
+            if (current == null && contin){
+                if (shouldThrow){
+                    throw new IllegalStateException("Could not find a state for iterateMap: " + map);
+                } else {
+                    logger.error("Error suppressed on iterateMap: current == null but continue says to continue: " + map);
+                }
+            }
+        }
+    }
+    public static <T extends DateMutableEntity<T>,TC extends TimelineChange<? super T>> Class<TC> getChangeClass(TC tc){
+        return (Class<TC>) tc.getClass();
     }
     public abstract LocalDate getStart();
     public abstract LocalDate getEnd();

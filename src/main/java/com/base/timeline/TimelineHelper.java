@@ -32,18 +32,7 @@ public class TimelineHelper {
     }
 
 
-    @Deprecated(forRemoval = true)
-    private static <T extends DateMutableEntity<T>> void cleanInternal(Timeline<T> timeline, long breadcrumb, LocalDate startDate, LocalDate newEnd) {
-        TimelineState<T> state = timeline.getStateAt(startDate);
-        LocalDate currentDate = startDate;
-        TimelineChange<? super T> change = (TimelineChange<? super T> ) followBreadcrumb(timeline, breadcrumb, state.getBreadcrumbStart(breadcrumb));
-        while ((currentDate.isBefore(newEnd) || currentDate.isEqual(newEnd)) && state != null) {
-            state.removeBreadcrumb(breadcrumb);
-            state = timeline.getNextState(currentDate);
-            currentDate = state.getStart();
-        }
-        change.setEnd(newEnd);
-    }
+
 
     @Deprecated(forRemoval = true)
     public static <T extends DateMutableEntity<T>> void changePropagateBreadcrumb(Timeline<? extends T> timeline, TimelineChange<? super T> tc) {
@@ -166,7 +155,7 @@ public class TimelineHelper {
                 if (direction == FORWARD){
                     currentLeapFrog = changeFindBreadcrumb(t,mClass.getName(),n.getEnd(),FORWARD,false);
                 } else {
-                    currentLeapFrog = m.getPreviousLeapFrog();
+                    currentLeapFrog = m.getLeapfrog();
                 }
                 if (currentLeapFrog == null){
                     if (throwIfIncomplete){

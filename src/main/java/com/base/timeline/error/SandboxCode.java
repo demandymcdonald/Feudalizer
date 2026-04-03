@@ -22,13 +22,13 @@ public enum SandboxCode {
 
     //0 End Cancel
     //1 End Save
-    //2 Sandbox Branching
-    //3 Replace with New
-    //4
+    //2 MapMergeEnd
+    //3 Sandbox Branching
+    //4 Replace with New
     //5 Override
     //6 Ignore
     //7
     //8
-    //9
+    //9 MapMergeContinue
     //10 Accept
 }

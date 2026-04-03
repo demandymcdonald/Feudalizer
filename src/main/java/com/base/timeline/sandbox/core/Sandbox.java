@@ -176,7 +176,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
             }
             count++;
             if (count >= completeErrors.size()) {
-                newChange.advance(subject,ts,error.getExistingChange(),isActiveState.get());
+                newChange.advanceStage(subject,ts,error.getExistingChange(),isActiveState.get());
                 break;
             }
         }

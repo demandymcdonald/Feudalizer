@@ -15,8 +15,8 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> exten
     }
 
     @Override
-    public final void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> change, boolean isFirstAdvance) {
-        super.advance(entity, currentState, change, isFirstAdvance);
+    public final void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> change, boolean isFirstAdvance) {
+        super.advanceStage(entity, currentState, change, isFirstAdvance);
     }
 
     @Override

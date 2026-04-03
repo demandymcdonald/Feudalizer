@@ -5,6 +5,7 @@ import com.base.AbstractMutableManager;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.error.SandboxCode;
@@ -229,7 +230,18 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         fromJson(o);
         isLoaded = true;
     }
-
+    //==== Shortcut Methods ====
+    public final <TC extends TimelineChange<? super T>> TC followBreadcrumb(ChangeID id){
+        return followBreadcrumb(this,id);
+    }
+    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(LocalDate starting, Global.TimeDirection direction, String classType,
+                                                                     final boolean includeDeactivated) {
+        return findChangeByClassID(this, starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType));
+    }
+    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(LocalDate starting, Global.TimeDirection direction, TC example,
+                                                                                     final boolean includeDeactivated) {
+        return findChangeByClassID(this,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(example.getClass().getName()));
+    }
     //==== Serializers ====
 
     public JsonObject toJson(){
@@ -249,4 +261,5 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
             timeline.put(state.getStart(),state);
         }
     }
+
 }

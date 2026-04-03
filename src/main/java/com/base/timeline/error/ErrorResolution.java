@@ -2,6 +2,7 @@ package com.base.timeline.error;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.TimelineMapChange;
 import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
@@ -72,7 +73,7 @@ public abstract class ErrorResolution implements Displayable {
 
         @Override
         public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            newChange.advance(entity,state,oldChange,false);
+            newChange.advanceStage(entity,state,false);
             return SandboxCode.CONTINUE;
         }
     }
@@ -103,7 +104,39 @@ public abstract class ErrorResolution implements Displayable {
 
         @Override
         public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            newChange.advance(entity,state,oldChange,false);
+            newChange.advanceStage(entity,state,false);
+            return CONTINUE;
+        }
+    }
+    public static class MapMergeEnd extends ErrorResolution {
+        public MapMergeEnd() {
+            super("map_merge","Merge","merge the two",3,false,END_SAVE);
+        }
+
+
+        @Override
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
+            if (newChange instanceof TimelineMapChange<?,?,?,?> currentTMC && oldChange instanceof TimelineMapChange<?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
+                oldTMC.merge(currentTMC);
+                return END_SAVE;
+            }
+
+
+            newChange.advanceStage(entity,state,false);
+            return CONTINUE;
+        }
+    }
+    public static class MapMergeContinue extends ErrorResolution {
+        public MapMergeContinue() {
+            super("map_merge","Merge","merge the two",9,false,CONTINUE);
+        }
+        @Override
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
+            if (newChange instanceof TimelineMapChange<?,?,?,?> currentTMC && oldChange instanceof TimelineMapChange<?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
+                currentTMC.merge(oldTMC);
+                newChange.override(state,oldTMC,true,false);
+                return END_SAVE;
+            }
             return CONTINUE;
         }
     }
@@ -126,7 +159,7 @@ public abstract class ErrorResolution implements Displayable {
     public static class SandboxBranching<R extends DateMutableEntity<R>> extends ErrorResolution {
         private final Objective<R> objective;
         public SandboxBranching(String branchingSubID, String displayName, String description, Objective<R> newObjective) {
-            super("mut_sandbox_branch:"+branchingSubID,displayName,description,2,true,RESTART_FROM_STATE);
+            super("mut_sandbox_branch:"+branchingSubID,displayName,description,3,true,RESTART_FROM_STATE);
             objective = newObjective;
         }
         @Override
@@ -142,7 +175,7 @@ public abstract class ErrorResolution implements Displayable {
     public static class ReplaceExistingWithNew extends ErrorResolution {
         private final TimelineChange<?> replace;
         public ReplaceExistingWithNew(String replaceSubID, String replaceTitle, String replaceDescription, TimelineChange<?> replace) {
-            super("mut_replace:" + replaceSubID,replaceTitle,replaceDescription,3,true,SandboxCode.RESTART_FROM_STATE);
+            super("mut_replace:" + replaceSubID,replaceTitle,replaceDescription,4,true,SandboxCode.RESTART_FROM_STATE);
             this.replace = replace;
         }
         @Override

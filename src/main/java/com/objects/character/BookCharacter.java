@@ -6,6 +6,7 @@ import com.base.timeline.change.changes.TimelineChange;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.objects.character.opinion.Opinion;
 import com.objects.family.Family;
 import com.objects.house.House;
 import com.objects.title.Title;
@@ -52,7 +53,7 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     private String surname;
     private Gender gender;
     private Orientation orientation;
-    //private final Map<UUID, Opinion> opinions = new HashMap<>();
+    private final Map<UUID, Opinion> opinions = new HashMap<>();
 
     //TODO Add: Religion, Culture, Political Ideology.
 
@@ -105,6 +106,7 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
 
     @Override
     public void doDateChange() {
+        opinions.clear();
         linked_house = Optional.empty();
         linked_families.clear();
         linked_titles.clear();
@@ -164,6 +166,10 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     }
     public void internalSetOrientation(Orientation orientation){
         this.orientation = orientation;
+    }
+    public void internalSetOpinionMap(Map<UUID, Opinion> opinions){
+        this.opinions.clear();
+        this.opinions.putAll(opinions);
     }
 //    public void internalSetOpinion(Map<UUID, Opinion> opinions){
 //        this.opinions.clear();

@@ -3,6 +3,7 @@ package com.base.timeline.change.changes;
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.ObjectType;
+import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
@@ -46,7 +47,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     private List<DMEReference<?>> sandbox_newSaves = new ArrayList<>();
     private LocalDate end;
     private boolean deactivated = false;
-    private boolean isStatic = false;
     private final Map<Long,String> resolutionLog = new HashMap<>();
     protected TimelineChange(DMEReference<? extends T> owner, LocalDate date) {
         this.owner = owner;
@@ -80,13 +80,14 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
      */
     public void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
         onApply(entity,currentState);
-        //may merge with onApply if I don't need any additional logic in here
     }
-    public void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> change, boolean isFirstAdvance){
-        onAdvance(entity, currentState,change,isFirstAdvance);
+    public void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance){
+        onStageAdvance(entity, currentState,isFirstAdvance);
 
     }
-
+    public void continueSearch(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> oldChange){
+        onContinue(entity,currentState,oldChange);
+    }
     public void override(TimelineState<? extends T> currentState, TimelineChange<?>  beingOverwritten, boolean isSandbox, boolean destructive){
         onOverwrite(getOwner(),currentState,beingOverwritten,destructive);
         if (destructive){
@@ -128,12 +129,18 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
     }
     public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
+
+        Timeline<? extends T> timeline = owner.get().getTimeline();
+        TimelineState<? extends T> oldState = timeline.getStateAt(getStart());
+        TimelineState<? extends T> newState = timeline.getStateAt(start);
         if (newStart != null){
             start = newStart;
         }
         if (newEnd != null){
             end = newEnd;
         }
+        //TODO figure out if this needs to move itself over to a new state.. Right now it's internal to state so no.
+        onMove(newStart,newEnd,newState,oldState);
     }
     public List<DMEReference<?>> getNewSaves(){
         List<DMEReference<?>> toReturn = new ArrayList<>(sandbox_newSaves);
@@ -148,14 +155,13 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     //==================================================================================================================
     //What to do when the provided object is getting the change from this object applied to it.
     protected abstract void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState);
-    protected void onContinue(){}
+    protected void onContinue(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> oldChange){}
     protected void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingOverwritten, boolean destructive){};
     protected void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingNullified){}
     protected void onDeactivate(){}
     protected void onReactivate(){}
-    protected void onAdvance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> passingtChange, boolean isFirstAdvance){}
-    protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<T> newState, TimelineState<? super T> oldState){}
-
+    protected void onStageAdvance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance){}
+    protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<? extends T> newState, TimelineState<? extends T> oldState){}
     public boolean isOpposite(TimelineChange<?>state){
         return oppositeChanges().contains(state.getClass());
     }
@@ -250,21 +256,21 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         resolutionLog.put(error.getLongID(),resolutionCode);
     }
 
-    private final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
+    protected final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
             Suppliers.memoize(() -> {
                 List<Condition<ConditionResult.Nullify,? super T>> conditions = new ArrayList<>();
                 conditions.addAll(NullifyConditions.BaseConditions());
                 conditions.addAll(this.buildNullifyConditions());
                 return conditions;
             });
-    private final Supplier<List<Condition<StateError,? super T>>> applyConditions =
+    protected final Supplier<List<Condition<StateError,? super T>>> applyConditions =
             Suppliers.memoize(() -> {
                 List<Condition<StateError,? super T>> conditions = new ArrayList<>();
                 conditions.addAll(ApplyConditions.BaseConditions());
                 conditions.addAll(this.buildApplyConditions());
                 return conditions;
             });
-    private final Supplier<List<Condition<StateError,? super T>>> deactivateConditions =
+    protected final Supplier<List<Condition<StateError,? super T>>> deactivateConditions =
             Suppliers.memoize(() -> {
                 List<Condition<StateError,? super T>> conditions = new ArrayList<>();
                 //conditions.addAll(DeactivateConditions.BaseConditions());
@@ -281,15 +287,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
 
 
 
-    public boolean shouldSandbox(){
-        return true;
-    }
-    protected void setStatic(){
-        isStatic = true;
-    }
-    public final boolean isStatic(){
-        return isStatic;
-    }
 
 
 
@@ -298,14 +295,12 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public void mainSave(JsonObject o) {
         o.addProperty("end",end.toEpochDay());
         o.addProperty("deactivated",deactivated);
-        o.addProperty("isStatic",isStatic);
         o.add("resLog", serializeResolutionLog());
     }
     @Override
     public void mainLoad(JsonObject object) {
         end = LocalDate.ofEpochDay(object.get("end").getAsLong());
         deactivated = object.get("deactivated").getAsBoolean();
-        isStatic = object.get("isStatic").getAsBoolean();
         deserializeResolutionLog(object.getAsJsonArray("resLog"));
     }
     private JsonArray serializeResolutionLog(){

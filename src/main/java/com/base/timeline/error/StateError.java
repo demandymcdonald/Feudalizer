@@ -161,6 +161,10 @@ public class StateError implements ConditionResult {
                 "Run Succession Planner", "grant the title to an heir using Succession Planner", o));
     }
 
+    public StateError addMergeContinue(){
+
+    }
+
     public StateError addOption(ErrorResolution option){
         options.put(option.getID(),option);
         return this;
