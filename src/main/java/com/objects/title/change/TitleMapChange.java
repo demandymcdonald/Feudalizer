@@ -26,23 +26,11 @@ public class TitleMapChange {
         }
 
         @Override
-        protected JsonElement serializeK(DMEReference<? extends Title<?>> dmeReference) {
-            return dmeReference.serialize();
-        }
-        @Override
-        protected DMEReference<? extends Title<?>> deserializeK(JsonElement m) {
-            return DMEReference.deserialize(m.getAsJsonObject());
+        protected boolean hasEndingChanges() {
+            return true;
         }
 
-        @Override
-        protected Title.Relationship deserializeV(JsonElement m) {
-            return Title.Relationship.valueOf(m.getAsString());
-        }
 
-        @Override
-        protected JsonElement serializeV(Title.Relationship relationship) {
-            return new JsonPrimitive(relationship.name());
-        }
 
         @Override
         protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
@@ -65,14 +53,20 @@ public class TitleMapChange {
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super T>> buildNullifyConditions() {
-            return List.of();
+        protected void applyConditions(List<Condition<StateError, ? super T>> conditions) {
+             super.applyConditions(conditions);
+
         }
 
         @Override
-        protected List<Condition<StateError, ? super T>> buildCanDeactivateConditions() {
-            return List.of();
+        protected void nullifyConditions(List<Condition<ConditionResult.Nullify, ? super T>> nullConditions) {
         }
+
+        @Override
+        protected void deactivateConditions(List<Condition<StateError, ? super T>> conditions) {
+
+        }
+
 
         @Override
         public void additionalSave(JsonObject data) {
@@ -82,6 +76,24 @@ public class TitleMapChange {
         @Override
         public void additionalLoad(JsonObject data) {
 
+        }
+        @Override
+        protected JsonElement serializeK(DMEReference<? extends Title<?>> dmeReference) {
+            return dmeReference.serialize();
+        }
+        @Override
+        protected DMEReference<? extends Title<?>> deserializeK(JsonElement m) {
+            return DMEReference.deserialize(m.getAsJsonObject());
+        }
+
+        @Override
+        protected Title.Relationship deserializeV(JsonElement m) {
+            return Title.Relationship.valueOf(m.getAsString());
+        }
+
+        @Override
+        protected JsonElement serializeV(Title.Relationship relationship) {
+            return new JsonPrimitive(relationship.name());
         }
     }
 }

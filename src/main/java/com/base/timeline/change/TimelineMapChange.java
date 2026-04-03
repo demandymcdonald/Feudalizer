@@ -162,10 +162,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     }
 
     @Override
-    protected List<Condition<StateError, ? super T>> buildApplyConditions() {
-        return List.of(
-                new ShouldMerge()
-        );
+    protected void applyConditions(List<Condition<StateError, ? super T>> conditions) {
+        conditions.add(new ShouldMerge());
     }
 
     //==== Event Methods ====
@@ -215,7 +213,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         return activeChanges.size();
     }
     public boolean hasOtherApplyChecks(){
-        return this.applyConditions.get().size() > 1;
+        return this.getApplyConditions().size() > 1;
     }
     public List<K> getEndingChanges(){
         return endingChanges;

@@ -51,6 +51,11 @@ public class CharacterMapChanges {
         }
 
         @Override
+        protected boolean hasEndingChanges() {
+            return true;
+        }
+
+        @Override
         public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
             return List.of();
         }
@@ -128,13 +133,13 @@ public class CharacterMapChanges {
 
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of();
+        protected void deactivateConditions(List<Condition<StateError, ? super BookCharacter>> list) {
+
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildCanDeactivateConditions() {
-            return List.of();
+        protected void nullifyConditions(List<Condition<ConditionResult.Nullify, ? super BookCharacter>> list) {
+
         }
 
         @Override

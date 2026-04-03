@@ -218,7 +218,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
 
 
 
-    public LocalDate getStart() {
+    public final LocalDate getStart() {
         return start;
     }
 
@@ -240,7 +240,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         map.add(reference);
     }
 
-    public boolean isDeactivated(){
+    public final boolean isDeactivated(){
         return deactivated;
     }
 
@@ -256,31 +256,39 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         resolutionLog.put(error.getLongID(),resolutionCode);
     }
 
-    protected final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
+    private final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
             Suppliers.memoize(() -> {
                 List<Condition<ConditionResult.Nullify,? super T>> conditions = new ArrayList<>();
                 conditions.addAll(NullifyConditions.BaseConditions());
-                conditions.addAll(this.buildNullifyConditions());
+                this.nullifyConditions(conditions);
                 return conditions;
             });
-    protected final Supplier<List<Condition<StateError,? super T>>> applyConditions =
+    private final Supplier<List<Condition<StateError,? super T>>> applyConditions =
             Suppliers.memoize(() -> {
                 List<Condition<StateError,? super T>> conditions = new ArrayList<>();
                 conditions.addAll(ApplyConditions.BaseConditions());
-                conditions.addAll(this.buildApplyConditions());
+                this.applyConditions(conditions);
                 return conditions;
             });
-    protected final Supplier<List<Condition<StateError,? super T>>> deactivateConditions =
+    private final Supplier<List<Condition<StateError,? super T>>> deactivateConditions =
             Suppliers.memoize(() -> {
                 List<Condition<StateError,? super T>> conditions = new ArrayList<>();
                 //conditions.addAll(DeactivateConditions.BaseConditions());
-                conditions.addAll(this.buildCanDeactivateConditions());
+                this.deactivateConditions(conditions);
                 return conditions;
             });
-    protected abstract List<Condition<StateError,? super T>> buildApplyConditions();
-    protected abstract List<Condition<ConditionResult.Nullify,? super T>> buildNullifyConditions();
-    protected abstract List<Condition<StateError,? super T>> buildCanDeactivateConditions();
-
+    protected abstract void applyConditions(List<Condition<StateError,? super T>> list);
+    protected abstract void nullifyConditions(List<Condition<ConditionResult.Nullify,? super T>> list);
+    protected abstract void deactivateConditions(List<Condition<StateError,? super T>> list);
+    protected final List<Condition<StateError,? super T>> getApplyConditions(){
+        return applyConditions.get();
+    }
+    protected final List<Condition<ConditionResult.Nullify,? super T>> getNullifyConditions(){
+        return nullConditions.get();
+    }
+    protected final List<Condition<StateError,? super T>> getDeactivateConditions(){
+        return deactivateConditions.get();
+    }
 
 
 
