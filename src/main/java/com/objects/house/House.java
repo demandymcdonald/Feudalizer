@@ -1,9 +1,11 @@
-package com.objects.people;
+package com.objects.house;
 
 import com.Global;
 import com.base.StateChangeKey;
 import com.base.reference.DMEReference;
 import com.objects.character.BookCharacter;
+import com.objects.family.Family;
+import com.objects.family.FamilyManager;
 import com.objects.title.land.County;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;

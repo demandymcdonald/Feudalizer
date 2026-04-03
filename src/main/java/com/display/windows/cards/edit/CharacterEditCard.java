@@ -3,7 +3,7 @@ package com.display.windows.cards.edit;
 import com.base.DMRegistry;
 import com.objects.character.BookCharacter;
 import com.objects.character.CharacterManager;
-import com.objects.people.House;
+import com.objects.house.House;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;

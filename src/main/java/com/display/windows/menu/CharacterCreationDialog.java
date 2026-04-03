@@ -3,7 +3,7 @@ package com.display.windows.menu;
 import com.Global;
 import com.objects.character.BookCharacter;
 import com.objects.character.CharacterManager;
-import com.objects.people.House;
+import com.objects.house.House;
 import com.base.DMRegistry;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

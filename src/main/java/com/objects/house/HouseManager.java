@@ -1,9 +1,10 @@
-package com.objects.people;
+package com.objects.house;
 
 import com.base.AbstractMutableManager;
 import com.base.ObjectType;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
+import com.objects.family.Family;
 import com.objects.title.Title;
 
 import java.util.HashSet;

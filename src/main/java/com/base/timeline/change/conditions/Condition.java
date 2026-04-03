@@ -23,11 +23,9 @@ import java.util.Optional;
  */
 public abstract class Condition<R extends ConditionResult, T extends DateMutableEntity<T>> implements iCondition{
         private final String id;
-        private final boolean shouldInvalidate;
 
-    public Condition(String id, boolean shouldInvalidate) {
+    public Condition(String id) {
         this.id = id;
-        this.shouldInvalidate = shouldInvalidate;
     }
 
     public static <R extends ConditionResult, T extends DateMutableEntity<T>> Optional<R> checkHelper(Condition<R,T> condition, DMEReference<? extends T> entity, TimelineChange<?> thisChange, TimelineChange<?> checkAgainst){
@@ -40,9 +38,7 @@ public abstract class Condition<R extends ConditionResult, T extends DateMutable
     };
 
     protected abstract Optional<R> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst);
-    public final boolean shouldInvalidate() {
-        return shouldInvalidate;
-    }
+
     @Override
     public String getCode() {
         return id;

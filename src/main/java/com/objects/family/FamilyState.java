@@ -1,4 +1,4 @@
-package com.objects.people;
+package com.objects.family;
 
 import com.base.timeline.TimelineContainer;
 import com.google.gson.JsonArray;

@@ -1,4 +1,4 @@
-package com.objects.people;
+package com.objects.family;
 
 import com.Feudalizer;
 import com.Global;
@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FamilyManager extends AbstractMutableManager<Family,FamilyState> {
+public class FamilyManager extends AbstractMutableManager<Family, FamilyState> {
     public static List<Family> getNuclear(BookCharacter bookCharacter) {
         List<Family> families = new ArrayList<>();
         for (Map.Entry<Family,FamilyRelationship> family : bookCharacter.getFamilies().entrySet()) {

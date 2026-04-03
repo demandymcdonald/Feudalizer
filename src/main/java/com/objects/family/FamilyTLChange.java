@@ -1,6 +1,7 @@
-package com.base.timeline.change.changes;
+package com.objects.family;
 
 import com.base.reference.DMEReference;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
@@ -8,7 +9,6 @@ import com.base.timeline.error.StateError;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
-import com.objects.people.Family;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;

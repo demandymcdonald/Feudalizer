@@ -13,12 +13,8 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements J
     private final DMEReference<BookCharacter> subject;
 
 
-
-    private final boolean isProjected;
-
-    protected SuccessionEntry(DMEReference<BookCharacter> subject, boolean isProjected) {
+    protected SuccessionEntry(DMEReference<BookCharacter> subject) {
         this.subject = subject;
-        this.isProjected = isProjected;
     }
 
     protected enum Type{

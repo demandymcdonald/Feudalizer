@@ -13,6 +13,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -28,14 +29,12 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     //Full modifier history is reconstructable via scrub-back if needed, but not stored redundantly in every keyframe
     //Forward propagation handles expected-size consistency automatically — adding/removing a relationship mid-timeline just increments/decrements an int during the existing propagation pass
     //The same pattern applies recursively to the diff history within each relationship entry
-    private final Class<M> base;
-    private Pair<Long, LocalDate> leapfrog;
+    private ChangeID leapfrog;
     private int cumulitiveSize;
     private Map<K,V> changes = new HashMap<>();
 
-    protected TimelineMapChange(Class<M> base,DMEReference<T> owner,  LocalDate date) {
+    protected TimelineMapChange(DMEReference<T> owner,  LocalDate date) {
         super(owner, date);
-        this.base = base;
     }
 
     public final Map<K,V> buildMap(Timeline<? extends T> t){
@@ -62,7 +61,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
             }
             return fresh;
         };
-        return TimelineHelper.doMapChangeLeapFrog(t,leapfrog,function,base,finalTotal,consumer,toReturn,true,BACKWARD,true);
+        return TimelineHelper.doMapChangeLeapFrog(t,leapfrog,function,getBase(),finalTotal,consumer,toReturn,true,BACKWARD,true);
     }
 
     private void addChange(Pair<K,V>... changes){
@@ -108,9 +107,9 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     protected abstract JsonElement serializeV(V v);
 
     @Override
-    public final void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<? super T> newState, boolean isFirstAdvance) {
+    public final void advance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> newChange, boolean isFirstAdvance) {
         if (isFirstAdvance) {
-            Pair<Long,LocalDate> last = TimelineHelper.changeFindBreadcrumb(entity.get().getTimeline(), this.getClass().getName(), this.getStart(), BACKWARD,false);
+            List<TimelineChange<? super T>> last = (List<TimelineChange<? super T>>) currentState.findChangeByClassID(newChange.getStart(),BACKWARD,this.getClass().getName(),false);
             if (last != null){
                 this.leapfrog = last;
                 TimelineChange<? super T> tlc = (TimelineChange<? super T>) TimelineHelper.changeFollowBreadcrumb(entity.get().getTimeline(), leapfrog.getKey(),leapfrog.getValue());
@@ -126,7 +125,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
                 }
             }
         }
-        super.advance(entity,currentState, newState, isFirstAdvance);
+        super.advance(entity,currentState, newChange, isFirstAdvance);
     }
 
     @Override
@@ -149,8 +148,9 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         Do opposite of reactivate
         super.reactivate(isSandbox);
     }
+
     @Override
-    public final void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> changeToNullify) {
+    public final void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<?> changeToNullify) {
         super.nullify(entity, state, changeToNullify);
     }
 
@@ -163,7 +163,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     public final void overwrite(TimelineState<? extends T> currentState, TimelineChange<? super T> beingOverwritten, boolean destructive) {
         super.override(currentState, beingOverwritten, destructive);
     }
-
+    public abstract Class<M> getBase();
 
 
     @Override

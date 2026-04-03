@@ -1,4 +1,4 @@
-package com.objects.people;
+package com.objects.house;
 
 import com.base.timeline.TimelineContainer;
 import com.google.common.collect.HashMultimap;
@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
+import com.objects.family.Family;
 import com.objects.title.land.County;
 
 import java.util.HashMap;

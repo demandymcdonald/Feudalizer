@@ -6,8 +6,8 @@ import com.base.timeline.change.changes.TimelineChange;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.objects.people.Family;
-import com.objects.people.House;
+import com.objects.family.Family;
+import com.objects.house.House;
 import com.objects.title.Title;
 
 import java.time.LocalDate;

@@ -110,11 +110,6 @@ public class DMEReference<T extends DateMutableEntity<T>> extends StateReference
         }
          return cached;
     }
-    public static <T extends DateMutableEntity<T>> DMEReference<T>[] of(T... entity){
-        DMEReference<T>[] references = new DMEReference[entity.length];
-        for (int i = 0; i < entity.length; i++) references[i] = of(entity[i]);
-        return references;
-    }
     public static <T extends DateMutableEntity<T>> DMEReference<T> of(Class<T> type, UUID uuid){
         long h = doHash(uuid,type);
         DMEReference<T> cached = (DMEReference<T>) CACHE.getIfPresent(h);
@@ -127,7 +122,7 @@ public class DMEReference<T extends DateMutableEntity<T>> extends StateReference
     public long hash(){
         return doHash(uuid,type);
     }
-    private static <T extends DateMutableEntity<T>> long doHash(UUID uuid, Class<T> type){
+    private static <T extends DateMutableEntity<?>> long doHash(UUID uuid, Class<T> type){
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putLong(uuid.getMostSignificantBits());
         hasher.putLong(uuid.getLeastSignificantBits());

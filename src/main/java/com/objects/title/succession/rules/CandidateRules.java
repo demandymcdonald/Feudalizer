@@ -1,14 +1,14 @@
 package com.objects.title.succession.rules;
 
 import com.objects.character.BookCharacter;
-import com.objects.people.Family;
-import com.objects.people.FamilyManager;
+import com.objects.family.Family;
+import com.objects.family.FamilyManager;
 import com.objects.title.Title;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.objects.people.FamilyManager.getAllSpouses;
+import static com.objects.family.FamilyManager.getAllSpouses;
 
 public interface CandidateRules {
     static List<BookCharacter> DirectFamily (Title<?> title) {

@@ -5,8 +5,8 @@ import com.base.ObjectType;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
-import com.objects.people.Family;
-import com.objects.people.House;
+import com.objects.family.Family;
+import com.objects.house.House;
 import com.objects.title.Title;
 
 import java.util.HashSet;

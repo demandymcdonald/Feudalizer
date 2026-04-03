@@ -54,15 +54,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public final UUID getId() {
         return id;
     }
-    @Override
-    public final void mainSave(JsonObject json) {
-        json.add("timeline", timeline.toJson());
-    }
-    @Override
-    public final void mainLoad(JsonObject json) {
-        JsonObject timelineJson = json.get("timeline").getAsJsonObject();
-        timeline.fromJson(timelineJson);
-    }
+
     public LocalDate getCreated(){
         return timeline.getStart();
     };
@@ -125,5 +117,27 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
             Changes.add(c.supply(date,ref));
         }
         return Changes;
+    }
+    @Override
+    public final JsonObject serialize() {
+        return SuperclassSerializable.super.serialize();
+    }
+    @Override
+    public final void deserialize(JsonObject data) {
+        SuperclassSerializable.super.deserialize(data);
+    }
+    @Override
+    public final void mainSave(JsonObject json) {
+        json.add("timeline", timeline.toJson());
+    }
+    @Override
+    public final void mainLoad(JsonObject json) {
+        JsonObject timelineJson = json.get("timeline").getAsJsonObject();
+        timeline.fromJson(timelineJson);
+    }
+    @Override
+    public final void metadataSave(JsonObject data) {
+        SuperclassSerializable.super.metadataSave(data);
+        data.addProperty("id",id.toString());
     }
 }

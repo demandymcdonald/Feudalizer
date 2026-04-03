@@ -1,7 +1,6 @@
 package com.objects.title.succession;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineContainer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
@@ -13,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-public class SuccessionContainer implements TimelineContainer<SuccessionContainer> {
+public class SuccessionContainer {
     TreeMap<LocalDate, SuccessionEntry<?>> entries = new TreeMap<>();
 
-    @Override
-    public JsonObject getSerialized() {
+
+    public JsonObject serialize() {
         JsonObject json = new JsonObject();
         JsonArray array = new JsonArray();
 
@@ -33,8 +32,8 @@ public class SuccessionContainer implements TimelineContainer<SuccessionContaine
         return json;
     }
 
-    @Override
-    public SuccessionContainer getDeserialized(JsonObject json) {
+
+    public SuccessionContainer deserialize(JsonObject json) {
         JsonArray array = json.get("entries").getAsJsonArray();
         for (int i = 0; i < array.size(); i++) {
             JsonObject o = array.get(i).getAsJsonObject();
@@ -50,10 +49,6 @@ public class SuccessionContainer implements TimelineContainer<SuccessionContaine
         return this;
     }
 
-    @Override
-    public String Header() {
-        return "SuccessionContainer";
-    }
     public List<DMEReference<BookCharacter>> getAllHolders(){
         List<DMEReference<BookCharacter>> holders = new ArrayList<>();
         for (SuccessionEntry<?> entry : entries.values()){
@@ -65,10 +60,10 @@ public class SuccessionContainer implements TimelineContainer<SuccessionContaine
         return new ArrayList<>(entries.values());
     }
     public SuccessionEntry<?> getEntry(LocalDate date){
-        return entries.get(date);
+        return entries.floorEntry(date).getValue();
     }
-    public SuccessionEntry<?> getNext(LocalDate date){
-        return entries.higherEntry(date).getValue();
+    public SuccessionEntry<?> getAfter(LocalDate date){
+        return entries.ceilingEntry(date).getValue();
     }
     public void addEntry(LocalDate date, SuccessionEntry<?> entry){
         entries.put(date,entry);
