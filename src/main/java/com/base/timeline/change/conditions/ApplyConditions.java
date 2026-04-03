@@ -2,8 +2,8 @@ package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.flags.StateError;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.error.StateError;
+import com.base.timeline.change.changes.TimelineChange;
 
 import java.util.List;
 import java.util.Optional;

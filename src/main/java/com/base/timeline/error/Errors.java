@@ -1,9 +1,9 @@
-package com.base.timeline.flags;
+package com.base.timeline.error;
 
 import com.base.DateMutableEntity;
 import com.base.reference.SimpleReference;
 import com.base.timeline.TimelineChangeState;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.change.changes.TitleTLChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
@@ -14,19 +14,15 @@ import java.time.LocalDate;
 
 public class Errors {
     public static StateError duplicateError(TimelineChange<?> oldChange) {
-        return new StateError(SimpleReference.of("Duplicate Entry"), oldChange).addOverride();
+        return new StateError("gen_duplicate",SimpleReference.of("Duplicate Entry"), oldChange).addOverride();
     }
 
     public static StateError newInvalidatesOldError(TimelineChange<?> oldChange) {
-        return new StateError(SimpleReference.of("New invalidates old"),oldChange).addOverride().addIgnore().addEndState().addEndCancel();
+        return new StateError("gen_new_invalidates_old",SimpleReference.of("New invalidates old"),oldChange).addOverride().addIgnore().addEndSave().addEndCancel();
     }
 
     public static StateError oldInvalidatesNewError(TimelineChange<?> oldChange) {
-        return new StateError(SimpleReference.of("Old invalidates new"),oldChange).addOverride().addIgnore().addEndState().addEndCancel();
-    }
-
-    public static StateError newStateNullifiedbyOldError(TimelineChange<?> oldChange) {
-        return new StateError(SimpleReference.of("New state nullified by old"),oldChange).addOverride().addEndState().addEndCancel();
+        return new StateError("gen_old_invalidates_new",SimpleReference.of("Old invalidates new"),oldChange).addOverride().addIgnore().addEndSave().addEndCancel();
     }
 
     public static StateError newHolderDead(TitleTLChange<?> title,TimelineChange<?> oldChange) {
@@ -34,7 +30,7 @@ public class Errors {
         return new StateError(SimpleReference.of("New holder dead"),oldChange);
     }
     public static StateError loopError(TimelineChange<?> oldChange) {
-        return new StateError(SimpleReference.of("Loop Detected"),oldChange).addOverride().addEndState().addEndCancel();
+        return new StateError(SimpleReference.of("Loop Detected"),oldChange).addOverride().addEndSave().addEndCancel();
     }
     public static StateError nullifyError(TimelineChange<?> oldChange) {
         return new StateError(SimpleReference.of("Nullify Entry"),oldChange).addNullify().addEndState().addEndCancel();
@@ -50,16 +46,16 @@ public class Errors {
     }
     public static StateError alreadyHasAParent(DateMutableEntity<?> child, DateMutableEntity<?> newParent, DateMutableEntity<?> oldParent, TimelineChange<?> oldChange) {
         //TODO write error message which includes DMR for each thing.
-        return new StateError(SimpleReference.of("Already has parent"),oldChange).addOverride().addContinue().addEndState().addEndCancel();
+        return new StateError(SimpleReference.of("Already has parent"),oldChange).addOverride().addContinue().addEndSave().addEndCancel();
     }
     public static StateError wrongFaction(BookCharacter ch, Title<?> title,TimelineChange<?> oldChange, String existingText) {
         StateError error = new StateError(SimpleReference.of(existingText),oldChange);
-        error.addEndState().addEndCancel().addCharacterLeaveFaction(ch,title);
+        error.addEndSave().addEndCancel().addCharacterLeaveFaction(ch,title);
         return error;
     }
     public static StateError aboveMaxTitle(String existingText,TimelineChange<?> oldChange) {
         StateError error = new StateError(SimpleReference.of(existingText),oldChange);
-        error.addIgnore().addEndState().addEndCancel();
+        error.addIgnore().addEndSave().addEndCancel();
         return error;
     }
     public static StateError outOfBounds(TimelineChange<?> existingChange, LocalDate) {

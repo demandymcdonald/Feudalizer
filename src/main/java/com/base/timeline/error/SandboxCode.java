@@ -1,4 +1,4 @@
-package com.base.timeline.flags;
+package com.base.timeline.error;
 
 public enum SandboxCode {
     CONTINUE(false),

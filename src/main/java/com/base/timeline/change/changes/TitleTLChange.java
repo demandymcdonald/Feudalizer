@@ -2,8 +2,7 @@ package com.base.timeline.change.changes;
 
 import com.Global;
 import com.base.ObjectType;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.flags.StateError;
+import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.conditions.Condition;
@@ -18,7 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.base.timeline.change.TimelineChange.ChangeTags.*;
+import static com.base.timeline.change.changes.TimelineChange.ChangeTags.*;
 
 public abstract class TitleTLChange<T extends Title<T>> extends TimelineChange<T> {
     private final DMEReference<T> title;

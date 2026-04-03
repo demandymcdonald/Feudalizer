@@ -5,8 +5,9 @@ import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.google.gson.JsonObject;
+import com.objects.CauseOfEnd;
 import com.utilities.SuperclassSerializable;
 
 import javax.annotation.Nullable;
@@ -28,10 +29,10 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T,?>> initialState) {
         this.id = id;
         this.reference = DMEReference.of(this.getClass(),id);
-        this.timeline = new Timeline<T>((T) this,reference,created,ended,initialState);
+        this.timeline = new Timeline<>((T) this,reference,created,ended,initialState);
     }
-    public DateMutableEntity(LocalDate created, @Nullable LocalDate ended, List<TimelineChange<? super T>> initialState) {
-        this(UUID.randomUUID(), created, ended, initialState);
+    public DateMutableEntity(LocalDate created, LocalDate ended, List<ChangeSupplier<T,?>> initialState){
+        this(UUID.randomUUID(),created,ended,initialState);
     }
     public DateMutableEntity(DMEReference<T> dme) {
         if (dme == null) throw new NullPointerException("DMEReference cannot be null");
@@ -72,25 +73,25 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
         return reference;
     }
     //use to add any shortcut/linked entries to other objects (for example, family adding a shortcut link to itself in every member)
-    public abstract void onLink();
+    protected abstract void onLink();
     //Use to clear any shortcut/linked variables.
     public abstract void doDateChange();
     public void onDateChange(){
         doDateChange();
-        timeline.doTimeChange((T)this,current());
-
+        timeline.doTimeChange(current());
     }
     public void relink(){
-
+        onLink();
     }
+
     protected final LocalDate current(){
         return Global.getDate();
     }
-    protected final boolean  setCreated(LocalDate created){
-        return timeline.moveStart(created);
+    protected final void setCreated(LocalDate created){
+        timeline.moveStart(created);
     }
-    protected final boolean setEnded(LocalDate ended){
-        return timeline.moveEnd(ended);
+    protected final void setEnded(LocalDate ended){
+        timeline.moveEnd(ended);
     }
     public TimelineState<T>[] getAllStates(){
         return timeline.getStates();
@@ -105,6 +106,24 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public final Timeline<T> getTimeline(){
         return timeline;
     }
-    public abstract <M extends AbstractMutableManager<M,T,?>> M getManager();
-    public abstract ObjectType getObjectType();
+
+    public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
+        List<TimelineChange<? super T>> changes = buildChangeList(date,getBirthChange(dme,date),dme,defaults);
+        return new TimelineState<T>(dme.get().getTimeline(), date, date,true, changes);
+    };
+    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, CauseOfEnd cOd, List<ChangeSupplier<T,?>> defaults){
+        List<TimelineChange<? super T>> changes = buildChangeList(date,getDeathChange(dme,date,cOd),dme,defaults);
+        return new TimelineState<T>(dme.get().getTimeline(),date, date,true, changes);
+    };
+    public abstract TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date);
+    public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date, CauseOfEnd cOd);
+    public abstract CauseOfEnd defaultDeathCause();
+    private List<TimelineChange<? super T>> buildChangeList(LocalDate date, TimelineChange<T> change, DMEReference<T> ref, List<ChangeSupplier<T,?>> defaults){
+        List<TimelineChange<? super T>> Changes = new ArrayList<>();
+        Changes.add(change);
+        for (ChangeSupplier<T,?> c : defaults) {
+            Changes.add(c.supply(date,ref));
+        }
+        return Changes;
+    }
 }

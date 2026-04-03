@@ -2,7 +2,7 @@ package com.base.timeline.change.conditions;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.Optional;

@@ -2,23 +2,24 @@ package com.base;
 
 import com.Global;
 import com.base.reference.DMEReference;
-import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
+import com.objects.character.LivingCreature;
+import com.utilities.Factory;
 import com.utilities.SuperclassRegistry;
 import com.utilities.ThreadManager;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T,BA>,T extends DateMutableEntity<T>,BA>
+public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T,BA>,T extends DateMutableEntity<?>,BA>
         extends SuperclassRegistry<M,T,UUID,BA> {
     protected AbstractMutableManager(String uniqueKey) {
         super(uniqueKey);
         DMRegistry.registerManager(this);
+        for (Map.Entry<Class<? extends T>, Factory<? extends T,T,UUID,BA>> e : getFactories().entrySet()){
+            registerFactory(e.getKey(),e.getValue());
+        }
+        ts_init();
     }
     public boolean accepts(DMEReference<?> dme){
         return accepts(dme.getClass());
@@ -30,7 +31,8 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
         doIterate(DateMutableEntity::onLink);
     }
     public void onDateChange(){
-        doIterate(DateMutableEntity::onLink);
+        doIterate(DateMutableEntity::onDateChange);
+        doIterate(DateMutableEntity::relink);
     }
     public <R extends DateMutableEntity<R>> R loadEntity(DMEReference<R> dme, JsonObject object) {
         if (!accepts(dme)){
@@ -62,26 +64,11 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
         }
         return (R) r;
     }
+    public abstract Map<Class<? extends T>, Factory<? extends T,T,UUID,BA>> getFactories();
+
+    public abstract Class<?> instanceClass();
 
 
-    public abstract Class<T> instanceClass();
-    public abstract TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date);
-    public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date);
-    public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
-        List<TimelineChange<? super T>> changes = buildChangeList(getBirthChange(dme,date),date,dme,defaults);
-        return new TimelineState<T>(dme.get().getTimeline(), date, date,true, changes);
-    };
-    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
-        List<TimelineChange<? super T>> changes = buildChangeList(getDeathChange(dme,date),date,dme,defaults);
-        return new TimelineState<T>(dme.get().getTimeline(),date, date,true, changes);
-    };
-    private static <T extends DateMutableEntity<T>> List<TimelineChange<? super T>> buildChangeList(
-            TimelineChange<T> first, LocalDate date, DMEReference<T> ref, List<ChangeSupplier<T,?>> defaults){
-        List<TimelineChange<? super T>> Changes = new ArrayList<>();
-        Changes.add(first);
-        for (ChangeSupplier<T,?> c : defaults) {
-            Changes.add(c.supply(date,ref));
-        }
-        return Changes;
-    }
+
+
 }

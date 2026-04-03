@@ -1,15 +1,7 @@
 package com.base.timeline;
 
 import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 public interface TimelineContainer<T extends TimelineContainer<T,D>, D extends DateMutableEntity<D>> {
     JsonObject getSerialized();

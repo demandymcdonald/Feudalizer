@@ -1,6 +1,6 @@
 package com.objects.title.succession;
 
-import com.base.timeline.flags.SandboxCode;
+import com.base.timeline.error.SandboxCode;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.objects.character.BookCharacter;

@@ -4,6 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.TimelineHelper;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

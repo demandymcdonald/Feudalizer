@@ -2,6 +2,7 @@ package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.change.changes.TitleTLChange;
 import com.google.gson.JsonObject;
 

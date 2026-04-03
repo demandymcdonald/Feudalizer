@@ -2,11 +2,11 @@ package com.objects.character;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.change.TimelineMapChange;
 import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
-import com.base.timeline.flags.StateError;
+import com.base.timeline.error.StateError;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;

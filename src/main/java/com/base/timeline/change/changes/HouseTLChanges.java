@@ -2,8 +2,7 @@ package com.base.timeline.change.changes;
 
 import com.base.DMRegistry;
 import com.base.ObjectType;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.flags.StateError;
+import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
@@ -14,7 +13,7 @@ import com.objects.people.House;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.base.timeline.flags.Errors.DUPLICATE_STATE;
+import static com.base.timeline.error.Errors.DUPLICATE_STATE;
 
 public class HouseTLChanges {
 

@@ -2,17 +2,19 @@ package com.base.timeline;
 
 import com.Global;
 import com.base.AbstractMutableManager;
+import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.flags.SandboxCode;
+import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.error.SandboxCode;
 import com.base.timeline.sandbox.check.SandboxChecks;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.objects.CauseOfEnd;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -25,12 +27,12 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
     public boolean isLoaded = false;
     public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<ChangeSupplier<T,?>> initialState) {
         super(owner);
-        AbstractMutableManager<?,T,?> manager = o.getManager();
-        timeline.put(start, manager.buildBirth(owner,start, initialState));
+        //AbstractMutableManager<?,T,?> manager = DMRegistry.getManager(o.getClass());
+        timeline.put(start, o.buildBirth(owner,start, initialState));
         if (end == null){
-            timeline.put(end, manager.buildDeath(owner, Global.MAX_DATE,initialState));
+            timeline.put(end, o.buildDeath(owner, Global.MAX_DATE,o.defaultDeathCause(),initialState));
         } else {
-            timeline.put(end, manager.buildDeath(owner,end,initialState));
+            timeline.put(end, o.buildDeath(owner,end,o.defaultDeathCause(),initialState));
         }
         isLoaded = true;
     }

@@ -1,20 +1,16 @@
-package com.base.timeline.flags;
+package com.base.timeline.error;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
-import com.google.gson.JsonObject;
 import com.objects.title.Title;
 import com.utilities.Displayable;
 
-import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-
-import static com.base.timeline.flags.SandboxCode.*;
+import static com.base.timeline.error.SandboxCode.*;
 
 public abstract class ErrorResolution implements Displayable {
     private final int priority;

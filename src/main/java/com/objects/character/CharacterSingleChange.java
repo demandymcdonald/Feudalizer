@@ -1,12 +1,12 @@
 package com.objects.character;
 
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.change.conditions.Condition;
 import com.base.timeline.change.conditions.ConditionResult;
-import com.base.timeline.flags.StateError;
+import com.base.timeline.error.StateError;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 
@@ -23,27 +23,6 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
 
     }
 
-    @Override
-    protected boolean containsMyTags(ChangeTags[] tags) {
-        return super.containsMyTags(tags);
-    }
-
-    @Override
-    protected boolean containsMyTags(TimelineChange<?> state) {
-        return super.containsMyTags(state);
-    }
-
-    @Override
-    protected ChangeTags[] getTags() {
-        return new ChangeTags[0];
-    }
-
-    @Override
-    public HashSet<DMEReference<?>> getScope() {
-        HashSet<DMEReference<?>> toReturn = new HashSet<>();
-        toReturn.add(this.getOwner());
-        return toReturn;
-    }
 
     //=================================================================================================================
     // Start of Subclasses
@@ -54,8 +33,9 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
             super(primary,date);
         }
 
+
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
+        protected void onApply(DMEReference<? extends BookCharacter> entity, TimelineState<? extends BookCharacter> currentState) {
 
         }
 
@@ -81,6 +61,11 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
             return List.of((Condition<ConditionResult.Nullify,? super BookCharacter>) NEVER_NULLIFY);
         }
 
+        @Override
+        protected List<Condition<StateError, ? super BookCharacter>> buildCanDeactivateConditions() {
+            return List.of();
+        }
+
 
         @Override
         protected String getText() {
@@ -98,8 +83,8 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
     }
     public static class Death extends CharacterSingleChange {
-        CauseOfEnd.BookCharacter cause;
-        public Death(DMEReference<BookCharacter> primary, LocalDate date, CauseOfEnd.BookCharacter cause) {
+        CauseOfEnd cause;
+        public Death(DMEReference<BookCharacter> primary, LocalDate date, CauseOfEnd cause) {
             super(primary,date);
             this.cause = cause;
         }
@@ -136,16 +121,12 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
 
         @Override
         public void additionalSave(JsonObject data) {
-            data.addProperty("cause",cause.name());
+            cause.serialize(data);
         }
 
         @Override
         public void additionalLoad(JsonObject data) {
-            if(data.has("cause")){
-                cause = CauseOfEnd.BookCharacter.valueOf(data.get("cause").getAsString());
-            } else {
-                cause = CauseOfEnd.BookCharacter.CHARACTER_ERROR;
-            }
+            cause = CauseOfEnd.fromJson(data);
         }
     }
     public static class setForename extends CharacterSingleChange {

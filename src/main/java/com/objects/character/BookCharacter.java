@@ -1,10 +1,11 @@
 package com.objects.character;
 
-import com.base.*;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.changes.TimelineChange;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
-import com.objects.character.opinion.Opinion;
+import com.objects.CauseOfEnd;
 import com.objects.people.Family;
 import com.objects.people.House;
 import com.objects.title.Title;
@@ -12,7 +13,7 @@ import com.objects.title.Title;
 import java.time.LocalDate;
 import java.util.*;
 
-public class BookCharacter extends DateMutableEntity<BookCharacter> {
+public class BookCharacter extends LivingCreature<BookCharacter> {
 
 
     public enum Gender {
@@ -62,7 +63,32 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
 
     public BookCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
                          Gender gender, Orientation orientation) {
-        super(dateOfBirth,dateOfDeath,);
+        super(dateOfBirth,dateOfDeath,List.of(
+            new ChangeSupplier<BookCharacter,CharacterSingleChange.setForename>(){
+                @Override
+                public CharacterSingleChange.setForename supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                    return new CharacterSingleChange.setForename(subject,date,givenName);
+                }
+            },
+            new ChangeSupplier<BookCharacter,CharacterSingleChange.setSurname>(){
+                @Override
+                public CharacterSingleChange.setSurname supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                    return new CharacterSingleChange.setSurname(subject,date,surname);
+                }
+            },
+            new ChangeSupplier<BookCharacter,CharacterSingleChange.setGender>(){
+                @Override
+                public CharacterSingleChange.setGender supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                    return new CharacterSingleChange.setGender(subject,date,gender);
+                }
+            },
+            new ChangeSupplier<BookCharacter,CharacterSingleChange.setOrientation>(){
+                @Override
+                public CharacterSingleChange.setOrientation supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                    return new CharacterSingleChange.setOrientation(subject,date,orientation);
+                }
+            }
+        ));
         this.givenName = givenName;
         this.surname = surname;
         this.gender = gender;
@@ -77,11 +103,6 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
         //I Don't think Character will ever call out to any objects. Most objects should populate it?
     }
 
-
-    @Override
-    public final ObjectType getObjectType() {
-        return ObjectType.CHARACTER;
-    }
     @Override
     public void doDateChange() {
         linked_house = Optional.empty();
@@ -90,8 +111,18 @@ public class BookCharacter extends DateMutableEntity<BookCharacter> {
     }
 
     @Override
-    public <M extends AbstractMutableManager<M, BookCharacter, ?>> M getManager() {
-        return null;
+    public TimelineChange<BookCharacter> getBirthChange(DMEReference<BookCharacter> dme, LocalDate date) {
+        return new CharacterSingleChange.Birth(dme,date);
+    }
+
+    @Override
+    public TimelineChange<BookCharacter> getDeathChange(DMEReference<BookCharacter> dme, LocalDate date, CauseOfEnd cOd) {
+        return new CharacterSingleChange.Death(dme,date,cOd);
+    }
+
+    @Override
+    public CauseOfEnd defaultDeathCause() {
+        return CauseOfEnd.Character.CHARACTER_OLD_AGE;
     }
 
 

@@ -4,14 +4,12 @@ import com.Global;
 import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.timeline.Timeline;
-import com.base.timeline.change.ChangeID;
-import com.base.timeline.flags.SandboxCode;
-import com.base.timeline.flags.StateError;
+import com.base.timeline.error.SandboxCode;
+import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.sandbox.check.SandboxCheck;
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.TimelineChange;
-import com.google.common.collect.HashMultimap;
+import com.base.timeline.change.changes.TimelineChange;
 import com.google.gson.JsonObject;
 import com.utilities.ThreadManager;
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,7 +21,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static com.base.timeline.flags.SandboxCode.*;
+import static com.base.timeline.error.SandboxCode.*;
 
 public class Sandbox<T extends DateMutableEntity<T>> {
     private CompletableFuture<Map<DMEReference<?>, JsonObject>> toReturn = new CompletableFuture<>();

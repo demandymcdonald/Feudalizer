@@ -4,7 +4,7 @@ import com.Global.*;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.state.TimelineState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

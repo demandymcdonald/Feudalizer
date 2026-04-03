@@ -1,22 +1,21 @@
-package com.base.timeline.flags;
+package com.base.timeline.error;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
-import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.change.conditions.ConditionResult;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import org.apache.commons.lang3.tuple.Pair;
+import com.objects.title.Title;
 
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -105,14 +104,13 @@ public class StateError implements ConditionResult {
         return id;
     }
     public String getAutoResolution(){
+        if (canAutoResolve()){
+            return "";
+        }
         ErrorResolution er = getResolutions().values().stream().findFirst().orElseThrow();
         return er.getID();
     }
 
-    public boolean isFinal(){
-        String resolution = response.join();
-        getResolutions().keySet().stream().forEach(r -> System.out.println(r + " " + r.equals(resolution)));
-    }
     public ErrorResolution getResolutionIfComplete(){
         if (response.isDone()){
             return getOrDefault(response.join());
@@ -143,7 +141,7 @@ public class StateError implements ConditionResult {
         }
         return er;
     }
-    public  StateError  addEndState() {
+    public  StateError addEndSave() {
         return addOption(new ErrorResolution.EndSandbox_Save());
     }
     public StateError  addEndCancel() {
@@ -155,19 +153,16 @@ public class StateError implements ConditionResult {
     public StateError  addAccept() {
         return addOption(new ErrorResolution.GenAccept());
     }
-    public StateError  addNullify() {
-        return addOption(new ErrorResolution.GenNullify());
+    public StateError addReplace(String replaceSubID, String replaceTitle, String replaceDescription, TimelineChange<?> replace) {
+        return addOption(new ErrorResolution.ReplaceExistingWithNew(replaceSubID,replaceTitle,replaceDescription,replace));
     }
-    public StateError addContinue() {
-        return addOption(new ErrorResolution.GenContinue());
-    }
-    public StateError addBranchingSuccessionPlanning(Objective o) {
-        return addOption(new ErrorResolution.SandboxBranching("succession_planning",o));
+    public <T extends Title<T>> StateError addBranchingSuccessionPlanning(Objective<T> o) {
+        return addOption(new ErrorResolution.SandboxBranching("succession_planning",
+                "Run Succession Planner", "grant the title to an heir using Succession Planner", o));
     }
 
     public StateError addOption(ErrorResolution option){
-        options.put(option.getCode(),option);
-        uiMap.put(option.getCode(),option.tooltip());
+        options.put(option.getID(),option);
         return this;
     }
 

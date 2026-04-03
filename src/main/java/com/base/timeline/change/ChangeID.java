@@ -1,5 +1,6 @@
 package com.base.timeline.change;
 
+import com.base.timeline.change.changes.TimelineChange;
 import com.google.common.base.Suppliers;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;

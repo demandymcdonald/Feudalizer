@@ -2,8 +2,8 @@ package com.base.timeline.sandbox.check;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.flags.SandboxCode;
+import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.error.SandboxCode;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 

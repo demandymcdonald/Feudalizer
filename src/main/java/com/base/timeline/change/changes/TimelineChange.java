@@ -1,10 +1,11 @@
-package com.base.timeline.change;
+package com.base.timeline.change.changes;
 
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.ObjectType;
-import com.base.timeline.flags.SandboxCode;
-import com.base.timeline.flags.StateError;
+import com.base.timeline.change.ChangeID;
+import com.base.timeline.error.SandboxCode;
+import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.sandbox.check.SandboxChecks;
 import com.base.timeline.state.TimelineState;
@@ -105,7 +106,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public void deactivate(boolean isSandbox){
         SandboxCode c = SandboxCode.END_SAVE;
         if (!isSandbox){
-            c = SandboxHandler.StartSandbox(Objective.build(owner, Global.TimeDirection.FORWARD,this,new SandboxChecks.canDeactivate<>()),end.plusDays(2),null);
+            com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.build(owner,
+                    Global.TimeDirection.FORWARD,this,new SandboxChecks.canDeactivate<>()),end.plusDays(2),null,null);
+            c = h.getEndCode().join();
         }
         if (c == SandboxCode.END_SAVE){
             onDeactivate();
@@ -115,7 +118,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public void reactivate(boolean isSandbox){
         SandboxCode c = SandboxCode.END_SAVE;
         if (!isSandbox){
-            c = SandboxHandler.StartSandbox(Objective.build(owner, Global.TimeDirection.FORWARD,this,new SandboxChecks.canAddChange<>()),end.plusDays(2),null);
+            com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.build(owner,
+                    Global.TimeDirection.FORWARD,this,new SandboxChecks.canAddChange<>()),end.plusDays(2),null, null);
+            c = h.getEndCode().join();
         }
         if (c == SandboxCode.END_SAVE){
             onReactivate();
