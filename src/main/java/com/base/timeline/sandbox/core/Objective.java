@@ -13,6 +13,10 @@ public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subjec
     public static <T extends DateMutableEntity<T>> Objective<T> build(DMEReference<? extends T> subject, Global.TimeDirection direction, TimelineChange<? super T> change, SandboxCheck<T>... toCheck){
        return new Objective<>((DMEReference<T>) subject, direction,change,toCheck);
     }
+    @SafeVarargs
+    public static Objective<?> buildInChange(DMEReference<?> subject, Global.TimeDirection direction, TimelineChange<?> change, SandboxCheck<?>... toCheck){
+        return new Objective<>(subject, direction,change,toCheck);
+    }
     public LocalDate getStart(){
         return change.getStart();
     }

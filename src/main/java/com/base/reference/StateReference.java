@@ -38,6 +38,23 @@ public abstract class StateReference {
         }
         return array;
     }
+    public static JsonObject fromJson(JsonObject json){
+        String type = json.get("Type").getAsString();
+        switch (type){
+            case "DMEReference": {
+                return DMEReference.deserialize(json).serialize();
+            }
+            case "SimpleReference": {
+                return SimpleReference.deserialize(json).serialize();
+            }
+            case "CompoundSR": {
+                return CompoundSR.deserialize(json).serialize();
+            }
+            case "ComplexReference": {
+                return ComplexReference.deserialize(json).serialize();
+            }
+        }
+    }
 
 
 }

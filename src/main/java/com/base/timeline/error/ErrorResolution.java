@@ -140,22 +140,6 @@ public abstract class ErrorResolution implements Displayable {
             return CONTINUE;
         }
     }
-//    public static class GenContinue extends ErrorResolution {
-//        public GenContinue() {
-//            super(8);
-//        }
-//        @Override
-//        public String getCode() {
-//            return "gen_continue";
-//        }
-//
-//        @Override
-//        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, TimelineChange<? super T> change,TimelineChange<?> oldChange, DMEReference<T> entity) {
-//            change.onContinue();
-//            change.apply(entity,saveToDiff);
-//            return SandboxCode.CONTINUE;
-//        }
-//    }
     public static class SandboxBranching<R extends DateMutableEntity<R>> extends ErrorResolution {
         private final Objective<R> objective;
         public SandboxBranching(String branchingSubID, String displayName, String description, Objective<R> newObjective) {
@@ -185,6 +169,10 @@ public abstract class ErrorResolution implements Displayable {
             return SandboxCode.RESTART_FROM_STATE;
         }
     }
+    ke
+
+
+
     public static class SuccessionPlanning_Title<T extends Title<T>> extends SandboxBranching<T> {
         public SuccessionPlanning_Title(Objective<T> newObjective) {
             super("title_succession", "Run Succession Planner", "Give the title to their heir or a designated person", newObjective);

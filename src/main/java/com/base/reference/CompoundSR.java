@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class CompoundSR<T extends DateMutableEntity<?>> extends DMEReference<T>{
+public class CompoundSR<T extends DateMutableEntity<T>> extends DMEReference<T>{
     @Nullable String prefix;
     @Nullable String suffix;
     String Cached;
@@ -40,7 +40,7 @@ public class CompoundSR<T extends DateMutableEntity<?>> extends DMEReference<T>{
         object.addProperty("Suffix", suffix);
         return object;
     }
-    public static <T extends DateMutableEntity<?>> DMEReference<T> deserialize(JsonObject object) {
+    public static <T extends DateMutableEntity<T>> DMEReference<T> deserialize(JsonObject object) {
         Class<T> r = null;
         try {
             r = (Class<T>) Class.forName(object.get("type").getAsString());

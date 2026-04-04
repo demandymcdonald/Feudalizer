@@ -156,6 +156,9 @@ public class StateError implements ConditionResult {
     public StateError addReplace(String replaceSubID, String replaceTitle, String replaceDescription, TimelineChange<?> replace) {
         return addOption(new ErrorResolution.ReplaceExistingWithNew(replaceSubID,replaceTitle,replaceDescription,replace));
     }
+    public StateError addSandbox(String branchingSubID, String displayName, String description, Objective<?> o) {
+        return addOption(new ErrorResolution.SandboxBranching<>(branchingSubID,displayName,description,o));
+    }
     public <T extends Title<T>> StateError addBranchingSuccessionPlanning(Objective<T> o) {
         return addOption(new ErrorResolution.SandboxBranching("succession_planning",
                 "Run Succession Planner", "grant the title to an heir using Succession Planner", o));

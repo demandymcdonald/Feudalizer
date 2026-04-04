@@ -1,13 +1,18 @@
 package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
+import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.conditions.Condition;
+import com.base.timeline.error.StateError;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
+import com.objects.title.change.TitleSingletonChange;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> extends TimelineChange<T> {
     protected TimelineSingleChange(DMEReference<T> owner, LocalDate date) {
@@ -61,5 +66,23 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> exten
     @Override
     public final void mainLoad(JsonObject object) {
         super.mainLoad(object);
+    }
+
+
+
+
+
+    public class HasVariable extends Condition<StateError,T> {
+
+        public HasVariable() {
+            super("title_has_parent");
+        }
+        @Override
+        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
+            if (checkAgainst instanceof TitleSingletonChange.setParent<?> ca && thisChange instanceof TitleSingletonChange.setParent<? extends T> tc ){
+                return Optional.of(new StateError("title_has_parent", ComplexReference.of("{} already has a parent of {}", ca.getOwner(),tc.getNewParent()),tc).addEndSave().addEndCancel().addOverride());
+            }
+            return Optional.empty();
+        }
     }
 }
