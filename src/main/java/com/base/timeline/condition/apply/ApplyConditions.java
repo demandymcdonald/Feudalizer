@@ -1,41 +1,17 @@
-package com.base.timeline.change.conditions;
+package com.base.timeline.condition.apply;
 
 import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
-import com.base.timeline.error.StateError;
-import com.base.timeline.change.changes.TimelineChange;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ApplyConditions {
 //    public static <T extends DateMutableEntity<T>> List<Condition<StateError,T>> BaseConditions(){
 //        return List.of(IS_DEAD);
 //    }
-    public static <T extends DateMutableEntity<T>> List<Condition<StateError, ? super T>> BaseConditions() {
+    public static List<ApplyCondition<DateMutableEntity<?>>> BaseConditions() {
         return List.of();
     }
 
-    public static class Always<T extends DateMutableEntity<T>> extends Condition<StateError, T>{
-        private Always() {
-            super("apply_gen_always", true);
-        }
-
-        @Override
-        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?>  checkAgainst) {
-            return Optional.empty();
-        }
-    }
-    public static class Never<T extends DateMutableEntity<T>> extends Condition<StateError,T>{
-        private Never() {
-            super("apply_gen_never", true);
-        }
-
-        @Override
-        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?>  checkAgainst) {
-            return Optional.empty();
-        }
-    }
 //    public static final Condition<StateError, ? extends DateMutableEntity<?>> AT_BOUNDARY = new Condition<>("gen_out_of_bounds",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar sidecar) {

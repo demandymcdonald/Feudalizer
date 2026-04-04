@@ -120,6 +120,7 @@ public class SandboxHandler<T extends DateMutableEntity<T>> {
         return future;
     }
     ///  Main Method To be Utilized
+    @SuppressWarnings("unchecked")
     public static <T extends DateMutableEntity<T>> SandboxHandler<T> StartSandbox(Objective<T> objective, @Nullable LocalDate endDate, @Nullable SandboxHandler<?> parent, @Nullable Consumer<SandboxCode> doAfter){
         Sandbox<T> sandbox;
         final Thread parentThread = parent != null ? parent.sandboxThread : null;

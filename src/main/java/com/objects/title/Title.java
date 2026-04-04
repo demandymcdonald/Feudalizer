@@ -3,9 +3,11 @@ package com.objects.title;
 import com.base.*;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.error.StateError;
+import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
-import com.objects.family.Family;
 import com.objects.title.change.TitleSingletonChange;
 import com.objects.title.condition.CanHoldCondition;
 import com.objects.title.condition.CanInheritCondition;
@@ -15,13 +17,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Supplier;
 
 public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     private DMEReference<BookCharacter> holder = null;
     private DMEReference<? extends Title<?>> parent = null;
     private HashSet<DMEReference<? extends Title<?>>> children = new HashSet<>();
-    private SuccessionContainer succession = new SuccessionContainer();
-
+    private SuccessionEntry<?> succession;
+;
     public Title(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
     }
@@ -33,9 +36,27 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public Title(DMEReference<T> dme) {
         super(dme);
     }
+    public static <T extends Title<T>> Optional<StateError> canHold(DMEReference<T> t, TitleSingletonChange.setHolderGrant<T> thisChange, TimelineChange<?> checkAgainst){
+        for (CanHoldCondition<? super T> condition : t.get().getCanHoldConditions()){
+            Optional<StateError> error = condition.check(t, thisChange, checkAgainst);
+            if(error.isPresent()){
+                return error;
+            }
+        }
+        return Optional.empty();
+    }
+    public static <T extends Title<T>> Optional<StateError> canInherit(DMEReference<T> t, TitleSingletonChange.setHolderGrant<T> thisChange, TimelineChange<?> checkAgainst){
+        for (CanInheritCondition<? super T> condition : t.get().getCanInheritConditions()){
+            Optional<StateError> error = condition.check(t, thisChange, checkAgainst);
+            if(error.isPresent()){
+                return error;
+            }
+        }
+        return Optional.empty();
+    }
 
-    public abstract List<CanHoldCondition<? super T>> getCanHoldConditions();
-    public abstract List<CanInheritCondition<? super T>> getCanInheritConditions();
+    protected abstract List<CanHoldCondition<? super T>> getCanHoldConditions();
+    protected abstract List<CanInheritCondition<? super T>> getCanInheritConditions();
     public abstract String getName();
     //#### Getters, Setters and Internals ####
 
@@ -54,9 +75,9 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public void removeRelationship(DMEReference<? extends Title<?>> title) {
 
     }
-
-    public void internalHolder(DMEReference<BookCharacter> character) {
-        holder = character;
+    @SuppressWarnings("unchecked")
+    public void internalHolder(DMEReference<? extends BookCharacter> character) {
+        holder = (DMEReference<BookCharacter>) character;
     }
     public void linkChild(DMEReference<? extends Title<?>> title) {
         this.children.add(title);
@@ -66,6 +87,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public void onDateChange() {
         super.onDateChange();
         children.clear();
+        levelsBelow = Suppliers.memoize(() -> {return lb.get();});
     }
 
     @Override
@@ -73,8 +95,18 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
         Title<?> parent = this.parent.get();
         parent.linkChild(getReference());
     }
-
-
+    public final int getPrestige(){
+        return basePrestige() * levelsBelow.get();
+    }
+    protected abstract int basePrestige();
+    private Supplier<Integer> lb = ()->{
+        int level = 0;
+        for (DMEReference<? extends Title<?>> child : children) {
+            level += child.get().getPrestige();
+        }
+        return level;
+    };
+    protected Supplier<Integer> levelsBelow = Suppliers.memoize(() -> {return lb.get();});
 
     //#### Getters ####
     public List<DMEReference<? extends Title<?>>> getAllOffspring() {
@@ -88,7 +120,9 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public Optional<DMEReference<? extends Title<?>>> getParent() {
         return Optional.ofNullable(parent);
     }
-
+    public SuccessionEntry<?> getSuccession(LocalDate date) {
+        return succession.getEntry(date);
+    }
 
 
 
@@ -102,10 +136,10 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     //==== Serializers ====
     @Override
     public void additionalSave(JsonObject data) {
-        data.add("succession",succession.serialize());
+        //data.add("succession",succession.serialize());
     }
     @Override
     public void additionalLoad(JsonObject data) {
-        succession.deserialize(data.get("succession").getAsJsonObject());
+        //succession.deserialize(data.get("succession").getAsJsonObject());
     }
 }

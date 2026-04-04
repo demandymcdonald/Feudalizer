@@ -5,12 +5,18 @@ import com.base.DateMutableEntity;
 import com.base.ObjectType;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
+import com.base.timeline.condition.apply.ApplyCondition;
+import com.base.timeline.condition.apply.ApplyConditions;
+import com.base.timeline.condition.deactivate.DeactivateCondition;
+import com.base.timeline.condition.nullify.NullifyCondition;
+import com.base.timeline.condition.nullify.NullifyConditions;
+import com.base.timeline.condition.nullify.NullifyResult;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
-import com.base.timeline.sandbox.check.SandboxChecks;
+import com.base.timeline.sandbox.check.SandboxFunctions;
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.conditions.*;
+import com.base.timeline.condition.*;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.google.common.base.Suppliers;
@@ -36,7 +42,7 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of mutable state the change is applied to
  */
-public abstract class TimelineChange<T extends DateMutableEntity<T>> implements SuperclassSerializable {
+public abstract class TimelineChange<T extends DateMutableEntity<?>> implements SuperclassSerializable<TimelineChange<?>> {
     // Rules: TimelineChange implementations should only save/use StateReferences! Never use actual objects. This keeps them sandbox safe. Include this fact in documentation
 
     //TODO Third kind of check: once per TimelineState (For things like: is still alive, or canHoldTitle, or Does this Religion exist?
@@ -107,8 +113,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public void deactivate(boolean isSandbox){
         SandboxCode c = SandboxCode.END_SAVE;
         if (!isSandbox){
-            com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.build(owner,
-                    Global.TimeDirection.FORWARD,this,new SandboxChecks.canDeactivate<>()),end.plusDays(2),null,null);
+            DMEReference<? extends T> owner = getOwner();
+            com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.buildInChange(owner,
+                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.canDeactivate<>()),end.plusDays(2),null,null);
             c = h.getEndCode().join();
         }
         if (c == SandboxCode.END_SAVE){
@@ -119,8 +126,8 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
     public void reactivate(boolean isSandbox){
         SandboxCode c = SandboxCode.END_SAVE;
         if (!isSandbox){
-            com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.build(owner,
-                    Global.TimeDirection.FORWARD,this,new SandboxChecks.canAddChange<>()),end.plusDays(2),null, null);
+            com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.buildInChange(owner,
+                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.canAddChange<>()),end.plusDays(2),null, null);
             c = h.getEndCode().join();
         }
         if (c == SandboxCode.END_SAVE){
@@ -178,8 +185,8 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
 
     public final boolean canNullify(TimelineChange<?> toNullify){
         boolean hasYes = false;
-        for (Condition<ConditionResult.Nullify,? super T> c : nullConditions.get()) {
-            final ConditionResult.Nullify result = c.check(this.getOwner(),this,toNullify).orElse(NullifyConditions.NOT_NULLIFY_NON_EXCLUSIVE);
+        for (NullifyCondition<? super T> c : nullConditions.get()) {
+            final NullifyResult result = c.check(this.getOwner(),this,toNullify).orElse(NullifyResult.NOT_NULLIFY_EXCLUSIVE);
             if (result.canNullify()){
                 hasYes = true;
                 if (!result.isOr()){
@@ -192,16 +199,19 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         }
         return hasYes;
     };
-    public final List<StateError> doesConflict(TimelineChange<?> checkAgainst){
-        return doCheck(applyConditions.get(),this.getOwner(),this,checkAgainst);
+    public final <C extends Condition<StateError,T,TimelineChange<? super T>, TimelineChange<?>>> List<StateError> doesConflict(TimelineChange<?> checkAgainst, boolean sameState){
+        return doCheck((List<C>)applyConditions.get(),this.getOwner(),this,checkAgainst,sameState);
     };
-    public final List<StateError> canBeDeactivated(TimelineChange<?> checkAgainst){
-        return doCheck(deactivateConditions.get(),this.getOwner(),this,checkAgainst);
+    public final <C extends Condition<StateError,T,TimelineChange<? super T>, TimelineChange<?>>> List<StateError> canBeDeactivated(TimelineChange<?> checkAgainst, boolean sameState){
+        return doCheck((List<C>) deactivateConditions.get(),this.getOwner(),this,checkAgainst,sameState);
     }
-    private static <T extends DateMutableEntity<T>,R extends ConditionResult> List<R> doCheck(
-            final List<Condition<R,? super T>> conditions, DMEReference<? extends T> entity, TimelineChange<T> change, TimelineChange<?> checkAgainst){
+    private static <T extends DateMutableEntity<T>,C extends Condition<StateError,T,TimelineChange<? super T>, TimelineChange<?>>,R extends ConditionResult> List<R> doCheck(
+            final List<C> conditions, DMEReference<? extends T> entity, TimelineChange<T> change, TimelineChange<?> checkAgainst, boolean sameState){
         List<R> results = new ArrayList<>();
-        for (Condition<R,? super T> c : conditions) {
+        for (C c : conditions) {
+            if (c.singleRun() && sameState){
+                continue;
+            }
             Optional<R> result = c.check(entity,change,checkAgainst);
             result.ifPresent(results::add);
         }
@@ -256,37 +266,37 @@ public abstract class TimelineChange<T extends DateMutableEntity<T>> implements 
         resolutionLog.put(error.getLongID(),resolutionCode);
     }
 
-    private final Supplier<List<Condition<ConditionResult.Nullify,? super T>>> nullConditions =
+    private final Supplier<List<NullifyCondition<? super T>>> nullConditions =
             Suppliers.memoize(() -> {
-                List<Condition<ConditionResult.Nullify,? super T>> conditions = new ArrayList<>();
+                List<NullifyCondition<? super T>> conditions = new ArrayList<>();
                 conditions.addAll(NullifyConditions.BaseConditions());
                 this.nullifyConditions(conditions);
                 return conditions;
             });
-    private final Supplier<List<Condition<StateError,? super T>>> applyConditions =
+    private final Supplier<List<ApplyCondition<? super T>>> applyConditions =
             Suppliers.memoize(() -> {
-                List<Condition<StateError,? super T>> conditions = new ArrayList<>();
+                List<ApplyCondition<? super T>> conditions = new ArrayList<>();
                 conditions.addAll(ApplyConditions.BaseConditions());
                 this.applyConditions(conditions);
                 return conditions;
             });
-    private final Supplier<List<Condition<StateError,? super T>>> deactivateConditions =
+    private final Supplier<List<DeactivateCondition<? super T>>> deactivateConditions =
             Suppliers.memoize(() -> {
-                List<Condition<StateError,? super T>> conditions = new ArrayList<>();
+                List<DeactivateCondition<? super T>> conditions = new ArrayList<>();
                 //conditions.addAll(DeactivateConditions.BaseConditions());
                 this.deactivateConditions(conditions);
                 return conditions;
             });
-    protected abstract void applyConditions(List<Condition<StateError,? super T>> list);
-    protected abstract void nullifyConditions(List<Condition<ConditionResult.Nullify,? super T>> list);
-    protected abstract void deactivateConditions(List<Condition<StateError,? super T>> list);
-    protected final List<Condition<StateError,? super T>> getApplyConditions(){
+    protected abstract void applyConditions(List<ApplyCondition<? super T>> list);
+    protected abstract void nullifyConditions(List<NullifyCondition<? super T>> list);
+    protected abstract void deactivateConditions(List<DeactivateCondition<? super T>> list);
+    protected final List<ApplyCondition<? super T>> getApplyConditions(){
         return applyConditions.get();
     }
-    protected final List<Condition<ConditionResult.Nullify,? super T>> getNullifyConditions(){
+    protected final List<NullifyCondition<? super T>> getNullifyConditions(){
         return nullConditions.get();
     }
-    protected final List<Condition<StateError,? super T>> getDeactivateConditions(){
+    protected final List<DeactivateCondition<? super T>> getDeactivateConditions(){
         return deactivateConditions.get();
     }
 

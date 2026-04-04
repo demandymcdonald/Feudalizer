@@ -19,7 +19,7 @@ import com.google.gson.JsonObject;
  * independently, and may customize metadata handling as required. Though the validation boolean and classtype are
  * saved automatically under "class" and "isSuperSerialized" respectively, those fields should not be duplicated.
  */
-public interface SuperclassSerializable {
+public interface SuperclassSerializable<T extends SuperclassSerializable<T>> {
     //=== The three buckets of data ===
     // 1. Metadata: Data that is meant to be used by the superclass loader/factory method. Generally to locate the right
     // factory method to use and to initialize the object. Also used for validation. HERE IS NO LOAD METHOD FOR METADATA
@@ -56,6 +56,15 @@ public interface SuperclassSerializable {
     static boolean isSuperSerialized(JsonObject data){
         JsonObject metadata = data.get("metadata").getAsJsonObject();
         return metadata != null && metadata.has("isSuperSerialized");
+    }
+    static<T extends SuperclassSerializable<T>> Class<T> getSSClass(JsonObject data){
+        JsonObject metadata = getMetadata(data);
+        try {
+            return (Class<T>)Class.forName(metadata.get("class").getAsString());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Exception in: "+ metadata.get("class").getAsString(), e);
+        }
+
     }
     static JsonObject getMetadata(JsonObject data){
         if (!isSuperSerialized(data)) throw new IllegalArgumentException("Not a super serialized object: "+ data.toString());

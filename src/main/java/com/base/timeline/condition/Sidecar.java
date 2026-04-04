@@ -1,4 +1,4 @@
-package com.base.timeline.change.conditions;
+package com.base.timeline.condition;
 
 import com.base.reference.DMEReference;
 import com.objects.character.BookCharacter;

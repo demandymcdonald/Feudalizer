@@ -1,4 +1,4 @@
-package com.base.timeline.change.conditions;
+package com.base.timeline.condition;
 
 import com.base.DateMutableEntity;
 import org.apache.commons.lang3.function.TriFunction;

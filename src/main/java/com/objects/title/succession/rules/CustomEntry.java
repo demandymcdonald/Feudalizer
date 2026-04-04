@@ -1,6 +1,7 @@
 package com.objects.title.succession.rules;
 
 import com.base.reference.DMEReference;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
@@ -8,17 +9,16 @@ import com.objects.title.Title;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public class CustomEntry extends SuccessionEntry<CustomEntry> {
-    final List<DMEReference<BookCharacter>> characters;
-    final DMEReference<? extends Title<?>> title;
-    public CustomEntry() {
-        super(null);
-        characters = List.of();
-        title = null;
+     Multimap<DMEReference<? extends Title<?>>,DMEReference<BookCharacter>> characters;
+    public CustomEntry(DMEReference<BookCharacter> primary) {
+        super(primary);
     }
-    public CustomEntry(Title<?> title, BookCharacter primary, List<BookCharacter> list) {
-        super(DMEReference.of(primary));
+    public CustomEntry(DMEReference<BookCharacter> primary, Title<?> title,  List<BookCharacter> list) {
+        super(primary);
         characters = list.stream().map(DMEReference::new).toList();
         this.title = DMEReference.of(title);
     }
@@ -27,6 +27,12 @@ public class CustomEntry extends SuccessionEntry<CustomEntry> {
         this.title = title;
         characters = List.of(list);
     }
+    protected static final Function<DMEReference<BookCharacter>,CustomEntry> builder = new Function<>() {
+        @Override
+        public CustomEntry apply(DMEReference<BookCharacter> bookCharacterDMEReference) {
+            return new CustomEntry(bookCharacterDMEReference);
+        }
+    };
     @Override
     public List<BookCharacter> getLoSFull() {
         List<BookCharacter> chs = new ArrayList<>();

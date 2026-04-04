@@ -4,7 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.base.timeline.change.changes.TimelineChange;
-import com.base.timeline.change.conditions.ConditionResult;
+import com.base.timeline.condition.ConditionResult;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;

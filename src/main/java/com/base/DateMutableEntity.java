@@ -8,6 +8,7 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.changes.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.utilities.DateUtilities;
 import com.utilities.SuperclassSerializable;
 
 import javax.annotation.Nullable;
@@ -49,7 +50,9 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     // 3. linkX is built for objects to add shortcut links to to an object (for example: BookCharacter has a fleeting
     // list of the Family's it's a part of. For safety, any linked variable should be cleared on reload
 
-
+    public boolean isAlive(){
+        return DateUtilities.isBetween(timeline.getStart(),timeline.getEnd(),current());
+    }
 
     public final UUID getId() {
         return id;

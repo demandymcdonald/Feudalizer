@@ -9,41 +9,37 @@ import com.objects.title.Title;
 import com.objects.title.succession.SuccessionChecksum;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.objects.title.succession.rules.CandidateRules.handleIfDead;
 
 public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     //private static final Cache<,ArrayList<BookCharacter>> CACHE = CacheBuilder.newBuilder().build();
-    private final DMEReference<? extends Title<?>> title;
     private final Map<Integer,DMEReference<BookCharacter>> additional = new HashMap<>();
     private static final boolean prima = true;
-    private final boolean isPrimarySpouse;
+    private boolean isPrimarySpouse;
     private SuccessionChecksum currentChecksum;
     List<BookCharacter> cached = new ArrayList<>();
-    public CommonLawEntry() {
-        super(null);
-        title = null;
-        isPrimarySpouse = false;
-    }
-    public CommonLawEntry(BookCharacter character, Title<?> title, boolean isPrimarySpouse) {
-        this(DMEReference.of(character),DMEReference.of(title),isPrimarySpouse);
-    }
-    public CommonLawEntry(DMEReference<BookCharacter> character, DMEReference<? extends Title<?>> title, boolean isPrimarySpouse) {
+    public CommonLawEntry(DMEReference<BookCharacter> character) {
         super(character);
-        this.isPrimarySpouse = isPrimarySpouse;
-        this.title = title;
-    }
-    public CommonLawEntry(DMEReference<BookCharacter> character, DMEReference<? extends Title<?>> title, boolean isPrimarySpouse, Map<Integer,DMEReference<BookCharacter>> additional) {
-        super(character);
-        this.isPrimarySpouse = isPrimarySpouse;
-        this.title = title;
-        this.additional.putAll(additional);
     }
 
 
+
+    public CommonLawEntry(DMEReference<BookCharacter> character,  boolean isPrimarySpouse) {
+        super(character);
+        this.isPrimarySpouse = isPrimarySpouse;
+    }
+    protected static final Function<DMEReference<BookCharacter>,CommonLawEntry> builder = new Function<>() {
+
+        @Override
+        public CommonLawEntry apply(DMEReference<BookCharacter> bookCharacterDMEReference) {
+            return new CommonLawEntry(bookCharacterDMEReference);
+        }
+    };
 
     @Override
-    public List<BookCharacter> getLoSFull() {
+    public List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title) {
         BookCharacter character = getSubject().get();
         LinkedHashMultimap<Type,BookCharacter> everyone = buildCharacterList(character);
         SuccessionChecksum checksum = SuccessionChecksum.of(everyone.values());
@@ -51,11 +47,12 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
             return cached;
         }
         currentChecksum = checksum;
-        return generate(everyone);
+        return generate(title,everyone);
     }
-    private List<BookCharacter> generate(LinkedHashMultimap<Type,BookCharacter> everyone){
+
+    private List<BookCharacter> generate(DMEReference<? extends Title<?>> title,LinkedHashMultimap<Type,BookCharacter> everyone){
         List<BookCharacter> ordered = new ArrayList<>();
-        Title<?> title = this.title.get();
+        Title<?> tT = title.get();
         int childNumber = 0;
         for (Map.Entry<Type,BookCharacter> entry : everyone.entries()){
             Type type = entry.getKey();
@@ -66,7 +63,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
                     continue;
                 }
             }
-            if (title.canInherit(character)){
+            if (canInherit(tT)){
                 ordered.add(character);
             }
         }
@@ -113,8 +110,12 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     @Override
     public JsonObject serialize() {
         JsonObject json = new JsonObject();
+
+    }
+
+    @Override
+    public void additionalSave(JsonObject json) {
         json.addProperty("isPrimarySpouse",isPrimarySpouse);
-        json.add("Title",title.serialize());
         JsonArray array = new JsonArray();
         for (Map.Entry<Integer,DMEReference<BookCharacter>> entry : additional.entrySet()){
             JsonObject obj = new JsonObject();
@@ -123,20 +124,19 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
             array.add(obj);
         }
         json.add("Additional",array);
-        return json;
     }
 
     @Override
-    public CommonLawEntry deserialize(DMEReference<BookCharacter> subject, JsonObject json) {
-        boolean isPrimarySpouse = json.get("isPrimarySpouse").getAsBoolean();
-        DMEReference<? extends Title<?>> title = DMEReference.deserialize(json.get("Title").getAsJsonObject());
+    public void additionalLoad(JsonObject json) {
+        isPrimarySpouse = json.get("isPrimarySpouse").getAsBoolean();
         JsonArray array = json.get("Additional").getAsJsonArray();
         Map<Integer,DMEReference<BookCharacter>> additional = new HashMap<>();
         for (int i = 0; i < array.size(); i++) {
             JsonObject obj = array.get(i).getAsJsonObject();
             additional.put(obj.get("index").getAsInt(),DMEReference.deserialize(obj.get("character").getAsJsonObject()));
         }
-        return new CommonLawEntry(subject,title,isPrimarySpouse,additional);
+        this.additional.putAll(additional);
     }
+
 
 }

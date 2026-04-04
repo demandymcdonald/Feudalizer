@@ -7,7 +7,7 @@ import com.base.timeline.Timeline;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
-import com.base.timeline.sandbox.check.SandboxCheck;
+import com.base.timeline.sandbox.check.SandboxFunction;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.changes.TimelineChange;
 import com.google.gson.JsonObject;
@@ -102,9 +102,9 @@ public class Sandbox<T extends DateMutableEntity<T>> {
             if (currentState == null) {
                 break;
             }
-            for (SandboxCheck<T> check : objective.toCheck()) {
+            for (SandboxFunction<T> check : objective.toCheck()) {
                 for (TimelineChange<? super T> change : currentState.getChanges()) {
-                    SandboxCode code = check.check(this,subject, currentState, objective.change(),change);
+                    SandboxCode code = check.cycle(this,subject, currentState, objective.change(),change);
                     if (code.sandboxComplete() || code == RESTART_FROM_STATE) {
                         currentCode = code;
                         break;
@@ -122,8 +122,8 @@ public class Sandbox<T extends DateMutableEntity<T>> {
                 continue;
             }
             currentDate = currentState.getStart();
-            if (isActiveState.get()) {
-                currentState.insertChange(objective.change());
+            for (SandboxFunction<T> check : objective.toCheck()) {
+                check.onStep(this,subject, currentState, objective.change(),isActiveState.get());
             }
             isActiveState.set(false);
         }
@@ -184,31 +184,13 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     }
 
     protected void endSimulation(Timeline<T> t, LocalDate end, SandboxCode code){
-        switch (code){
-            case END_DISCARD -> {
-                dirty.clear();
-                toReturn.complete(dirty);
-                break;
-            }
-            case END_SAVE -> {
-                final TimelineChange<? super T> change = objective.change();
-                change.setEnd(end);
-                TimelineState<T> state = t.getStateAtExact(change.getStart(),true);
-                state.insertAndPropagateBreadcrumb(objective.change());
-                buildDirtyMap();
-                toReturn.complete(dirty);
-                break;
-            }
-            case CRITICAL_ERROR ->{
-                handler.getSandboxLogger().error("Critical error encountered in sandbox. Ending simulation.");
-                break;
-            }
-            default -> {
-                handler.getSandboxLogger().warn("Unknown sandbox code encountered: {}. Ignoring.", code);
-            }
+        for (SandboxFunction<T> check : objective.toCheck()) {
+            check.onComplete(this,end,code,subject,objective.change());
         }
+        buildDirtyMap();
+        handleReturn();
     }
-    private void buildDirtyMap(){
+    public void buildDirtyMap(){
         for(DMEReference<?> ref : toSave){
             dirty.put(ref, ref.get().serialize());
         }
@@ -227,7 +209,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
         runSimulation();
         shutdown();
     }
-    private void handleReturn(){
+    public void handleReturn(){
         toReturn.complete(dirty);
     }
 
@@ -260,5 +242,11 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     }
     public SandboxHandler<T> getHandler(){
         return handler;
+    }
+    public Objective<T> getObjective(){
+        return objective;
+    }
+    public DMEReference<T> getSubject(){
+        return subject;
     }
 }

@@ -6,8 +6,8 @@ import com.base.timeline.change.ChangeID;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.change.TimelineMapChange;
-import com.base.timeline.change.conditions.Condition;
-import com.base.timeline.change.conditions.ConditionResult;
+import com.base.timeline.condition.Condition;
+import com.base.timeline.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -17,7 +17,6 @@ import com.google.gson.JsonPrimitive;
 import com.objects.character.opinion.Opinion;
 import com.objects.character.opinion.OpinionReason;
 import org.apache.commons.lang3.tuple.Pair;
-import org.checkerframework.checker.units.qual.K;
 
 import java.time.LocalDate;
 import java.util.*;

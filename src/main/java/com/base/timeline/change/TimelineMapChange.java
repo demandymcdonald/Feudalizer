@@ -6,7 +6,7 @@ import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.changes.TimelineChange;
-import com.base.timeline.change.conditions.Condition;
+import com.base.timeline.condition.Condition;
 import com.base.timeline.error.ErrorResolution;
 import com.base.timeline.error.StateError;
 import com.base.timeline.state.TimelineState;

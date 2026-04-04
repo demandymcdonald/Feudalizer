@@ -1,4 +1,4 @@
-package com.base.timeline.change.conditions;
+package com.base.timeline.condition;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
@@ -21,27 +21,26 @@ import java.util.Optional;
  * - The third parameter is the {@link Sidecar} object determined by the subclass, which can be used
  *   to include precomputed or subject data, such as title sidecars containing prebuilt DME references.
  */
-public abstract class Condition<R extends ConditionResult, T extends DateMutableEntity<T>> implements iCondition{
+public abstract class Condition<R extends ConditionResult, T extends DateMutableEntity<?>,E1,E2> implements iCondition{
         private final String id;
 
     public Condition(String id) {
         this.id = id;
     }
 
-    public static <R extends ConditionResult, T extends DateMutableEntity<T>> Optional<R> checkHelper(Condition<R,T> condition, DMEReference<? extends T> entity, TimelineChange<?> thisChange, TimelineChange<?> checkAgainst){
-        return condition.doCheck(entity, (TimelineChange<T>) thisChange, checkAgainst);
-    }
-
     @SuppressWarnings("unchecked")
-    public final Optional<R> check(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst){
+    public final Optional<R> check(DMEReference<? extends T> entity, E1 thisChange, E2 checkAgainst){
         return doCheck(entity, thisChange, checkAgainst);
     };
 
-    protected abstract Optional<R> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst);
+    protected abstract Optional<R> doCheck(DMEReference<? extends T> entity, E1 thisChange, E2 checkAgainst);
 
     @Override
     public String getCode() {
         return id;
+    }
+    public boolean singleRun(){
+        return false;
     }
 }
 

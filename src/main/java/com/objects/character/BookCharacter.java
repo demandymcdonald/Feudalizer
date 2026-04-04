@@ -10,6 +10,7 @@ import com.objects.character.opinion.Opinion;
 import com.objects.family.Family;
 import com.objects.house.House;
 import com.objects.title.Title;
+import com.objects.title.succession.rules.SuccessionEntry;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -53,13 +54,15 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     private String surname;
     private Gender gender;
     private Orientation orientation;
+    private SuccessionEntry<?> preferredSuccession;
+
     private final Map<UUID, Opinion> opinions = new HashMap<>();
 
     //TODO Add: Religion, Culture, Political Ideology.
 
     private Optional<House> linked_house;
     private final Map<Family, Family.Relationship> linked_families = Maps.newHashMap();
-    private final List<Title<?>> linked_titles = new ArrayList<>();
+    private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
 
 
     public BookCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
@@ -192,10 +195,15 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     public Orientation getOrientation(){
         return orientation;
     }
-    //public Map<UUID,Opinion> getOpinions(){
-//        return opinions;
-//    }
-
+    public Map<UUID,Opinion> getOpinions(){
+        return opinions;
+    }
+    public List<DMEReference<? extends Title<?>>> getTitles(){
+        return linked_titles;
+    }
+    public SuccessionEntry<?> getPreferredSuccession(){
+        return preferredSuccession;
+    }
     @Override
     public void additionalSave(JsonObject data) {
 

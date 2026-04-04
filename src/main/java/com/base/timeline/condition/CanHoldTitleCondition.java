@@ -1,4 +1,4 @@
-package com.base.timeline.change.conditions;
+package com.base.timeline.condition;
 
 import com.base.timeline.error.Errors;
 import com.base.timeline.error.StateError;
