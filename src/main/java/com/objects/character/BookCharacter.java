@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.opinion.Opinion;
 import com.objects.family.Family;
-import com.objects.house.House;
+import com.objects.title.house.House;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 

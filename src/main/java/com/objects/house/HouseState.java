@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
 import com.objects.family.Family;
+import com.objects.title.house.House;
 import com.objects.title.land.County;
 
 import java.util.HashMap;

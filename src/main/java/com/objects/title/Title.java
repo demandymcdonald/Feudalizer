@@ -142,7 +142,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
         this.succession = succession;
     }
 
-
+    public abstract boolean isChartered();
 
 
 

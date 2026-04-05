@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.objects.character.BookCharacter;
 import com.objects.family.Family;
 import com.objects.title.Title;
+import com.objects.title.house.House;
 
 import java.util.HashSet;
 import java.util.Set;

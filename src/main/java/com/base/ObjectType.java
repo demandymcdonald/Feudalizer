@@ -2,7 +2,7 @@ package com.base;
 
 import com.objects.character.BookCharacter;
 import com.objects.family.Family;
-import com.objects.house.House;
+import com.objects.title.house.House;
 import com.objects.title.Title;
 
 public enum ObjectType {
