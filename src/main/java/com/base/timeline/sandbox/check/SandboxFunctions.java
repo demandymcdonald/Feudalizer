@@ -3,15 +3,13 @@ package com.base.timeline.sandbox.check;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 import com.objects.character.BookCharacter;
-import com.objects.title.Title;
 import com.objects.title.succession.SuccessionPlanner;
-import com.objects.title.succession.rules.SuccessionEntry;
 
 import java.time.LocalDate;
 import java.util.List;

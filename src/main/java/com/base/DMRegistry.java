@@ -32,7 +32,7 @@ public class DMRegistry {
 //        }
 //        manager.register(entity);
 //    }
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> M getManager(Class<T> dmeclass){
+    public static <T extends DateMutableEntity<?>,M extends AbstractMutableManager<M,T,?>> M getManager(Class<T> dmeclass){
         if (MANAGER_MAP.containsKey(dmeclass)){
             return (M) MANAGER_MAP.get(dmeclass);
         } else {
@@ -50,7 +50,7 @@ public class DMRegistry {
     }
 
 
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> T getEntity(DMEReference<T> dme) {
+    public static <T extends DateMutableEntity<?>,M extends AbstractMutableManager<M,T,?>> T getEntity(DMEReference<T> dme) {
         M manager = getManager(dme.getType());
         return manager.get(dme.getType(),dme.getID());
     }

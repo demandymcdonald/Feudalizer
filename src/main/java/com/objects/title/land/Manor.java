@@ -48,7 +48,7 @@ public class Manor extends AbstractLandDivision<Manor>{
 
     @Override
     public StateReference getTitleName() {
-        return new SimpleReference(getName() + "Manor");
+        return new SimpleReference(this.getTitleName() + "Manor");
     }
 
     @Override

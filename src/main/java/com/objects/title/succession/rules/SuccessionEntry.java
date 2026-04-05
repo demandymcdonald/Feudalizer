@@ -2,6 +2,8 @@ package com.objects.title.succession.rules;
 
 import com.TypedSerialized;
 import com.base.reference.DMEReference;
+import com.base.timeline.error.SandboxCode;
+import com.base.timeline.error.StateError;
 import com.objects.title.Title;
 import com.utilities.JsonSerializable;
 import com.google.gson.JsonObject;
@@ -10,10 +12,8 @@ import com.utilities.SuperclassSerializable;
 import org.checkerframework.checker.units.qual.C;
 
 import java.awt.print.Book;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.function.Function;
 
 public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements SuperclassSerializable<SuccessionEntry<?>> {
@@ -38,11 +38,13 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
         return subject;
     }
 
-    protected static boolean canInherit(DMEReference<? extends Title<?>> title){
-        Title.canInherit()
+    protected <T extends Title<T>> boolean canInherit(DMEReference<? extends Title<?>> title, LocalDate date){
+        DMEReference<T> t = (DMEReference<T>) title;
+        Optional<StateError> se = Title.canInherit(t,subject,date,false);
+        return se.isEmpty() || se.get().getExpectedSandboxCode() == SandboxCode.CONTINUE;
     }
 
-    public abstract List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title);
+    public abstract List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date);
 
     @Override
     public final void metadataSave(JsonObject data) {

@@ -1,4 +1,4 @@
-package com.base.timeline.condition;
+package com.base.condition;
 
 import com.base.DateMutableEntity;
 import com.base.timeline.error.StateError;

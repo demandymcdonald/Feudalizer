@@ -8,6 +8,7 @@ import com.objects.character.BookCharacter;
 import com.objects.title.Title;
 import com.objects.title.succession.SuccessionChecksum;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 
@@ -39,7 +40,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     };
 
     @Override
-    public List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title) {
+    public List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date) {
         BookCharacter character = getSubject().get();
         LinkedHashMultimap<Type,BookCharacter> everyone = buildCharacterList(character);
         SuccessionChecksum checksum = SuccessionChecksum.of(everyone.values());
@@ -47,10 +48,11 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
             return cached;
         }
         currentChecksum = checksum;
-        return generate(title,everyone);
+        return generate(title,date,everyone);
+
     }
 
-    private List<BookCharacter> generate(DMEReference<? extends Title<?>> title,LinkedHashMultimap<Type,BookCharacter> everyone){
+    private List<BookCharacter> generate(DMEReference<? extends Title<?>> title, LocalDate date, LinkedHashMultimap<Type,BookCharacter> everyone){
         List<BookCharacter> ordered = new ArrayList<>();
         Title<?> tT = title.get();
         int childNumber = 0;
@@ -63,7 +65,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
                     continue;
                 }
             }
-            if (canInherit(tT)){
+            if (canInherit(title,date)){
                 ordered.add(character);
             }
         }
@@ -108,12 +110,6 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
         }
     }
     @Override
-    public JsonObject serialize() {
-        JsonObject json = new JsonObject();
-
-    }
-
-    @Override
     public void additionalSave(JsonObject json) {
         json.addProperty("isPrimarySpouse",isPrimarySpouse);
         JsonArray array = new JsonArray();
@@ -137,6 +133,4 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
         }
         this.additional.putAll(additional);
     }
-
-
 }

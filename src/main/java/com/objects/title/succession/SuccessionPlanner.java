@@ -7,7 +7,6 @@ import com.base.timeline.sandbox.check.SandboxFunctions;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
-import com.google.common.collect.HashMultimap;
 import com.objects.character.BookCharacter;
 import com.objects.title.Title;
 import com.objects.title.change.TitleSingletonChange;
@@ -58,7 +57,7 @@ public class SuccessionPlanner {
             current = ot.<Title<?>>map(DMEReference::get).orElse(null);
         }
         if (LoS.isEmpty()){
-            throw new IllegalStateException("Could not find LOS for " + title.getName());
+            throw new IllegalStateException("Could not find LOS for " + title.getTitleName());
         }
         return LoS;
     }

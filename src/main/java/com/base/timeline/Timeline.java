@@ -5,7 +5,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.sandbox.check.SandboxFunctions;
 import com.base.timeline.sandbox.core.Objective;

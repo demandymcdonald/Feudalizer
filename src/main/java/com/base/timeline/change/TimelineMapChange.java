@@ -5,10 +5,11 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.timeline.Timeline;
-import com.base.timeline.change.changes.TimelineChange;
-import com.base.timeline.condition.Condition;
+import com.base.condition.Condition;
+import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.error.ErrorResolution;
 import com.base.timeline.error.StateError;
+import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -161,10 +162,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         amendCumulativeTotal(getOwner().get().getTimeline(),this,FORWARD,total, this::onAddChangeStep);
     }
 
-    @Override
-    protected void applyConditions(List<Condition<StateError, ? super T>> conditions) {
-        conditions.add(new ShouldMerge());
-    }
+
 
     //==== Event Methods ====
     protected void onAddChangeStep(M stepChange){};
@@ -212,9 +210,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     public int getActiveSize(){
         return activeChanges.size();
     }
-    public boolean hasOtherApplyChecks(){
-        return this.getApplyConditions().size() > 1;
-    }
+
     public List<K> getEndingChanges(){
         return endingChanges;
     }
@@ -310,19 +306,30 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     protected abstract K deserializeK(JsonElement m);
     protected abstract V deserializeV(JsonElement m);
     protected abstract JsonElement serializeV(V v);
+    @Override
+    public void sandboxInit(Sandbox<? extends T> sandbox) {
+        super.sandboxInit(sandbox);
+        isFirst = true;
+    }
 
+    @Override
+    protected void onStageAdvance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance) {
+        super.onStageAdvance(entity, currentState, isFirstAdvance);
+        isFirst = false;
+    }
 
     //####Useful Map Conditions####
-    public class ShouldMerge extends Condition<StateError, T>{
+    public class ShouldMerge extends ApplyCondition<T> {
         public ShouldMerge() {
             super("map_should_merge");
         }
+
         @Override
         protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
-            if (thisChange.getClass().equals(checkAgainst.getClass()) && thisChange instanceof TimelineMapChange<?,?,?,?> currentTMC && checkAgainst instanceof TimelineMapChange<?,?,?,?> oldTMC){
-                if(isFirst){
+            if (thisChange.getClass().equals(checkAgainst.getClass())) {
+                if (isFirst) {
                     isFirst = false;
-                    if (!hasOtherApplyChecks()) {
+                    if (!hasMultipleApplyChecks()) {
                         return Optional.of(new StateError("map_merge_compatible_end", new SimpleReference("these are the same. merge them"), checkAgainst).addOption(new ErrorResolution.MapMergeEnd()));
                     } else {
                         return Optional.of(new StateError("map_merge_compatible_continue", new SimpleReference("these are the same. merge them"), checkAgainst).addOption(new ErrorResolution.MapMergeContinue()));
@@ -330,6 +337,11 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
                 }
             }
             return Optional.empty();
+        }
+
+        @Override
+        public boolean singleRun() {
+            return true;
         }
     }
 }

@@ -1,15 +1,14 @@
-package com.base.timeline.condition.nullify;
+package com.base.timeline.change.condition.nullify;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.changes.TimelineChange;
-import com.base.timeline.condition.Condition;
-import com.base.timeline.condition.ConditionResult;
-import static com.base.timeline.condition.nullify.NullifyResult.*;
+import com.base.timeline.change.TimelineChange;
+
+import static com.base.timeline.change.condition.nullify.NullifyResult.*;
 import java.util.List;
 import java.util.Optional;
 
-import static com.base.timeline.condition.nullify.NullifyResult.NULLIFY;
+import static com.base.timeline.change.condition.nullify.NullifyResult.NULLIFY;
 
 public class NullifyConditions {
 

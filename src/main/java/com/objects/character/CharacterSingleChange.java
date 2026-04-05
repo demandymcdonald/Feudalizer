@@ -1,11 +1,11 @@
 package com.objects.character;
 
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.condition.Condition;
-import com.base.timeline.condition.ConditionResult;
+import com.base.condition.Condition;
+import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static com.base.timeline.condition.nullify.NullifyConditions.NEVER_NULLIFY;
+import static com.base.timeline.change.condition.nullify.NullifyConditions.NEVER_NULLIFY;
 
 public abstract class CharacterSingleChange extends TimelineSingleChange<BookCharacter> {
     protected CharacterSingleChange(DMEReference<BookCharacter> primary, LocalDate date) {

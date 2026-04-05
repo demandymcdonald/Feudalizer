@@ -3,8 +3,8 @@ package com.base.timeline.change;
 import com.base.DateMutableEntity;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.changes.TimelineChange;
-import com.base.timeline.condition.Condition;
+import com.base.condition.Condition;
+import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.error.StateError;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
@@ -14,14 +14,9 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
 
-public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> extends TimelineChange<T> {
-    protected TimelineSingleChange(DMEReference<T> owner, LocalDate date) {
+public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> extends TimelineChange<T> {
+    protected TimelineSingleChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
-    }
-
-    @Override
-    public final void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> change, boolean isFirstAdvance) {
-        super.advanceStage(entity, currentState, change, isFirstAdvance);
     }
 
     @Override
@@ -51,8 +46,6 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> exten
         super.moveChange(newStart, newEnd);
     }
 
-
-
     @Override
     public final void reactivate(boolean isSandbox) {
         super.reactivate(isSandbox);
@@ -68,19 +61,5 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<T>> exten
         super.mainLoad(object);
     }
 
-    public class HasVariable extends Condition<StateError,T> {
-        private final Function<TimelineChange<?>,String> variableGetter;
-        public HasVariable(String variableName, Function<TimelineChange<?>,String> variableGetter) {
-            super(variableName + "_has_variable");
-            this.variableGetter = variableGetter;
-        }
-        @Override
-        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
-            if (checkAgainst.getClass().equals(thisChange.getClass())){
-                return Optional.of(new StateError("title_has_parent", ComplexReference.of("{} already has a value of {}", entity,variableGetter.apply(checkAgainst)),checkAgainst)
-                        .addEndSave().addEndCancel().addOverride());
-            }
-            return Optional.empty();
-        }
-    }
+
 }

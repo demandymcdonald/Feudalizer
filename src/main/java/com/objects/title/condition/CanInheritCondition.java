@@ -1,11 +1,20 @@
 package com.objects.title.condition;
 
-import com.base.timeline.condition.Condition;
+import com.base.reference.DMEReference;
+import com.base.condition.Condition;
 import com.base.timeline.error.StateError;
+import com.objects.character.LivingCreature;
 import com.objects.title.Title;
 
-public abstract class CanInheritCondition<T extends Title<T>> extends Condition<StateError, T> {
+import java.time.LocalDate;
+
+public abstract class CanInheritCondition<T extends Title<T>> extends Condition<StateError, DMEReference<? extends T>,DMEReference<?  extends LivingCreature<?>>, LocalDate> {
     public CanInheritCondition(String id) {
         super(id);
+    }
+
+    @Override
+    public boolean singleRun() {
+        return true;
     }
 }

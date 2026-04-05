@@ -9,7 +9,7 @@ import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.base.timeline.sandbox.check.SandboxFunction;
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.utilities.ThreadManager;
 import org.apache.commons.lang3.tuple.Pair;

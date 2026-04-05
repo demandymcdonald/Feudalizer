@@ -1,8 +1,6 @@
-package com.base.timeline.condition;
+package com.base.condition;
 
-import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.Optional;
@@ -21,7 +19,7 @@ import java.util.Optional;
  * - The third parameter is the {@link Sidecar} object determined by the subclass, which can be used
  *   to include precomputed or subject data, such as title sidecars containing prebuilt DME references.
  */
-public abstract class Condition<R extends ConditionResult, T extends DateMutableEntity<?>,E1,E2> implements iCondition{
+public abstract class Condition<R extends ConditionResult, A,B,C> implements iCondition{
         private final String id;
 
     public Condition(String id) {
@@ -29,11 +27,14 @@ public abstract class Condition<R extends ConditionResult, T extends DateMutable
     }
 
     @SuppressWarnings("unchecked")
-    public final Optional<R> check(DMEReference<? extends T> entity, E1 thisChange, E2 checkAgainst){
+    public final Optional<R> check(A entity, B thisChange, C checkAgainst, boolean sameState){
+        if (singleRun() && sameState){
+            return Optional.empty();
+        }
         return doCheck(entity, thisChange, checkAgainst);
     };
 
-    protected abstract Optional<R> doCheck(DMEReference<? extends T> entity, E1 thisChange, E2 checkAgainst);
+    protected abstract Optional<R> doCheck(A entity, B thisChange, C checkAgainst);
 
     @Override
     public String getCode() {

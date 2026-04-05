@@ -1,4 +1,4 @@
-package com.base.timeline.condition;
+package com.base.condition;
 
 public interface ConditionResult {
 

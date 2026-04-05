@@ -2,9 +2,9 @@ package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.changes.TimelineChange;
-import com.base.timeline.change.changes.TitleTLChange;
+
 import com.google.gson.JsonObject;
+import com.objects.title.change.TitleSingletonChange;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -14,15 +14,15 @@ import java.util.function.BiFunction;
 
 @SuppressWarnings("unchecked")
 public class TLChangeRegistry {
-    private static final Map<Class<? extends TimelineChange<?>>, BiFunction<LocalDate,?,?>> changes = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Class<? extends TimelineChange<?>>, BiFunction<?,LocalDate,?>> changes = Collections.synchronizedMap(new HashMap<>());
     static {
-        registerChangeType(TitleTLChange.Grant.class, TitleTLChange.Grant::fromJson);
-        registerChangeType(TitleTLChange.Revoke.class, TitleTLChange.Revoke::fromJson);
-        registerChangeType(TitleTLChange.DeJureDrift.class, TitleTLChange.DeJureDrift::fromJson);
-        registerChangeType(TitleTLChange.DeJureDriftPassive.class, TitleTLChange.DeJureDriftPassive::fromJson);
+        register(TitleSingletonChange.setHolderGrant.class, (dme, date) -> new TitleSingletonChange.setHolderGrant(dme, date));
+        register(TitleSingletonChange.setParent.class, TitleSingletonChange.setParent::new);
+        register(TitleSingletonChange.setHolderInherit.class, (dme,date) -> new TitleSingletonChange.setHolderInherit(dme,date));
+        register(TitleSingletonChange.setSuccessionEntry.class, (dme,date) -> new TitleSingletonChange.setSuccessionEntry(dme,date));
     }
-    protected static <T extends TimelineChange<R>,R extends DateMutableEntity<R>> void registerChangeType(Class<T> clazz,
-        BiFunction<LocalDate,DMEReference<R>, T> f){
+    protected static <T extends TimelineChange<R>,R extends DateMutableEntity<R>> void register(Class<T> clazz,
+                                                                                                BiFunction<DMEReference<? extends R>,LocalDate, T> f){
         changes.put(clazz,f);
     }
     /**

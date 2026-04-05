@@ -2,7 +2,7 @@ package com.objects.character;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;

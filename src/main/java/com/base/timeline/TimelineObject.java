@@ -4,7 +4,7 @@ import com.Global.*;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
-import com.base.timeline.change.changes.TimelineChange;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.state.TimelineState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 
 public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
 
@@ -225,26 +224,10 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
     }
 
 
-    /**
-     * Iterates over a map based on the timeline state changes and performs specified operations.
-     *
-     * @param <T>         The type of the timeline entity, which must extend {@code DateMutableEntity<T>}.
-     * @param <TC>        The type of the timeline change, which must extend {@code TimelineChange<? super T>}.
-     * @param <K>         The type of the map's keys.
-     * @param <V>         The type of the map's values.
-     * @param getNext     A function that determines the next {@code ChangeID} in the timeline based on the current timeline state
-     *                    and timeline change.
-     * @param toDo        A consumer that performs an operation using the current timeline change and the provided map.
-     * @param shouldContinue A predicate that determines whether the iteration should continue based on the current date
-     *                       and the provided map.
-     * @param timeline    The timeline of entities to iterate over.
-     * @param starting    The starting {@code ChangeID} to begin the iteration.
-     * @param map         The map to be utilized and potentially modified during the iteration.
-     * @param shouldThrow A flag indicating whether exceptions should be thrown in case of errors, or logged and handled gracefully.
-     */
-    public static <T extends DateMutableEntity<T>,TC extends TimelineChange<? super T>,K,V> void iterateMap(
-            BiFunction<Timeline<T>,TC,ChangeID> getNext, BiConsumer<TC,Map<K,V>> toDo, BiPredicate<LocalDate, Map<K,V>> shouldContinue,
-            Timeline<T> timeline, ChangeID starting, Map<K,V> map, boolean shouldThrow){
+
+    public static <T extends DateMutableEntity<T>,TC extends TimelineChange<? super T>,C> void iterateMap(
+            BiFunction<Timeline<T>,TC,ChangeID> getNext, BiConsumer<TC,C> toDo, BiPredicate<LocalDate, C> shouldContinue,
+            Timeline<T> timeline, ChangeID starting, C map, boolean shouldThrow){
         ChangeID current = starting;
         boolean contin = true;
         while(current != null && contin){

@@ -1,6 +1,6 @@
-package com.base.timeline.condition.nullify;
+package com.base.timeline.change.condition.nullify;
 
-import com.base.timeline.condition.ConditionResult;
+import com.base.condition.ConditionResult;
 
 public record NullifyResult(boolean canNullify, boolean isOr) implements ConditionResult {
     public static final NullifyResult NULLIFY = new NullifyResult(true, true);

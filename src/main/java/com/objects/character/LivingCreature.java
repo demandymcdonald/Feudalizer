@@ -3,7 +3,6 @@ package com.objects.character;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.changes.TimelineChange;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;

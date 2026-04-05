@@ -2,10 +2,9 @@ package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.changes.TimelineChange;
 import com.base.timeline.state.TimelineState;
-import com.base.timeline.condition.Condition;
-import com.base.timeline.condition.ConditionResult;
+import com.base.condition.Condition;
+import com.base.condition.ConditionResult;
 import com.google.gson.JsonObject;
 
 import java.time.LocalDate;

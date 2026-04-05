@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class DMEReference<T extends DateMutableEntity<T>> extends StateReference {
+public class DMEReference<T extends DateMutableEntity<?>> extends StateReference {
     private final Class<T> type;
     private final UUID uuid;
     private transient ThreadLocal<T> cachedEntity = new ThreadLocal<>();
