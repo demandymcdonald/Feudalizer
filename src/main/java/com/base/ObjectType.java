@@ -1,6 +1,6 @@
 package com.base;
 
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.family.Family;
 import com.objects.government.House;
 import com.objects.title.Title;

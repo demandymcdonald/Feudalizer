@@ -1,16 +1,6 @@
 package com.objects.family.extended_family;
 
 public enum ExtendedRelationship{
-    Husband("husband","Husband"),
-    Wife("wife","Wife"),
-    ExHusband("ex_husband","Ex-Husband"),
-    ExWife("ex_wife","Ex-Wife"),
-    Lover("lover","Lover"),
-    Concubine("concubine","Concubine"),
-    ExConcubine("ex_concubine","Ex-Concubine"),
-    ExLover("ex_lover","Ex-Lover"),
-    Neutral_ExPartner("partner","Partner"),
-    Neutral_Partner("partner_neutral","Partner"),
     Father("parent_male","Father"),
     Mother("parent_female","Mother"),
     Neutral_Parent("parent_neutral","Parent"),

@@ -14,6 +14,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.objects.character.human.HumanCharacter;
 import com.objects.character.opinion.Opinion;
 import com.objects.character.opinion.OpinionReason;
 import org.apache.commons.lang3.tuple.Pair;

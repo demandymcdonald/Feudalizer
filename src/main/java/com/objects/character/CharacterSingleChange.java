@@ -9,6 +9,7 @@ import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.objects.character.human.HumanCharacter;
 
 import java.time.LocalDate;
 import java.util.List;

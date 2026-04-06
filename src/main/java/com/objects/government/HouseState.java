@@ -6,7 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.family.Family;
 import com.objects.title.land.County;
 

@@ -1,6 +1,6 @@
 package com.display.windows;
 
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

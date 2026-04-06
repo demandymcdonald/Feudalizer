@@ -1,6 +1,6 @@
 package com.objects.factions;
 
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.title.Title;
 
 import java.util.*;

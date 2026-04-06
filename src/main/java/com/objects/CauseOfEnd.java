@@ -2,7 +2,7 @@ package com.objects;
 
 import com.base.DateMutableEntity;
 import com.google.gson.JsonObject;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.utilities.Displayable;
 
 import java.util.HashMap;

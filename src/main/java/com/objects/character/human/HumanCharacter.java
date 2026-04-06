@@ -1,4 +1,4 @@
-package com.objects.character;
+package com.objects.character.human;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
@@ -6,6 +6,8 @@ import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.objects.character.CharacterSingleChange;
+import com.objects.character.LivingCreature;
 import com.objects.character.opinion.Opinion;
 import com.objects.culture.Culture;
 import com.objects.culture.display.CulturalObject;
@@ -82,7 +84,7 @@ public class HumanCharacter extends LivingCreature<HumanCharacter> implements Cu
     public HumanCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
                           Gender gender, Orientation orientation) {
         super(dateOfBirth,dateOfDeath,List.of(
-            new ChangeSupplier<HumanCharacter,CharacterSingleChange.setForename>(){
+            new ChangeSupplier<HumanCharacter, CharacterSingleChange.setForename>(){
                 @Override
                 public CharacterSingleChange.setForename supply(LocalDate date, DMEReference<HumanCharacter> subject) {
                     return new CharacterSingleChange.setForename(subject,date,givenName);

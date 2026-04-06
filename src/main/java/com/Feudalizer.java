@@ -3,6 +3,7 @@ package com;
 
 import com.display.MainWindow;
 import com.display.geography.GeographyLoader;
+import com.objects.character.genetics.GeneManager;
 import com.sql.SQLManager;
 import com.utilities.ThreadManager;
 import javafx.application.Application;
@@ -22,7 +23,7 @@ public class Feudalizer extends Application {
         LOGGER.info("Starting application");
         primaryStage.setTitle("Feudalizer a0.3");
         MAIN_THREAD = Thread.currentThread();
-        ThreadManager.buildNewInstance(MAIN_THREAD, true);
+        GeneManager.init();
         geographyLoader = new GeographyLoader();
         geographyLoader.init();
         TypedSerialized.init();

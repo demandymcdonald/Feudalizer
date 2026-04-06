@@ -4,7 +4,7 @@ import com.Feudalizer;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.family.Family;
 import com.utilities.number.OrdinalAndCardinal;
 import org.apache.commons.lang3.tuple.Pair;

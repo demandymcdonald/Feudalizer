@@ -4,7 +4,7 @@ import com.base.DMRegistry;
 import com.display.geography.GeometryType;
 import com.display.windows.cards.view.CharacterViewCard;
 import com.display.windows.cards.view.title.*;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.title.land.*;
 import com.objects.title.Title;
 import javafx.scene.*;

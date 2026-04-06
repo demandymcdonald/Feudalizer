@@ -1,6 +1,6 @@
 package com;
 
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.CommonLawEntry;
 import com.objects.title.succession.rules.CustomEntry;

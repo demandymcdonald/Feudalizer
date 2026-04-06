@@ -4,7 +4,7 @@ import com.base.reference.SimpleReference;
 import com.base.reference.StateReference;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 
 import java.time.LocalDate;
 import java.util.List;

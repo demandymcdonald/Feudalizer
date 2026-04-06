@@ -4,7 +4,7 @@ import com.base.DMRegistry;
 import com.base.ObjectType;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.family.Family;
 import com.objects.government.House;
 import com.objects.title.Title;

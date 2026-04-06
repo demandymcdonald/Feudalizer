@@ -1,7 +1,7 @@
 package com.display.windows.cards.edit.title;
 
 import com.base.DMRegistry;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.title.land.AbstractLandDivision;
 import javafx.scene.Node;
 import javafx.scene.control.*;

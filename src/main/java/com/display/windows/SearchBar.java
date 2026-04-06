@@ -1,7 +1,7 @@
 package com.display.windows;
 
 import com.base.DMRegistry;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

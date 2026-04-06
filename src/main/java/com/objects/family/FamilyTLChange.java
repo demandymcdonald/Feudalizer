@@ -8,14 +8,11 @@ import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.base.timeline.state.TimelineState;
-import com.base.condition.Condition;
-import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;

@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.title.Title;
 import com.objects.title.succession.SuccessionChecksum;
 

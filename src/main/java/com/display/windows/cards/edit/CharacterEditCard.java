@@ -1,7 +1,7 @@
 package com.display.windows.cards.edit;
 
 import com.base.DMRegistry;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 import com.objects.character.CharacterManager;
 import com.objects.government.House;
 import javafx.geometry.Insets;

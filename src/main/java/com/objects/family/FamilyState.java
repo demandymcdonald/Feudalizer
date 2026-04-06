@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.objects.character.HumanCharacter;
+import com.objects.character.human.HumanCharacter;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
