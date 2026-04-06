@@ -3,7 +3,7 @@ package com.base.timeline;
 import com.Feudalizer;
 import com.base.DateMutableEntity;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineMapChange;
+import com.base.timeline.change.map.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import org.apache.commons.lang3.tuple.Pair;
 

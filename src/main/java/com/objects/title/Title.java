@@ -1,6 +1,7 @@
 package com.objects.title;
 
 import com.base.*;
+import com.base.condition.Condition;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.error.StateError;
@@ -39,30 +40,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public Title(DMEReference<T> dme) {
         super(dme);
     }
-    public static <T extends Title<T>> Optional<StateError> canHold(DMEReference<T> t, DMEReference<? extends LivingCreature<?>> creature, LocalDate date, boolean isSameState){
-        for (CanHoldCondition<? super T> condition : t.get().getCanHoldConditions()){
-            Optional<StateError> error = condition.check(t, creature, date,isSameState);
-            if(error.isPresent()){
-                return error;
-            }
-        }
-        return Optional.empty();
-    }
-    public static <T extends Title<T>> Optional<StateError> canInherit(DMEReference<T> t, DMEReference<? extends LivingCreature<?>> creature, LocalDate date, boolean isSameState){
-        for (CanInheritCondition<? super T> condition : t.get().getCanInheritConditions()){
-            Optional<StateError> error = condition.check(t, creature, date,isSameState);
-            if(error.isPresent()){
-                return error;
-            }
-        }
-        return Optional.empty();
-    }
 
-
-
-    public void removeRelationship(DMEReference<? extends Title<?>> title) {
-
-    }
 
 
 
@@ -127,8 +105,42 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
         }
         return offspring;
     }
-    protected abstract List<CanHoldCondition<? super T>> getCanHoldConditions();
-    protected abstract List<CanInheritCondition<? super T>> getCanInheritConditions();
+
+    public static <T extends Title<T>> Optional<StateError> canHold(DMEReference<T> t, DMEReference<? extends LivingCreature<?>> creature, LocalDate date, List<Condition.ShouldRun> isSameState){
+        for (CanHoldCondition<? super T> condition : t.get().getCanHoldConditions()){
+            Optional<StateError> error = condition.check(t, creature, date,isSameState);
+            if(error.isPresent()){
+                return error;
+            }
+        }
+        return Optional.empty();
+    }
+    public static <T extends Title<T>> Optional<StateError> canInherit(DMEReference<T> t, DMEReference<? extends LivingCreature<?>> creature, LocalDate date, List<Condition.ShouldRun> isSameState){
+        for (CanHoldCondition<? super T> condition : t.get().getCanInheritConditions()){
+            Optional<StateError> error = condition.check(t, creature, date,isSameState);
+            if(error.isPresent()){
+                return error;
+            }
+        }
+        return Optional.empty();
+    }
+    protected final List<CanHoldCondition<? super T>> getCanHoldConditions(){
+        return new ArrayList<>() {
+            {
+                conditionsCanHold(this);
+            }
+        };
+    };
+
+    protected final List<CanHoldCondition<? super T>> getCanInheritConditions(){
+        return new ArrayList<>() {
+            {
+                conditionsCanInherit(this);
+            }
+        };
+    };
+    protected abstract void conditionsCanHold(List<CanHoldCondition<? super T>> list);
+    protected abstract void conditionsCanInherit(List<CanHoldCondition<? super T>> list);
     public abstract String getTitleName();
 
 
@@ -141,7 +153,9 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public void setHolder(DMEReference<HumanCharacter> holder) {
         getTimeline().addChange(new TitleSingleChange.setHolderGrant<>(getReference(),current(),holder));
     }
-
+    public void setGoverningEntity(DMEReference<? extends GoverningEntity<?>> governingEntity) {
+        getTimeline().addChange(new TitleSingleChange.setGoverningEntity<>(getReference(),current(),governingEntity));
+    }
 
     @SuppressWarnings("unchecked")
     public void internalHolder(DMEReference<? extends HumanCharacter> character) {

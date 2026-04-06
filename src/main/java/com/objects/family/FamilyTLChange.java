@@ -3,7 +3,7 @@ package com.objects.family;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineMapChange;
+import com.base.timeline.change.map.TimelineMapChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;

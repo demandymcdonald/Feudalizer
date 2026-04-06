@@ -1,11 +1,12 @@
-package com.base.timeline.change;
+package com.base.timeline.change.map;
 
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.timeline.Timeline;
-import com.base.condition.Condition;
+import com.base.timeline.change.ChangeID;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.error.ErrorResolution;
 import com.base.timeline.error.StateError;
@@ -96,8 +97,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         int totalNew = 0;
         for (Pair<K,V> p : changes){
             K key = p.getKey();
+            this.activeChanges.put(key,p.getValue());
             if (!this.activeChanges.containsKey(key)){
-                this.activeChanges.put(key,p.getValue());
                 totalNew++;
             }
             if (hasEndingChanges() && endingChanges.contains(key)){
@@ -274,7 +275,38 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         };
         Timeline.iterateMap(buildNext,consumer,predicate,timeline,nextChange.getID(),new HashMap<>(),false);
     }
-
+    protected static <T extends DateMutableEntity<T>,K,V,TC extends TimelineMapChange<TC,K,V,? super T>> void getFirstFromFuture(Timeline<? extends T> t, TimelineMapChange<?,K,V,?> change, K desired, @Nullable Consumer<TC> onStep){
+        final TC tc = (TC) change;
+        Timeline<T> timeline = (Timeline<T>) t;
+        final String className = tc.getClass().getName();
+        TC nextChange = (TC) timeline.findChangeByClassID(tc.getStart(),FORWARD,className,false).getFirst();
+        final BiFunction<Timeline<T>,TC,ChangeID> buildNext = (tl, ch) -> {
+            TC tcl = (TC) timeline.findChangeByClassID(tc.getStart(),FORWARD,className,false).getFirst();
+            if (tcl == null){
+                return null;
+            }
+            return tcl.getLeapfrog();
+        };
+        final BiConsumer<TC,Map<K,V>> consumer;
+        if (onStep != null){
+            consumer = (ch, finalMap) -> {
+                if (ch.containsKey(desired)){
+                    finalMap.put(desired,ch.get(desired));
+                }
+                onStep.accept(tc);
+            };
+        } else {
+            consumer = (ch, finalMap) -> {
+                if (ch.containsKey(desired)){
+                    finalMap.put(desired,ch.get(desired));
+                }
+            };
+        }
+        final BiPredicate<LocalDate,Map<K,V>> predicate = (ch, finalMap) -> {
+            return ch != null && finalMap.isEmpty();
+        };
+        Timeline.iterateMap(buildNext,consumer,predicate,timeline,nextChange.getID(),new HashMap<>(),false);
+    }
     //==== Serializers and Deserializers ====
     @Override
     public final void mainSave(JsonObject o) {
@@ -342,8 +374,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         }
 
         @Override
-        public boolean runOncePerState() {
-            return true;
+        public ShouldRun whenToRun() {
+            return ShouldRun.ONCE_PER_ENTITY;
         }
     }
 }

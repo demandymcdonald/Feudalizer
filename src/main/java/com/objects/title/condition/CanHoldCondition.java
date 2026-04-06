@@ -8,13 +8,13 @@ import com.objects.title.Title;
 
 import java.time.LocalDate;
 
-public abstract class CanHoldCondition<T extends Title<T>> extends Condition<StateError, DMEReference<? extends T>,DMEReference<?  extends LivingCreature<?>>, LocalDate> {
+public abstract class CanHoldCondition<T extends Title<?>> extends Condition<StateError, DMEReference<? extends T>,DMEReference<?  extends LivingCreature<?>>, LocalDate> {
     public CanHoldCondition(String id) {
         super(id);
     }
 
     @Override
-    public boolean runOncePerState() {
-        return true;
+    public ShouldRun whenToRun() {
+        return ShouldRun.ONCE_PER_STATE;
     }
 }

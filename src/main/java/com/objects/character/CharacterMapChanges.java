@@ -5,7 +5,7 @@ import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineMapChange;
+import com.base.timeline.change.map.TimelineMapChange;
 import com.base.condition.Condition;
 import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;

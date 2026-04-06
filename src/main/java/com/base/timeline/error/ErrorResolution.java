@@ -2,7 +2,7 @@ package com.base.timeline.error;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineMapChange;
+import com.base.timeline.change.map.TimelineMapChange;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
