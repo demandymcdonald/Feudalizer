@@ -1,7 +1,7 @@
 package com.display.windows;
 
 import com.base.DMRegistry;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,10 +18,10 @@ public class SearchBar {
     private static final int MIN_CHARS = 3;
     private static final int MAX_RESULTS = 20;
     private static final int DEBOUNCE_MS = 300;
-    private Consumer<BookCharacter> onCharacterSelected; // ADD THIS
+    private Consumer<HumanCharacter> onCharacterSelected; // ADD THIS
 
     // ADD THIS METHOD
-    public void setOnCharacterSelected(Consumer<BookCharacter> callback) {
+    public void setOnCharacterSelected(Consumer<HumanCharacter> callback) {
         this.onCharacterSelected = callback;
     }
     private final HBox root = new HBox(16);

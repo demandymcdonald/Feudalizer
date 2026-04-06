@@ -1,7 +1,7 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.UIComponents;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.family.FamilyManager;
 import com.objects.title.Title;
 import javafx.geometry.Insets;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static com.display.windows.UIComponents.buildPersonTile;
 
-public class CharacterViewCard extends BaseViewCard<BookCharacter> {
+public class CharacterViewCard extends BaseViewCard<HumanCharacter> {
     // Label fields
     private Label portrait;
     private final Label nameLabel = new Label();
@@ -30,12 +30,12 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         init();
     }
 
-    public void populate(BookCharacter character) {
+    public void populate(HumanCharacter character) {
         updateHeader(character);
         scrollPane.setContent(buildBody(character));
     }
 
-    private void updateHeader(BookCharacter character) {
+    private void updateHeader(HumanCharacter character) {
         nameLabel.setText(character.getGivenName());
         String initials = String.valueOf(character.getGivenName().charAt(0))
                 + String.valueOf(character.getSurname().charAt(0));
@@ -61,7 +61,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
     }
 
     @Override
-    protected Node buildBody(BookCharacter character) {
+    protected Node buildBody(HumanCharacter character) {
         VBox body = new VBox(24);
         body.setPadding(new Insets(24));
 
@@ -95,13 +95,13 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
     }
 
 
-    private Node buildLiegeSection(BookCharacter character) {
+    private Node buildLiegeSection(HumanCharacter character) {
         VBox section = new VBox(8);
 
         Label sectionTitle = new Label("Liege");
         sectionTitle.getStyleClass().add("section-title");
 
-        Optional<BookCharacter> liege = character.getLiege();
+        Optional<HumanCharacter> liege = character.getLiege();
 
         if (liege.isEmpty()) {
             return emptySection(section,sectionTitle);
@@ -115,7 +115,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         section.getChildren().addAll(row,sectionTitle, buildPersonTile(liege.get(),e -> fireOnCharacterSelected(liege.get())));
         return section;
     }
-    private Node buildStatsGrid(BookCharacter character) {
+    private Node buildStatsGrid(HumanCharacter character) {
         GridPane grid = new GridPane();
         grid.setHgap(16);
         grid.setVgap(16);
@@ -132,7 +132,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         return grid;
     }
 
-    private Node buildTitlesSection(BookCharacter character) {
+    private Node buildTitlesSection(HumanCharacter character) {
         VBox section = new VBox(12);
 
         Label sectionTitle = new Label("Titles");
@@ -165,13 +165,13 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         return section;
     }
 
-    private Node buildSpouseSection(BookCharacter character) {
+    private Node buildSpouseSection(HumanCharacter character) {
         VBox section = new VBox(12);
 
         Label sectionTitle = new Label("Spouse");
         sectionTitle.getStyleClass().add("section-title");
 
-        List<BookCharacter> spouses = FamilyManager.getAllSpouses(character, true);
+        List<HumanCharacter> spouses = FamilyManager.getAllSpouses(character, true);
 
         if (spouses.isEmpty()) {
             return emptySection(section,sectionTitle);
@@ -182,7 +182,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         grid.setHgap(12);
         grid.setVgap(12);
 
-        for (BookCharacter spouse : spouses) {
+        for (HumanCharacter spouse : spouses) {
             // Grey out deceased spouses
             Node tile = UIComponents.buildPersonTile(
                     spouse,
@@ -197,13 +197,13 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         section.getChildren().addAll(sectionTitle, grid);
         return section;
     }
-    private Node buildParentsSection(BookCharacter character) {
+    private Node buildParentsSection(HumanCharacter character) {
         VBox section = new VBox(12);
 
         Label sectionTitle = new Label("Parents");
         sectionTitle.getStyleClass().add("section-title");
 
-        Optional<BookCharacter[]> parents = FamilyManager.getParents(character);
+        Optional<HumanCharacter[]> parents = FamilyManager.getParents(character);
 
         if (parents.isEmpty()) {
             Label none = new Label("Unknown");
@@ -216,7 +216,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         grid.setHgap(12);
         grid.setVgap(12);
 
-        for (BookCharacter parent : parents.get()) {
+        for (HumanCharacter parent : parents.get()) {
             Node tile = UIComponents.buildPersonTile(
                     parent,
                     e -> fireOnCharacterSelected(parent)
@@ -236,20 +236,20 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         section.getChildren().addAll(sectionTitle, none);
         return section;
     }
-    private Node buildSiblingsSection(BookCharacter character) {
+    private Node buildSiblingsSection(HumanCharacter character) {
         VBox section = new VBox(12);
 
         Label sectionTitle = new Label("Siblings");
         sectionTitle.getStyleClass().add("section-title");
 
-        Optional<BookCharacter[]> siblings = FamilyManager.getSiblings(character);
+        Optional<HumanCharacter[]> siblings = FamilyManager.getSiblings(character);
 
         if (siblings.isEmpty()) {
             return emptySection(section,sectionTitle);
         }
 
         // Filter out self from siblings array
-        List<BookCharacter> siblingsFiltered = Arrays.stream(siblings.get()).toList();
+        List<HumanCharacter> siblingsFiltered = Arrays.stream(siblings.get()).toList();
 
         if (siblingsFiltered.isEmpty()) {
            return emptySection(section,sectionTitle);
@@ -259,7 +259,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         grid.setHgap(12);
         grid.setVgap(12);
 
-        for (BookCharacter sibling : siblingsFiltered) {
+        for (HumanCharacter sibling : siblingsFiltered) {
             Node tile = UIComponents.buildPersonTile(
                     sibling,
                     e -> fireOnCharacterSelected(sibling)
@@ -273,14 +273,14 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         section.getChildren().addAll(sectionTitle, grid);
         return section;
     }
-    private Node buildChildrenSection(BookCharacter character) {
+    private Node buildChildrenSection(HumanCharacter character) {
         VBox section = new VBox(12);
 
         Label sectionTitle = new Label("Children");
         sectionTitle.getStyleClass().add("section-title");
 
         // Gather all children across all families
-        List<BookCharacter> children = FamilyManager.getNuclear(character).stream()
+        List<HumanCharacter> children = FamilyManager.getNuclear(character).stream()
                 .flatMap(f -> f.getChildrenOrdered().stream())
                 .distinct()
                 .collect(Collectors.toList());
@@ -293,7 +293,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         grid.setHgap(12);
         grid.setVgap(12);
 
-        for (BookCharacter child : children) {
+        for (HumanCharacter child : children) {
             Node tile = UIComponents.buildPersonTile(
                     child,
                     e -> fireOnCharacterSelected(child)
@@ -308,7 +308,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         return section;
     }
 
-    private Node buildVassalsSection(BookCharacter character) {
+    private Node buildVassalsSection(HumanCharacter character) {
         VBox section = new VBox(12);
 
         // TODO: Add "Show All Vassals" button that opens a separate window
@@ -316,7 +316,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         Label sectionTitle = new Label("Vassals");
         sectionTitle.getStyleClass().add("section-title");
 
-        List<BookCharacter> vassals = character.getTitles().stream()
+        List<HumanCharacter> vassals = character.getTitles().stream()
                 .flatMap(t -> t.getChildren().stream())
                 .map(Title::getHolder)
                 .filter(Optional::isPresent)
@@ -332,7 +332,7 @@ public class CharacterViewCard extends BaseViewCard<BookCharacter> {
         grid.setHgap(12);
         grid.setVgap(12);
 
-        for (BookCharacter vassal : vassals) {
+        for (HumanCharacter vassal : vassals) {
             grid.getChildren().add(UIComponents.buildPersonTile(
                     vassal,
                     e -> fireOnCharacterSelected(vassal)

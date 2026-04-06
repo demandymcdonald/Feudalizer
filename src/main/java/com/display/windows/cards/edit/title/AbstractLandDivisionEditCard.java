@@ -1,8 +1,8 @@
 package com.display.windows.cards.edit.title;
 
 import com.base.DMRegistry;
+import com.objects.character.HumanCharacter;
 import com.objects.title.land.AbstractLandDivision;
-import com.objects.character.BookCharacter;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -11,7 +11,7 @@ import javafx.geometry.Insets;
 
 public abstract class AbstractLandDivisionEditCard<T extends AbstractLandDivision<T>> extends TitleEditCard<T> {
 
-    protected final ComboBox<BookCharacter> holderCombo = new ComboBox<>();
+    protected final ComboBox<HumanCharacter> holderCombo = new ComboBox<>();
 
     protected AbstractLandDivisionEditCard(boolean editMode, String entityName) {
         super(editMode, entityName);

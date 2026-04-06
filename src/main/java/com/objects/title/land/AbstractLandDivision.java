@@ -18,7 +18,7 @@ public abstract class AbstractLandDivision<T extends AbstractLandDivision<T>> ex
     private String name;
     private String description;
     private Geometry borders;
-    //final Set<BookCharacter> Visitors = new HashSet<>();
+    //final Set<HumanCharacter> Visitors = new HashSet<>();
     private GeometryType geometryType;
     private String geometryID;
 

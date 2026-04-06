@@ -4,6 +4,7 @@ import com.Global;
 import com.base.DateMutableEntity;
 import com.base.ObjectType;
 import com.base.reference.ComplexReference;
+import com.base.reference.SimpleReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.apply.ApplyConditions;
@@ -14,7 +15,7 @@ import com.base.timeline.change.condition.nullify.NullifyResult;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
-import com.base.timeline.sandbox.check.SandboxFunctions;
+import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 import com.base.condition.*;
@@ -112,16 +113,14 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     }
     public void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<?> changeToNullify){
         onNullify(entity,state,changeToNullify);
-        changeToNullify.deactivate(true);
+        changeToNullify.deactivate(false);
     }
-    public void deactivate(boolean isSandbox){
-        SandboxCode c = SandboxCode.END_SAVE;
-        if (!isSandbox){
+    public void deactivate(boolean isSubPart){
+        //Subpart means that the data will be replaced by something else (for example, in an overwrite situation.
             DMEReference<? extends T> owner = getOwner();
             com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.buildInChange(owner,
-                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.canDeactivate<>()),end.plusDays(2),null,null);
-            c = h.getEndCode().join();
-        }
+                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.canDeactivate<>(isSubPart)),end.plusDays(2),Global.getSandboxHandler(),null);
+            SandboxCode c = h.getEndCode().join();
         if (c == SandboxCode.END_SAVE){
             onDeactivate();
             deactivated = true;
@@ -131,7 +130,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         SandboxCode c = SandboxCode.END_SAVE;
         if (!isSandbox){
             com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.buildInChange(owner,
-                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.canAddChange<>()),end.plusDays(2),null, null);
+                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.CanAddChange<>(th)),end.plusDays(2),null, null);
             c = h.getEndCode().join();
         }
         if (c == SandboxCode.END_SAVE){
@@ -188,10 +187,10 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
 
 
 
-    public final boolean canNullify(TimelineChange<?> toNullify, boolean sameState){
+    public final boolean canNullify(TimelineChange<?> toNullify, List<Condition.ShouldRun> shouldRun){
         boolean hasYes = false;
         for (NullifyCondition<? super T> c : nullConditions.get()) {
-            final NullifyResult result = c.check(this.getOwner(),this,toNullify,sameState).orElse(NullifyResult.NOT_NULLIFY_EXCLUSIVE);
+            final NullifyResult result = c.check(this.getOwner(),this,toNullify,shouldRun).orElse(NullifyResult.NOT_NULLIFY_EXCLUSIVE);
             if (result.canNullify()){
                 hasYes = true;
                 if (!result.isOr()){
@@ -204,18 +203,18 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         }
         return hasYes;
     };
-    public final List<StateError> doesConflict(TimelineChange<?> checkAgainst, boolean sameState){
+    public final List<StateError> doesConflict(TimelineChange<?> checkAgainst, List<Condition.ShouldRun> shouldRun){
         List<StateError> results = new ArrayList<>();
         for (ApplyCondition<? super T> c : applyConditions.get()) {
-            Optional<StateError> result = c.check(this.owner,this,checkAgainst,sameState);
+            Optional<StateError> result = c.check(this.owner,this,checkAgainst,shouldRun);
             result.ifPresent(results::add);
         }
         return results;
     };
-    public final <C extends Condition<StateError,T,TimelineChange<? super T>, TimelineChange<?>>> List<StateError> canBeDeactivated(TimelineChange<?> checkAgainst, boolean sameState){
+    public final <C extends Condition<StateError,T,TimelineChange<? super T>, TimelineChange<?>>> List<StateError> canBeDeactivated(TimelineState<? extends T> state, boolean isBeingReplaced, List<Condition.ShouldRun> shouldRun){
         List<StateError> results = new ArrayList<>();
         for (DeactivateCondition<? super T> c : deactivateConditions.get()) {
-            Optional<StateError> result = c.check(this.owner,this,checkAgainst,sameState);
+            Optional<StateError> result = c.check(this.owner,this,isBeingReplaced,shouldRun);
             result.ifPresent(results::add);
         }
         return results;
@@ -355,7 +354,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     public class HasVariable extends ApplyCondition<T> {
         private final Function<TimelineChange<?>,String> variableGetter;
         public HasVariable(String variableName, Function<TimelineChange<?>,String> variableGetter) {
-            super(variableName + "_has_variable");
+            super("gen_has_variable:" + variableName);
             this.variableGetter = variableGetter;
         }
         @Override
@@ -363,6 +362,38 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
             if (checkAgainst.getClass().equals(thisChange.getClass())){
                 return Optional.of(new StateError("title_has_parent", ComplexReference.of("{} already has a value of {}", entity,variableGetter.apply(checkAgainst)),checkAgainst)
                         .addEndSave().addEndCancel().addOverride());
+            }
+            return Optional.empty();
+        }
+    }
+    public class HasVariableClass extends ApplyCondition<T> {
+        final Class<?> variableClass;
+        final String errorType;
+        public HasVariableClass(Class<?> variableClass) {
+            super("gen_has_variable:" + variableClass.getSimpleName());
+            errorType = "gen_has_variable:" + variableClass.getSimpleName();
+            this.variableClass = variableClass;
+        }
+        @Override
+        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
+            if (variableClass.isAssignableFrom(checkAgainst.getClass())){
+                StateError e = new StateError(errorType, ComplexReference.of("{} already has a change of type {}", entity,checkAgainst.getClass()),checkAgainst);
+                return Optional.of(e.addEndSave().addEndCancel().addOverride());
+            }
+            return Optional.empty();
+        }
+    }
+    public class IsOnlyData extends DeactivateCondition<T> {
+
+        public IsOnlyData() {
+            super("gen_is_only_data");
+        }
+
+
+        @Override
+        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, Boolean isSandbox) {
+            if(!isSandbox && entity.get().getCreated() == thisChange.getStart()){
+                return Optional.of(new StateError("gen_corrupting_start_state",new SimpleReference("This change will remove a default value for this variable"),thisChange).addEndCancel());
             }
             return Optional.empty();
         }

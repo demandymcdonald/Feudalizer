@@ -1,86 +1,68 @@
 package com.objects.family;
 
+import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.TimelineMapChange;
+import com.base.timeline.change.condition.apply.ApplyCondition;
+import com.base.timeline.change.condition.deactivate.DeactivateCondition;
+import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.base.timeline.state.TimelineState;
 import com.base.condition.Condition;
 import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.google.gson.JsonPrimitive;
+import com.objects.character.HumanCharacter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public abstract class FamilyTLChange extends TimelineChange<Family> {
-    private LinkedHashMap<DMEReference<BookCharacter>, Family.Relationship> involved = new LinkedHashMap<>();
+import static com.objects.family.Family.Relationship.CHILD_BORN;
+import static com.objects.family.Family.Relationship.CHILD_BORN_DISOWNED;
 
+public abstract class FamilyTLChange {
 
-    protected FamilyTLChange(DMEReference<Family> owner, LocalDate date, Pair<DMEReference<BookCharacter>, Family.Relationship>... involves) {
-        super(owner, date);
-        for (Pair<DMEReference<BookCharacter>, Family.Relationship> ref : involves) {
-            involved.put(ref.getKey(),ref.getValue());
-        }
-        //this.involved = ImmutableList.copyOf(involved);
-    }
-    @Override
-    protected ChangeTags[] getTags() {
-        return new ChangeTags[0];
-    }
-
-    protected FamilyTLChange(DMEReference<Family> owner, LocalDate date) {
-        super(owner, date);
-    }
-    @Override
-    public HashSet<DMEReference<?>> getScope() {
-        HashSet<DMEReference<?>> toReturn = new HashSet<>();
-        toReturn.addAll(getOwner().get().getMembers());
-        return toReturn;
-    }
-    public DMEReference<BookCharacter> getCharacter(int index) {
-        List<DMEReference<BookCharacter>> list = new ArrayList<>(involved.keySet());
-        return list.get(index);
-    }
-    public DMEReference<BookCharacter>[] getCharacter(Family.Relationship index) {
-        List<DMEReference<BookCharacter>> list = new ArrayList<>();
-        for (Map.Entry<DMEReference<BookCharacter>, Family.Relationship> entry : involved.entrySet()) {
-            if (entry.getValue() == index) list.add(entry.getKey());
-        }
-        return list.toArray(new DMEReference[0]);
-    }
-    @Override
-    public JsonObject additionalLoad(JsonObject data) {
-        data.getAsJsonArray("FamilyTLData").forEach(o -> {
-            JsonObject o2 = (JsonObject) o;
-            involved.put(DMEReference.deserialize(o2.getAsJsonObject("character")), Family.Relationship.valueOf(o2.get("relationship").getAsString()));
-        });
-        return data;
-    }
-
-    @Override
-    public void additionalSave(JsonObject data) {
-        JsonArray o = new JsonArray();
-        for (Map.Entry<DMEReference<BookCharacter>, Family.Relationship> entry : involved.entrySet()) {
-            JsonObject o2 = new JsonObject();
-            o2.add("character",entry.getKey().serialize());
-            o2.addProperty("relationship",entry.getValue().name());
-            o.add(o2);
-        }
-        data.add("FamilyTLData",o);
-    }
-    public static class MemberChange extends FamilyTLChange {
-        public MemberChange(DMEReference<Family> owner, LocalDate date, Pair<DMEReference<BookCharacter>, Family.Relationship>... involves) {
+    public static class MemberChange extends TimelineMapChange<MemberChange, DMEReference<HumanCharacter>, Family.Relationship, Family> {
+        public MemberChange(DMEReference<Family> owner, LocalDate date, Pair<DMEReference<HumanCharacter>, Family.Relationship>... involves) {
             super(owner, date, involves);
         }
+
         @Override
-        protected void onApply(Family entity, TimelineState<Family> currentState) {
+        protected boolean hasEndingChanges() {
+            return true;
+        }
+
+        @Override
+        protected JsonElement serializeK(DMEReference<HumanCharacter> ref) {
+            return ref.serialize();
+        }
+
+        @Override
+        protected DMEReference<HumanCharacter> deserializeK(JsonElement m) {
+            return DMEReference.deserialize(m.getAsJsonObject());
+        }
+        @Override
+        protected JsonElement serializeV(Family.Relationship relationship) {
+            return new JsonPrimitive(relationship.name());
+        }
+        @Override
+        protected Family.Relationship deserializeV(JsonElement m) {
+            return Family.Relationship.valueOf(m.getAsString());
+        }
+
+
+
+        @Override
+        protected void onApply(DMEReference<? extends Family> entity, TimelineState<? extends Family> currentState) {
 
         }
 
         @Override
-        public List<Class<? extends TimelineChange<Family>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super Family>>> oppositeChanges() {
             return List.of();
         }
 
@@ -95,13 +77,57 @@ public abstract class FamilyTLChange extends TimelineChange<Family> {
         }
 
         @Override
-        protected List<Condition<StateError, ?>> buildApplyConditions() {
-            return List.of();
+        protected void applyConditions(List<ApplyCondition<? super Family>> list) {
+
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ?>> buildNullifyConditions() {
-            return List.of();
+        protected void nullifyConditions(List<NullifyCondition<? super Family>> list) {
+
+        }
+
+        @Override
+        protected void deactivateConditions(List<DeactivateCondition<? super Family>> list) {
+
+        }
+
+        @Override
+        public void additionalSave(JsonObject data) {
+
+        }
+
+        @Override
+        public void additionalLoad(JsonObject data) {
+
+        }
+    }
+    public static class IsAlreadyBioChild extends ApplyCondition<Family> {
+
+        public IsAlreadyBioChild() {
+            super("is_already_bio_child");
+        }
+
+        @Override
+        protected Optional<StateError> doCheck(DMEReference<? extends Family> entity, TimelineChange<? extends Family> thisChange, TimelineChange<?> checkAgainst) {
+            if(thisChange instanceof MemberChange mc){
+                Map<DMEReference<HumanCharacter>, Family.Relationship> changeFragment = mc.getChangeFragment();
+                if(changeFragment.containsValue(CHILD_BORN) || changeFragment.containsValue(CHILD_BORN_DISOWNED)) {
+                    for (Map.Entry<DMEReference<HumanCharacter>, Family.Relationship> entry : changeFragment.entrySet()) {
+                        if (entry.getValue() == CHILD_BORN || entry.getValue() == CHILD_BORN_DISOWNED) {
+                            HumanCharacter character = entry.getKey().get();
+                            if (character.getOriginFamily(false) != null || character.getOriginFamily(false) != entity.get()) {
+                                return Optional.of(new StateError("family_already_has_bio_parents",new ComplexReference("{} already has bio parents",entry.getKey()),checkAgainst).addEndCancel());
+                            }
+                        }
+                    }
+                }
+            }
+            return Optional.empty();
+        }
+
+        @Override
+        public ShouldRun whenToRun() {
+            return ShouldRun.ONCE_PER_ENTITY;
         }
     }
 }

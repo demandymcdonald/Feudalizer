@@ -7,31 +7,44 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.opinion.Opinion;
+import com.objects.culture.Culture;
+import com.objects.culture.display.CulturalObject;
 import com.objects.family.Family;
-import com.objects.title.house.House;
+import com.objects.government.House;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public class BookCharacter extends LivingCreature<BookCharacter> {
+public class HumanCharacter extends LivingCreature<HumanCharacter> implements CulturalObject<HumanCharacter> {
+
+    public enum Pronouns {
+        Masculine,
+        Feminine,
+        Neutral,
+    }
 
 
     public enum Gender {
-        Male("Male"),
-        Female("Female"),
-        Trans_Male("Trans-Male"),
-        Trans_Female("Trans-Female"),
-        Non_Binary("Non-Binary"),
-        Other("Other");
+        Male("Male",Pronouns.Masculine),
+        Female("Female",Pronouns.Feminine),
+        Trans_Male("Trans-Male",Pronouns.Masculine),
+        Trans_Female("Trans-Female",Pronouns.Feminine),
+        Non_Binary("Non-Binary",Pronouns.Neutral);
+//        Other("Other");
 
         private final String display;
-        Gender(String d){
+        private final Pronouns pronouns;
+        Gender(String d, Pronouns pronouns){
             display = d;
+            this.pronouns = pronouns;
         }
         public String getFlavor(){
             return display;
+        }
+        public Pronouns getPronouns(){
+            return pronouns;
         }
     }
     public enum Orientation {
@@ -55,6 +68,7 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     private Gender gender;
     private Orientation orientation;
     private SuccessionEntry<?> preferredSuccession;
+    private DMEReference<Culture> culture;
 
     private final Map<UUID, Opinion> opinions = new HashMap<>();
 
@@ -65,30 +79,30 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
 
 
-    public BookCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
-                         Gender gender, Orientation orientation) {
+    public HumanCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
+                          Gender gender, Orientation orientation) {
         super(dateOfBirth,dateOfDeath,List.of(
-            new ChangeSupplier<BookCharacter,CharacterSingleChange.setForename>(){
+            new ChangeSupplier<HumanCharacter,CharacterSingleChange.setForename>(){
                 @Override
-                public CharacterSingleChange.setForename supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                public CharacterSingleChange.setForename supply(LocalDate date, DMEReference<HumanCharacter> subject) {
                     return new CharacterSingleChange.setForename(subject,date,givenName);
                 }
             },
-            new ChangeSupplier<BookCharacter,CharacterSingleChange.setSurname>(){
+            new ChangeSupplier<HumanCharacter,CharacterSingleChange.setSurname>(){
                 @Override
-                public CharacterSingleChange.setSurname supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                public CharacterSingleChange.setSurname supply(LocalDate date, DMEReference<HumanCharacter> subject) {
                     return new CharacterSingleChange.setSurname(subject,date,surname);
                 }
             },
-            new ChangeSupplier<BookCharacter,CharacterSingleChange.setGender>(){
+            new ChangeSupplier<HumanCharacter,CharacterSingleChange.setGender>(){
                 @Override
-                public CharacterSingleChange.setGender supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                public CharacterSingleChange.setGender supply(LocalDate date, DMEReference<HumanCharacter> subject) {
                     return new CharacterSingleChange.setGender(subject,date,gender);
                 }
             },
-            new ChangeSupplier<BookCharacter,CharacterSingleChange.setOrientation>(){
+            new ChangeSupplier<HumanCharacter,CharacterSingleChange.setOrientation>(){
                 @Override
-                public CharacterSingleChange.setOrientation supply(LocalDate date, DMEReference<BookCharacter> subject) {
+                public CharacterSingleChange.setOrientation supply(LocalDate date, DMEReference<HumanCharacter> subject) {
                     return new CharacterSingleChange.setOrientation(subject,date,orientation);
                 }
             }
@@ -98,7 +112,7 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
         this.gender = gender;
         this.orientation = orientation;
     }
-    public BookCharacter(DMEReference<BookCharacter> ref) {
+    public HumanCharacter(DMEReference<HumanCharacter> ref) {
         super(ref);
     }
 
@@ -116,17 +130,17 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     }
 
     @Override
-    public TimelineChange<BookCharacter> getBirthChange(DMEReference<BookCharacter> dme, LocalDate date) {
+    public TimelineChange<HumanCharacter> getBirthChange(DMEReference<HumanCharacter> dme, LocalDate date) {
         return new CharacterSingleChange.Birth(dme,date);
     }
 
     @Override
-    public TimelineChange<BookCharacter> getDeathChange(DMEReference<BookCharacter> dme, LocalDate date, CauseOfEnd cOd) {
+    public TimelineChange<HumanCharacter> getDeathChange(DMEReference<HumanCharacter> dme, LocalDate date, CauseOfEnd<? super HumanCharacter> cOd) {
         return new CharacterSingleChange.Death(dme,date,cOd);
     }
 
     @Override
-    public CauseOfEnd defaultDeathCause() {
+    public CauseOfEnd<? super HumanCharacter> defaultDeathCause() {
         return CauseOfEnd.Character.CHARACTER_OLD_AGE;
     }
 
@@ -152,12 +166,14 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     public void linkFamily(Family family, Family.Relationship rel){
         linked_families.put(family, rel);
     }
-    public void linkTitle(Title<?> title){
+    public void linkTitle(DMEReference<? extends Title<?>> title){
         linked_titles.add(title);
     }
 
 
-
+    public void internalSetCulture(DMEReference<Culture> culture){
+        this.culture = culture;
+    }
     public void internalSetForename(String forename){
         this.givenName = forename;
     }
@@ -174,6 +190,7 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
         this.opinions.clear();
         this.opinions.putAll(opinions);
     }
+
 //    public void internalSetOpinion(Map<UUID, Opinion> opinions){
 //        this.opinions.clear();
 //        this.opinions.putAll(opinions);
@@ -204,6 +221,66 @@ public class BookCharacter extends LivingCreature<BookCharacter> {
     public SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;
     }
+
+    //==== Family Stuff ====
+    public Family getOriginFamily(boolean adopted){
+        List<Family.Relationship> rel = new ArrayList<>();
+       if (adopted){
+           rel.add(Family.Relationship.CHILD_ADOPTED);
+           rel.add(Family.Relationship.CHILD_ADOPTED_DISOWNED);
+       } else {
+           rel.add(Family.Relationship.CHILD_BORN);
+           rel.add(Family.Relationship.CHILD_BORN_DISOWNED);
+       }
+        for (Family family : linked_families.keySet()){
+            Family.Relationship fRel = linked_families.get(family);
+            if (rel.contains(fRel)){
+                return family;
+            }
+        }
+        if(adopted){
+            return getOriginFamily(false);
+        } else {
+            return null;
+        }
+    }
+    public List<Family> getFamiliesOfRelations(){
+        List<Family> families = new ArrayList<>();
+        for (Map.Entry<Family, Family.Relationship> family : linked_families.entrySet()){
+            if (!family.getValue().getType().equals(Family.MemberType.OFFSPRING)){
+                families.add(family.getKey());
+            }
+        }
+        return families;
+    }
+    public List<DMEReference<HumanCharacter>> getSpouses(){
+        List<DMEReference<HumanCharacter>> spouses = new ArrayList<>();
+        for (Map.Entry<Family, Family.Relationship> family : linked_families.entrySet()){
+            Family.MemberType type = family.getValue().getType();
+            if (type.equals(Family.MemberType.HEAD) || type.equals(Family.MemberType.PARTNER)){
+                List<DMEReference<HumanCharacter>> sp = family.getKey().getParents();
+                sp.remove(this.getReference());
+                spouses.addAll(sp);
+            }
+        }
+        return spouses;
+    }
+    @Override
+    public DMEReference<Culture> getCulture() {
+        return culture;
+    }
+
+    //==== Conditional Logic ====
+
+    public boolean isAdopted(){
+        return linked_families.containsValue(Family.Relationship.CHILD_ADOPTED) || linked_families.containsValue(Family.Relationship.CHILD_ADOPTED_DISOWNED);
+    }
+    public boolean isSpouse(DMEReference<HumanCharacter> other){
+        return getSpouses().contains(other);
+    }
+
+
+
     @Override
     public void additionalSave(JsonObject data) {
 

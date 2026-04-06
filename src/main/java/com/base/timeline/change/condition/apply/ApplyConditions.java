@@ -26,7 +26,7 @@ public class ApplyConditions {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
-//            Optional<BookCharacter> holder = sidecar.holder();
+//            Optional<HumanCharacter> holder = sidecar.holder();
 //            if( thisChange instanceof TitleTLChange<?> tC && checkAgainst instanceof TitleTLChange<?> cA){
 //
 //            };
@@ -48,7 +48,7 @@ public class ApplyConditions {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
-//            Optional<BookCharacter> holder = sidecar.holder();
+//            Optional<HumanCharacter> holder = sidecar.holder();
 //            if(checkAgainst instanceof TitleTLChange.Grant<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().get().equals(holder.orElse(null))){
 //                return Optional.of(newStateNullifiedbyOldError(checkAgainst));
 //            };
@@ -59,7 +59,7 @@ public class ApplyConditions {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
-//            Optional<BookCharacter> holder = sidecar.holder();
+//            Optional<HumanCharacter> holder = sidecar.holder();
 //            if(checkAgainst instanceof TitleTLChange.Revoke<?> cA && cA.getHolder().isPresent() && !cA.getHolder().get().get().equals(holder.orElse(null))){
 //                return Optional.of(newStateNullifiedbyOldError(checkAgainst).addReplaceWithNew(new TitleTLChange.Revoke<>(DMEReference.of(subject),DMEReference.of(holder.orElse(null)),checkAgainst.getStart())));
 //            };
@@ -70,9 +70,9 @@ public class ApplyConditions {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            //Title<?> subject = sidecar.subject();
-//            Optional<BookCharacter> holder = sidecar.holder();
+//            Optional<HumanCharacter> holder = sidecar.holder();
 //            if( thisChange instanceof TitleTLChange<?> tC && checkAgainst instanceof TitleTLChange<?> cA){
-//                Optional<BookCharacter> otherCharacter = unpackReference(cA.getHolder());
+//                Optional<HumanCharacter> otherCharacter = unpackReference(cA.getHolder());
 //                if (holder.isEmpty()) return Optional.empty();
 //                if (holder.get().equals(otherCharacter.orElse(null))){
 //                    return Optional.of(duplicateError(checkAgainst));
@@ -129,10 +129,10 @@ public class ApplyConditions {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
-//            Optional<BookCharacter> holder = sidecar.holder();
+//            Optional<HumanCharacter> holder = sidecar.holder();
 //            if (holder.isPresent()){
-//                List<? extends DMEResult<?, ?, BookCharacter>> results = Title.canHoldDeep(subject,holder.get());
-//                for (DMEResult<?, ?, BookCharacter> result : results) {
+//                List<? extends DMEResult<?, ?, HumanCharacter>> results = Title.canHoldDeep(subject,holder.get());
+//                for (DMEResult<?, ?, HumanCharacter> result : results) {
 //                    if (!result.canHold()){
 //                        return Optional.of(result.resolution().get());
 //                    }
@@ -148,7 +148,7 @@ public class ApplyConditions {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            //Title<?> subject = sidecar.subject();
-//            Optional<BookCharacter> holder = sidecar.holder();
+//            Optional<HumanCharacter> holder = sidecar.holder();
 //            if( thisChange instanceof TitleTLChange.DeJureDriftPassive<?,?,?> tC && checkAgainst instanceof TitleTLChange.DeJureDrift<?,?> cA){
 //                if (cA.getTitle().get().equals(tC.getChild())){
 //                    return Optional.of(nullifyError(checkAgainst));

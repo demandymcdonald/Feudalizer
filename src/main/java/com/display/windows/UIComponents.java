@@ -1,6 +1,6 @@
 package com.display.windows;
 
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -29,33 +29,33 @@ public class UIComponents {
         tile.getChildren().addAll(labelNode, valueNode);
         return tile;
     }
-    public static Node buildCharacterChip(Consumer<BookCharacter> onCharacterSelected, BookCharacter bookCharacter) {
+    public static Node buildCharacterChip(Consumer<HumanCharacter> onCharacterSelected, HumanCharacter humanCharacter) {
         HBox chip = new HBox(10);
         chip.getStyleClass().add("character-chip");
         chip.setAlignment(Pos.CENTER_LEFT);
         chip.setPadding(new Insets(8, 14, 8, 14));
 
-        String initials = String.valueOf(bookCharacter.getGivenName().charAt(0))
-                + String.valueOf(bookCharacter.getSurname().charAt(0));
+        String initials = String.valueOf(humanCharacter.getGivenName().charAt(0))
+                + String.valueOf(humanCharacter.getSurname().charAt(0));
 
         Label portrait = new Label(initials);
         portrait.setPrefSize(32, 32);
         portrait.getStyleClass().add("chip-portrait");
-        Label name = new Label(bookCharacter.getGivenName());
+        Label name = new Label(humanCharacter.getGivenName());
         name.getStyleClass().add("chip-name");
-        Label house = new Label(bookCharacter.getSurname());
+        Label house = new Label(humanCharacter.getSurname());
         house.getStyleClass().add("chip-house");
         VBox info = new VBox(2, name, house);
 
         chip.getChildren().addAll(portrait, info);
         chip.setOnMouseClicked(e -> {
             if (onCharacterSelected != null) {
-                onCharacterSelected.accept(bookCharacter);
+                onCharacterSelected.accept(humanCharacter);
             }
         });
         return chip;
     }
-    public static Node buildPersonTile(BookCharacter character, EventHandler<MouseEvent> onClick) {
+    public static Node buildPersonTile(HumanCharacter character, EventHandler<MouseEvent> onClick) {
         VBox tile = new VBox(8);
         tile.setPadding(new Insets(14));
         tile.setAlignment(Pos.CENTER);
@@ -81,7 +81,7 @@ public class UIComponents {
         return tile;
     }
 
-    public static Node buildPortrait(BookCharacter character, int size) {
+    public static Node buildPortrait(HumanCharacter character, int size) {
         String initials = String.valueOf(character.getGivenName().charAt(0))
                 + String.valueOf(character.getSurname().charAt(0));
 
@@ -91,7 +91,7 @@ public class UIComponents {
         return portrait;
     }
 
-    public static Node buildPersonRow(BookCharacter character, String sublabel, EventHandler<MouseEvent> onClick) {
+    public static Node buildPersonRow(HumanCharacter character, String sublabel, EventHandler<MouseEvent> onClick) {
         HBox row = new HBox(12);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(12, 16, 12, 16));
@@ -114,7 +114,7 @@ public class UIComponents {
 
         return row;
     }
-    public static Label buildPortraitLabel(BookCharacter character, int size, String styleClass) {
+    public static Label buildPortraitLabel(HumanCharacter character, int size, String styleClass) {
         String initials = String.valueOf(character.getGivenName().charAt(0))
                 + String.valueOf(character.getSurname().charAt(0));
 

@@ -1,18 +1,15 @@
 package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
-import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
-import com.base.condition.Condition;
-import com.base.timeline.change.condition.apply.ApplyCondition;
-import com.base.timeline.error.StateError;
+import com.base.timeline.change.condition.deactivate.DeactivateCondition;
+import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.List;
 
 public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> extends TimelineChange<T> {
     protected TimelineSingleChange(DMEReference<? extends T> owner, LocalDate date) {
@@ -45,7 +42,15 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> exten
     public final void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd) {
         super.moveChange(newStart, newEnd);
     }
+    @Override
+    protected void nullifyConditions(List<NullifyCondition<? super T>> list) {
 
+    }
+
+    @Override
+    protected void deactivateConditions(List<DeactivateCondition<? super T>> list) {
+        list.add(new IsOnlyData());
+    }
     @Override
     public final void reactivate(boolean isSandbox) {
         super.reactivate(isSandbox);
@@ -60,6 +65,5 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> exten
     public final void mainLoad(JsonObject object) {
         super.mainLoad(object);
     }
-
 
 }

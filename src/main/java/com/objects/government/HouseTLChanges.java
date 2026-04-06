@@ -1,4 +1,4 @@
-package com.objects.house;
+package com.objects.government;
 
 import com.base.DMRegistry;
 import com.base.ObjectType;
@@ -7,9 +7,8 @@ import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.family.Family;
-import com.objects.title.house.House;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,10 +18,10 @@ import static com.base.timeline.error.Errors.DUPLICATE_STATE;
 public class HouseTLChanges {
 
     public static class HeadOfHouseChanged extends TimelineChange<House, H> {
-        DMEReference<BookCharacter> oldHead;
-        DMEReference<BookCharacter> newHead;
+        DMEReference<HumanCharacter> oldHead;
+        DMEReference<HumanCharacter> newHead;
 
-        public HeadOfHouseChanged(BookCharacter oldHead, BookCharacter newHead) {
+        public HeadOfHouseChanged(HumanCharacter oldHead, HumanCharacter newHead) {
             this.oldHead = DMEReference.of(oldHead);
             this.newHead = DMEReference.of(newHead);
         }
@@ -282,10 +281,10 @@ public class HouseTLChanges {
     }
 
     public static class RetainerAdded extends TimelineChange {
-        DMEReference<BookCharacter> retainer;
+        DMEReference<HumanCharacter> retainer;
         House.RetainerType retainerType;
 
-        public RetainerAdded(BookCharacter retainer, House.RetainerType retainerType) {
+        public RetainerAdded(HumanCharacter retainer, House.RetainerType retainerType) {
             this.retainer = DMEReference.of(retainer);
             this.retainerType = retainerType;
         }
@@ -334,9 +333,9 @@ public class HouseTLChanges {
     }
 
     public static class RetainerRemoved extends TimelineChange {
-        DMEReference<BookCharacter> retainer;
+        DMEReference<HumanCharacter> retainer;
 
-        public RetainerRemoved(BookCharacter retainer) {
+        public RetainerRemoved(HumanCharacter retainer) {
             this.retainer = DMEReference.of(retainer);
         }
         public RetainerRemoved(UUID retainer) {

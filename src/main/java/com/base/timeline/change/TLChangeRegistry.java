@@ -4,7 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 
 import com.google.gson.JsonObject;
-import com.objects.title.change.TitleSingletonChange;
+import com.objects.title.change.TitleSingleChange;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -14,15 +14,15 @@ import java.util.function.BiFunction;
 
 @SuppressWarnings("unchecked")
 public class TLChangeRegistry {
-    private static final Map<Class<? extends TimelineChange<?>>, BiFunction<?,LocalDate,?>> changes = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Class<? extends TimelineChange<?>>, BiFunction<DMEReference<?>,LocalDate,TimelineChange<?>>> changes = Collections.synchronizedMap(new HashMap<>());
     static {
-        register(TitleSingletonChange.setHolderGrant.class, (dme, date) -> new TitleSingletonChange.setHolderGrant(dme, date));
-        register(TitleSingletonChange.setParent.class, TitleSingletonChange.setParent::new);
-        register(TitleSingletonChange.setHolderInherit.class, (dme,date) -> new TitleSingletonChange.setHolderInherit(dme,date));
-        register(TitleSingletonChange.setSuccessionEntry.class, (dme,date) -> new TitleSingletonChange.setSuccessionEntry(dme,date));
+        register(TitleSingleChange.setHolderGrant.class, (dme, date) -> new TitleSingleChange.setHolderGrant(dme, date));
+        register(TitleSingleChange.setParent.class, TitleSingleChange.setParent::new);
+        register(TitleSingleChange.setHolderInherit.class, (dme, date) -> new TitleSingleChange.setHolderInherit(dme,date));
+        register(TitleSingleChange.setSuccessionEntry.class, (dme, date) -> new TitleSingleChange.setSuccessionEntry(dme,date));
     }
     protected static <T extends TimelineChange<R>,R extends DateMutableEntity<R>> void register(Class<T> clazz,
-                                                                                                BiFunction<DMEReference<? extends R>,LocalDate, T> f){
+                                                                                                BiFunction<DMEReference<?>,LocalDate, T> f){
         changes.put(clazz,f);
     }
     /**
@@ -42,8 +42,8 @@ public class TLChangeRegistry {
         LocalDate date = LocalDate.parse(metadata.get("date").getAsString());
         try {
             Class<TimelineChange<? super R>> clazz = (Class<TimelineChange<? super R>>) Class.forName(metadata.get("type").getAsString());
-            BiFunction<LocalDate, DMEReference<?>,TimelineChange<? super R>> f = (BiFunction<LocalDate, DMEReference<?>, TimelineChange<? super R>>) changes.get(clazz);
-            TimelineChange<? super R> obj = f.apply(date,subject);
+            BiFunction<DMEReference<?>,LocalDate, TimelineChange<?>> f = (BiFunction<DMEReference<?>, LocalDate, TimelineChange<?>>) changes.get(clazz);
+            TimelineChange<? super R> obj = (TimelineChange<? super R>) f.apply(subject,date);
             obj.deserialize(changeSave);
             return obj;
         } catch (ClassNotFoundException e) {

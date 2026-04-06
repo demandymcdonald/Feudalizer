@@ -1,4 +1,4 @@
-package com.objects.title.house.role;
+package com.objects.title.role;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;

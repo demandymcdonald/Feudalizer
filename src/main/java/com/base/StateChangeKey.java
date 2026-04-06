@@ -3,7 +3,7 @@ package com.base;
 import com.base.reference.StateReference;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -72,7 +72,7 @@ public record StateChangeKey(StateChangeType type, StateReference... variables) 
         return new StateChangeKey(type, refs);
     }
 
-    public static StateChangeKey hadChild(BookCharacter father, BookCharacter mother, BookCharacter child){
+    public static StateChangeKey hadChild(HumanCharacter father, HumanCharacter mother, HumanCharacter child){
         return new StateChangeKey(StateChangeType.HAD_CHILD,DMEReference.of(mother),DMEReference.of(father),DMEReference.of(child));
     }
 }

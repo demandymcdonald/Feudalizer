@@ -3,14 +3,15 @@ package com.objects.family;
 import com.Feudalizer;
 
 import com.base.DateMutableEntity;
-import com.Global;
-import com.base.ObjectType;
-import com.base.StateChangeKey;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
-import com.base.timeline.state.TimelineState;
+import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.CauseOfEnd;
+import com.objects.character.HumanCharacter;
+import com.objects.character.LivingCreature;
+import com.utilities.DateUtilities;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -23,6 +24,12 @@ import java.util.*;
  * relationships and retrieve information about the family members.
  */
 public class Family extends DateMutableEntity<Family> {
+
+    public enum MemberType {
+        HEAD,
+        PARTNER,
+        OFFSPRING
+    }
     public enum Relationship {
         HEAD_OF_FAMILY(1, MemberType.HEAD),
         SPOUSE(1, MemberType.PARTNER),
@@ -42,37 +49,41 @@ public class Family extends DateMutableEntity<Family> {
             this.maxInUnit = maxInUnit;
             this.type = type;
         }
-
-    }
-    public enum MemberType {
-        HEAD,
-        PARTNER,
-        OFFSPRING
+        public MemberType getType() {
+            return type;
+        }
+        piub
     }
 
     //######
-    private final HashMap<DMEReference<BookCharacter>, Relationship> members = new HashMap<>();
+    private final Map<DMEReference<HumanCharacter>, Relationship> members = new HashMap<>();
     private StateReference customName;
-    private Family(UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
-        super(created, ended, List.of(new FamilyTLChange.MemberChange(DMEReference.of(ObjectType.FAMILY,id), LocalDate.now(), buildPair(head, Relationship.HEAD_OF_FAMILY))));
-
+    private Family(UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<HumanCharacter> head) {
+        super(created, LocalDate.MAX, List.of(
+                new ChangeSupplier<Family, TimelineChange>() {
+                    @Override
+                    public TimelineChange supply(LocalDate date, DMEReference<Family> subject) {
+                        return null;
+                    }
+                }
+        );
     }
-    public Family(LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
-        this(UUID.randomUUID(), created, ended, head);
+    public Family(DMEReference<Family> dme) {
+        super(dme);
     }
-    public Family(DMEReference<Family> dme, JsonObject payload) {
-        super(dme, payload);
-    }
-    protected static Pair<DMEReference<BookCharacter>,Relationship> buildPair(DMEReference<BookCharacter> member, Relationship rel){
+    protected static Pair<DMEReference<HumanCharacter>,Relationship> buildPair(DMEReference<HumanCharacter> member, Relationship rel){
         return Pair.of(member,rel);
     }
-    public DMEReference<BookCharacter> getHeadofFamily() {
+    public DMEReference<HumanCharacter> getHeadofFamily() {
         return getMembersMatching(Relationship.HEAD_OF_FAMILY)[0];
     }
-    public DMEReference<BookCharacter> getSpouse() {
+    public DMEReference<HumanCharacter> getPartner() {
         return getMembersMatching(Relationship.SPOUSE)[0];
     }
-    private DMEReference<BookCharacter>[] getMembersMatching(Relationship rel) {
+    public List<DMEReference<HumanCharacter>> getParents() {
+        return Arrays.asList(getHeadofFamily(),getPartner());
+    }
+    private DMEReference<HumanCharacter>[] getMembersMatching(Relationship rel) {
         return members.entrySet().stream().filter(
                 e -> e.getValue() == rel).map(Map.Entry::getKey).toArray(DMEReference[]::new);
     };
@@ -88,7 +99,7 @@ public class Family extends DateMutableEntity<Family> {
     public int getSlotsLeftFor(Relationship rel) {
         return getMaxAllowed(rel) - getNumberOf(rel.type);
     }
-    public void internal_AddMember(DMEReference<BookCharacter> member, Relationship rel) {
+    public void internal_AddMember(DMEReference<HumanCharacter> member, Relationship rel) {
         if (hasSpaceFor(rel)) {
             members.put(member, rel);
         } else {
@@ -96,137 +107,76 @@ public class Family extends DateMutableEntity<Family> {
         }
     }
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.FAMILY;
+    protected void onLink() {
+        for (DMEReference<HumanCharacter> member : members.keySet()) {
+            member.get().linkFamily(this,members.get(member));
+        }
+        calculateIsEnded();
     }
+
+    @Override
+    public void doDateChange() {
+
+    }
+
+    @Override
+    public TimelineChange<Family> getBirthChange(DMEReference<Family> dme, LocalDate date) {
+        return null;
+    }
+
+    @Override
+    public TimelineChange<Family> getDeathChange(DMEReference<Family> dme, LocalDate date, CauseOfEnd<? super Family> cOd) {
+        return null;
+    }
+
+    @Override
+    public CauseOfEnd<? super Family> defaultDeathCause() {
+        return null;
+    }
+
+
 
     @Override
     public void additionalSave(JsonObject data) {}
-    private static TimelineState<Family> buildInitial(Family dme, LocalDate created, @Nullable LocalDate ended, DMEReference<BookCharacter> head) {
 
-    }
     @Override
     public void additionalLoad(JsonObject data) {}
-    public List<DMEReference<BookCharacter>> getMembers(){
+    public List<DMEReference<HumanCharacter>> getMembers(){
         return members.keySet().stream().toList();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public Relationship getFamilyRelationship(BookCharacter person) {
-        Relationship relationship;
-        if (members.stream().anyMatch(p -> p.getId() == person.getId())) {
-            return Relationship.CHILD;
+    private boolean calculateIsEnded(){
+        LocalDate maxEnded = LocalDate.MIN;
+        for (DMEReference<HumanCharacter> member : members.keySet()) {
+            if (member.get().isAlive()) {
+                return false;
+            } else {
+                maxEnded = DateUtilities.ceiling(member.get().getEnded(),maxEnded);
+            }
         }
-        else if (person == HeadofFamily) {
-            return Relationship.PRIMARY_SPOUSE;
-        } else if (SecondarySpouse.isPresent() && person == SecondarySpouse.get()) {
-            return Relationship.SECONDARY_SPOUSE;
-        } else {
-            Feudalizer.LOGGER.error(person + " is not in family: " + this.toString());
-            return Relationship.ERROR;
-        }
-    }
-    public boolean isMember(BookCharacter person) {
-        return  person == HeadofFamily || person == SecondarySpouse.orElse(HeadofFamily) || members.stream().anyMatch(p -> p.getId() == person.getId());
-    };
-
-    @Override
-    public String toString() {
-        return HeadofFamily.getSurname();
+        this.getTimeline().moveEnd(maxEnded);
+        return true;
     }
 
 
-    public List<BookCharacter> getChildrenOrdered(){
-        return (getChildrenOrdered(true));
-    }
-    public List<BookCharacter> getChildrenOrdered(boolean oldestToYoungest) {
-        List<BookCharacter> children = new ArrayList<>(members);
-        if (oldestToYoungest) {
-            return children;
-        } else {
-            children.sort(Comparator.comparing(BookCharacter::getCreated).reversed());
-        }
-        Feudalizer.LOGGER.info("Children for " + HeadofFamily.getGivenName() + ": " + children.size());
-        return children;
-    }
-    public void haveChild(BookCharacter.Gender gender, String name, boolean primarySurname) {
-        if (!SecondarySpouse.isPresent()) {
-            //TODO add flag for no spouse in family
-            Feudalizer.LOGGER.error("No spouse in family: " + this.toString());
-            return;
-        }else if (HeadofFamily.getGender() == SecondarySpouse.get().getGender()){
-            Feudalizer.LOGGER.error("Spouses are of same gender: " + this.toString());
-            //TODO add flag to either override or delegate to adopt function. No in-vitro here :(
-            return;
-        } else if (!SecondarySpouse.get().isAlive() || !HeadofFamily.isAlive()) {
-            Feudalizer.LOGGER.error("Spouses are dead: " + this.toString());
-            //TODO add flag because necrophilia doesn't produce kids (No Gideon of the Ninth necromancy)
-            return;
-        }
-        BookCharacter secSpouse = SecondarySpouse.get();
-        Feudalizer.LOGGER.info("Adding child: " + name + " to family: " + this.toString());
-        Pair<Family, Relationship> defaultFam = new Pair<>(this, Relationship.CHILD);
-        //Feudalizer.LOGGER.info("family tie established");
-        BookCharacter child;
-        if (primarySurname || (HeadofFamily.isNoble() && !secSpouse.isNoble())) {
-            child = new BookCharacter(UUID.randomUUID(),name, HeadofFamily.getSurname(),this.PrimaryHouse.orElse(null), Global.CURRENT_DATE(),null,gender,defaultFam);
-            members.add(child);
-        } else {
-            child = new BookCharacter(UUID.randomUUID(),name,secSpouse.getSurname(),this.PrimaryHouse.orElse(null), Global.CURRENT_DATE(),null,gender,defaultFam);
-            members.add(child);
-        }
-        doChildReorder();
-        addStateChange(Global.CURRENT_DATE(), StateChangeKey.hadChild(HeadofFamily,SecondarySpouse.orElse(null),child));
-    }
-    public static List<BookCharacter> orderByAge(boolean oldestToYoungest, Collection<BookCharacter> toBeOrdered) {
-        List<BookCharacter> ordered = new ArrayList<>(toBeOrdered);
-        if (oldestToYoungest){
-            ordered.sort(Comparator.comparing(BookCharacter::getCreated));
-        } else {
-            ordered.sort(Comparator.comparing(BookCharacter::getCreated).reversed());
-        }
-        return ordered;
-    }
-    private void doChildReorder(){
-        members.sort(Comparator.comparing(BookCharacter::getCreated));
-    }
-    @Override
-    protected JsonObject serializeData(FamilyState data) {
-        return data.getSerialized();
-    }
 
-    @Override
-    protected FamilyState buildState(JsonObject o) {
-        return FamilyState.deserialize(o);
-    }
 
-    @Override
-    public StateChangeKey defaultKey() {
-        return new StateChangeKey(StateChangeKey.StateChangeType.TITLE_CREATED,new DMEReference<>(this));
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

@@ -7,7 +7,7 @@ import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.SandboxCode;
-import com.base.timeline.sandbox.check.SandboxFunctions;
+import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
@@ -63,7 +63,7 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
             }
         };
         SandboxHandler.StartSandbox(new Objective<>(owner,Global.TimeDirection.FORWARD,change,
-                new SandboxFunctions.canAddChange<>()),getEnd(),null,afterChange);
+                new SandboxFunctions.CanAddChange<>()),getEnd(),null,afterChange);
     }
     public boolean isEmpty(){
         return timeline.isEmpty();
@@ -85,26 +85,11 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
 
     public void moveStart(LocalDate date){
         final TimelineState<T> startState = getStateAt(getStart());
-
-        if (date.isAfter(getStart())){
-            TimelineState<T> state = getStateAfter(getStart());
-            if(!state.getStart().isAfter(date)){
-                logger.error("Cannot move start date past another TimelineState! Date: {}.. Conflicting State Start: {}.",date,state.getStart());
-                return;
-            }
-        }
-        moveState(startState,date,date);
+        moveState(startState,date,null);
     }
     public void moveEnd(LocalDate date){
         final TimelineState<T> endState = getStateAt(getEnd());
-        if (date.isBefore(getEnd())){
-            TimelineState<T> state = getStateBefore(getEnd());
-            if(!state.getStart().isBefore(date)){
-                logger.error("Cannot move end date past another TimelineState! Date: {}.. Conflicting State Start: {}.",date,state.getStart());
-                return;
-            }
-        }
-        moveState(endState,date,date);
+        moveState(endState,null,date);
     }
 
 

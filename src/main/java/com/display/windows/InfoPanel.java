@@ -4,8 +4,8 @@ import com.base.DMRegistry;
 import com.display.geography.GeometryType;
 import com.display.windows.cards.view.CharacterViewCard;
 import com.display.windows.cards.view.title.*;
+import com.objects.character.HumanCharacter;
 import com.objects.title.land.*;
-import com.objects.character.BookCharacter;
 import com.objects.title.Title;
 import javafx.scene.*;
 import javafx.scene.layout.*;
@@ -27,7 +27,7 @@ public class InfoPanel {
 
     // Callbacks to be set by MainWindow
     private Consumer<Title<?>> onTitleSelected;
-    private Consumer<BookCharacter> onCharacterSelected;
+    private Consumer<HumanCharacter> onCharacterSelected;
 
     public InfoPanel() {
         root.setPrefWidth(440);
@@ -55,7 +55,7 @@ public class InfoPanel {
         populateAndShow(card, title);
     }
 
-    public void showCharacter(BookCharacter character) {
+    public void showCharacter(HumanCharacter character) {
         hideAll();
         characterCard.populate(character);
         characterCard.getNode().setVisible(true);
@@ -119,7 +119,7 @@ public class InfoPanel {
         this.onTitleSelected = callback;
     }
 
-    public void setOnCharacterSelected(Consumer<BookCharacter> callback) {
+    public void setOnCharacterSelected(Consumer<HumanCharacter> callback) {
         this.onCharacterSelected = callback;
     }
 

@@ -1,6 +1,6 @@
 package com.objects.factions;
 
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.title.Title;
 
 import java.util.*;
@@ -8,38 +8,38 @@ import java.util.*;
 public class FactionManager {
 
 
-    public static boolean matchingFaction(BookCharacter a, BookCharacter b) {
-        BookCharacter leaderA = getFactionLeader(a);
-        BookCharacter leaderB = getFactionLeader(b);
+    public static boolean matchingFaction(HumanCharacter a, HumanCharacter b) {
+        HumanCharacter leaderA = getFactionLeader(a);
+        HumanCharacter leaderB = getFactionLeader(b);
         if (leaderA == null || leaderB == null) return false;
         return leaderA.equals(leaderB);
     }
     public static boolean matchingFaction(Title<?> a, Title<?> b) {
-        BookCharacter leaderA = getFactionLeader(a.getHolder().orElse(null));
-        BookCharacter leaderB = getFactionLeader(b.getHolder().orElse(null));
+        HumanCharacter leaderA = getFactionLeader(a.getHolder().orElse(null));
+        HumanCharacter leaderB = getFactionLeader(b.getHolder().orElse(null));
         if (leaderA == null || leaderB == null) return false;
         return leaderA.equals(leaderB);
     }
-    public static boolean matchingFaction(BookCharacter a, Title<?> b) {
-        BookCharacter leaderA = getFactionLeader(a);
-        BookCharacter leaderB = getFactionLeader(b.getHolder().orElse(null));
+    public static boolean matchingFaction(HumanCharacter a, Title<?> b) {
+        HumanCharacter leaderA = getFactionLeader(a);
+        HumanCharacter leaderB = getFactionLeader(b.getHolder().orElse(null));
         if (leaderA == null || leaderB == null) return false;
         return leaderA.equals(leaderB);
     }
 //    public static boolean matchingFaction(House a, House b) {
-//        BookCharacter leaderA = getFactionLeader(a);
-//        BookCharacter leaderB = getFactionLeader(b.getHolder().orElse(null));
+//        HumanCharacter leaderA = getFactionLeader(a);
+//        HumanCharacter leaderB = getFactionLeader(b.getHolder().orElse(null));
 //        if (leaderA == null || leaderB == null) return false;
 //        return leaderA.equals(leaderB);
 //    }
-    public static BookCharacter getFactionLeader(BookCharacter bookCharacter) {
-        if (bookCharacter == null) return null;
-        final Deque<BookCharacter> toCheck = new ArrayDeque<>();
-        toCheck.add(bookCharacter);
-        BookCharacter currentHighest = bookCharacter;
+    public static HumanCharacter getFactionLeader(HumanCharacter humanCharacter) {
+        if (humanCharacter == null) return null;
+        final Deque<HumanCharacter> toCheck = new ArrayDeque<>();
+        toCheck.add(humanCharacter);
+        HumanCharacter currentHighest = humanCharacter;
         while (!toCheck.isEmpty()){
-            BookCharacter next = toCheck.pop();
-            Optional<BookCharacter> liege = next.getLiege();
+            HumanCharacter next = toCheck.pop();
+            Optional<HumanCharacter> liege = next.getLiege();
             if (liege.isPresent()) {
                 toCheck.add(liege.get());
                 currentHighest = liege.get();

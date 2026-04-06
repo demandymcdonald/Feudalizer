@@ -11,12 +11,12 @@ import com.utilities.ThreadManager;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T,BA>,T extends DateMutableEntity<?>,BA>
-        extends SuperclassRegistry<M,T,UUID,BA> {
+public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T>,T extends DateMutableEntity<?>>
+        extends SuperclassRegistry<M,T,UUID,JsonObject> {
     protected AbstractMutableManager(String uniqueKey) {
         super(uniqueKey);
         DMRegistry.registerManager(this);
-        for (Map.Entry<Class<? extends T>, Factory<? extends T,T,UUID,BA>> e : getFactories().entrySet()){
+        for (Map.Entry<Class<? extends T>, Factory<? extends T,T,UUID,JsonObject>> e : getFactories().entrySet()){
             registerFactory(e.getKey(),e.getValue());
         }
         ts_init();
@@ -64,7 +64,7 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
         }
         return (R) r;
     }
-    public abstract Map<Class<? extends T>, Factory<? extends T,T,UUID,BA>> getFactories();
+    public abstract Map<Class<? extends T>, Factory<? extends T,T,UUID,JsonObject>> getFactories();
 
     public abstract Class<?> instanceClass();
 

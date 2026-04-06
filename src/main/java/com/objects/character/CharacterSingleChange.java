@@ -16,8 +16,8 @@ import java.util.Optional;
 
 import static com.base.timeline.change.condition.nullify.NullifyConditions.NEVER_NULLIFY;
 
-public abstract class CharacterSingleChange extends TimelineSingleChange<BookCharacter> {
-    protected CharacterSingleChange(DMEReference<BookCharacter> primary, LocalDate date) {
+public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCharacter> {
+    protected CharacterSingleChange(DMEReference<HumanCharacter> primary, LocalDate date) {
         super(primary,date);
 
     }
@@ -28,18 +28,18 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
     //=================================================================================================================
 
     public static class Birth extends CharacterSingleChange {
-        public Birth(DMEReference<BookCharacter> primary, LocalDate date) {
+        public Birth(DMEReference<HumanCharacter> primary, LocalDate date) {
             super(primary,date);
         }
 
 
         @Override
-        protected void onApply(DMEReference<? extends BookCharacter> entity, TimelineState<? extends BookCharacter> currentState) {
+        protected void onApply(DMEReference<? extends HumanCharacter> entity, TimelineState<? extends HumanCharacter> currentState) {
 
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -51,17 +51,17 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
 
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
             return List.of();
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of((Condition<ConditionResult.Nullify,? super BookCharacter>) NEVER_NULLIFY);
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+            return List.of((Condition<ConditionResult.Nullify,? super HumanCharacter>) NEVER_NULLIFY);
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildCanDeactivateConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildCanDeactivateConditions() {
             return List.of();
         }
 
@@ -83,18 +83,18 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
     }
     public static class Death extends CharacterSingleChange {
         CauseOfEnd cause;
-        public Death(DMEReference<BookCharacter> primary, LocalDate date, CauseOfEnd cause) {
+        public Death(DMEReference<HumanCharacter> primary, LocalDate date, CauseOfEnd cause) {
             super(primary,date);
             this.cause = cause;
         }
 
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
+        protected void onApply(HumanCharacter entity, TimelineState<HumanCharacter> currentState) {
 
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -105,13 +105,13 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
             return List.of();
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
-            return List.of((Condition<ConditionResult.Nullify,? super BookCharacter>) NEVER_NULLIFY);
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+            return List.of((Condition<ConditionResult.Nullify,? super HumanCharacter>) NEVER_NULLIFY);
         }
         @Override
         protected String getText() {
@@ -131,21 +131,21 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
     public static class setForename extends CharacterSingleChange {
         private String forename;
         private Optional<String> old;
-        public setForename(DMEReference<BookCharacter> primary, LocalDate date, String forename) {
+        public setForename(DMEReference<HumanCharacter> primary, LocalDate date, String forename) {
             super(primary,date);
             this.forename = forename;
             this.old = Optional.ofNullable(primary.get().getForename());
         }
-        public setForename(DMEReference<BookCharacter> primary, LocalDate date) {
+        public setForename(DMEReference<HumanCharacter> primary, LocalDate date) {
             super(primary,date);
         }
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
+        protected void onApply(HumanCharacter entity, TimelineState<HumanCharacter> currentState) {
             entity.internalSetForename(forename);
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -165,12 +165,12 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
             return List.of();
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -197,21 +197,21 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
     public static class setSurname extends CharacterSingleChange {
         private String surname;
         private Optional<String> old;
-        public setSurname(DMEReference<BookCharacter> primary, LocalDate date, String surname) {
+        public setSurname(DMEReference<HumanCharacter> primary, LocalDate date, String surname) {
             super(primary,date);
             this.surname = surname;
             this.old = Optional.ofNullable(primary.get().getForename());
         }
-        public setSurname(DMEReference<BookCharacter> primary, LocalDate date) {
+        public setSurname(DMEReference<HumanCharacter> primary, LocalDate date) {
             super(primary,date);
         }
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
+        protected void onApply(HumanCharacter entity, TimelineState<HumanCharacter> currentState) {
             entity.internalSetSurname(surname);
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -231,12 +231,12 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
             return List.of();
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -259,23 +259,23 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
     }
     public static class setGender extends CharacterSingleChange {
-        private BookCharacter.Gender gender;
-        private Optional<BookCharacter.Gender> old;
-        public setGender(DMEReference<BookCharacter> primary, LocalDate date, BookCharacter.Gender gender) {
+        private HumanCharacter.Gender gender;
+        private Optional<HumanCharacter.Gender> old;
+        public setGender(DMEReference<HumanCharacter> primary, LocalDate date, HumanCharacter.Gender gender) {
             super(primary,date);
             this.gender = gender;
             this.old = Optional.ofNullable(primary.get().getGender());
         }
-        public setGender(DMEReference<BookCharacter> primary, LocalDate date) {
+        public setGender(DMEReference<HumanCharacter> primary, LocalDate date) {
             super(primary,date);
         }
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
+        protected void onApply(HumanCharacter entity, TimelineState<HumanCharacter> currentState) {
             entity.internalSetGender(gender);
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -295,12 +295,12 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
             return List.of();
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -314,32 +314,32 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
         @Override
         public void additionalLoad(JsonObject data) {
-            gender = BookCharacter.Gender.valueOf(data.get("gender").getAsString());
+            gender = HumanCharacter.Gender.valueOf(data.get("gender").getAsString());
             if(data.has("old")){
-                old = Optional.of(BookCharacter.Gender.valueOf(data.get("old").getAsString()));
+                old = Optional.of(HumanCharacter.Gender.valueOf(data.get("old").getAsString()));
             } else {
                 old = Optional.empty();
             }
         }
     }
     public static class setOrientation extends CharacterSingleChange {
-        private BookCharacter.Orientation orientation;
-        private Optional<BookCharacter.Orientation> old;
-        public setOrientation(DMEReference<BookCharacter> primary, LocalDate date, BookCharacter.Orientation orientation) {
+        private HumanCharacter.Orientation orientation;
+        private Optional<HumanCharacter.Orientation> old;
+        public setOrientation(DMEReference<HumanCharacter> primary, LocalDate date, HumanCharacter.Orientation orientation) {
             super(primary,date);
             this.orientation = orientation;
             this.old = Optional.ofNullable(primary.get().getOrientation());
         }
-        public setOrientation(DMEReference<BookCharacter> primary, LocalDate date) {
+        public setOrientation(DMEReference<HumanCharacter> primary, LocalDate date) {
             super(primary,date);
         }
         @Override
-        protected void onApply(BookCharacter entity, TimelineState<BookCharacter> currentState) {
+        protected void onApply(HumanCharacter entity, TimelineState<HumanCharacter> currentState) {
             entity.internalSetOrientation(orientation);
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -359,12 +359,12 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
 
         @Override
-        protected List<Condition<StateError, ? super BookCharacter>> buildApplyConditions() {
+        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
             return List.of();
         }
 
         @Override
-        protected List<Condition<ConditionResult.Nullify, ? super BookCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -378,9 +378,9 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<BookCha
         }
         @Override
         public void additionalLoad(JsonObject data) {
-            orientation = BookCharacter.Orientation.valueOf(data.get("orientation").getAsString());
+            orientation = HumanCharacter.Orientation.valueOf(data.get("orientation").getAsString());
             if(data.has("old")){
-                old = Optional.of(BookCharacter.Orientation.valueOf(data.get("old").getAsString()));
+                old = Optional.of(HumanCharacter.Orientation.valueOf(data.get("old").getAsString()));
             } else {
                 old = Optional.empty();
             }

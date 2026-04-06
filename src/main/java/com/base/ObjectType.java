@@ -1,12 +1,12 @@
 package com.base;
 
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.family.Family;
-import com.objects.title.house.House;
+import com.objects.government.House;
 import com.objects.title.Title;
 
 public enum ObjectType {
-    CHARACTER("book_character","Character", BookCharacter.class),
+    CHARACTER("book_character","Character", HumanCharacter.class),
     FAMILY("family","Family","Famlies", Family.class),
     HOUSE("house","House","Houses", House.class),
     TITLE("title","Title", (Class<? extends DateMutableEntity<?>>) Title.class);

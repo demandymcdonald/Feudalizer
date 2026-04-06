@@ -1,9 +1,9 @@
 package com.display.windows.cards.edit;
 
 import com.base.DMRegistry;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.character.CharacterManager;
-import com.objects.title.house.House;
+import com.objects.government.House;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -14,12 +14,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class CharacterEditCard extends BaseEditCard<BookCharacter> {
+public class CharacterEditCard extends BaseEditCard<HumanCharacter> {
 
     private final Label titleLabel = new Label();
     private final TextField givenNameField = new TextField();
     private final TextField surnameField = new TextField();
-    private final ComboBox<BookCharacter.Gender> genderCombo = new ComboBox<>();
+    private final ComboBox<HumanCharacter.Gender> genderCombo = new ComboBox<>();
     private final TextField dobField = new TextField();
     private final TextField dodField = new TextField();
     private final RadioButton commonerRadio = new RadioButton("Commoner");
@@ -27,7 +27,7 @@ public class CharacterEditCard extends BaseEditCard<BookCharacter> {
     private final ComboBox<House> houseCombo = new ComboBox<>();
     private final TextField newHouseField = new TextField();
 
-    private BookCharacter existingCharacter = null;
+    private HumanCharacter existingCharacter = null;
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
@@ -49,7 +49,7 @@ public class CharacterEditCard extends BaseEditCard<BookCharacter> {
     }
 
     @Override
-    protected Node buildBody(BookCharacter data) {
+    protected Node buildBody(HumanCharacter data) {
         // buildBody isn't used directly here - we build it once and update via populate()
         return buildForm();
     }
@@ -70,8 +70,8 @@ public class CharacterEditCard extends BaseEditCard<BookCharacter> {
         grid.add(new Label("Surname:"), 0, row);
         grid.add(surnameField, 1, row++);
 
-        genderCombo.getItems().addAll(BookCharacter.Gender.values());
-        genderCombo.setValue(BookCharacter.Gender.Male);
+        genderCombo.getItems().addAll(HumanCharacter.Gender.values());
+        genderCombo.setValue(HumanCharacter.Gender.Male);
         grid.add(new Label("Gender:"), 0, row);
         grid.add(genderCombo, 1, row++);
 
@@ -115,7 +115,7 @@ public class CharacterEditCard extends BaseEditCard<BookCharacter> {
     }
 
     @Override
-    public void populate(BookCharacter character) {
+    public void populate(HumanCharacter character) {
         this.existingCharacter = character;
 
         givenNameField.setText(character.getGivenName());
@@ -139,10 +139,10 @@ public class CharacterEditCard extends BaseEditCard<BookCharacter> {
     }
 
     @Override
-    protected BookCharacter buildEntity() {
+    protected HumanCharacter buildEntity() {
         String givenName = givenNameField.getText().trim();
         String surname = surnameField.getText().trim();
-        BookCharacter.Gender gender = genderCombo.getValue();
+        HumanCharacter.Gender gender = genderCombo.getValue();
         LocalDate dob = parseDate(dobField.getText());
         LocalDate dod = parseDate(dodField.getText());
 

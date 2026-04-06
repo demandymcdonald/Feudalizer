@@ -4,7 +4,7 @@ import com.base.reference.SimpleReference;
 import com.base.reference.StateReference;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,12 +21,12 @@ public class Manor extends AbstractLandDivision<Manor>{
     }
 
     @Override
-    public boolean canInherit(BookCharacter person) {
+    public boolean canInherit(HumanCharacter person) {
         return false;
     }
 
     @Override
-    public List<BookCharacter> getAllClaimants() {
+    public List<HumanCharacter> getAllClaimants() {
         return List.of();
     }
 

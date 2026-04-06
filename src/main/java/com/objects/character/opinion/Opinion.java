@@ -1,32 +1,26 @@
 package com.objects.character.opinion;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineHelper;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.character.CharacterMapChanges;
 import com.utilities.JsonSerializable;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-
-import static com.Global.TimeDirection.BACKWARD;
 
 public class Opinion implements JsonSerializable<Opinion> {
     private CharacterMapChanges.OpinionChange parent;
-    private DMEReference<BookCharacter> us;
-    private DMEReference<BookCharacter> other;
+    private DMEReference<HumanCharacter> us;
+    private DMEReference<HumanCharacter> other;
     private int opinionPastTotal;
     List<OpinionReason> activeReasons = new ArrayList<>();
     public Opinion(JsonObject json){
         fromJson(json);
     }
-    public Opinion(DMEReference<BookCharacter> us, DMEReference<BookCharacter> other,int existingTotal, OpinionReason... reasons) {
+    public Opinion(DMEReference<HumanCharacter> us, DMEReference<HumanCharacter> other, int existingTotal, OpinionReason... reasons) {
         this.us = us;
         this.other = other;
         opinionPastTotal = existingTotal;
@@ -66,7 +60,7 @@ public class Opinion implements JsonSerializable<Opinion> {
     public Multimap<LocalDate,OpinionReason> getFullTargetHistory(){
         return parent.buildFullHistory(this);
     }
-    public DMEReference<BookCharacter> getOther(){
+    public DMEReference<HumanCharacter> getOther(){
         return other;
     }
     @Override
@@ -84,8 +78,8 @@ public class Opinion implements JsonSerializable<Opinion> {
 
     @Override
     public void fromJson(JsonObject json) {
-        us = DMEReference.of(BookCharacter.class,UUID.fromString(json.get("us").getAsString()));
-        other = DMEReference.of(BookCharacter.class,UUID.fromString(json.get("other").getAsString()));
+        us = DMEReference.of(HumanCharacter.class,UUID.fromString(json.get("us").getAsString()));
+        other = DMEReference.of(HumanCharacter.class,UUID.fromString(json.get("other").getAsString()));
         opinionPastTotal = json.get("runningTotal").getAsInt();
         for (int i = 0; i < json.get("reasons").getAsJsonArray().size(); i++) {
             JsonObject reason = json.get("reasons").getAsJsonArray().get(i).getAsJsonObject();

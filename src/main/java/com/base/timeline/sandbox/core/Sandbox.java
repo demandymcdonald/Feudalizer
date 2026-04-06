@@ -7,7 +7,7 @@ import com.base.timeline.Timeline;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
-import com.base.timeline.sandbox.check.SandboxFunction;
+import com.base.timeline.sandbox.function.SandboxFunction;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
@@ -176,7 +176,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
             }
             count++;
             if (count >= completeErrors.size()) {
-                newChange.advanceStage(subject,ts,error.getExistingChange(),isActiveState.get());
+                newChange.advanceStage(subject,ts,isActiveState.get());
                 break;
             }
         }

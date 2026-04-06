@@ -1,4 +1,4 @@
-package com.objects.house;
+package com.objects.government;
 
 import com.base.timeline.TimelineContainer;
 import com.google.common.collect.HashMultimap;
@@ -6,9 +6,8 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.family.Family;
-import com.objects.title.house.House;
 import com.objects.title.land.County;
 
 import java.util.HashMap;
@@ -19,7 +18,7 @@ import java.util.UUID;
 public record HouseState(String name, UUID headOfHouse, Set<UUID> vassalHouses, Set<UUID> directHouseMembers,
                          HashMap<UUID, House.RetainerType> retainers) implements TimelineContainer<HouseState> {
 
-    public static HouseState builder(String name, HashMultimap<House, County> counties, BookCharacter headOfHouse, Set<Family> directMembers, HashMultimap<House.RetainerType, BookCharacter> retainer) {
+    public static HouseState builder(String name, HashMultimap<House, County> counties, HumanCharacter headOfHouse, Set<Family> directMembers, HashMultimap<House.RetainerType, HumanCharacter> retainer) {
         Set<UUID> Houses = Sets.newHashSet();
         for (House house : counties.keySet()) {
             Houses.add(house.getId());
@@ -29,7 +28,7 @@ public record HouseState(String name, UUID headOfHouse, Set<UUID> vassalHouses, 
             dFamilies.add(family.getId());
         }
         HashMap<UUID, House.RetainerType> iRetainers = new HashMap<>();
-        for (Map.Entry<House.RetainerType, BookCharacter> family : retainer.entries()) {
+        for (Map.Entry<House.RetainerType, HumanCharacter> family : retainer.entries()) {
             iRetainers.put(family.getValue().getId(), family.getKey());
         }
         return new HouseState(name, headOfHouse.getId(), Houses, dFamilies, iRetainers);

@@ -102,7 +102,7 @@ public class SQLManager {
             connection.setAutoCommit(false); // Batch transaction for speed
 
             // Get all managers from registry and save their entities
-            for (String managerKey : new String[]{"BookCharacter", "Family", "House", "Title"}) {
+            for (String managerKey : new String[]{"HumanCharacter", "Family", "House", "Title"}) {
                 AbstractMutableManager<?, ?> manager = DMRegistry.getManager(managerKey);
                 if (manager != null) {
                     for (Object entity : manager.getItemMap().values()) {

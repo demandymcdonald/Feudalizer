@@ -14,7 +14,7 @@ public abstract class CanHoldCondition<T extends Title<T>> extends Condition<Sta
     }
 
     @Override
-    public boolean singleRun() {
+    public boolean runOncePerState() {
         return true;
     }
 }

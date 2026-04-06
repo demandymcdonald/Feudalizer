@@ -17,7 +17,7 @@
 //import java.util.UUID;
 //
 //public record CharacterState(String forename, String surname, List<UUID> Families, @Nullable UUID House,
-//                             List<UUID> Titles) implements TimelineContainer<CharacterState,BookCharacter> {
+//                             List<UUID> Titles) implements TimelineContainer<CharacterState,HumanCharacter> {
 //    public static CharacterState builder(List<Family> families, List<Title<?>> title, Optional<House> house) {
 //        List<UUID> familyID = IDateMutableEntity.convert(families);
 //        List<UUID> titleID = IDateMutableEntity.convert(title);

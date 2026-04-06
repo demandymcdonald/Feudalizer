@@ -6,9 +6,10 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.error.StateError;
 import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.character.LivingCreature;
-import com.objects.title.change.TitleSingletonChange;
+import com.objects.government.GoverningEntity;
+import com.objects.title.change.TitleSingleChange;
 import com.objects.title.condition.CanHoldCondition;
 import com.objects.title.condition.CanInheritCondition;
 import com.objects.title.succession.rules.SuccessionEntry;
@@ -19,11 +20,14 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
-    private DMEReference<BookCharacter> holder = null;
-    private DMEReference<? extends Title<?>> parent = null;
-    private final HashSet<DMEReference<? extends Title<?>>> linkedChildren = new HashSet<>();
+    private DMEReference<? extends GoverningEntity<?>> governing_entity;
+    private DMEReference<HumanCharacter> holder;
+    private DMEReference<? extends Title<?>> parent;
     private SuccessionEntry<?> succession;
-;
+
+
+    private final HashSet<DMEReference<? extends Title<?>>> linkedChildren = new HashSet<>();
+
     public Title(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
     }
@@ -73,6 +77,14 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     protected void onLink() {
         Title<?> parent = this.parent.get();
         parent.linkChild(getReference());
+        DMEReference<HumanCharacter> holder = this.holder;
+        if (holder != null) {
+            HumanCharacter character = holder.get();
+            character.linkTitle(getReference());
+            if (governing_entity != null) {
+
+            }
+        }
     }
     public void linkChild(DMEReference<? extends Title<?>> title) {
         this.linkedChildren.add(title);
@@ -95,7 +107,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public final int getPrestige(){
         return basePrestige() * levelsBelow.get();
     }
-    public Optional<DMEReference<BookCharacter>> getHolder() {
+    public Optional<DMEReference<HumanCharacter>> getHolder() {
         if(holder == null){
             return Optional.empty();
         }
@@ -121,25 +133,28 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
 
 
     public void setSuccession(SuccessionEntry<?> succession) {
-        getTimeline().addChange(new TitleSingletonChange.setSuccessionEntry<>(getReference(),current(),succession));
+        getTimeline().addChange(new TitleSingleChange.setSuccessionEntry<>(getReference(),current(),succession));
     }
     public void setParent(DMEReference<? extends Title<?>> parent) {
-        getTimeline().addChange(new TitleSingletonChange.setParent<>(getReference(),current(),parent));
+        getTimeline().addChange(new TitleSingleChange.setParent<>(getReference(),current(),parent));
     }
-    public void setHolder(DMEReference<BookCharacter> holder) {
-        getTimeline().addChange(new TitleSingletonChange.setHolderGrant<>(getReference(),current(),holder));
+    public void setHolder(DMEReference<HumanCharacter> holder) {
+        getTimeline().addChange(new TitleSingleChange.setHolderGrant<>(getReference(),current(),holder));
     }
 
 
     @SuppressWarnings("unchecked")
-    public void internalHolder(DMEReference<? extends BookCharacter> character) {
-        holder = (DMEReference<BookCharacter>) character;
+    public void internalHolder(DMEReference<? extends HumanCharacter> character) {
+        holder = (DMEReference<HumanCharacter>) character;
     }
     public void internalParent(DMEReference<? extends Title<?>> parent) {
         this.parent = parent;
     }
     public void internalSuccession(SuccessionEntry<?> succession) {
         this.succession = succession;
+    }
+    public void internalGoverningEntity(DMEReference<? extends GoverningEntity<?>> governingEntity) {
+        governing_entity = governingEntity;
     }
 
     public abstract boolean isChartered();

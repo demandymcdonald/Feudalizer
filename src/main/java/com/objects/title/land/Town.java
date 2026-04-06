@@ -4,7 +4,7 @@ import com.base.DMRegistry;
 import com.base.reference.StateReference;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.title.land.resources.HabitableLand;
 
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class Town extends HabitableLand<Town> {
-    public Optional<BookCharacter> Mayor;
+    public Optional<HumanCharacter> Mayor;
     private Optional<UUID> MayorID;
     public Town(UUID id, String name, LocalDate created, LocalDate ended, GeometryType geoType, String geoID) {
         super(id, name, created, ended, geoType, geoID);
@@ -24,12 +24,12 @@ public class Town extends HabitableLand<Town> {
     }
 
     @Override
-    public boolean canInherit(BookCharacter person) {
+    public boolean canInherit(HumanCharacter person) {
         return false;
     }
 
     @Override
-    public List<BookCharacter> getAllClaimants() {
+    public List<HumanCharacter> getAllClaimants() {
         return List.of();
     }
 

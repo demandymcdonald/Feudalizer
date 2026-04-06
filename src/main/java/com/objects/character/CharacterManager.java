@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
-public class CharacterManager extends AbstractMutableManager<CharacterManager, LivingCreature<?>, CharacterManager.CharacterContainer> {
+public class CharacterManager extends AbstractMutableManager<CharacterManager, LivingCreature<?>> {
 
 
     public CharacterManager() {
@@ -39,17 +39,18 @@ public class CharacterManager extends AbstractMutableManager<CharacterManager, L
     }
 
 
-    protected static final Factory<BookCharacter, LivingCreature<?>, UUID, CharacterContainer> BOOK_CHARACTER_FACTORY = new Factory<>() {
+    protected static final Factory<HumanCharacter, LivingCreature<?>, UUID, JsonObject> BOOK_CHARACTER_FACTORY = new Factory<>() {
         @Override
-        protected BookCharacter create(Class<BookCharacter> classRef, CharacterContainer characterContainer) {
-            return new BookCharacter(characterContainer.givenName(), characterContainer.surname(),
-            characterContainer.dateOfBirth(), characterContainer.dateOfDeath(), characterContainer.gender(), characterContainer.orientation());
+        protected HumanCharacter create(Class<HumanCharacter> classRef, JsonObject characterContainer) {
+            CharacterContainer cc = CharacterContainer.deserialize(characterContainer);
+            return new HumanCharacter(cc.givenName(), cc.surname(),
+            cc.dateOfBirth(), cc.dateOfDeath(), cc.gender(), cc.orientation());
         }
 
         @Override
-        protected BookCharacter load(Class<BookCharacter> classRef, UUID key, JsonObject object) {
-            DMEReference<BookCharacter> ref = DMEReference.of(classRef, key);
-            BookCharacter bc = new BookCharacter(ref);
+        protected HumanCharacter load(Class<HumanCharacter> classRef, UUID key, JsonObject object) {
+            DMEReference<HumanCharacter> ref = DMEReference.of(classRef, key);
+            HumanCharacter bc = new HumanCharacter(ref);
             bc.deserialize(object);
             return bc;
         }
@@ -57,8 +58,8 @@ public class CharacterManager extends AbstractMutableManager<CharacterManager, L
 
 
     @Override
-    public Map<Class<? extends LivingCreature<?>>, Factory<? extends LivingCreature<?>, LivingCreature<?>, UUID, CharacterContainer>> getFactories() {
-        return Map.of(BookCharacter.class, BOOK_CHARACTER_FACTORY);
+    public Map<Class<? extends LivingCreature<?>>, Factory<? extends LivingCreature<?>, LivingCreature<?>, UUID, JsonObject>> getFactories() {
+        return Map.of(HumanCharacter.class, BOOK_CHARACTER_FACTORY);
     }
 
     @Override
@@ -68,8 +69,29 @@ public class CharacterManager extends AbstractMutableManager<CharacterManager, L
 
 
     public record CharacterContainer(LocalDate created, LocalDate ended, String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
-                                     BookCharacter.Gender gender, BookCharacter.Orientation orientation){
-
+                                     HumanCharacter.Gender gender, HumanCharacter.Orientation orientation){
+        public JsonObject serialize(){
+            JsonObject json = new JsonObject();
+            json.addProperty("type","character");
+            json.addProperty("created",created.toEpochDay());
+            json.addProperty("ended",ended.toEpochDay());
+            json.addProperty("givenName",givenName);
+            json.addProperty("surname",surname);
+            json.addProperty("dateOfBirth",dateOfBirth.toEpochDay());
+            json.addProperty("dateOfDeath",dateOfDeath.toEpochDay());
+            json.addProperty("gender",gender.name());
+            json.addProperty("orientation",orientation.name());
+            return json;
+        }
+        public static CharacterContainer deserialize(JsonObject json){
+            if (!json.get("type").getAsString().equals("character")){
+                throw new IllegalArgumentException("Invalid CharacterContainer");
+            }
+            return new CharacterContainer(LocalDate.ofEpochDay(json.get("created").getAsLong()), LocalDate.ofEpochDay(json.get("ended").getAsLong()),
+                    json.get("givenName").getAsString(), json.get("surname").getAsString(), LocalDate.ofEpochDay(json.get("dateOfBirth").getAsLong()),
+                    LocalDate.ofEpochDay(json.get("dateOfDeath").getAsLong()), HumanCharacter.Gender.valueOf(json.get("gender").getAsString()),
+                    HumanCharacter.Orientation.valueOf(json.get("orientation").getAsString()));
+        }
     }
 
 }

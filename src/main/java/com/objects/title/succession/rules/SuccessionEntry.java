@@ -1,27 +1,23 @@
 package com.objects.title.succession.rules;
 
-import com.TypedSerialized;
 import com.base.reference.DMEReference;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
+import com.objects.character.HumanCharacter;
 import com.objects.title.Title;
-import com.utilities.JsonSerializable;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
 import com.utilities.SuperclassSerializable;
-import org.checkerframework.checker.units.qual.C;
 
-import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 
 public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements SuperclassSerializable<SuccessionEntry<?>> {
-    private static final Map<String, Function<DMEReference<BookCharacter>,? extends SuccessionEntry<?>>> typeMap = new HashMap<>();
-    private final DMEReference<BookCharacter> subject;
+    private static final Map<String, Function<DMEReference<HumanCharacter>,? extends SuccessionEntry<?>>> typeMap = new HashMap<>();
+    private final DMEReference<HumanCharacter> subject;
 
 
-    protected SuccessionEntry(DMEReference<BookCharacter> subject) {
+    protected SuccessionEntry(DMEReference<HumanCharacter> subject) {
         this.subject = subject;
 
     }
@@ -34,7 +30,7 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
     }
 
 
-    protected DMEReference<BookCharacter> getSubject() {
+    protected DMEReference<HumanCharacter> getSubject() {
         return subject;
     }
 
@@ -44,7 +40,7 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
         return se.isEmpty() || se.get().getExpectedSandboxCode() == SandboxCode.CONTINUE;
     }
 
-    public abstract List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date);
+    public abstract List<HumanCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date);
 
     @Override
     public final void metadataSave(JsonObject data) {
@@ -55,7 +51,7 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
     @Override
     public final void mainLoad(JsonObject json) {
         JsonObject subjectJson = json.get("subject").getAsJsonObject();
-        DMEReference<BookCharacter> subject = DMEReference.deserialize(subjectJson);
+        DMEReference<HumanCharacter> subject = DMEReference.deserialize(subjectJson);
     }
     @Override
     public final void mainSave(JsonObject json) {
@@ -68,7 +64,7 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
         String c = metadata.get("class").getAsString();
         return (T) typeMap.get(c).apply(DMEReference.deserialize(json.get("subject").getAsJsonObject()));
     }
-    protected static void register(String type, Function<DMEReference<BookCharacter>,? extends SuccessionEntry<?>> function){
+    protected static void register(String type, Function<DMEReference<HumanCharacter>,? extends SuccessionEntry<?>> function){
         typeMap.put(type,function);
     }
 

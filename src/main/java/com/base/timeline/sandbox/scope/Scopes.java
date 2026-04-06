@@ -4,9 +4,9 @@ import com.base.DMRegistry;
 import com.base.ObjectType;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.family.Family;
-import com.objects.title.house.House;
+import com.objects.government.House;
 import com.objects.title.Title;
 
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public class Scopes {
         }
         return people;
     }
-    public static HashMultimap<ObjectType, JsonObject> getPersonData(BookCharacter character, boolean includeFullSpouse, boolean includeFullHouse, HashSet<UUID> exclude){
+    public static HashMultimap<ObjectType, JsonObject> getPersonData(HumanCharacter character, boolean includeFullSpouse, boolean includeFullHouse, HashSet<UUID> exclude){
         if (exclude == null){
             exclude = new HashSet<>();
         }
@@ -45,7 +45,7 @@ public class Scopes {
         data.put(ObjectType.CHARACTER,character.serialize());
         for (Family f : character.getFamilies().keySet()){
             if (includeFullSpouse){
-                for (BookCharacter spouse : f.getSpouses()){
+                for (HumanCharacter spouse : f.getSpouses()){
                     if (spouse != null && !spouse.equals(character) && !exclude.contains(spouse.getId())){
                         exclude.add(spouse.getId());
                         data.putAll(getPersonData(spouse,false,includeFullHouse,exclude));
@@ -53,7 +53,7 @@ public class Scopes {
                 }
 
             }
-            for (BookCharacter child : f.getMembers()){
+            for (HumanCharacter child : f.getMembers()){
                 if (child != null && !child.equals(character) && !exclude.contains(child.getId())){
                     exclude.add(child.getId());
                     data.putAll(getPersonData(child,includeFullSpouse,false,exclude));
@@ -62,7 +62,7 @@ public class Scopes {
         }
         if (includeFullHouse && character.getHouse().isPresent()){
             House house = character.getHouse().get();
-            for (BookCharacter c : house.getAllCharacters()){
+            for (HumanCharacter c : house.getAllCharacters()){
                 if (!c.equals(character) && !exclude.contains(c.getId())){
                     exclude.add(c.getId());
                     data.putAll(getPersonData(c,false,false,exclude));

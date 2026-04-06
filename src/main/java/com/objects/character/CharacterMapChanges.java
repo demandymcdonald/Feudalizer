@@ -27,15 +27,17 @@ import java.util.function.BiPredicate;
 public class CharacterMapChanges {
 
 
-    public static class OpinionChange extends TimelineMapChange<OpinionChange, UUID, Opinion,BookCharacter>{
+    public static class OpinionChange extends TimelineMapChange<OpinionChange, UUID, Opinion, HumanCharacter>{
 
 
-        protected OpinionChange(DMEReference<BookCharacter> owner, LocalDate date) {
+        protected OpinionChange(DMEReference<HumanCharacter> owner, LocalDate date) {
             super(owner, date);
         }
-
+        public OpinionChange(DMEReference<HumanCharacter> owner, LocalDate date, Pair<UUID, Opinion>... changes) {
+            super(owner, date, changes);
+        }
         @Override
-        protected void onApply(DMEReference<? extends BookCharacter> entity, TimelineState<? extends BookCharacter> currentState) {
+        protected void onApply(DMEReference<? extends HumanCharacter> entity, TimelineState<? extends HumanCharacter> currentState) {
             entity.get().internalSetOpinionMap(this.getFullMap());
         }
         @Override
@@ -55,7 +57,7 @@ public class CharacterMapChanges {
         }
 
         @Override
-        public List<Class<TimelineChange<? super BookCharacter>>> oppositeChanges() {
+        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
             return List.of();
         }
 
@@ -90,10 +92,10 @@ public class CharacterMapChanges {
             super.addChange(toImplement.toArray(new Pair[0]));
         }
         public Multimap<LocalDate,OpinionReason> buildFullHistory(Opinion o){
-            final Timeline<BookCharacter> timeline = this.getOwner().get().getTimeline();
+            final Timeline<HumanCharacter> timeline = this.getOwner().get().getTimeline();
             final UUID otherID = o.getOther().getID();
             Map<LocalDate,List<OpinionReason>> toReturn = new HashMap<>();
-            final BiFunction<Timeline<BookCharacter>,OpinionChange, ChangeID> buildNext = (tl, ch) -> {
+            final BiFunction<Timeline<HumanCharacter>,OpinionChange, ChangeID> buildNext = (tl, ch) -> {
                 return ch.getLeapfrog();
             };
             final BiConsumer<OpinionChange,Map<LocalDate,List<OpinionReason>>> consumer = (ch, finalMap) -> {
@@ -132,12 +134,12 @@ public class CharacterMapChanges {
 
 
         @Override
-        protected void deactivateConditions(List<Condition<StateError, ? super BookCharacter>> list) {
+        protected void deactivateConditions(List<Condition<StateError, ? super HumanCharacter>> list) {
 
         }
 
         @Override
-        protected void nullifyConditions(List<Condition<ConditionResult.Nullify, ? super BookCharacter>> list) {
+        protected void nullifyConditions(List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> list) {
 
         }
 

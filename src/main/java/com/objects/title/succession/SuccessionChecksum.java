@@ -1,28 +1,28 @@
 package com.objects.title.succession;
 
 import com.base.reference.DMEReference;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 
 import java.util.*;
 
 public record SuccessionChecksum(int entries, long checksum) {
 
-    public static SuccessionChecksum of(DMEReference<BookCharacter>... container) {
+    public static SuccessionChecksum of(DMEReference<HumanCharacter>... container) {
         List<UUID> ids = new ArrayList<>();
-        for (DMEReference<BookCharacter> ref : container) {
+        for (DMEReference<HumanCharacter> ref : container) {
             ids.add(ref.getID());
         }
         return of(ids.toArray(UUID[]::new));
     }
-    public static SuccessionChecksum of(Collection<BookCharacter> container) {
+    public static SuccessionChecksum of(Collection<HumanCharacter> container) {
         List<UUID> ids = new ArrayList<>();
-        for (BookCharacter ref : container) {
+        for (HumanCharacter ref : container) {
             ids.add(ref.getId());
         }
         return of(ids.toArray(UUID[]::new));
     }
-    public static SuccessionChecksum of(List<BookCharacter> characters) {
-        List<UUID> uuids = characters.stream().map(BookCharacter::getId).toList();
+    public static SuccessionChecksum of(List<HumanCharacter> characters) {
+        List<UUID> uuids = characters.stream().map(HumanCharacter::getId).toList();
         return of(uuids.toArray(UUID[]::new));
     }
     public static SuccessionChecksum of(UUID... characters) {

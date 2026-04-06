@@ -1,14 +1,14 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.cards.BaseCard;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.title.Title;
 
 import java.util.function.Consumer;
 
 public abstract class BaseViewCard<T> extends BaseCard<T> {
     private Consumer<Title<?>> onTitleSelected;
-    private Consumer<BookCharacter> onCharacterSelected;
+    private Consumer<HumanCharacter> onCharacterSelected;
 
     protected BaseViewCard() {
     }
@@ -17,7 +17,7 @@ public abstract class BaseViewCard<T> extends BaseCard<T> {
         this.onTitleSelected = callback;
     }
 
-    public void setOnCharacterSelected(Consumer<BookCharacter> callback) {
+    public void setOnCharacterSelected(Consumer<HumanCharacter> callback) {
         this.onCharacterSelected = callback;
     }
 
@@ -25,7 +25,7 @@ public abstract class BaseViewCard<T> extends BaseCard<T> {
         if (onTitleSelected != null) onTitleSelected.accept(title);
     }
 
-    protected void fireOnCharacterSelected(BookCharacter character) {
+    protected void fireOnCharacterSelected(HumanCharacter character) {
         if (onCharacterSelected != null) onCharacterSelected.accept(character);
     }
 

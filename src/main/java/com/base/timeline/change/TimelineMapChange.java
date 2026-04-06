@@ -44,7 +44,10 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
     protected TimelineMapChange(DMEReference<T> owner,  LocalDate date) {
         super(owner, date);
     }
-
+    protected TimelineMapChange(DMEReference<T> owner,  LocalDate date, Pair<K,V>... changes) {
+        super(owner, date);
+        addChange(changes);
+    }
 
 
     public Map<K,V> getFullMap(){
@@ -205,7 +208,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         return expectedSize + activeChanges.size();
     }
     public int getExpectedSize(){
-        return expectedSize;
+        return expectedSize - endingChanges.size();
     }
     public int getActiveSize(){
         return activeChanges.size();
@@ -223,7 +226,6 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         tc.onBuildMap();
         Timeline<T> timeline = (Timeline<T>) t;
         Map<K,V> toReturn = new HashMap<>();
-
         final BiFunction<Timeline<T>,TC,ChangeID> buildNext = (tl, ch) -> {
             return ch.getLeapfrog();
         };
@@ -237,7 +239,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
             tc.onBuildMapStep(ch);
         };
         final BiPredicate<LocalDate,Map<K,V>> predicate = (ch, finalMap) -> {
-            return finalMap.size() > tc.getExpectedSize();
+            return finalMap.size() >= tc.getExpectedSize();
         };
         Timeline.iterateMap(buildNext,consumer,predicate,timeline,tc.getLeapfrog(),toReturn,true);
         toReturn.putAll(tc.getChangeFragment());
@@ -340,7 +342,7 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         }
 
         @Override
-        public boolean singleRun() {
+        public boolean runOncePerState() {
             return true;
         }
     }

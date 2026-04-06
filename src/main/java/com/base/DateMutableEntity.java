@@ -23,7 +23,7 @@ import java.util.*;
  *
  * @param <T> The type representing the state of the entity.
  */
-public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable {
+public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable<DateMutableEntity<?>> {
     private final UUID id;
     private final Timeline<T> timeline;
     private final DMEReference<T> reference;
@@ -47,7 +47,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     // it should EXCLUSIVELY create a new TLChange and pass it to the timeline with: addChange(TLChange).
     // setX Methods are used by the UI to trigger state changes and sandboxing.
     // 2. internalX should actually modify the variable on the runtime object. they should NEVER touch the timeline.
-    // 3. linkX is built for objects to add shortcut links to to an object (for example: BookCharacter has a fleeting
+    // 3. linkX is built for objects to add shortcut links to to an object (for example: HumanCharacter has a fleeting
     // list of the Family's it's a part of. For safety, any linked variable should be cleared on reload
 
     public boolean isAlive(){
@@ -106,13 +106,13 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
         List<TimelineChange<? super T>> changes = buildChangeList(date,getBirthChange(dme,date),dme,defaults);
         return new TimelineState<T>(dme.get().getTimeline(), date, date,true, changes);
     };
-    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, CauseOfEnd cOd, List<ChangeSupplier<T,?>> defaults){
+    public final TimelineState<T> buildDeath(DMEReference<T> dme, LocalDate date, CauseOfEnd<? super T> cOd, List<ChangeSupplier<T,?>> defaults){
         List<TimelineChange<? super T>> changes = buildChangeList(date,getDeathChange(dme,date,cOd),dme,defaults);
         return new TimelineState<T>(dme.get().getTimeline(),date, date,true, changes);
     };
     public abstract TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date);
-    public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date, CauseOfEnd cOd);
-    public abstract CauseOfEnd defaultDeathCause();
+    public abstract TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date, CauseOfEnd<? super T> cOd);
+    public abstract CauseOfEnd<? super T> defaultDeathCause();
     private List<TimelineChange<? super T>> buildChangeList(LocalDate date, TimelineChange<T> change, DMEReference<T> ref, List<ChangeSupplier<T,?>> defaults){
         List<TimelineChange<? super T>> Changes = new ArrayList<>();
         Changes.add(change);

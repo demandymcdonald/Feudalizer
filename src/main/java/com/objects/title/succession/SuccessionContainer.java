@@ -3,7 +3,7 @@ package com.objects.title.succession;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.title.succession.rules.SuccessionEntry;
 
 
@@ -49,8 +49,8 @@ public class SuccessionContainer {
         return this;
     }
 
-    public List<DMEReference<BookCharacter>> getAllHolders(){
-        List<DMEReference<BookCharacter>> holders = new ArrayList<>();
+    public List<DMEReference<HumanCharacter>> getAllHolders(){
+        List<DMEReference<HumanCharacter>> holders = new ArrayList<>();
         for (SuccessionEntry<?> entry : entries.values()){
             holders.add(entry.getSubject());
         }

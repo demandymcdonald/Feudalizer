@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -14,9 +14,9 @@ import java.util.UUID;
 
 public record FamilyState(UUID PrimarySpouse, @Nullable UUID SecondarySpouse,
                           List<UUID> Children) implements TimelineContainer<FamilyState> {
-    public static FamilyState builder(BookCharacter primary, @Nullable BookCharacter secondary, List<BookCharacter> children) {
+    public static FamilyState builder(HumanCharacter primary, @Nullable HumanCharacter secondary, List<HumanCharacter> children) {
         List<UUID> Children = new ArrayList<>();
-        for (BookCharacter child : children) {
+        for (HumanCharacter child : children) {
             Children.add(child.getId());
         }
         UUID cleanSecondary;

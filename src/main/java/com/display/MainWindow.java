@@ -6,7 +6,7 @@ import com.display.windows.MapDisplay;
 import com.display.windows.SearchBar;
 import com.display.windows.menu.AppMenuBar;
 import com.display.windows.menu.CharacterCreationDialog;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -65,7 +65,7 @@ public class MainWindow {
     private void openCreateCharacterForm() {
         System.out.println("Opening character creation form");
         CharacterCreationDialog dialog = new CharacterCreationDialog();
-        Optional<BookCharacter> result = dialog.showAndWait();
+        Optional<HumanCharacter> result = dialog.showAndWait();
 
         result.ifPresent(character -> {
             System.out.println("Created character: " + character.getGivenName());

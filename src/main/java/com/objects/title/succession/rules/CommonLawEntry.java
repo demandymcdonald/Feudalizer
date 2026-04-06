@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.title.Title;
 import com.objects.title.succession.SuccessionChecksum;
 
@@ -15,34 +15,34 @@ import java.util.function.Function;
 import static com.objects.title.succession.rules.CandidateRules.handleIfDead;
 
 public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
-    //private static final Cache<,ArrayList<BookCharacter>> CACHE = CacheBuilder.newBuilder().build();
-    private final Map<Integer,DMEReference<BookCharacter>> additional = new HashMap<>();
+    //private static final Cache<,ArrayList<HumanCharacter>> CACHE = CacheBuilder.newBuilder().build();
+    private final Map<Integer,DMEReference<HumanCharacter>> additional = new HashMap<>();
     private static final boolean prima = true;
     private boolean isPrimarySpouse;
     private SuccessionChecksum currentChecksum;
-    List<BookCharacter> cached = new ArrayList<>();
-    public CommonLawEntry(DMEReference<BookCharacter> character) {
+    List<HumanCharacter> cached = new ArrayList<>();
+    public CommonLawEntry(DMEReference<HumanCharacter> character) {
         super(character);
     }
 
 
 
-    public CommonLawEntry(DMEReference<BookCharacter> character,  boolean isPrimarySpouse) {
+    public CommonLawEntry(DMEReference<HumanCharacter> character, boolean isPrimarySpouse) {
         super(character);
         this.isPrimarySpouse = isPrimarySpouse;
     }
-    protected static final Function<DMEReference<BookCharacter>,CommonLawEntry> builder = new Function<>() {
+    protected static final Function<DMEReference<HumanCharacter>,CommonLawEntry> builder = new Function<>() {
 
         @Override
-        public CommonLawEntry apply(DMEReference<BookCharacter> bookCharacterDMEReference) {
+        public CommonLawEntry apply(DMEReference<HumanCharacter> bookCharacterDMEReference) {
             return new CommonLawEntry(bookCharacterDMEReference);
         }
     };
 
     @Override
-    public List<BookCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date) {
-        BookCharacter character = getSubject().get();
-        LinkedHashMultimap<Type,BookCharacter> everyone = buildCharacterList(character);
+    public List<HumanCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date) {
+        HumanCharacter character = getSubject().get();
+        LinkedHashMultimap<Type, HumanCharacter> everyone = buildCharacterList(character);
         SuccessionChecksum checksum = SuccessionChecksum.of(everyone.values());
         if (currentChecksum != null && currentChecksum.equals(checksum)){
             return cached;
@@ -52,13 +52,13 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
 
     }
 
-    private List<BookCharacter> generate(DMEReference<? extends Title<?>> title, LocalDate date, LinkedHashMultimap<Type,BookCharacter> everyone){
-        List<BookCharacter> ordered = new ArrayList<>();
+    private List<HumanCharacter> generate(DMEReference<? extends Title<?>> title, LocalDate date, LinkedHashMultimap<Type, HumanCharacter> everyone){
+        List<HumanCharacter> ordered = new ArrayList<>();
         Title<?> tT = title.get();
         int childNumber = 0;
-        for (Map.Entry<Type,BookCharacter> entry : everyone.entries()){
+        for (Map.Entry<Type, HumanCharacter> entry : everyone.entries()){
             Type type = entry.getKey();
-            BookCharacter character = entry.getValue();
+            HumanCharacter character = entry.getValue();
             if (type == Type.CHILD){
                 childNumber++;
                 if (isPrimarySpouse && childNumber % 2 != 0){
@@ -74,32 +74,32 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
         return ordered;
     }
 
-    private LinkedHashMultimap<Type,BookCharacter> buildCharacterList(BookCharacter character){
-        LinkedHashMultimap<Type,BookCharacter> result = LinkedHashMultimap.create();
-        final List<BookCharacter> direct = CandidateRules.DirectFamily(character,false,prima);
-        final List<BookCharacter> indirect = CandidateRules.IndirectFamily(character,false,prima);
-        final List<BookCharacter> spouse = CandidateRules.IndirectSpouseFamily(character,false,prima);
+    private LinkedHashMultimap<Type, HumanCharacter> buildCharacterList(HumanCharacter character){
+        LinkedHashMultimap<Type, HumanCharacter> result = LinkedHashMultimap.create();
+        final List<HumanCharacter> direct = CandidateRules.DirectFamily(character,false,prima);
+        final List<HumanCharacter> indirect = CandidateRules.IndirectFamily(character,false,prima);
+        final List<HumanCharacter> spouse = CandidateRules.IndirectSpouseFamily(character,false,prima);
         if (additional.isEmpty()){
             result.putAll(Type.CHILD,direct);
             result.putAll(Type.PRIMARY_EXTENDED,indirect);
             result.putAll(Type.SPOUSE_EXTENDED,spouse);
         } else {
             int counter = 0;
-            for (BookCharacter current : direct){
+            for (HumanCharacter current : direct){
 
                 counter += doInsertCharacterList(counter,result,current,Type.CHILD);
             }
-            for (BookCharacter current : indirect){
+            for (HumanCharacter current : indirect){
 
                 counter += doInsertCharacterList(counter,result,current,Type.PRIMARY_EXTENDED);
             }
-            for (BookCharacter current : spouse){
+            for (HumanCharacter current : spouse){
                 counter += doInsertCharacterList(counter,result,current,Type.SPOUSE_EXTENDED);
             }
         }
         return result;
     }
-    private int doInsertCharacterList(Integer current, LinkedHashMultimap<Type,BookCharacter> finalList, BookCharacter toBeInserted, Type tbiType){
+    private int doInsertCharacterList(Integer current, LinkedHashMultimap<Type, HumanCharacter> finalList, HumanCharacter toBeInserted, Type tbiType){
         if (additional.containsKey(current)){
             finalList.put(Type.ADDED,handleIfDead(additional.get(current).get()));
             finalList.put(tbiType,toBeInserted);
@@ -113,7 +113,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     public void additionalSave(JsonObject json) {
         json.addProperty("isPrimarySpouse",isPrimarySpouse);
         JsonArray array = new JsonArray();
-        for (Map.Entry<Integer,DMEReference<BookCharacter>> entry : additional.entrySet()){
+        for (Map.Entry<Integer,DMEReference<HumanCharacter>> entry : additional.entrySet()){
             JsonObject obj = new JsonObject();
             obj.addProperty("index",entry.getKey());
             obj.add("character",entry.getValue().serialize());
@@ -126,7 +126,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     public void additionalLoad(JsonObject json) {
         isPrimarySpouse = json.get("isPrimarySpouse").getAsBoolean();
         JsonArray array = json.get("Additional").getAsJsonArray();
-        Map<Integer,DMEReference<BookCharacter>> additional = new HashMap<>();
+        Map<Integer,DMEReference<HumanCharacter>> additional = new HashMap<>();
         for (int i = 0; i < array.size(); i++) {
             JsonObject obj = array.get(i).getAsJsonObject();
             additional.put(obj.get("index").getAsInt(),DMEReference.deserialize(obj.get("character").getAsJsonObject()));

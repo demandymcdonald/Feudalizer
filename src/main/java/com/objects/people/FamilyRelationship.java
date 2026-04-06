@@ -1,3 +1,0 @@
-package com.objects.people;
-
-

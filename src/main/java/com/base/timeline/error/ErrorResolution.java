@@ -8,7 +8,7 @@ import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.utilities.Displayable;
 
 import static com.base.timeline.error.SandboxCode.*;
@@ -170,9 +170,9 @@ public abstract class ErrorResolution implements Displayable {
         }
     }
 
-    public static class SuccessionPlanning_Title extends SandboxBranching<BookCharacter> {
-        public SuccessionPlanning_Title(DMEReference<? extends BookCharacter> newObjective) {
-            super("title_succession", "Run Succession Planner", "Give the title to their heir or a designated person", (Objective<BookCharacter>) Objective.buildSuccession(newObjective));
+    public static class SuccessionPlanning_Title extends SandboxBranching<HumanCharacter> {
+        public SuccessionPlanning_Title(DMEReference<? extends HumanCharacter> newObjective) {
+            super("title_succession", "Run Succession Planner", "Give the title to their heir or a designated person", (Objective<HumanCharacter>) Objective.buildSuccession(newObjective));
         }
     }
 

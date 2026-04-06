@@ -14,7 +14,7 @@ public abstract class CanInheritCondition<T extends Title<T>> extends Condition<
     }
 
     @Override
-    public boolean singleRun() {
+    public boolean runOncePerState() {
         return true;
     }
 }

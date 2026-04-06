@@ -4,7 +4,7 @@ package com.display.windows.cards.view.title;
 import com.Feudalizer;
 import com.display.windows.cards.view.BaseViewCard;
 import com.display.windows.UIComponents;
-import com.objects.character.BookCharacter;
+import com.objects.character.HumanCharacter;
 import com.objects.title.Title;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -90,7 +90,7 @@ public abstract class TitleViewCard<T extends Title<T>> extends BaseViewCard<T> 
             return section;
         }
 
-        BookCharacter holder = title.getHolder().get();
+        HumanCharacter holder = title.getHolder().get();
 
         HBox holderRow = new HBox(12);
         holderRow.setAlignment(Pos.CENTER_LEFT);

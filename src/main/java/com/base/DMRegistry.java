@@ -3,7 +3,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.objects.character.CharacterManager;
 import com.objects.family.FamilyManager;
-import com.objects.house.HouseManager;
+import com.objects.government.GovernmentManager;
 import com.utilities.LoadingManager;
 import com.google.gson.JsonObject;
 import com.objects.title.TitleManager;
@@ -17,7 +17,7 @@ public class DMRegistry {
     public static final CharacterManager CHARACTER_MANAGER = new CharacterManager();
     public static final TitleManager TITLE_MANAGER = new TitleManager();
     public static final FamilyManager FAMILY_MANAGER = new FamilyManager();
-    public static final HouseManager HOUSE_MANAGER = new HouseManager();
+    public static final GovernmentManager HOUSE_MANAGER = new GovernmentManager();
 
 //    private static <T extends DateMutableEntity<T>, M extends AbstractMutableManager<M,T,?,?>> M get(Class<T> type){
 //

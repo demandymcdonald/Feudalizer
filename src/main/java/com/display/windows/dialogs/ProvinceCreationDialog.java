@@ -4,9 +4,9 @@ import com.Global;
 import com.base.DMRegistry;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
+import com.objects.character.HumanCharacter;
 import com.objects.title.land.Province;
 import com.objects.title.land.Titles;
-import com.objects.character.BookCharacter;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -23,7 +23,7 @@ import static com.display.geography.GeographyManager.registerCustomGeometry;
 public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
 
     private final TextField nameField = new TextField();
-    private final ComboBox<BookCharacter> holderCombo = new ComboBox<>();
+    private final ComboBox<HumanCharacter> holderCombo = new ComboBox<>();
 
     public ProvinceCreationDialog() {
         super("Create Province", "Merge counties into a province");
@@ -71,7 +71,7 @@ public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
     @Override
     protected Province createTitle() {
         String name = nameField.getText().trim();
-        BookCharacter holder = holderCombo.getValue();
+        HumanCharacter holder = holderCombo.getValue();
 
         // Merge geometries
         List<Geometry> geometries = new ArrayList<>();
