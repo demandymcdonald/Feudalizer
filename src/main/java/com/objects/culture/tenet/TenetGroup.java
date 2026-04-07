@@ -73,5 +73,24 @@ public enum TenetGroup implements Displayable {
     public Optional<TenetGroup> getParent(){
         return parent;
     }
+    public boolean isParentOf(TenetGroup group){
+        while(group != null){
+            Optional<TenetGroup> parentTenetGroup = group.getParent();
+            if(parentTenetGroup.isPresent()){
+                TenetGroup tenetGroup = parentTenetGroup.get();
+                if(tenetGroup.equals(this)){
+                    return true;
+                } else {
+                    group = tenetGroup;
+                }
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+    public boolean isChildOf(TenetGroup group){
+        return group.isParentOf(this);
+    }
     public record AcceptanceContainer(Acceptance accept, int maxNumber){}
 }

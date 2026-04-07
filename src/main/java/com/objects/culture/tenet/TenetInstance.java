@@ -34,24 +34,41 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
         if (influencerMap.isEmpty()) {
             return opinion.get();
         } else {
-            double toReturn = opinion.get();
-            List<Pair<TenetInstance, BoundedInteger>> influencers = new ArrayList<>(influencerMap.values());
-            influencers.sort((o1, o2) -> o2.getRight().get() - o1.getRight().get());
-            for (Pair<TenetInstance, BoundedInteger> p : influencerMap.values()) {
-                if (p.getLeft() == null) {
-                    continue;
-                }
-                int influencer = p.getRight().get();
-                double influencerFactor = ((double) influencer/ 100);
-                double childImpact = 1 - influencerFactor;
-                toReturn = (toReturn * childImpact) + (p.getLeft().getAcceptanceValue() * influencerFactor);
-                if (influencer == 100){
-                    break;
-                }
+            List<Pair<TenetInstance, BoundedInteger>> rawInfluencers = new ArrayList<>(influencerMap.values());
+            rawInfluencers.sort((o1, o2) -> o2.getRight().get() - o1.getRight().get());
+            if (rawInfluencers.getFirst().getRight().get() == 1 && (rawInfluencers.size() == 1 || rawInfluencers.get(1).getRight().get() != 1)) {
+                return rawInfluencers.getFirst().getLeft().getAcceptanceValue();
+            }
+            double base = opinion.get();
+            final double resistance = Math.max(.1,Math.pow(Math.abs(opinion.get()) / 384D,3));
+            double toReturn = base * resistance;
+            List<Pair<Double,Double>> influencers = buildLists(rawInfluencers,1 - resistance);
+            for (Pair<Double, Double> p : influencers) {
+                double influencerFactor = p.getRight();
+                toReturn += (p.getLeft() * influencerFactor);
             }
             return toReturn;
         }
     }
+    private static List<Pair<Double,Double>> buildLists(List<Pair<TenetInstance,BoundedInteger>> influencers, double resistance) {
+        final List<Pair<Double,Double>> toReturn = new ArrayList<>();
+        int sum = 0;
+        for (Pair<TenetInstance, BoundedInteger> p : influencers) {
+            if (p.getLeft() == null) {
+                continue;
+            }
+            sum += Math.abs(p.getRight().get());
+        }
+        double finalSum = sum * resistance;
+        for (Pair<TenetInstance, BoundedInteger> p : influencers) {
+            if (p.getLeft() == null) {
+                continue;
+            }
+            double v = (p.getRight().get() / finalSum);
+            toReturn.add(Pair.of(p.getLeft().getAcceptanceValue(), v));
+        }
+        return toReturn;
+    };
     public double getAcceptanceValue() {
         return getFinal();
     }
@@ -88,7 +105,7 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
     }
 
 
-    public DMEReference<Tenet<?>> getTenet() {
+    public DMEReference<Tenet<?,?>> getTenet() {
         return getOwner().get().getTenets().inverse().get(this);
     }
 
