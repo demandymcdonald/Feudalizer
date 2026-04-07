@@ -15,6 +15,7 @@ import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.objects.culture.Culture;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -76,6 +77,9 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
 
     @Override
     public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        Map<K,V> map = getMapFromObject(entity);
+        map.clear();
+        map.putAll(buildMap(getOwner().get().getTimeline(),this));
         super.apply(entity, currentState);
     }
 
@@ -93,6 +97,22 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         }
 
     }
+
+    @Override
+    public List<Class<TimelineChange<? super T>>> oppositeChanges() {
+        return List.of();
+    }
+
+    @Override
+    public List<Class<TimelineChange<? super T>>> siblingChanges() {
+        return super.siblingChanges();
+    }
+
+    @Override
+    public boolean isPositive() {
+        return true;
+    }
+
     public void addChange(Pair<K,V>... changes){
         int totalNew = 0;
         for (Pair<K,V> p : changes){
@@ -133,7 +153,11 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         activeChanges.clear();
         amendCumulativeTotal(getOwner().get().getTimeline(),this,FORWARD,totalRemoved, this::onRemoveChangeStep);
     }
+    protected abstract Map<K,V> getMapFromObject(DMEReference<? extends T> object);
+    @Override
+    public void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
 
+    }
 
     @Override
     public final void reactivate(boolean isSandbox) {
@@ -275,9 +299,11 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         };
         Timeline.iterateMap(buildNext,consumer,predicate,timeline,nextChange.getID(),new HashMap<>(),false);
     }
-    protected static <T extends DateMutableEntity<T>,K,V,TC extends TimelineMapChange<TC,K,V,? super T>> void getFirstFromFuture(Timeline<? extends T> t, TimelineMapChange<?,K,V,?> change, K desired, @Nullable Consumer<TC> onStep){
+    public static <T extends DateMutableEntity<T>,K,V,TC extends TimelineMapChange<TC,K,V,? super T>> Map<K,V> getFirstFromFuture(Timeline<?> t, TimelineMapChange<?,?,?,?> change, Object rawDesired, @Nullable Consumer<Object> onStep){
+        final Map<K,V> toReturn = new HashMap<>();
         final TC tc = (TC) change;
         Timeline<T> timeline = (Timeline<T>) t;
+        final K desired = (K) rawDesired;
         final String className = tc.getClass().getName();
         TC nextChange = (TC) timeline.findChangeByClassID(tc.getStart(),FORWARD,className,false).getFirst();
         final BiFunction<Timeline<T>,TC,ChangeID> buildNext = (tl, ch) -> {
@@ -305,7 +331,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,T>,K,V
         final BiPredicate<LocalDate,Map<K,V>> predicate = (ch, finalMap) -> {
             return ch != null && finalMap.isEmpty();
         };
-        Timeline.iterateMap(buildNext,consumer,predicate,timeline,nextChange.getID(),new HashMap<>(),false);
+        Timeline.iterateMap(buildNext,consumer,predicate,timeline,nextChange.getID(),toReturn,false);
+        return toReturn;
     }
     //==== Serializers and Deserializers ====
     @Override

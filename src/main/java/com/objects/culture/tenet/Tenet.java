@@ -9,6 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.UUID;
 
 public abstract class Tenet<T extends Tenet<T>> extends CultureObject<T> {
@@ -38,7 +39,7 @@ public abstract class Tenet<T extends Tenet<T>> extends CultureObject<T> {
 
         ;
 
-
+        private static final TreeMap<Integer, Acceptance> floorMap = new TreeMap<>();
         private final String id;
         private final String name;
         private final String description;
@@ -49,22 +50,38 @@ public abstract class Tenet<T extends Tenet<T>> extends CultureObject<T> {
             this.description = description;
             this.floor = floor;
         }
-
-
+        static {
+            floorMap.put(CORE.floor, CORE);
+            floorMap.put(IMPORTANT.floor, IMPORTANT);
+            floorMap.put(ACCEPTED.floor, ACCEPTED);
+            floorMap.put(NEUTRAL_POSITIVE.floor, NEUTRAL_POSITIVE);
+            floorMap.put(NEUTRAL.floor, NEUTRAL);
+            floorMap.put(NEUTRAL_NEGATIVE.floor, NEUTRAL_NEGATIVE);
+            floorMap.put(REJECTED.floor, REJECTED);
+            floorMap.put(SHUNNED.floor, SHUNNED);
+            floorMap.put(PERSECUTED.floor, PERSECUTED);
+        }
+        public static Acceptance get(int floor){
+            if (floor < 0){
+                return floorMap.floorEntry(floor).getValue();
+            } else {
+                return floorMap.ceilingEntry(floor).getValue();
+            }
+        }
 
         @Override
         public String getID() {
-            return "";
+            return id;
         }
 
         @Override
         public String displayName() {
-            return "";
+            return name;
         }
 
         @Override
         public String description() {
-            return "";
+            return description;
         }
     }
 }

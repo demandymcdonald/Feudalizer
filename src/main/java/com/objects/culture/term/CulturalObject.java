@@ -1,4 +1,4 @@
-package com.objects.culture.display;
+package com.objects.culture.term;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;

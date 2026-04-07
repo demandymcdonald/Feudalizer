@@ -1,4 +1,4 @@
-package com.objects.culture.display;
+package com.objects.culture.term;
 
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;

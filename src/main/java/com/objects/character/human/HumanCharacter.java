@@ -10,7 +10,7 @@ import com.objects.character.CharacterSingleChange;
 import com.objects.character.LivingCreature;
 import com.objects.character.opinion.Opinion;
 import com.objects.culture.Culture;
-import com.objects.culture.display.CulturalObject;
+import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
 import com.objects.government.House;
 import com.objects.title.Title;

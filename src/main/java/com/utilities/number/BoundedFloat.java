@@ -2,14 +2,12 @@ package com.utilities.number;
 
 import com.Global.*;
 
-public class BoundedInteger extends BoundedNumber<Integer> {
-
-    public BoundedInteger(int min, int max) {
+public class BoundedFloat extends BoundedNumber<Float>{
+    public BoundedFloat(float min, float max) {
         super(min, max);
     }
-
     @Override
-    protected Integer onSet(Integer value) {
+    protected Float onSet(Float value) {
         return Math.clamp(value, getMin(), getMax());
     }
 }

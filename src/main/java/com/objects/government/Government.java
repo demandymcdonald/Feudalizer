@@ -37,11 +37,6 @@ public abstract class Government<T extends Government<T>> extends DateMutableEnt
     }
 
     @Override
-    public void relink() {
-        super.relink();
-    }
-
-    @Override
     protected void onLink() {
 
     }

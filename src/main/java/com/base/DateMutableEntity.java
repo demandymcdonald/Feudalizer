@@ -14,6 +14,7 @@ import com.utilities.SuperclassSerializable;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents an abstract class for date-aware mutable entities that track state changes over time.
@@ -27,6 +28,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     private final UUID id;
     private final Timeline<T> timeline;
     private final DMEReference<T> reference;
+    private final AtomicBoolean isLoaded = new AtomicBoolean(false);
     public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T,?>> initialState) {
         this.id = id;
         this.reference = DMEReference.of(this.getClass(),id);
@@ -72,13 +74,25 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     //Use to clear any shortcut/linked variables.
     public abstract void doDateChange();
     public void onDateChange(){
+        isLoaded.set(false);
         doDateChange();
         timeline.doTimeChange(current());
     }
-    public void relink(){
+    public final void link(){
+        if (isLoaded()){
+            return;
+        }
         onLink();
+        isLoaded.set(true);
     }
-
+    public final void forceLink(){
+        if (!isLoaded()){
+            link();
+        }
+    }
+    public boolean isLoaded(){
+        return isLoaded.get();
+    }
     protected final LocalDate current(){
         return Global.getDate();
     }

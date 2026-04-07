@@ -54,7 +54,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
         object.addProperty("dme_type", type.getName());
         return object;
     }
-    public static <T extends DateMutableEntity<T>> DMEReference<T> deserialize(JsonObject object) {
+    public static <T extends DateMutableEntity<?>> DMEReference<T> deserialize(JsonObject object) {
 
         String name = object.get("dme_type").getAsString();
         Class<T> r = (Class<T>) CLASS_CACHE.getIfPresent(name);
@@ -68,7 +68,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
             throw new RuntimeException("Could not deserialize DMEReference: " + object.toString() + ".");
         }
     }
-    private static <T extends DateMutableEntity<T>> Class<T> buildClass(String name){
+    private static <T extends DateMutableEntity<?>> Class<T> buildClass(String name){
         try {
             Class<T> t = (Class<T>) Class.forName(name);
             CLASS_CACHE.put(name,t);

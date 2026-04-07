@@ -1,28 +1,28 @@
 package com.objects.culture;
 
-import com.base.DateMutableEntity;
+import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.variable.TimelineEasingVariable;
 import com.google.common.collect.BiMap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.objects.culture.tenet.CultureMapChanges;
+import com.objects.culture.change.CultureMapChanges;
+import com.objects.culture.change.CultureSingleChanges;
 import com.objects.culture.tenet.Tenet;
-import com.utilities.number.BoundedInteger;
+import com.objects.culture.tenet.TenetInstance;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
+import static com.base.timeline.variable.TimelineEasingVariable.EasingType.EXPONENTIAL;
 
 public class Culture extends CultureObject<Culture> {
-    List<Culture> parentCultures;
-    private BiMap<Tenet<?>,TenetInstance> tenets;
+    private List<DMEReference<Culture>> parentCultures = new ArrayList<>();
+    private BiMap<DMEReference<Tenet<?>>, TenetInstance> tenets;
 
 
 
@@ -54,9 +54,11 @@ public class Culture extends CultureObject<Culture> {
 
 
 
+    public List<DMEReference<Culture>> getParentCultures() {
+        return parentCultures;
+    }
 
-
-    public BiMap<Tenet<?>, TenetInstance> getTenets() {
+    public BiMap<DMEReference<Tenet<?>>, TenetInstance> getTenets() {
         return tenets;
     }
 
@@ -68,8 +70,37 @@ public class Culture extends CultureObject<Culture> {
 
     @Override
     protected void onLink() {
-
+        for (DMEReference<Culture> parent : parentCultures){
+            parent.get().forceLink();
+            for (DMEReference<Tenet<?>> t : parent.get().getTenets().keySet()){
+                t.get().forceLink();
+                if (!tenets.containsKey(t)){
+                    double starting = parent.get().getTenets().get(t).getOpinion();
+                    addTenet(t,starting);
+                }
+                TenetInstance instance = tenets.get(t);
+                TenetInstance parentInstance = parent.get().getTenets().get(t);
+                instance.linkParent(parent,parentInstance);
+            }
+        }
     }
+
+    public void addTenet(DMEReference<Tenet<?>> tenet, double starting){
+        DMEReference<Culture> owner = this.getReference();
+        LocalDate date = Global.getDate();
+        getTimeline().addChange(new CultureMapChanges.TenetMapChange(owner, date,
+                Pair.of(tenet, new TenetInstance(owner,EXPONENTIAL,new ChangeID(ChangeID.buildChangeClassID(CultureMapChanges.TenetMapChange.class.getName()),date),starting))));
+    }
+    public void addParent(DMEReference<Culture> parent){
+        DMEReference<Culture> owner = this.getReference();
+        LocalDate date = Global.getDate();
+        getTimeline().addChange(new CultureSingleChanges.SetParentChange(owner, date, parent));
+    }
+
+    public void internalSetParent(List<DMEReference<Culture>> parents){
+        this.parentCultures = parents;
+    }
+
 
     @Override
     public void doDateChange() {
@@ -102,54 +133,4 @@ public class Culture extends CultureObject<Culture> {
     }
 
 
-    public static class TenetInstance extends TimelineEasingVariable<CultureMapChanges.TenetMapChange,Culture> {
-        private final BoundedInteger parentInfluence = new BoundedInteger(-100,100);
-        private double currentValue;
-        public TenetInstance() {
-        }
-
-        public TenetInstance(DMEReference<Culture> owner, EasingType easeType, ChangeID thisChange, ChangeID nextChange,
-                             double currentValue, Optional<TenetInstance> parent, int parentInfluence) {
-            super(owner, thisChange, easeType, nextChange);
-            this.currentValue = currentValue;
-            parent.ifPresent(p -> this.parentInfluence.set(parentInfluence));
-        }
-
-        @Override
-        protected double getCurrentValue() {
-            return currentValue;
-        }
-
-        @Override
-        protected double getValueFromNextChange(CultureMapChanges.TenetMapChange nextChange) {
-            return nextChange;
-        }
-        public void setValue(double value){
-            this.currentValue = value;
-            onChange();
-        }
-        public void setParentInfluence(int parentInfluence){
-            this.parentInfluence.set(parentInfluence);
-        }
-        private void onChange(){
-            DMEReference<Culture> owner = getOwner();
-            CultureMapChanges.TenetMapChange c = getC(owner, getThisChange());
-            c.addChange(Pair.of(owner.get().getTenets().inverse().get(this),this));
-        }
-
-
-        @Override
-        public void additionalSave(JsonObject data) {
-
-        }
-
-        @Override
-        public void additionalLoad(JsonObject data) {
-
-        }
-
-
-
-
-    }
 }

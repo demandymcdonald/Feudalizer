@@ -3,7 +3,6 @@ package com.base;
 import com.Global;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.objects.character.LivingCreature;
 import com.utilities.Factory;
 import com.utilities.SuperclassRegistry;
 import com.utilities.ThreadManager;
@@ -32,7 +31,7 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
     }
     public void onDateChange(){
         doIterate(DateMutableEntity::onDateChange);
-        doIterate(DateMutableEntity::relink);
+        doIterate(DateMutableEntity::link);
     }
     public <R extends DateMutableEntity<R>> R loadEntity(DMEReference<R> dme, JsonObject object) {
         if (!accepts(dme)){
