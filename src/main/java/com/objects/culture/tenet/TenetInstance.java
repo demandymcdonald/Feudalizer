@@ -17,6 +17,12 @@ import java.util.List;
 import java.util.Map;
 
 public class TenetInstance extends TimelineEasingVariable<TenetInstance, CultureMapChanges.TenetMapChange, Culture> {
+    private static final double b = .33; //apathy height as percent
+    private static final double c = .024; //apathy decay
+    private static final double f = .05; // fatigue strength
+    private static final double g = .08; //fatigue sharpness
+    private static final double k = .05; //kernal floor
+
     private final BoundedDouble opinion = new BoundedDouble(-384, 384); //256 is the last state, but I want to give the extreme
     // Acceptance levels a bit of buffer to prevent instant replacement in cases where there can only be one CORE or PERSECUTED
     private final Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> influencerMap = new HashMap<>();
@@ -36,13 +42,20 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
         } else {
             List<Pair<TenetInstance, BoundedInteger>> rawInfluencers = new ArrayList<>(influencerMap.values());
             rawInfluencers.sort((o1, o2) -> o2.getRight().get() - o1.getRight().get());
-            if (rawInfluencers.getFirst().getRight().get() == 1 && (rawInfluencers.size() == 1 || rawInfluencers.get(1).getRight().get() != 1)) {
+            if (rawInfluencers.getFirst().getRight().get() == 100 && (rawInfluencers.size() == 1 || rawInfluencers.get(1).getRight().get() != 100)) {
                 return rawInfluencers.getFirst().getLeft().getAcceptanceValue();
             }
             double base = opinion.get();
-            final double resistance = Math.max(.1,Math.pow(Math.abs(opinion.get()) / 384D,3));
+            //final double resistance = Math.max(.1,Math.pow(Math.abs(opinion.get()) / 384D,3));
+            //Something else to think about: Should high extreme values (say 320-384 be slightly more open to influence? Maybe 30)
+            double quad = Math.pow(Math.abs(opinion.get()) / 384.0, 2);
+            double apathy = b * Math.exp(-c * Math.abs(opinion.get()));
+            double fatigue = f * Math.exp(-g * (384.0 - Math.abs(opinion.get())));
+            final double resistance = Math.max(k, quad + apathy - fatigue);
             double toReturn = base * resistance;
             List<Pair<Double,Double>> influencers = buildLists(rawInfluencers,1 - resistance);
+            //In theory, this could all be done in buildLists, but I suspect future edge cases so I'll
+            //leave it suboptimal for now... and probably ever.
             for (Pair<Double, Double> p : influencers) {
                 double influencerFactor = p.getRight();
                 toReturn += (p.getLeft() * influencerFactor);
@@ -59,12 +72,16 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
             }
             sum += Math.abs(p.getRight().get());
         }
-        double finalSum = sum * resistance;
+        final double finalSum = sum * resistance;
         for (Pair<TenetInstance, BoundedInteger> p : influencers) {
             if (p.getLeft() == null) {
                 continue;
             }
-            double v = (p.getRight().get() / finalSum);
+            int base = p.getRight().get();
+            double v = Math.pow(Math.abs(base) / finalSum,3);
+            if (base < 0){
+                v *= -1;
+            }
             toReturn.add(Pair.of(p.getLeft().getAcceptanceValue(), v));
         }
         return toReturn;
