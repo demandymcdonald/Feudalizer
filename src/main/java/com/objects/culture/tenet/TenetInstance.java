@@ -11,12 +11,15 @@ import com.utilities.number.BoundedDouble;
 import com.utilities.number.BoundedInteger;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TenetInstance extends TimelineEasingVariable<TenetInstance, CultureMapChanges.TenetMapChange, Culture> {
-    private final BoundedDouble opinion = new BoundedDouble(-256, 256);
-    private final Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> parentMap = new HashMap<>();
+    private final BoundedDouble opinion = new BoundedDouble(-384, 384); //256 is the last state, but I want to give the extreme
+    // Acceptance levels a bit of buffer to prevent instant replacement in cases where there can only be one CORE or PERSECUTED
+    private final Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> influencerMap = new HashMap<>();
 
     public TenetInstance() {
     }
@@ -28,36 +31,58 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
 
     @Override
     protected double getCurrent() {
-        if (parentMap.isEmpty()) {
+        if (influencerMap.isEmpty()) {
             return opinion.get();
         } else {
             double toReturn = opinion.get();
-            for (Pair<TenetInstance, BoundedInteger> p : parentMap.values()) {
+            List<Pair<TenetInstance, BoundedInteger>> influencers = new ArrayList<>(influencerMap.values());
+            influencers.sort((o1, o2) -> o2.getRight().get() - o1.getRight().get());
+            for (Pair<TenetInstance, BoundedInteger> p : influencerMap.values()) {
                 if (p.getLeft() == null) {
                     continue;
                 }
-                toReturn += (p.getLeft().getOpinion() * ((double) p.getRight().get()/ 100)) / (parentMap.size());
+                int influencer = p.getRight().get();
+                double influencerFactor = ((double) influencer/ 100);
+                double childImpact = 1 - influencerFactor;
+                toReturn = (toReturn * childImpact) + (p.getLeft().getAcceptanceValue() * influencerFactor);
+                if (influencer == 100){
+                    break;
+                }
             }
             return toReturn;
         }
     }
-    public double getOpinion() {
+    public double getAcceptanceValue() {
         return getFinal();
     }
-    public Tenet.Acceptance getAcceptance() {
-        return Tenet.Acceptance.get((int) getOpinion());
+    public Acceptance getAcceptance() {
+        return Acceptance.get((int) getAcceptanceValue());
     }
     public void setValue(double value) {
         this.opinion.set(value);
         onChange();
     }
-
-    public void linkParent(DMEReference<Culture> parent, TenetInstance parentInstance) {
-        if (parentMap.containsKey(parent)) {
-            BoundedInteger bounded = parentMap.get(parent).getRight();
-            parentMap.put(parent, Pair.of(parentInstance, bounded));
+    public void changeInfluencerInfluence(DMEReference<Culture> parent, int newInfluence){
+        if(influencerMap.containsKey(parent)){
+            BoundedInteger bounded = influencerMap.get(parent).getRight();
+            bounded.set(newInfluence);
+            this.onChange();
+        }
+    }
+    public int getInfluencerInfluence(DMEReference<Culture> parent){
+        if(influencerMap.containsKey(parent)){
+            return influencerMap.get(parent).getRight().get();
+        }
+        return 0;
+    }
+    public void linkInfluencer(DMEReference<Culture> parent, TenetInstance parentInstance) {
+        if (influencerMap.containsKey(parent)) {
+            BoundedInteger bounded = influencerMap.get(parent).getRight();
+            influencerMap.put(parent, Pair.of(parentInstance, bounded));
         } else {
-            parentMap.put(parent, Pair.of(parentInstance, new BoundedInteger(-100, 100)));
+            BoundedInteger bound = new BoundedInteger(-100, 100);
+            bound.set(100);
+            influencerMap.put(parent, Pair.of(parentInstance, bound));
             onChange();
         }
     }
@@ -82,14 +107,14 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
     @Override
     public void additionalSave(JsonObject data) {
         data.addProperty("opinion", opinion.get());
-        data.add("parentMap", serializeMap(parentMap));
+        data.add("influencerMap", serializeMap(influencerMap));
     }
 
     private JsonArray serializeMap(Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> map) {
         JsonArray array = new JsonArray();
         for (Map.Entry<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> entry : map.entrySet()) {
             JsonObject obj = new JsonObject();
-            obj.add("parent", entry.getKey().serialize());
+            obj.add("influencer", entry.getKey().serialize());
             obj.addProperty("weight", entry.getValue().getRight().get());
             array.add(obj);
         }
@@ -99,14 +124,14 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
     @Override
     public void additionalLoad(JsonObject data) {
         opinion.set(data.get("opinion").getAsDouble());
-        parentMap.putAll(deserializeMap(data.get("parentMap").getAsJsonArray()));
+        influencerMap.putAll(deserializeMap(data.get("influencerMap").getAsJsonArray()));
     }
 
     private Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> deserializeMap(JsonArray array) {
         Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> map = new HashMap<>();
         for (int i = 0; i < array.size(); i++) {
             JsonObject obj = array.get(i).getAsJsonObject();
-            map.put(DMEReference.deserialize(obj.get("parent").getAsJsonObject()), Pair.of(null, new BoundedInteger(obj.get("weight").getAsInt(), 100)));
+            map.put(DMEReference.deserialize(obj.get("influencer").getAsJsonObject()), Pair.of(null, new BoundedInteger(obj.get("weight").getAsInt(), 100)));
         }
         return map;
     }

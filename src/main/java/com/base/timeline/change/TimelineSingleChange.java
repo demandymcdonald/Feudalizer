@@ -2,10 +2,12 @@ package com.base.timeline.change;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
+import com.objects.culture.Culture;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -46,7 +48,10 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> exten
     protected void nullifyConditions(List<NullifyCondition<? super T>> list) {
 
     }
-
+    @Override
+    protected void applyConditions(List<ApplyCondition<? super T>> list) {
+        list.add(new HasVariableClass(this.getClass()));
+    }
     @Override
     protected void deactivateConditions(List<DeactivateCondition<? super T>> list) {
         list.add(new IsOnlyData());

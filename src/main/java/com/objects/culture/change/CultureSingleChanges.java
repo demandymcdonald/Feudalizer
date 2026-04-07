@@ -47,10 +47,7 @@ public class CultureSingleChanges {
             return "";
         }
 
-        @Override
-        protected void applyConditions(List<ApplyCondition<? super Culture>> list) {
 
-        }
 
         @Override
         public void additionalSave(JsonObject data) {

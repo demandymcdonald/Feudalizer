@@ -6,6 +6,7 @@ import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.change.CultureMapChanges;
@@ -21,15 +22,11 @@ import java.util.*;
 import static com.base.timeline.variable.TimelineEasingVariable.EasingType.EXPONENTIAL;
 
 public class Culture extends CultureObject<Culture> {
-    private List<DMEReference<Culture>> parentCultures = new ArrayList<>();
-    private BiMap<DMEReference<Tenet<?>>, TenetInstance> tenets;
+    //Todo, replace with Map<DMEReference<Culture>, Influence Container(Enum for relationship type, String for why, Map<TenetGroup,Int for base tenet influence)
+    private final List<DMEReference<Culture>> parentCultures = new ArrayList<>();
+    private final BiMap<DMEReference<Tenet<?>>, TenetInstance> tenets = HashBiMap.create();
 
-
-
-
-
-
-    List<Culture> linkedChildCultures;
+    private final List<Culture> linkedChildCultures = new ArrayList<>();
 
 
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
@@ -61,9 +58,30 @@ public class Culture extends CultureObject<Culture> {
     public BiMap<DMEReference<Tenet<?>>, TenetInstance> getTenets() {
         return tenets;
     }
-
-
-
+    public void amendParentInfluence(DMEReference<Culture> parent, int newInfluence, DMEReference<Tenet<?>>... tenet){
+        List<DMEReference<Tenet<?>>> parents = new ArrayList<>();
+        if(tenet == null){
+            parents.addAll(getTenets().keySet());
+        } else {
+            parents.addAll(Arrays.asList(tenet));
+        }
+        for(DMEReference<Tenet<?>> t : parents){
+            TenetInstance instance = getTenets().get(t);
+            int inf = instance.getInfluencerInfluence(parent) + newInfluence;
+            instance.changeInfluencerInfluence(parent,inf);
+        }
+    }
+    public void changeParentInfluence(DMEReference<Culture> parent, int newInfluence, DMEReference<Tenet<?>>... tenet) {
+        List<DMEReference<Tenet<?>>> parents = new ArrayList<>();
+        if(tenet == null){
+            parents.addAll(getTenets().keySet());
+        } else {
+            parents.addAll(Arrays.asList(tenet));
+        }
+        for (DMEReference<Tenet<?>> t : parents){
+            getTenets().get(t).changeInfluencerInfluence(parent,newInfluence);
+        }
+    }
 
 
 
@@ -71,17 +89,19 @@ public class Culture extends CultureObject<Culture> {
     @Override
     protected void onLink() {
         for (DMEReference<Culture> parent : parentCultures){
-            parent.get().forceLink();
+            Culture c = parent.get();
+            c.forceLink();
             for (DMEReference<Tenet<?>> t : parent.get().getTenets().keySet()){
                 t.get().forceLink();
                 if (!tenets.containsKey(t)){
-                    double starting = parent.get().getTenets().get(t).getOpinion();
+                    double starting = parent.get().getTenets().get(t).getAcceptanceValue();
                     addTenet(t,starting);
                 }
                 TenetInstance instance = tenets.get(t);
                 TenetInstance parentInstance = parent.get().getTenets().get(t);
-                instance.linkParent(parent,parentInstance);
+                instance.linkInfluencer(parent,parentInstance);
             }
+            c.linkChild(getReference());
         }
     }
 
@@ -96,15 +116,18 @@ public class Culture extends CultureObject<Culture> {
         LocalDate date = Global.getDate();
         getTimeline().addChange(new CultureSingleChanges.SetParentChange(owner, date, parent));
     }
-
+    public void linkChild(DMEReference<Culture> child){
+        linkedChildCultures.add(child.get());
+    }
     public void internalSetParent(List<DMEReference<Culture>> parents){
-        this.parentCultures = parents;
+        parents.clear();
+        this.parentCultures.addAll(parents);
     }
 
 
     @Override
     public void doDateChange() {
-
+        linkedChildCultures.clear();
     }
 
     @Override
