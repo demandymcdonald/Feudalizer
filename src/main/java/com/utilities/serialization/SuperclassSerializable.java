@@ -1,4 +1,4 @@
-package com.utilities;
+package com.utilities.serialization;
 
 import com.google.gson.JsonObject;
 

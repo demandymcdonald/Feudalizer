@@ -9,9 +9,11 @@ import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.TenetInstance;
+import com.objects.culture.tenet.TenetManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
@@ -22,26 +24,26 @@ public class CultureMapChanges {
 
 
 
-    public static class TenetMapChange extends TimelineMapChange<TenetMapChange,DMEReference<Tenet<?>>, TenetInstance, Culture> {
+    public static class TenetMapChange extends TimelineMapChange<TenetMapChange,Tenet<?,?>, TenetInstance, Culture> {
 
         public TenetMapChange(DMEReference<Culture> owner, LocalDate date) {
             super(owner, date);
         }
 
-        public TenetMapChange(DMEReference<Culture> owner, LocalDate date, Pair<DMEReference<Tenet<?>>, TenetInstance>... changes) {
+        public TenetMapChange(DMEReference<Culture> owner, LocalDate date, Pair<Tenet<?,?>, TenetInstance>... changes) {
             super(owner, date, changes);
         }
 
         @Override
-        protected Map<DMEReference<Tenet<?>>, TenetInstance> getMapFromObject(DMEReference<? extends Culture> object) {
+        protected Map<Tenet<?,?>, TenetInstance> getMapFromObject(DMEReference<? extends Culture> object) {
             return object.get().getTenets();
         }
 
 
         public TenetInstance getFromFuture(ChangeID current, TenetInstance currentInstance){
             Timeline<? extends Culture> timeline = getOwner().get().getTimeline();
-            TimelineMapChange<?,?, ?,?> c = (TimelineMapChange<?,DMEReference<Tenet<?>>, TenetInstance,?>) timeline.followBreadcrumb(current);
-            Map<DMEReference<Tenet<?>>, TenetInstance> m = TimelineMapChange.getFirstFromFuture(timeline, c, currentInstance.getTenet(), null);
+            TimelineMapChange<?,?, ?,?> c = (TimelineMapChange<?,Tenet<?,?>, TenetInstance,?>) timeline.followBreadcrumb(current);
+            Map<Tenet<?,?>, TenetInstance> m = TimelineMapChange.getFirstFromFuture(timeline, c, currentInstance.getTenet(), null);
             return m.get(currentInstance.getTenet());
         }
 
@@ -79,8 +81,8 @@ public class CultureMapChanges {
 
         }
         @Override
-        protected JsonElement serializeK(DMEReference<Tenet<?>> tenet) {
-            return tenet.serialize();
+        protected JsonElement serializeK(Tenet<?,?> tenet) {
+            return new JsonPrimitive(tenet.getID());
         }
 
         @Override
@@ -89,8 +91,8 @@ public class CultureMapChanges {
         }
 
         @Override
-        protected DMEReference<Tenet<?>> deserializeK(JsonElement m) {
-            return DMEReference.deserialize(m.getAsJsonObject());
+        protected Tenet<?,?> deserializeK(JsonElement m) {
+            return TenetManager.getTenet(m.getAsString());
         }
 
         @Override

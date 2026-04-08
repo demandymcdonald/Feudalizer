@@ -3,8 +3,6 @@ package com.base.reference;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.utilities.JsonSerializable;
-import com.utilities.SuperclassSerializable;
 import org.slf4j.helpers.MessageFormatter;
 
 import java.util.ArrayList;

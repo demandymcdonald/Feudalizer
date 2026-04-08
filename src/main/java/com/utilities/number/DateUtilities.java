@@ -1,4 +1,4 @@
-package com.utilities;
+package com.utilities.number;
 
 import java.time.LocalDate;
 

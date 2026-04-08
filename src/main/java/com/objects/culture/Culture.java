@@ -24,7 +24,7 @@ import static com.base.timeline.variable.TimelineEasingVariable.EasingType.EXPON
 public class Culture extends CultureObject<Culture> {
     //Todo, replace with Map<DMEReference<Culture>, Influence Container(Enum for relationship type, String for why, Map<TenetGroup,Int for base tenet influence)
     private final List<DMEReference<Culture>> parentCultures = new ArrayList<>();
-    private final BiMap<DMEReference<Tenet<?>>, TenetInstance> tenets = HashBiMap.create();
+    private final BiMap<Tenet<?,?>, TenetInstance> tenets = HashBiMap.create();
 
     private final List<Culture> linkedChildCultures = new ArrayList<>();
 
@@ -55,30 +55,30 @@ public class Culture extends CultureObject<Culture> {
         return parentCultures;
     }
 
-    public BiMap<DMEReference<Tenet<?>>, TenetInstance> getTenets() {
+    public BiMap<Tenet<?,?>, TenetInstance> getTenets() {
         return tenets;
     }
-    public void amendParentInfluence(DMEReference<Culture> parent, int newInfluence, DMEReference<Tenet<?>>... tenet){
-        List<DMEReference<Tenet<?>>> parents = new ArrayList<>();
+    public void amendParentInfluence(DMEReference<Culture> parent, int newInfluence, Tenet<?,?>... tenet){
+        List<Tenet<?,?>> parents = new ArrayList<>();
         if(tenet == null){
             parents.addAll(getTenets().keySet());
         } else {
             parents.addAll(Arrays.asList(tenet));
         }
-        for(DMEReference<Tenet<?>> t : parents){
+        for(Tenet<?,?> t : parents){
             TenetInstance instance = getTenets().get(t);
             int inf = instance.getInfluencerInfluence(parent) + newInfluence;
             instance.changeInfluencerInfluence(parent,inf);
         }
     }
-    public void changeParentInfluence(DMEReference<Culture> parent, int newInfluence, DMEReference<Tenet<?>>... tenet) {
-        List<DMEReference<Tenet<?>>> parents = new ArrayList<>();
+    public void changeParentInfluence(DMEReference<Culture> parent, int newInfluence, Tenet<?,?>... tenet) {
+        List<Tenet<?,?>> parents = new ArrayList<>();
         if(tenet == null){
             parents.addAll(getTenets().keySet());
         } else {
             parents.addAll(Arrays.asList(tenet));
         }
-        for (DMEReference<Tenet<?>> t : parents){
+        for (Tenet<?,?> t : parents){
             getTenets().get(t).changeInfluencerInfluence(parent,newInfluence);
         }
     }
@@ -91,7 +91,7 @@ public class Culture extends CultureObject<Culture> {
         for (DMEReference<Culture> parent : parentCultures){
             Culture c = parent.get();
             c.forceLink();
-            for (DMEReference<Tenet<?>> t : parent.get().getTenets().keySet()){
+            for (Tenet<?,?> t : parent.get().getTenets().keySet()){
                 t.get().forceLink();
                 if (!tenets.containsKey(t)){
                     double starting = parent.get().getTenets().get(t).getAcceptanceValue();
@@ -105,7 +105,7 @@ public class Culture extends CultureObject<Culture> {
         }
     }
 
-    public void addTenet(DMEReference<Tenet<?>> tenet, double starting){
+    public void addTenet(Tenet<?,?> tenet, double starting){
         DMEReference<Culture> owner = this.getReference();
         LocalDate date = Global.getDate();
         getTimeline().addChange(new CultureMapChanges.TenetMapChange(owner, date,

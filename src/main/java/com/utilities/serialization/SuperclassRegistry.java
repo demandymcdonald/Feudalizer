@@ -1,14 +1,17 @@
-package com.utilities;
+package com.utilities.serialization;
 
 import com.google.gson.JsonObject;
+import com.utilities.Factory;
+import com.utilities.ObjectRegistry;
+import com.utilities.ThreadMutable;
 import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 public abstract class SuperclassRegistry <R extends SuperclassRegistry<R,T,OK,BA>,T extends SuperclassSerializable,OK, BA>
-implements ThreadMutable<R, ObjectRegistry<T,OK>>{
-     private final Map<Class<? extends T>,Factory<? extends T,T,OK,BA>> factory_registry = Collections.synchronizedMap(new HashMap<>());
+implements ThreadMutable<R, ObjectRegistry<T,OK>> {
+     private final Map<Class<? extends T>, Factory<? extends T,T,OK,BA>> factory_registry = Collections.synchronizedMap(new HashMap<>());
      private final ThreadLocal<ObjectRegistry<T,OK>> object_registry = ThreadLocal.withInitial(ObjectRegistry::new);
      private final String uniqueKey;
      public static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SuperclassRegistry.class);

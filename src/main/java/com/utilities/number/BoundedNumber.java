@@ -1,6 +1,8 @@
 package com.utilities.number;
 
 import com.Global.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 
 public abstract class BoundedNumber<N extends Number>{
     private final N min;
@@ -19,12 +21,16 @@ public abstract class BoundedNumber<N extends Number>{
     public void set(N value){
         current = onSet(value);
     }
+    public abstract void add(N value);
     protected abstract N onSet(N value);
     public N get(){
         return current;
     }
 
-
+    public JsonElement serialize(){
+        return new JsonPrimitive(current);
+    }
+    public abstract void deserialize(JsonElement element);
 
 
 }

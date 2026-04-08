@@ -1,19 +1,14 @@
 package com.objects.culture.tenet;
 
 import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.objects.culture.Culture;
-import com.objects.culture.CultureObject;
+import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.Displayable;
-import com.utilities.SuperclassSerializable;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.utilities.serialization.SuperclassSerializable;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -29,7 +24,7 @@ public abstract class Tenet<TE extends Tenet<TE,TG>,TG extends TenetGroup> imple
         this.id = id;
         this.name = name;
         this.description = description;
-        TenetManager.register(this);
+        TenetManager.registerTenet(this);
     }
 
     public <T extends DateMutableEntity<T>, C extends TimelineChange<T>> List<TenetCondition<? super C,? extends T,?>>  getConditions(TimelineChange<T> change){

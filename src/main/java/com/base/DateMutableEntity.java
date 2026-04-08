@@ -8,8 +8,8 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.utilities.DateUtilities;
-import com.utilities.SuperclassSerializable;
+import com.utilities.number.DateUtilities;
+import com.utilities.serialization.SuperclassSerializable;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;

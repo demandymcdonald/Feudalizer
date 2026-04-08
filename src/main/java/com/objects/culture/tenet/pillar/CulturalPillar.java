@@ -7,7 +7,7 @@ import com.google.common.collect.Multimap;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.TenetCondition;
-import com.objects.culture.tenet.TenetGroup;
+import com.objects.culture.tenet.group.TenetGroup;
 
 import java.util.HashMap;
 import java.util.Map;

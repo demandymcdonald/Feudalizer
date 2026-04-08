@@ -6,7 +6,7 @@ import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
-import com.utilities.SuperclassSerializable;
+import com.utilities.serialization.SuperclassSerializable;
 
 import java.time.LocalDate;
 

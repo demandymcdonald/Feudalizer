@@ -1,8 +1,7 @@
 package com.utilities;
 
-import com.Global.*;
-import com.base.DateMutableEntity;
 import com.google.gson.JsonObject;
+import com.utilities.serialization.SuperclassSerializable;
 
 public abstract class Factory<tT extends T, T extends SuperclassSerializable,OK,BA> {
     Class<tT> subclassReference;

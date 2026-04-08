@@ -6,12 +6,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.character.human.HumanCharacter;
 import com.objects.character.CharacterMapChanges;
-import com.utilities.JsonSerializable;
+import com.utilities.serialization.JsonSerializable;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public class Opinion implements JsonSerializable<Opinion> {
+public class Opinion implements JsonSerializable {
     private CharacterMapChanges.OpinionChange parent;
     private DMEReference<HumanCharacter> us;
     private DMEReference<HumanCharacter> other;

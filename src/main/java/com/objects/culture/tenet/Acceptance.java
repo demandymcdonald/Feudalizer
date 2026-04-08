@@ -1,21 +1,22 @@
 package com.objects.culture.tenet;
 
-import com.Global.*;
 import com.utilities.Displayable;
 
 import java.util.TreeMap;
 
 public enum Acceptance implements Displayable {
-    CORE("tp_core", "Core", "This tenet is a core part of the culture", 256),
-    IMPORTANT("tp_important", "Important", "This tenet is important to the culture.", 192),
+    CORE_FANATIC("tp_extreme_core", "Core Fanatic", "This tenet is a core part of the culture and is fervently followed.", 448),
+    CORE("tp_core", "Core", "This tenet is a core part of the culture", 320),
+    INTEGRATED("tp_important", "Integrated", "This tenet is a part of the culture.", 192),
     ACCEPTED("tp_accepted", "Accepted", "This tenet is accepted by the culture.", 128),
     NEUTRAL_POSITIVE("tp_lukewarm", "Lukewarm", "This tenet is lukewarm to the culture.", 64),
     NEUTRAL("tp_neutral", "Neutral", "This tenet is neutral to the culture.", 0),
     NEUTRAL_NEGATIVE("tp_tepid", "Tepid", "This tenet is tepid to the culture.", -64),
     REJECTED("tp_rejected", "Rejected", "This tenet is disliked by the culture.", -128),
     SHUNNED("tp_shunned", "Shunned", "This tenet is shunned by the culture.", -192),
-    PERSECUTED("tp_persecuted", "Persecuted", "This tenet is persecuted or banned by the culture.", -256),
-
+    PERSECUTED("tp_persecuted", "Persecuted", "This tenet is persecuted or banned by the culture.", -320),
+    FANATICAL_PERSECUTION("tp_extreme_persecution", "Fanatical Persecution", "This tenet is severely persecuted or banned by the culture. Risk of using methods like" +
+            " genocide or extreme violence to eliminate those who follow this tenet :(", -448),
     ;
 
     private static final TreeMap<Integer, Acceptance> floorMap = new TreeMap<>();
@@ -32,8 +33,9 @@ public enum Acceptance implements Displayable {
     }
 
     static {
+        floorMap.put(CORE_FANATIC.floor, CORE_FANATIC);
         floorMap.put(CORE.floor, CORE);
-        floorMap.put(IMPORTANT.floor, IMPORTANT);
+        floorMap.put(INTEGRATED.floor, INTEGRATED);
         floorMap.put(ACCEPTED.floor, ACCEPTED);
         floorMap.put(NEUTRAL_POSITIVE.floor, NEUTRAL_POSITIVE);
         floorMap.put(NEUTRAL.floor, NEUTRAL);
@@ -41,6 +43,7 @@ public enum Acceptance implements Displayable {
         floorMap.put(REJECTED.floor, REJECTED);
         floorMap.put(SHUNNED.floor, SHUNNED);
         floorMap.put(PERSECUTED.floor, PERSECUTED);
+        floorMap.put(FANATICAL_PERSECUTION.floor, FANATICAL_PERSECUTION);
     }
 
     public static Acceptance get(int floor) {
@@ -50,7 +53,9 @@ public enum Acceptance implements Displayable {
             return floorMap.ceilingEntry(floor).getValue();
         }
     }
-
+    public static Acceptance[] getAll(){
+        return floorMap.values().toArray(new Acceptance[0]);
+    }
     @Override
     public String getID() {
         return id;

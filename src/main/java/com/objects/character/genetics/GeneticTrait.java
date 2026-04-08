@@ -2,7 +2,6 @@ package com.objects.character.genetics;
 
 import com.google.gson.JsonObject;
 import com.utilities.Displayable;
-import com.utilities.JsonSerializable;
 
 public class GeneticTrait implements Displayable {
     private final TraitGroup group;

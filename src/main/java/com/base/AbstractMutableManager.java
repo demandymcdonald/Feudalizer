@@ -4,7 +4,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.utilities.Factory;
-import com.utilities.SuperclassRegistry;
+import com.utilities.serialization.SuperclassRegistry;
 import com.utilities.ThreadManager;
 
 import java.util.Map;

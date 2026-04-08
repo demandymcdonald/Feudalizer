@@ -25,7 +25,7 @@ import com.google.common.base.Suppliers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.utilities.SuperclassSerializable;
+import com.utilities.serialization.SuperclassSerializable;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;

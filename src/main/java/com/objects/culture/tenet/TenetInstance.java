@@ -17,14 +17,16 @@ import java.util.List;
 import java.util.Map;
 
 public class TenetInstance extends TimelineEasingVariable<TenetInstance, CultureMapChanges.TenetMapChange, Culture> {
-    private static final double b = .33; //apathy height as percent
-    private static final double c = .024; //apathy decay
-    private static final double f = .05; // fatigue strength
-    private static final double g = .08; //fatigue sharpness
+    private static final double b = .23; //apathy peak as percent from start
+    private static final double c = 0.00022; //apathy decay
+    private static final double z = .125; // zealotry peak as percent from end. Should hit right as the they pass the Fanatic mark
+    private static final double f = .69; // zealotry drop-off  target
+    private static final double g = 2.2; //zealotry drop-off steepness
     private static final double k = .05; //kernal floor
+    private static final int pf = 2; //crushing power for normalization
+    private static final int oc = 512; // upper and lower bound for opinion values
 
-    private final BoundedDouble opinion = new BoundedDouble(-384, 384); //256 is the last state, but I want to give the extreme
-    // Acceptance levels a bit of buffer to prevent instant replacement in cases where there can only be one CORE or PERSECUTED
+    private final BoundedDouble opinion = new BoundedDouble(-oc, oc);
     private final Map<DMEReference<Culture>, Pair<TenetInstance, BoundedInteger>> influencerMap = new HashMap<>();
 
     public TenetInstance() {
@@ -46,25 +48,37 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
                 return rawInfluencers.getFirst().getLeft().getAcceptanceValue();
             }
             double base = opinion.get();
-            //final double resistance = Math.max(.1,Math.pow(Math.abs(opinion.get()) / 384D,3));
-            //Something else to think about: Should high extreme values (say 320-384 be slightly more open to influence? Maybe 30)
-            double quad = Math.pow(Math.abs(opinion.get()) / 384.0, 2);
-            double apathy = b * Math.exp(-c * Math.abs(opinion.get()));
-            double fatigue = f * Math.exp(-g * (384.0 - Math.abs(opinion.get())));
-            final double resistance = Math.max(k, quad + apathy - fatigue);
+            final double resistance = calcResistance(base);
             double toReturn = base * resistance;
-            List<Pair<Double,Double>> influencers = buildLists(rawInfluencers,1 - resistance);
+            List<Double> influencers = handleInfluencers(rawInfluencers,1 - resistance);
             //In theory, this could all be done in buildLists, but I suspect future edge cases so I'll
             //leave it suboptimal for now... and probably ever.
-            for (Pair<Double, Double> p : influencers) {
-                double influencerFactor = p.getRight();
-                toReturn += (p.getLeft() * influencerFactor);
+            for (Double p : influencers) {
+                toReturn += p;
             }
             return toReturn;
         }
     }
-    private static List<Pair<Double,Double>> buildLists(List<Pair<TenetInstance,BoundedInteger>> influencers, double resistance) {
-        final List<Pair<Double,Double>> toReturn = new ArrayList<>();
+    private double calcResistance(double opinion) {
+        double abs = Math.abs(opinion);
+        double peak = (1 - z) * oc; // zealotry peak in absolute terms
+
+        if (abs <= peak) {
+            double quad = Math.pow(abs / oc, pf);
+            double apathy = b * Math.exp(-c * abs * abs);
+            return Math.max(k, quad + apathy);
+        } else {
+            // resistance at the peak point
+            double peakVal = Math.pow(peak / oc, pf) + b * Math.exp(-c * peak * peak);
+            peakVal = Math.max(k, peakVal);
+            // ease from peakVal down to f (drop target) at oc
+            double t = (abs - peak) / (oc - peak);
+            double eased = Math.pow(t, g); // g is now steepness, not sharpness
+            return Math.max(k, peakVal + (f - peakVal) * eased);
+        }
+    }
+    private static List<Double> handleInfluencers(List<Pair<TenetInstance,BoundedInteger>> influencers, double resistance) {
+        //What's next? are the influencers gonna want tickets to Cochella? \s
         int sum = 0;
         for (Pair<TenetInstance, BoundedInteger> p : influencers) {
             if (p.getLeft() == null) {
@@ -72,20 +86,32 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
             }
             sum += Math.abs(p.getRight().get());
         }
-        final double finalSum = sum * resistance;
+        final double preSum = sum * resistance;
+        Map<TenetInstance,Double> normalized = new HashMap<>();
         for (Pair<TenetInstance, BoundedInteger> p : influencers) {
             if (p.getLeft() == null) {
                 continue;
             }
             int base = p.getRight().get();
-            double v = Math.pow(Math.abs(base) / finalSum,3);
+            double v = Math.pow(Math.abs(base) / preSum,pf);
             if (base < 0){
                 v *= -1;
             }
-            toReturn.add(Pair.of(p.getLeft().getAcceptanceValue(), v));
+            normalized.put(p.getLeft(),v);
         }
-        return toReturn;
+        return finalize(normalized);
     };
+    private static List<Double> finalize(Map<TenetInstance,Double> entries){
+        double sum = 0;
+        for (Double d : entries.values()) {
+            sum += Math.abs(d);
+        }
+        List<Double> normalized = new ArrayList<>();
+        for (Map.Entry<TenetInstance,Double> d : entries.entrySet()) {
+            normalized.add(d.getKey().getAcceptanceValue() * (d.getValue() / sum));
+        }
+        return normalized;
+    }
     public double getAcceptanceValue() {
         return getFinal();
     }
@@ -122,7 +148,7 @@ public class TenetInstance extends TimelineEasingVariable<TenetInstance, Culture
     }
 
 
-    public DMEReference<Tenet<?,?>> getTenet() {
+    public Tenet<?,?> getTenet() {
         return getOwner().get().getTenets().inverse().get(this);
     }
 
