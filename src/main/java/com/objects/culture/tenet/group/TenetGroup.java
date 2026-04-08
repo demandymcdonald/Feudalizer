@@ -19,8 +19,8 @@ public record TenetGroup(TenetGroup parent, ImmutableList<TenetGroup> connected,
     public static final TenetGroup.AcceptanceContainer[] VALUE = new TenetGroup.AcceptanceContainer[]{new TenetGroup.AcceptanceContainer(VALUE_MAX,Acceptance.CORE,Acceptance.CORE_FANATIC,Acceptance.INTEGRATED),new AcceptanceContainer(VALUE_MAX * 2,Acceptance.ACCEPTED)};
     //=============================================================
     public static final TenetGroup CULTURE = builder("culture", "All_Culture", "Every Tenet", SORT_ONLY);
-    public static final TenetGroup HARD_CULTURE = builder(CULTURE,"hard", "Hard Culture", "", SORT_ONLY);
-    public static final TenetGroup SOFT_CULTURE = builder(CULTURE,"soft", "Soft Culture", "", SORT_ONLY);
+    public static final TenetGroup HARD_CULTURE = builder(CULTURE,"hard", "Hard Culture", "The formal institutional structures of society—government and economy—codified in law and enforced by state authority.", SORT_ONLY);
+    public static final TenetGroup SOFT_CULTURE = builder(CULTURE,"soft", "Soft Culture", "The informal and spiritual dimensions of society—religion, family, education, and social norms—that shape identity and behavior.", SORT_ONLY);
 
     public TenetGroup(TenetGroup parent, ImmutableList<TenetGroup> connected, String id, String name, String description, AcceptanceContainer... constraints) {
         this.parent = parent;
