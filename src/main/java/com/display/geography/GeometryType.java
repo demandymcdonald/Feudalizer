@@ -3,7 +3,7 @@ package com.display.geography;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.GlobalVars.SHAPE_PATH;
+import static com.Global.SHAPE_PATH;
 
 public enum GeometryType {
     FIPS(Paths.get("fips/cb_2018_us_county_5m.shp"),false),

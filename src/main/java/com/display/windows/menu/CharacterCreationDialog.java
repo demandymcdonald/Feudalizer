@@ -1,9 +1,9 @@
 package com.display.windows.menu;
 
-import com.GlobalVars;
-import com.simulation.people.BookCharacter;
-import com.simulation.people.CharacterManager;
-import com.simulation.people.House;
+import com.Global;
+import com.objects.character.human.HumanCharacter;
+import com.objects.character.CharacterManager;
+import com.objects.government.House;
 import com.base.DMRegistry;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -13,11 +13,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class CharacterCreationDialog extends Dialog<BookCharacter> {
+public class CharacterCreationDialog extends Dialog<HumanCharacter> {
 
     private final TextField givenNameField = new TextField();
     private final TextField surnameField = new TextField();
-    private final ComboBox<BookCharacter.Gender> genderCombo = new ComboBox<>();
+    private final ComboBox<HumanCharacter.Gender> genderCombo = new ComboBox<>();
     private final RadioButton commonerRadio = new RadioButton("Commoner");
     private final RadioButton nobleRadio = new RadioButton("Noble");
     private final ComboBox<House> houseCombo = new ComboBox<>();
@@ -50,8 +50,8 @@ public class CharacterCreationDialog extends Dialog<BookCharacter> {
         grid.add(new Label("Surname:"), 0, row);
         grid.add(surnameField, 1, row++);
 
-        genderCombo.getItems().addAll(BookCharacter.Gender.values());
-        genderCombo.setValue(BookCharacter.Gender.Male);
+        genderCombo.getItems().addAll(HumanCharacter.Gender.values());
+        genderCombo.setValue(HumanCharacter.Gender.Male);
         grid.add(new Label("Gender:"), 0, row);
         grid.add(genderCombo, 1, row++);
 
@@ -128,12 +128,12 @@ public class CharacterCreationDialog extends Dialog<BookCharacter> {
         }
     }
 
-    private BookCharacter createCharacter() {
+    private HumanCharacter createCharacter() {
         String givenName = givenNameField.getText().trim();
         String surname = surnameField.getText().trim();
-        BookCharacter.Gender gender = genderCombo.getValue();
+        HumanCharacter.Gender gender = genderCombo.getValue();
 
-        LocalDate dob = parseDate(dobField.getText(), GlobalVars.CURRENT_DATE());
+        LocalDate dob = parseDate(dobField.getText(), Global.CURRENT_DATE());
         if (dob == null) return null;
 
         LocalDate dod = parseDate(dodField.getText(), null);

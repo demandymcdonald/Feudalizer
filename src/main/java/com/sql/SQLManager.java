@@ -1,6 +1,6 @@
 package com.sql;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.DateMutableEntity;
 
 import java.sql.Connection;
@@ -21,7 +21,7 @@ public class SQLManager {
 
     // Initialize DB connection and create table if needed
     public static void init() {
-        if (!GlobalVars.SQL_ENABLED) return;
+        if (!Global.SQL_ENABLED) return;
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
             createTableIfNotExists();
@@ -47,7 +47,7 @@ public class SQLManager {
 
     // Load all entities from DB at startup
     public static void loadAll() {
-        if (!GlobalVars.SQL_ENABLED) return;
+        if (!Global.SQL_ENABLED) return;
         String sql = "SELECT uuid, class_type, payload FROM data_store";
 
         try (Statement stmt = connection.createStatement();
@@ -60,7 +60,7 @@ public class SQLManager {
                 JsonObject payload = JsonParser.parseString(rs.getString("payload")).getAsJsonObject();
 
                 // Get the appropriate manager and deserialize
-                AbstractMutableManager<?, ?> manager = DMRegistry.getEntry(classType);
+                AbstractMutableManager<?, ?> manager = DMRegistry.getManager(classType);
                 if (manager != null) {
                     manager.deserializeEntity(id, payload);
                     count++;
@@ -79,7 +79,7 @@ public class SQLManager {
 
     // Save a single entity (upsert)
     public static void save(DateMutableEntity<?> entity) {
-        if (!GlobalVars.SQL_ENABLED) return;
+        if (!Global.SQL_ENABLED) return;
         String sql = "INSERT OR REPLACE INTO data_store (uuid, class_type, payload) VALUES (?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -95,15 +95,15 @@ public class SQLManager {
 
     // Save all entities from all managers
     public static void saveAll() {
-        if (!GlobalVars.SQL_ENABLED) return;
+        if (!Global.SQL_ENABLED) return;
         int count = 0;
 
         try {
             connection.setAutoCommit(false); // Batch transaction for speed
 
             // Get all managers from registry and save their entities
-            for (String managerKey : new String[]{"BookCharacter", "Family", "House", "Title"}) {
-                AbstractMutableManager<?, ?> manager = DMRegistry.getEntry(managerKey);
+            for (String managerKey : new String[]{"HumanCharacter", "Family", "House", "Title"}) {
+                AbstractMutableManager<?, ?> manager = DMRegistry.getManager(managerKey);
                 if (manager != null) {
                     for (Object entity : manager.getItemMap().values()) {
                         if (entity instanceof DateMutableEntity<?> dme) {
@@ -131,7 +131,7 @@ public class SQLManager {
 
     // Clean shutdown
     public static void close() {
-        if (!GlobalVars.SQL_ENABLED) return;
+        if (!Global.SQL_ENABLED) return;
         try {
             if (connection != null) {
                 connection.close();

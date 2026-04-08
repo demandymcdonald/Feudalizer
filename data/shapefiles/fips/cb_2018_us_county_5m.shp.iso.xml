@@ -55,7 +55,7 @@ dataset
          </gmd:geometricObjects>
       </gmd:MD_VectorSpatialRepresentation>
    </gmd:spatialRepresentationInfo>
-   <!--This is the indirect spatial reference of section 3 of the FGDC Standard-->
+   <!--This is the indirect spatial subject of section 3 of the FGDC Standard-->
 <gmd:referenceSystemInfo>
       <gmd:MD_ReferenceSystem>
          <gmd:referenceSystemIdentifier>

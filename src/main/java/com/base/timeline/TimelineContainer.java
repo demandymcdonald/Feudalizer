@@ -1,11 +1,14 @@
 package com.base.timeline;
 
+import com.base.DateMutableEntity;
 import com.google.gson.JsonObject;
 
-public interface TimelineContainer<T extends TimelineContainer<T>> {
+public interface TimelineContainer<T extends TimelineContainer<T,D>, D extends DateMutableEntity<D>> {
     JsonObject getSerialized();
     T getDeserialized(JsonObject json);
     String Header();
+
+
     default JsonObject serialize(){
         JsonObject json = new JsonObject();
         json.addProperty("header", Header());

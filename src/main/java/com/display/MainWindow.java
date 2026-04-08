@@ -1,29 +1,19 @@
 package com.display;
 
-import com.display.geography.GeometryType;
 import com.display.utils.FontManager;
 import com.display.windows.InfoPanel;
 import com.display.windows.MapDisplay;
 import com.display.windows.SearchBar;
-import com.display.windows.dialogs.ProvinceCreationDialog;
 import com.display.windows.menu.AppMenuBar;
 import com.display.windows.menu.CharacterCreationDialog;
-import com.simulation.land.Province;
-import com.simulation.people.BookCharacter;
+import com.objects.character.human.HumanCharacter;
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 import java.util.Optional;
-
-import static com.GlobalVars.SCREEN_HEIGHT;
-import static com.GlobalVars.SCREEN_WIDTH;
 
 public class MainWindow {
     private final BorderPane root = new BorderPane();
@@ -75,7 +65,7 @@ public class MainWindow {
     private void openCreateCharacterForm() {
         System.out.println("Opening character creation form");
         CharacterCreationDialog dialog = new CharacterCreationDialog();
-        Optional<BookCharacter> result = dialog.showAndWait();
+        Optional<HumanCharacter> result = dialog.showAndWait();
 
         result.ifPresent(character -> {
             System.out.println("Created character: " + character.getGivenName());

@@ -1,24 +1,22 @@
 package com;
 
-import com.simulation.people.BookCharacter;
-import com.simulation.people.CharacterSuccessionContainer;
-import com.simulation.title.Title;
-import com.simulation.title.succession.rules.CommonLawEntry;
-import com.simulation.title.succession.rules.CustomEntry;
-import com.simulation.title.succession.rules.SuccessionEntry;
+import com.objects.character.human.HumanCharacter;
+import com.objects.title.Title;
+import com.objects.title.succession.rules.CommonLawEntry;
+import com.objects.title.succession.rules.CustomEntry;
+import com.objects.title.succession.rules.SuccessionEntry;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.HashMap;
-import java.util.function.BiFunction;
 
 public class TypedSerialized {
     private static final HashMap<Class<? extends SuccessionEntry<?>>, SuccessionEntry<?>> REGISTERED_SUCCESSION_RULES = new HashMap<>();
-    private static final HashMap<Class<? extends SuccessionEntry<?>>, TriFunction<Title<?>, SuccessionEntry<?>, BookCharacter,SuccessionEntry<?>> > RULES_FACTORIES = new HashMap<>();
-    public static <T extends SuccessionEntry<T>> void addRule(Class<T> clazz, T empty, TriFunction<Title<?>,T, BookCharacter,T> factory){
+    private static final HashMap<Class<? extends SuccessionEntry<?>>, TriFunction<Title<?>, SuccessionEntry<?>, HumanCharacter,SuccessionEntry<?>> > RULES_FACTORIES = new HashMap<>();
+    public static <T extends SuccessionEntry<T>> void addRule(Class<T> clazz, T empty, TriFunction<Title<?>,T, HumanCharacter,T> factory){
         REGISTERED_SUCCESSION_RULES.put(clazz,empty);
-        RULES_FACTORIES.put(clazz,(TriFunction<Title<?>, SuccessionEntry<?>, BookCharacter,SuccessionEntry<?>>) factory);
+        RULES_FACTORIES.put(clazz,(TriFunction<Title<?>, SuccessionEntry<?>, HumanCharacter,SuccessionEntry<?>>) factory);
     }
-    public static <T extends SuccessionEntry<T>> T buildNew(Class<T> clazz, Title<?> title, BookCharacter character){
+    public static <T extends SuccessionEntry<T>> T buildNew(Class<T> clazz, Title<?> title, HumanCharacter character){
         return (T) RULES_FACTORIES.get(clazz).apply(title,REGISTERED_SUCCESSION_RULES.get(clazz),character);
     }
     static {

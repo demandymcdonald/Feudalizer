@@ -1,10 +1,10 @@
 package com.display.windows.cards.edit.title;
 
 
-import com.simulation.land.resources.HabitableLand;
-import com.simulation.land.resources.Resource;
-import com.simulation.land.resources.ResourceType;
-import com.simulation.land.resources.Resources;
+import com.objects.title.land.resources.HabitableLand;
+import com.objects.title.land.resources.Resource;
+import com.objects.title.land.resources.ResourceType;
+import com.objects.title.land.resources.Resources;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;

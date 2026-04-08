@@ -1,7 +1,7 @@
 package com.display.geography;
 
 import com.google.common.collect.HashMultimap;
-import com.simulation.title.TitleManager;
+import com.objects.title.TitleManager;
 import javafx.geometry.Point2D;
 import javafx.util.Pair;
 import org.geotools.api.feature.Property;
@@ -15,7 +15,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.w3.xlink.Simple;
 
 import java.util.*;
 
@@ -131,7 +130,7 @@ public class GeographyManager {
             }
         }
 
-        System.err.println("GeographyManager: No feature found for type=" + type + ", id=" + id);
+        System.err.println("GeographyManager: No feature found for type=" + type + ", reasonID=" + id);
         return null;
     }
     public static void excludeGeometry(GeometryType type, String id) {
@@ -195,5 +194,18 @@ public class GeographyManager {
                 return collection;
             }
             return new DefaultFeatureCollection(type.toString(), customFeatureType);
+    }
+    public static SimpleFeatureCollection get(GeometryType type, String geoID) {
+        Collection<SimpleFeatureCollection> collections = FeatureMap.get(type);
+        for (SimpleFeatureCollection collection : collections) {
+            SimpleFeatureIterator iterator = collection.features();
+            while (iterator.hasNext()) {
+                SimpleFeature feature = iterator.next();
+                if (feature.getAttribute("geometryID").equals(geoID)) {
+                    return collection;
+                }
+            }
+        }
+        return null;
     }
 }

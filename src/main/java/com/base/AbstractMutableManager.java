@@ -1,86 +1,73 @@
 package com.base;
 
-import com.Feudalizer;
-
-import com.base.timeline.TimelineContainer;
-import com.google.common.collect.HashBiMap;
+import com.Global;
+import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
+import com.utilities.Factory;
+import com.utilities.serialization.SuperclassRegistry;
+import com.utilities.ThreadManager;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-public abstract class AbstractMutableManager<T extends DateMutableEntity<T,C>,C extends TimelineContainer<C>> {
-    private final HashBiMap<UUID, T> ItemMap = HashBiMap.create();
-    private boolean isLoaded = false;
-    private final C emptyObject;
-    public AbstractMutableManager(C empty) {
-        this.emptyObject = empty;
-    }
-    public abstract T deserializer(UUID id, JsonObject json);
-    public abstract ObjectType getObjectType();
-    public void onRelink() {
-        for (T entity : ItemMap.values()) {
-            entity.relink(entity.getStateAt(entity.getCreated()));
+public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T>,T extends DateMutableEntity<?>>
+        extends SuperclassRegistry<M,T,UUID,JsonObject> {
+    protected AbstractMutableManager(String uniqueKey) {
+        super(uniqueKey);
+        DMRegistry.registerManager(this);
+        for (Map.Entry<Class<? extends T>, Factory<? extends T,T,UUID,JsonObject>> e : getFactories().entrySet()){
+            registerFactory(e.getKey(),e.getValue());
         }
+        ts_init();
     }
-    public T deserializeEntity(UUID id, JsonObject json) {
-        T t = deserializer(id, json);
-        ItemMap.put(id, t);
-        return t;
+    public boolean accepts(DMEReference<?> dme){
+        return accepts(dme.getClass());
     }
+    public boolean accepts(Class<?> clazz){
+        return instanceClass().isAssignableFrom(clazz);
+    }
+    public void onLink(){
+        doIterate(DateMutableEntity::onLink);
+    }
+    public void onDateChange(){
+        doIterate(DateMutableEntity::onDateChange);
+        doIterate(DateMutableEntity::link);
+    }
+    public <R extends DateMutableEntity<R>> R loadEntity(DMEReference<R> dme, JsonObject object) {
+        if (!accepts(dme)){
+            //This checks if this is the correct manager. It SHOULD always be by this phase.
+            throw new IllegalArgumentException("Cannot load object of type " + dme.getType() + " into " + this.getClass());
+        }
+        DMEReference<? extends T> td = (DMEReference<? extends T>) dme;
+        return  (R) super.loadObject(td.getType(), td.getID(), object);
+    }
+    public <R extends DateMutableEntity<R>> R updateOrLoadEntity(DMEReference<R> dme, JsonObject object) {
+        if (!accepts(dme)){
+            //This checks if this is the correct manager. It SHOULD always be by this phase.
+            throw new IllegalArgumentException("Cannot load object of type " + dme.getType() + " into " + this.getClass());
+        }
+        DMEReference<? extends T> td = (DMEReference<? extends T>) dme;
+        return  (R) super.updateOrLoad(td.getType(), td.getID(), object);
 
-    public void onLoad(){
-        isLoaded = true;
     }
-    public void register(DateMutableEntity<?, ?> entity) {
-        ItemMap.put(entity.getId(), (T) entity);
-    }
-    public T get(UUID id) {
-        T t = ItemMap.get(id);
-        if (t == null && DMRegistry.isMain()) {
-            Feudalizer.LOGGER.error("{} not found for manager {}", id, getClass().getName());
-        } else {
-            JsonObject object = DMRegistry.addPendingLoad(getObjectType(),id).join();
-            T obj = deserializer(id, object);
-            ItemMap.put(id, obj);
-            return obj;
+    public <R extends DateMutableEntity<R>> R getEntity(DMEReference<R>  entity) {
+        if (!accepts(entity)){
+            //This checks if this is the correct manager. It SHOULD always be by this phase.
+            throw new IllegalArgumentException("Cannot load object of type " + entity.getType() + " into " + this.getClass());
         }
-        return t;
-    }
-    public List<T> getAll() {
-        return new ArrayList<>(ItemMap.values());
-    }
-    public UUID getItemId(T entity) {
-        return ItemMap.inverse().get(entity);
-    }
-    public HashBiMap<UUID, T> getItemMap() {
-        return ItemMap;
-    }
-    public boolean isLoaded() {
-        Feudalizer.LOGGER.warn("{} ACCESSED BEFORE LOADING HAD COMPLETED",this.getClass().getName());
-        return isLoaded;
-    }
-    public List<T> getWhere(Predicate<T> predicate) {
-        return new ArrayList<>(ItemMap.values()).stream().filter(predicate).collect(Collectors.toList());
-    }
-    public void onGameStateChangeLoad(LocalDate date) {
-        for (T entity : ItemMap.values()) {
-            entity.setCurrentState(date);
+        DMEReference<? extends T> td = (DMEReference<? extends T>) entity;
+        T r = get(td.getType(),entity.getID());
+        if (r == null && !ThreadManager.isMainThread()){
+            JsonObject o = Global.getSandboxHandler().requestData(entity).join();
+            return loadEntity(entity,o);
         }
+        return (R) r;
     }
-    public void onGameStateChangeLink(){
-        for (T entity : ItemMap.values()) {
-            entity.relink();
-        }
-    }
-    public C getEmptyObject() {
-        return emptyObject;
-    }
-    public C deserializeContainer(JsonObject json) {
-        return emptyObject.deserialize(json);
-    }
+    public abstract Map<Class<? extends T>, Factory<? extends T,T,UUID,JsonObject>> getFactories();
+
+    public abstract Class<?> instanceClass();
+
+
+
+
 }

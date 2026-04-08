@@ -3,7 +3,9 @@ package com;
 
 import com.display.MainWindow;
 import com.display.geography.GeographyLoader;
+import com.objects.character.genetics.GeneManager;
 import com.sql.SQLManager;
+import com.utilities.ThreadManager;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -14,11 +16,14 @@ public class Feudalizer extends Application {
     MainWindow mainWindow;
     static GeographyLoader geographyLoader;
     public static final Logger LOGGER = LoggerFactory.getLogger(Feudalizer.class);
+    public static Thread MAIN_THREAD;
     @Override
     public void start(Stage primaryStage) throws Exception {
     //try {
         LOGGER.info("Starting application");
-        primaryStage.setTitle("Feudalizer a0.01");
+        primaryStage.setTitle("Feudalizer a0.3");
+        MAIN_THREAD = Thread.currentThread();
+        GeneManager.init();
         geographyLoader = new GeographyLoader();
         geographyLoader.init();
         TypedSerialized.init();

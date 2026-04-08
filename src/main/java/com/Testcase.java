@@ -1,15 +1,15 @@
 package com;
 
-import com.simulation.people.BookCharacter;
-import com.simulation.people.CharacterManager;
+import com.objects.character.human.HumanCharacter;
+import com.objects.character.CharacterManager;
 
 public class Testcase {
-    public static final BookCharacter TESTIFICATE = CharacterManager.buildNoble("Testificate","Mojang", "Mojang", BookCharacter.Gender.Male);
-    public static final BookCharacter FEMALE_TESTIFICATE = CharacterManager.buildNoble("Hot Testificate","Doe",TESTIFICATE.getHouse().get(),BookCharacter.Gender.Female);
+    public static final HumanCharacter TESTIFICATE = CharacterManager.buildNoble("Testificate","Mojang", "Mojang", HumanCharacter.Gender.Male);
+    public static final HumanCharacter FEMALE_TESTIFICATE = CharacterManager.buildNoble("Hot Testificate","Doe",TESTIFICATE.getHouse().get(), HumanCharacter.Gender.Female);
 
     public static void init(){
-        FEMALE_TESTIFICATE.giveBirth(TESTIFICATE, BookCharacter.Gender.Male,"Claude");
-        TESTIFICATE.giveBirth(FEMALE_TESTIFICATE, BookCharacter.Gender.Female,"Olivia Rodrigo");
+        FEMALE_TESTIFICATE.giveBirth(TESTIFICATE, HumanCharacter.Gender.Male,"Claude");
+        TESTIFICATE.giveBirth(FEMALE_TESTIFICATE, HumanCharacter.Gender.Female,"Olivia Rodrigo");
         Feudalizer.LOGGER.info("Testcase initialized");
     };
 }

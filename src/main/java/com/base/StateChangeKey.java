@@ -3,15 +3,15 @@ package com.base;
 import com.base.reference.StateReference;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.simulation.people.BookCharacter;
+import com.objects.character.human.HumanCharacter;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static com.base.DateMutableEntity.buildJson;
-//TODO: here's the issue, this can't reference DateMutableEntitys directly..
-// Which means I need to create a new record for a reference to the DME that actually links to the Class type and the
+import static com.base.IDateMutableEntity.buildJson;
+//TODO: here's the issue, this can't subject DateMutableEntitys directly..
+// Which means I need to create a new record for a subject to the DME that actually links to the Class type and the
 // UUID so I can find it..
 public record StateChangeKey(StateChangeType type, StateReference... variables) {
 
@@ -72,7 +72,7 @@ public record StateChangeKey(StateChangeType type, StateReference... variables) 
         return new StateChangeKey(type, refs);
     }
 
-    public static StateChangeKey hadChild(BookCharacter father, BookCharacter mother, BookCharacter child){
+    public static StateChangeKey hadChild(HumanCharacter father, HumanCharacter mother, HumanCharacter child){
         return new StateChangeKey(StateChangeType.HAD_CHILD,DMEReference.of(mother),DMEReference.of(father),DMEReference.of(child));
     }
 }

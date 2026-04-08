@@ -1,12 +1,12 @@
 package com.display.windows.dialogs;
 
-import com.GlobalVars;
+import com.Global;
 import com.base.DMRegistry;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
-import com.simulation.land.Province;
-import com.simulation.land.Titles;
-import com.simulation.people.BookCharacter;
+import com.objects.character.human.HumanCharacter;
+import com.objects.title.land.Province;
+import com.objects.title.land.Titles;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -23,7 +23,7 @@ import static com.display.geography.GeographyManager.registerCustomGeometry;
 public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
 
     private final TextField nameField = new TextField();
-    private final ComboBox<BookCharacter> holderCombo = new ComboBox<>();
+    private final ComboBox<HumanCharacter> holderCombo = new ComboBox<>();
 
     public ProvinceCreationDialog() {
         super("Create Province", "Merge counties into a province");
@@ -71,7 +71,7 @@ public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
     @Override
     protected Province createTitle() {
         String name = nameField.getText().trim();
-        BookCharacter holder = holderCombo.getValue();
+        HumanCharacter holder = holderCombo.getValue();
 
         // Merge geometries
         List<Geometry> geometries = new ArrayList<>();
@@ -99,7 +99,7 @@ public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
         // Handles placing geometry in proper featurecontainer/map and saving it to disk
         SimpleFeature feature = registerCustomGeometry(name, GeometryType.CUST_P, merged);
         // Create province
-        Province province = Titles.createProvince(name, GlobalVars.CURRENT_DATE(), null, GeometryType.CUST_P,feature.getID());
+        Province province = Titles.createProvince(name, Global.CURRENT_DATE(), null, GeometryType.CUST_P,feature.getID());
         province.setHolder(holder);
         // Exclude counties
         for (Pair<com.display.geography.GeometryType, String> county : selectedCounties) {
