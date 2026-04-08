@@ -1,8 +1,10 @@
 package com.objects.culture.tenet.compass;
 
+import com.google.gson.JsonObject;
 import com.utilities.number.BoundedInteger;
+import com.utilities.serialization.JsonSerializable;
 
-public class PoliticalCompass {
+public class CompassEntry implements JsonSerializable {
     private static final int COMPASS_MAX = 512;
     // Which rights are the natural base for all rights: individual rights or collective rights. Low values are Collectivists: advocating for rights for groups, not individuals. High values are Individualists: advocating for individual rights that should not be trampled by the needs of the collective.
     // Examples of Low values: Communists, Nazis
@@ -17,7 +19,12 @@ public class PoliticalCompass {
     // Examples of High values: Technocrats, Traditional Authoritarians
     private final BoundedInteger trustInOpacityAxis = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
 
-
+    public CompassEntry(int individualCollectiveAxis, int universalParticularAxis, int trustInOpacityAxis) {
+        this.individualCollectiveAxis.set(individualCollectiveAxis);
+        this.universalParticularAxis.set(universalParticularAxis);
+        this.trustInOpacityAxis.set(trustInOpacityAxis);
+    }
+    public CompassEntry() {}
     public int calculateExtremismPercent(){
         return (int) (calculateExtremism() * 100);
     }
@@ -29,4 +36,19 @@ public class PoliticalCompass {
         return Math.min(1,total);
     }
 
+    @Override
+    public JsonObject toJson() {
+        JsonObject o = new JsonObject();
+        o.addProperty("axisA", individualCollectiveAxis.get());
+        o.addProperty("axisB", universalParticularAxis.get());
+        o.addProperty("axisC", trustInOpacityAxis.get());
+        return o;
+    }
+
+    @Override
+    public void fromJson(JsonObject json) {
+        individualCollectiveAxis.set(json.get("axisA").getAsInt());
+        universalParticularAxis.set(json.get("axisB").getAsInt());
+        trustInOpacityAxis.set(json.get("axisC").getAsInt());
+    }
 }

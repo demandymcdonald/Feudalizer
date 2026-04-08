@@ -14,7 +14,7 @@ public class ReligionGroups {
     public static final TenetGroup AFTERLIFE_ENDTIMES = builder(RELIGIOUS_DOCTRINE, "afterlife", "Afterlife & Endtimes", "", SYSTEM_LARGE);
     public static final TenetGroup VIRTUE_AND_VICE = builder(RELIGIOUS_DOCTRINE, "virtue_and_vice", "Virtue and Vice", "", SYSTEM_LARGE);
     public static final TenetGroup RELIGIOUS_SOFT_CULTURE_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(SOFT_CULTURE_INTERVENTION), "soft_culture_intervention", "Religious Soft Culture Intervention", "", SYSTEM_LARGE);
-    public static final TenetGroup RELIGIOUS_GOVERNMENT_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(SECULARISM), "government_intervention", "Religious Government Intervention", "", SYSTEM_LARGE);
+    public static final TenetGroup RELIGIOUS_GOVERNMENT_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(SECULARISM), "government_intervention", "Religious GovernmentTenet Intervention", "", SYSTEM_LARGE);
     public static final TenetGroup RELIGION_FAMILY_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(FAMILY_INTERVENTION), "family_intervention", "Religious FamilyGroups Intervention", "", SYSTEM_LARGE);
     public static final TenetGroup RELIGION_LEADERSHIP = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(CLASS_AND_CASTE), "leadership", "Religious Leadership", "", SYSTEM_LARGE);
     public static final TenetGroup RELIGION_LEADER_SELECTION = builder(RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "selection", "Religious Leader Selection", "", SYSTEM_LARGE);

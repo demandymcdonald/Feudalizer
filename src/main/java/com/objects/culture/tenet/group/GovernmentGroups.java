@@ -15,9 +15,9 @@ import static com.objects.culture.tenet.group.TenetGroup.*;
 
 public class GovernmentGroups {
 
-    public static final TenetGroup GOVERNMENT = builder(HARD_CULTURE, "government", "Government", "", SORT_ONLY);
-    public static final TenetGroup GOVERNMENT_SYSTEM = builder(GOVERNMENT, "system", "Government System", "", PILLAR);
-    public static final TenetGroup GOVERNMENT_IDEOLOGY = builder(GOVERNMENT, ImmutableList.of(GOVERNMENT_SYSTEM), "ideology", "Government Ideology", "", PILLAR);
+    public static final TenetGroup GOVERNMENT = builder(HARD_CULTURE, "government", "GovernmentTenet", "", SORT_ONLY);
+    public static final TenetGroup GOVERNMENT_SYSTEM = builder(GOVERNMENT, "system", "GovernmentTenet System", "", PILLAR);
+    public static final TenetGroup GOVERNMENT_IDEOLOGY = builder(GOVERNMENT, ImmutableList.of(GOVERNMENT_SYSTEM), "ideology", "GovernmentTenet Ideology", "", PILLAR);
 
     public static final TenetGroup RESOURCE_ALLOCATION = builder(GOVERNMENT_SYSTEM, ImmutableList.of(ECONOMIC_SYSTEM), "resource_allocation", "Resource Allocation", "", SYSTEM_LARGE);
     public static final TenetGroup WELFARE = builder(RESOURCE_ALLOCATION, "welfare", "Welfare", "", SYSTEM_LARGE);
@@ -35,11 +35,12 @@ public class GovernmentGroups {
     public static final TenetGroup SOLDIER = builder(CLASS_AND_CASTE, ImmutableList.of(CITIZENSHIP), "soldiers", "Soldiers", "", SYSTEM_LARGE);
     public static final TenetGroup WORKING_CLASS = builder(CLASS_AND_CASTE, ImmutableList.of(CITIZENSHIP), "working_class", "Working Class", "", SYSTEM_LARGE);
     public static final TenetGroup DISENFRANCHISED = builder(CLASS_AND_CASTE, "disenfranchised", "Disenfranchised", "", SYSTEM_LARGE);
+    public static final TenetGroup SLAVE = builder(CLASS_AND_CASTE, ImmutableList.of(DISENFRANCHISED), "slaves", "Slaves", "", SYSTEM_LARGE);
     public static final TenetGroup OUTSIDER = builder(CLASS_AND_CASTE, ImmutableList.of(CITIZENSHIP), "outsider", "Outsiders and Foreigners", "", SYSTEM_LARGE);
     public static final TenetGroup FOREIGN_POLICY = builder(GOVERNMENT_SYSTEM, "foreign_policy", "Foreign Policy", "", SYSTEM_LARGE);
 
     public static final TenetGroup MILITARY = builder(GOVERNMENT_SYSTEM, ImmutableList.of(MILITARY_FUNDING), "military", "Military", "", PILLAR);
-    public static final TenetGroup MILITARY_INFLUENCE_ON_GOVERNMENT = builder(MILITARY, ImmutableList.of(CLASS_AND_CASTE, MILITARY), "military_influence", "Military Influence on Government", "", SYSTEM_LARGE);
+    public static final TenetGroup MILITARY_INFLUENCE_ON_GOVERNMENT = builder(MILITARY, ImmutableList.of(CLASS_AND_CASTE, MILITARY), "military_influence", "Military Influence on GovernmentTenet", "", SYSTEM_LARGE);
     public static final TenetGroup MILITARY_LOGISTICS = builder(MILITARY, ImmutableList.of(MILITARY_FUNDING), "logistics", "Military Logistics", "", SYSTEM_LARGE);
     public static final TenetGroup MILITARY_RECRUITMENT = builder(MILITARY_LOGISTICS, ImmutableList.of(MILITARY_FUNDING), "recruitment", "Military Recruitment", "", SYSTEM_LARGE);
     public static final TenetGroup MILITARY_TRAINING = builder(MILITARY_LOGISTICS, ImmutableList.of(MILITARY_FUNDING), "training", "Military Training", "", SYSTEM_LARGE);
@@ -76,13 +77,13 @@ public class GovernmentGroups {
     public static final TenetGroup LEADER_AUTHORITY = builder(GOVERNMENT_LEADERSHIP, "authority", "Leader Authority", "", SYSTEM_LARGE);
     public static final TenetGroup LEADER_CORRUPTION = builder(GOVERNMENT_LEADERSHIP, ImmutableList.of(GOVERNMENT_CORRUPTION, LEADER_AUTHORITY), "corruption", "Leader Corruption", "", SYSTEM_LARGE);
     public static final TenetGroup LEADERSHIP_REMOVAL = builder(GOVERNMENT_LEADERSHIP, ImmutableList.of(LEADER_CORRUPTION), "removal", "Leadership Removal", "", SYSTEM_LARGE);
-    public static final TenetGroup GOVERNMENT_OFFICE = builder(GOVERNMENT_SYSTEM, "office", "Government Office", "", SYSTEM_LARGE);
-    public static final TenetGroup GOVERNMENT_OFFICE_AUTHORITY = builder(GOVERNMENT_OFFICE, "authority", "Government Office Authority", "", SYSTEM_LARGE);
-    public static final TenetGroup GOVERNMENT_OFFICE_CREATION_REMOVAL = builder(GOVERNMENT_OFFICE, "creation_removal", "Government Office Creation and Removal", "", SYSTEM_LARGE);
-    public static final TenetGroup GOVERNMENT_OFFICIAL = builder(GOVERNMENT_OFFICE, ImmutableList.of(MILITARY), "official", "Government Official", "", SORT_ONLY);
+    public static final TenetGroup GOVERNMENT_OFFICE = builder(GOVERNMENT_SYSTEM, "office", "GovernmentTenet Office", "", SYSTEM_LARGE);
+    public static final TenetGroup GOVERNMENT_OFFICE_AUTHORITY = builder(GOVERNMENT_OFFICE, "authority", "GovernmentTenet Office Authority", "", SYSTEM_LARGE);
+    public static final TenetGroup GOVERNMENT_OFFICE_CREATION_REMOVAL = builder(GOVERNMENT_OFFICE, "creation_removal", "GovernmentTenet Office Creation and Removal", "", SYSTEM_LARGE);
+    public static final TenetGroup GOVERNMENT_OFFICIAL = builder(GOVERNMENT_OFFICE, ImmutableList.of(MILITARY), "official", "GovernmentTenet Official", "", SORT_ONLY);
     public static final TenetGroup OFFICIAL_SELECTION = builder(GOVERNMENT_OFFICIAL, ImmutableList.of(CLASS_AND_CASTE, DISENFRANCHISED), "selection", "Selection of an Official", "", SYSTEM_LARGE);
     public static final TenetGroup OFFICIAL_AUTHORITY = builder(GOVERNMENT_OFFICIAL, "authority", "An Official's Authority", "", SYSTEM_LARGE);
-    public static final TenetGroup OFFICIAL_TREATMENT_GOVERNMENT = builder(GOVERNMENT_OFFICIAL, "treatment_government", "An Official's Treatment by the Government", "", SYSTEM_LARGE);
+    public static final TenetGroup OFFICIAL_TREATMENT_GOVERNMENT = builder(GOVERNMENT_OFFICIAL, "treatment_government", "An Official's Treatment by the GovernmentTenet", "", SYSTEM_LARGE);
     public static final TenetGroup OFFICIAL_TREATMENT_PEOPLE = builder(GOVERNMENT_OFFICIAL, "treatment_people", "An Official's Treatment by the People", "", SYSTEM_LARGE);
     public static final TenetGroup OFFICIAL_CORRUPTION = builder(GOVERNMENT_OFFICIAL, ImmutableList.of(GOVERNMENT_CORRUPTION, OFFICIAL_AUTHORITY, OFFICIAL_TREATMENT_GOVERNMENT, OFFICIAL_TREATMENT_PEOPLE), "corruption", "Corruption among Officials", "", SYSTEM_LARGE);
     public static final TenetGroup OFFICIAL_REMOVAL = builder(GOVERNMENT_OFFICIAL, ImmutableList.of(OFFICIAL_AUTHORITY, CLASS_AND_CASTE, DISENFRANCHISED), "removal", "Removal of an Official", "", SYSTEM_LARGE);
@@ -97,8 +98,8 @@ public class GovernmentGroups {
     public static final TenetGroup COVERT_OPERATIONS = builder(ESPIONAGE, ImmutableList.of(SPECIAL_OPERATIONS), "covert_operations", "Covert Operations", "", SYSTEM_LARGE);
     public static final TenetGroup ACCOUNTABILITY = builder(ESPIONAGE, ImmutableList.of(GOVERNMENT_LEADERSHIP, GOVERNMENT_CORRUPTION), "accountability", "Accountability", "", SYSTEM_LARGE);
 
-    // Government Value Children
-    public static final TenetGroup GOVERNMENT_VALUE = builder(GOVERNMENT_IDEOLOGY, "value", "Government Value", "", new AcceptanceContainer(3, Acceptance.CORE, Acceptance.CORE_FANATIC));
+    // GovernmentTenet Value Children
+    public static final TenetGroup GOVERNMENT_VALUE = builder(GOVERNMENT_IDEOLOGY, "value", "GovernmentTenet Value", "", new AcceptanceContainer(3, Acceptance.CORE, Acceptance.CORE_FANATIC));
     public static final TenetGroup GOVERNMENT_HEROES_AND_VILLANS = builder(GOVERNMENT_IDEOLOGY, "heroes_and_villains", "Heroes and Villains", "", new AcceptanceContainer(3, Acceptance.CORE, Acceptance.CORE_FANATIC), new AcceptanceContainer(5, Acceptance.INTEGRATED));
 
 

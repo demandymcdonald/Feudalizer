@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.types.Tenet;
 import com.objects.culture.tenet.tenets.ReligionTenets;
 
 import java.util.Collection;
@@ -14,7 +15,7 @@ import static com.objects.culture.tenet.TenetVariables.SORT_ONLY;
 import static com.objects.culture.tenet.group.TenetGroup.builder;
 
 public class TenetManager {
-    private static final Map<String,Tenet<?,?>> tenets = new HashMap<>();
+    private static final Map<String, Tenet<?>> tenets = new HashMap<>();
     private static final Map<String, TenetGroup> groups = new HashMap<>();
     private static final Multimap<TenetGroup,TenetGroup> groupRelations = HashMultimap.create();
     private static final Multimap<TenetGroup,TenetGroup> parentRelations = HashMultimap.create();
@@ -22,7 +23,7 @@ public class TenetManager {
     public static final TenetGroup HARD_CULTURE = builder(CULTURE,"hard", "Hard Culture", "", SORT_ONLY);
     public static final TenetGroup SOFT_CULTURE = builder(CULTURE,"soft", "Soft Culture", "", SORT_ONLY);
 
-    public static void registerTenet(Tenet<?,?> tenet) {
+    public static void registerTenet(Tenet<?> tenet) {
         tenets.put(tenet.getID(), tenet);
     }
     public static void registerGroup(TenetGroup group) {
@@ -60,7 +61,7 @@ public class TenetManager {
         }
         return false;
     }
-    public static Tenet<?,?> getTenet(String id) {
+    public static Tenet<?> getTenet(String id) {
         return tenets.get(id);
     }
 

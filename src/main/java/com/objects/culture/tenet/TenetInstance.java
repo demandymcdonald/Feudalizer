@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
 import com.objects.culture.change.CultureMapChanges;
+import com.objects.culture.tenet.types.Tenet;
 import com.utilities.number.BoundedDouble;
 import com.utilities.number.BoundedInteger;
 import org.apache.commons.lang3.tuple.Pair;

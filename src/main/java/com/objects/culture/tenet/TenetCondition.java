@@ -5,7 +5,7 @@ import com.base.condition.Condition;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.StateError;
-import com.base.timeline.sandbox.core.Sandbox;
+import com.objects.culture.tenet.types.Tenet;
 
 
 public abstract class TenetCondition<T extends TimelineChange<D>,D extends DateMutableEntity<D>, CT extends Tenet<CT,?>>

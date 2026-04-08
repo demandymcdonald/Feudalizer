@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.change.CultureMapChanges;
 import com.objects.culture.change.CultureSingleChanges;
-import com.objects.culture.tenet.Tenet;
+import com.objects.culture.tenet.types.Tenet;
 import com.objects.culture.tenet.TenetInstance;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
