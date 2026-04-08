@@ -7,7 +7,7 @@ import com.objects.title.Title;
 
 public enum ObjectType {
     CHARACTER("book_character","Character", HumanCharacter.class),
-    FAMILY("family","Family","Famlies", Family.class),
+    FAMILY("family","FamilyGroups","Famlies", Family.class),
     HOUSE("house","House","Houses", House.class),
     TITLE("title","Title", (Class<? extends DateMutableEntity<?>>) Title.class);
     //CULTURE("culture","Culture",Culture.class),

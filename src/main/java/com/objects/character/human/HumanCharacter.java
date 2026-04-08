@@ -224,7 +224,7 @@ public class HumanCharacter extends LivingCreature<HumanCharacter> implements Cu
         return preferredSuccession;
     }
 
-    //==== Family Stuff ====
+    //==== FamilyGroups Stuff ====
     public Family getOriginFamily(boolean adopted){
         List<Family.Relationship> rel = new ArrayList<>();
        if (adopted){

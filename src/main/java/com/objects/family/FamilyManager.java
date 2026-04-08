@@ -136,7 +136,7 @@ public class FamilyManager extends AbstractMutableManager<Family, FamilyState> {
         }
         return dynasty;
     }
-//    public static HashMap<Family,Relationship> RebuildRelationshipMap(HumanCharacter character){
+//    public static HashMap<FamilyGroups,Relationship> RebuildRelationshipMap(HumanCharacter character){
 //
 //    }
     @Override

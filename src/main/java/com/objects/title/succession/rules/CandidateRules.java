@@ -105,14 +105,14 @@ public interface CandidateRules {
         }
     }
 //    static List<HumanCharacter> RecursiveFamily (HumanCharacter c, boolean primary, boolean prima) {
-//        Family f = Family.getBirth(c);
+//        FamilyGroups f = FamilyGroups.getBirth(c);
 //        HumanCharacter parent;
 //        if (primary) {
 //            parent = f.getPrimarySpouse();
 //        } else {
 //            parent = f.getSecondarySpouse();
 //        }
-//        Family nF = getBirth(parent);
+//        FamilyGroups nF = getBirth(parent);
 //        List<HumanCharacter> chL = nF.getChildrenOrdered(prima);
 //        chL.remove(parent);
 //        return chL;

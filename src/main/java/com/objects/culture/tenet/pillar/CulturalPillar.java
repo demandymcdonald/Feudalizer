@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class CulturalPillar<CP extends CulturalPillar<CP,TG>, TG extends TenetGroup> extends Tenet<CP,TG> {
-    Multimap<TenetGroup, Tenet<?,?>> children = HashMultimap.create();
+    private final Multimap<TenetGroup, Tenet<?,?>> children = HashMultimap.create();
     public CulturalPillar(TenetGroup group, String id, String name, String description) {
         super(group, id, name, description);
     }

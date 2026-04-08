@@ -22,4 +22,10 @@ public class BoundedInteger extends BoundedNumber<Integer> {
             set( element.getAsInt());
         }
     }
+
+    public static BoundedInteger of(int min, int max){
+        BoundedInteger bounded = new BoundedInteger(min, max);
+        bounded.set(min + (max - min)/2);
+        return bounded;
+    }
 }

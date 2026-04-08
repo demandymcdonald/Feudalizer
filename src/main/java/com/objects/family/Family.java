@@ -18,8 +18,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 /**
- * Represents a Family entity which includes information about spouses, children, and
- * associated houses. The `Family` class also provides utility functions to manage
+ * Represents a FamilyGroups entity which includes information about spouses, children, and
+ * associated houses. The `FamilyGroups` class also provides utility functions to manage
  * relationships and retrieve information about the family members.
  */
 public class Family extends DateMutableEntity<Family> {
@@ -102,7 +102,7 @@ public class Family extends DateMutableEntity<Family> {
         if (hasSpaceFor(rel)) {
             members.put(member, rel);
         } else {
-            Feudalizer.LOGGER.error("Family " + this.toString() + " is at it's limit for members of type {}!", rel.type);
+            Feudalizer.LOGGER.error("FamilyGroups " + this.toString() + " is at it's limit for members of type {}!", rel.type);
         }
     }
     @Override

@@ -4,6 +4,8 @@ import com.Global.*;
 import com.google.common.collect.ImmutableList;
 import com.objects.culture.tenet.Acceptance;
 
+import static com.objects.culture.tenet.TenetManager.HARD_CULTURE;
+import static com.objects.culture.tenet.group.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.TenetGroup.*;
 
 public class EconomicGroups {

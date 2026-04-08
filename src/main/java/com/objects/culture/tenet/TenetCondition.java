@@ -8,7 +8,7 @@ import com.base.timeline.error.StateError;
 import com.base.timeline.sandbox.core.Sandbox;
 
 
-public abstract class TenetCondition<T extends TimelineChange<D>,D extends DateMutableEntity<D>, CT extends Tenet<?>>
+public abstract class TenetCondition<T extends TimelineChange<D>,D extends DateMutableEntity<D>, CT extends Tenet<CT,?>>
         extends Condition<StateError, CT, T, DMEReference<? extends D>> {
     public TenetCondition(String id) {
         super(id);

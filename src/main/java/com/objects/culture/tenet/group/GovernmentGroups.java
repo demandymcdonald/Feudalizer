@@ -1,13 +1,14 @@
 package com.objects.culture.tenet.group;
 
-import com.Global.*;
 import com.google.common.collect.ImmutableList;
 import com.objects.culture.tenet.Acceptance;
 
+import static com.objects.culture.tenet.TenetManager.HARD_CULTURE;
+import static com.objects.culture.tenet.TenetManager.SOFT_CULTURE;
 import static com.objects.culture.tenet.group.EconomicGroups.ECONOMIC_SYSTEM;
 import static com.objects.culture.tenet.group.EconomicGroups.ECONOMY;
 import static com.objects.culture.tenet.group.EducationGroups.EDUCATION;
-import static com.objects.culture.tenet.group.Family.FAMILY;
+import static com.objects.culture.tenet.group.FamilyGroups.FAMILY;
 import static com.objects.culture.tenet.group.ReligionGroups.RELIGION;
 import static com.objects.culture.tenet.group.SocietyGroups.SOCIETY;
 import static com.objects.culture.tenet.group.TenetGroup.*;
@@ -89,7 +90,7 @@ public class GovernmentGroups {
     public static final TenetGroup SECULARISM = builder(SOFT_CULTURE_INTERVENTION, ImmutableList.of(RELIGION, GOVERNMENT_LEADERSHIP), "secularism", "Secularism", "", SYSTEM_LARGE);
     public static final TenetGroup GOVERNMENT_ENFORCED_CONFORMITY = builder(SOFT_CULTURE_INTERVENTION, ImmutableList.of(CIVIL_LIBERTIES, CLASS_AND_CASTE), "culture_war", "Conformity", "", SYSTEM_LARGE);
     public static final TenetGroup EDUCATION_INTERVENTION = builder(SOFT_CULTURE_INTERVENTION, ImmutableList.of(EDUCATION, EDUCATION_FUNDING), "education_funding", "Education Intervention", "", SYSTEM_LARGE);
-    public static final TenetGroup FAMILY_INTERVENTION = builder(SOFT_CULTURE_INTERVENTION, ImmutableList.of(FAMILY), "family_intervention", "Family Intervention", "", SYSTEM_LARGE);
+    public static final TenetGroup FAMILY_INTERVENTION = builder(SOFT_CULTURE_INTERVENTION, ImmutableList.of(FAMILY), "family_intervention", "FamilyGroups Intervention", "", SYSTEM_LARGE);
     public static final TenetGroup ESPIONAGE = builder(GOVERNMENT_SYSTEM, ImmutableList.of(MILITARY, CIVIL_LIBERTIES, JUSTICE_SYSTEM), "espionage", "Espionage", "", SORT_ONLY);
     public static final TenetGroup SECRET_POLICE = builder(ESPIONAGE, ImmutableList.of(SOCIETY), "secret_police", "Secret Police & Mass Surveillance", "", SYSTEM_LARGE);
     public static final TenetGroup FOREIGN_INTELLIGENCE_SERVICE = builder(ESPIONAGE, ImmutableList.of(FOREIGN_POLICY), "foreign_intelligence_service", "Foreign Intelligence Service", "", SYSTEM_LARGE);

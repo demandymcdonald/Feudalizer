@@ -50,7 +50,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     // setX Methods are used by the UI to trigger state changes and sandboxing.
     // 2. internalX should actually modify the variable on the runtime object. they should NEVER touch the timeline.
     // 3. linkX is built for objects to add shortcut links to to an object (for example: HumanCharacter has a fleeting
-    // list of the Family's it's a part of. For safety, any linked variable should be cleared on reload
+    // list of the FamilyGroups's it's a part of. For safety, any linked variable should be cleared on reload
 
     public boolean isAlive(){
         return DateUtilities.isBetween(timeline.getStart(),timeline.getEnd(),current());
