@@ -2,11 +2,19 @@ package com.base.reference;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.objects.culture.tenet.TenetReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.base.reference.ComplexReference.COMPLEX_SR_TYPE;
+import static com.base.reference.CompoundSR.COMPOUND_SR_TYPE;
+import static com.base.reference.DMEReference.DME_SR_TYPE;
+import static com.base.reference.SimpleReference.SIMPLE_SR_TYPE;
+import static com.objects.culture.tenet.TenetReference.TENET_SR_TYPE;
+
 public abstract class StateReference {
+    public static final String TYPE_VARIABLE_NAME = "type";
     public abstract String parse();
     public abstract JsonObject serialize();
     public static StateReference[] buildArray(JsonArray array){
@@ -23,10 +31,10 @@ public abstract class StateReference {
                     ref.add(SimpleReference.deserialize(o));
                     break;
                 }
-                case "CompoundSR": {
-                    ref.add(CompoundSR.deserialize(o));
-                    break;
-                }
+//                case "CompoundSR": {
+//                    //ref.add(CompoundSR.deserialize(o));
+//                    //break;
+//                }
             }
         }
         return ref.toArray(new DMEReference<?>[ref.size()]);
@@ -38,20 +46,23 @@ public abstract class StateReference {
         }
         return array;
     }
-    public static JsonObject fromJson(JsonObject json){
-        String type = json.get("Type").getAsString();
+    public static <T extends StateReference> T fromJson(JsonObject json){
+        String type = json.get(TYPE_VARIABLE_NAME).getAsString();
         switch (type){
-            case "DMEReference": {
-                return DMEReference.deserialize(json).serialize();
+            case DME_SR_TYPE: {
+                return (T) DMEReference.deserialize(json);
             }
-            case "SimpleReference": {
-                return SimpleReference.deserialize(json).serialize();
+            case SIMPLE_SR_TYPE: {
+                return (T) SimpleReference.deserialize(json);
             }
-            case "CompoundSR": {
-                return CompoundSR.deserialize(json).serialize();
+//            case COMPOUND_SR_TYPE: {
+//                return (T) CompoundSR.deserializeCompound(json);
+//            }
+            case COMPLEX_SR_TYPE: {
+                return (T) ComplexReference.deserialize(json);
             }
-            case "ComplexReference": {
-                return ComplexReference.deserialize(json).serialize();
+            case TENET_SR_TYPE: {
+                return (T) TenetReference.deserialize(json);
             }
         }
     }

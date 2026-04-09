@@ -24,7 +24,7 @@ public enum Acceptance implements Displayable {
     private final String name;
     private final String description;
     private final int floor;
-
+    public static final int MAX_VALUE = 512;
     Acceptance(String id, String name, String description, int floor) {
         this.id = id;
         this.name = name;

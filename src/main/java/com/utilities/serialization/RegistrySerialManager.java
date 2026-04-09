@@ -5,9 +5,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
-import com.objects.culture.Influencers.Influencer;
+import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.Influencers.InfluencerWeight;
+import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.number.BoundedInteger;
 
@@ -19,7 +20,7 @@ public class RegistrySerialManager {
     private static final Map<Class<? extends RegistrySerializable>, Function<JsonObject,? extends RegistrySerializable>> registry = new HashMap<>();
 
     static {
-        registry.put(Influencer.class, RegistrySerialManager::influencerFrom);
+        registry.put(InfluencerInstance.class, RegistrySerialManager::influencerFrom);
         registry.put(InfluencerWeight.class, RegistrySerialManager::influencerWeightFrom);
     }
     private static <T extends RegistrySerializable> T get(Class<T> classRef, JsonObject json){
@@ -46,11 +47,11 @@ public class RegistrySerialManager {
             throw new RuntimeException("Exception deserializing", e);
         }
     }
-    private static Influencer influencerFrom(JsonObject json){
-        DMEReference<Culture> culture = DMEReference.deserialize(json.get("culture").getAsJsonObject());
+    private static InfluencerInstance influencerFrom(JsonObject json){
+
         InfluencerRelationship relationship = InfluencerRelationship.valueOf(json.get("relationship").getAsString());
         InfluencerWeight weight = RegistrySerialManager.deserialize(json.get("weight").getAsJsonObject());
-        return new Influencer(culture,relationship,weight);
+        return new InfluencerInstance(relationship,weight);
     }
     private static InfluencerWeight influencerWeightFrom(JsonObject json){
         JsonArray array = json.getAsJsonArray("influencerWeights");
@@ -59,7 +60,7 @@ public class RegistrySerialManager {
             JsonObject obj = element.getAsJsonObject();
             BoundedInteger bounded = new BoundedInteger(-100,100);
             bounded.set(obj.get("weight").getAsInt());
-            map.put(TenetGroup.valueOf(obj.get("group").getAsString()), bounded);
+            map.put(TenetManager.getGroup(obj.get("group").getAsString()), bounded);
         }
         return new InfluencerWeight(map);
     }

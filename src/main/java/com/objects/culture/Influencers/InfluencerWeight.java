@@ -18,6 +18,13 @@ public record InfluencerWeight(Map<TenetGroup, BoundedInteger> map) implements R
     public void add(TenetGroup group, int amount) {
         map.getOrDefault(group, makeNew()).set(amount);
     }
+    public void amend(TenetGroup group, int amount){
+        if (!map.containsKey(group)) {
+            add(group, amount);
+        } else {
+            map.get(group).add(amount);
+        }
+    }
     public int get(TenetGroup group){
         return map.getOrDefault(group, makeNew()).get();
     }

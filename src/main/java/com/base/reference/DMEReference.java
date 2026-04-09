@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class DMEReference<T extends DateMutableEntity<?>> extends StateReference {
+    public static final String DME_SR_TYPE = "DMEReference";
     private final Class<T> type;
     private final UUID uuid;
     private transient ThreadLocal<T> cachedEntity = new ThreadLocal<>();
@@ -49,7 +50,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
     }
     public JsonObject serialize(){
         JsonObject object = new JsonObject();
-        object.addProperty("Type", "DMEReference");
+        object.addProperty(TYPE_VARIABLE_NAME, DME_SR_TYPE);
         object.addProperty("uuid", uuid.toString());
         object.addProperty("dme_type", type.getName());
         return object;
