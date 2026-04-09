@@ -1,28 +1,26 @@
-package com.objects.culture.tenet.opinionated;
+package com.objects.culture.object;
 
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.map.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.tenet.compass.PoliticalCompass;
+import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.instance.TOReference;
 import com.objects.culture.instance.TenetInstance;
-import com.objects.culture.tenet.compass.setCompass;
+import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.types.Tenet;
-import javafx.scene.chart.Axis;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
 
-public interface TenetOpinionated<
+public interface CultureObject<
         I extends TenetInstance<I, C1,T>,
         C1 extends TimelineMapChange<?, Tenet, I,T>,
         T extends DateMutableEntity<T>
@@ -80,7 +78,7 @@ public interface TenetOpinionated<
         }
         if (changed){
             DMEReference<?> owner = getOwner();
-            owner.get().getTimeline().addChange(new setCompass<>(owner, Global.getDate(),compass));
+            owner.get().getTimeline().addChange(new CompassChange<>(owner, Global.getDate(),compass));
         }
     }
     default boolean isInfluencer(TOReference<?> ref){
@@ -192,7 +190,7 @@ public interface TenetOpinionated<
         return toReturn;
     }
     static <I extends TenetInstance<I,C,T>,C extends TimelineMapChange<?, Tenet, I,T>,T extends DateMutableEntity<T>>
-    double AdjustForInfluence(TenetOpinionated<?,?,?> tenetOpinionated, Tenet t, boolean includeInfluencer, double acceptance, TOReference<?>... blacklist){
+    double AdjustForInfluence(CultureObject<?,?,?> tenetOpinionated, Tenet t, boolean includeInfluencer, double acceptance, TOReference<?>... blacklist){
         double resistance = tenetOpinionated.calcResistance(acceptance);
         double toReturn = acceptance * resistance;
         List<Double> d = CalculateInfluencerFactor(tenetOpinionated.getListForTenet(t,includeInfluencer,blacklist), resistance);

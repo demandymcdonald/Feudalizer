@@ -1,8 +1,7 @@
 package com.objects.culture;
 
-import com.Global;
+import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
@@ -10,22 +9,17 @@ import com.objects.CauseOfEnd;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.change.CultureMapChanges;
-import com.objects.culture.change.CultureSingleChanges;
 import com.objects.culture.instance.CultureTenetInstance;
 import com.objects.culture.instance.TOReference;
-import com.objects.culture.tenet.compass.PoliticalCompass;
-import com.objects.culture.tenet.opinionated.TenetOpinionated;
+import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.types.Tenet;
-import com.objects.culture.instance.TenetInstance;
-import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.base.timeline.variable.TimelineEasingVariable.EasingType.EXPONENTIAL;
-
-public class Culture extends CultureObject<Culture> implements TenetOpinionated<CultureTenetInstance,CultureMapChanges.TenetMapChange,Culture> {
+public class Culture extends AbstractCulture<Culture> implements CultureObject<CultureTenetInstance,CultureMapChanges.TenetMapChange,Culture> {
     //Todo, replace with Map<DMEReference<Culture>, Influence Container(Enum for relationship type, String for why, Map<TenetGroup,Int for base tenet influence)
     private final List<Culture> linkedChildCultures = new ArrayList<>();
     private final Map<Tenet,CultureTenetInstance> tenetOpinions = new HashMap<>();

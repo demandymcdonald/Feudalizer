@@ -1,6 +1,5 @@
 package com.objects.culture;
 
-import com.Global.*;
 import com.base.AbstractMutableManager;
 import com.google.gson.JsonObject;
 import com.utilities.Factory;
@@ -8,7 +7,7 @@ import com.utilities.Factory;
 import java.util.Map;
 import java.util.UUID;
 
-public class CultureManager extends AbstractMutableManager<CultureManager,CultureObject<?>> {
+public class CultureManager extends AbstractMutableManager<CultureManager,AbstractCulture<?>> {
     Map<String,>
     protected CultureManager() {
         super("culture_manager");
@@ -18,7 +17,7 @@ public class CultureManager extends AbstractMutableManager<CultureManager,Cultur
 
 
     @Override
-    public Map<Class<? extends CultureObject<?>>, Factory<? extends CultureObject<?>, CultureObject<?>, UUID, JsonObject>> getFactories() {
+    public Map<Class<? extends AbstractCulture<?>>, Factory<? extends AbstractCulture<?>, AbstractCulture<?>, UUID, JsonObject>> getFactories() {
         return Map.of();
     }
 

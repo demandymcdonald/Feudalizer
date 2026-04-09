@@ -2,8 +2,7 @@ package com.objects.culture.tenet;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.objects.culture.tenet.compass.Ideology;
-import com.objects.culture.tenet.compass.PoliticalCompass;
+import com.objects.culture.object.compass.Ideology;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;

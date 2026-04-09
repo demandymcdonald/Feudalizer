@@ -1,33 +1,32 @@
-package com.objects.culture.tenet.compass;
+package com.objects.culture.object.compass;
 
-import com.Global.*;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.opinionated.TenetOpinionated;
+import com.objects.culture.object.CultureObject;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public class setCompass<T extends DateMutableEntity<T>> extends TimelineSingleChange<T> {
+public class CompassChange<T extends DateMutableEntity<T>> extends TimelineSingleChange<T> {
 
     private PoliticalCompass compass;
-    protected setCompass(DMEReference<? extends T> owner, LocalDate date) {
+    protected CompassChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
     }
 
 
-    public setCompass(DMEReference<?> owner, LocalDate date, PoliticalCompass compass) {
+    public CompassChange(DMEReference<?> owner, LocalDate date, PoliticalCompass compass) {
         super((DMEReference<? extends T>) owner, date);
         this.compass = compass;
     }
 
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-        if (getOwner() instanceof TenetOpinionated<?,?,?> to){
+        if (getOwner() instanceof CultureObject<?,?,?> to){
             to.internalSetCompass(compass);
         }
     }

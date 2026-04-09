@@ -1,12 +1,7 @@
-package com.objects.culture.tenet.compass;
+package com.objects.culture.object.compass;
 
-import com.Global.*;
 import com.objects.culture.tenet.TenetManager;
-import com.objects.culture.tenet.types.Tenet;
 import com.utilities.Displayable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Ideology implements Displayable {
     //Static object, mainly used for display, but also in factory methods.

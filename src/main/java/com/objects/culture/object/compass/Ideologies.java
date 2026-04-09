@@ -1,6 +1,4 @@
-package com.objects.culture.tenet.compass;
-
-import com.Global.*;
+package com.objects.culture.object.compass;
 
 public class Ideologies {
     // ============================================================

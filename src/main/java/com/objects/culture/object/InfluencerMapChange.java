@@ -1,6 +1,5 @@
-package com.objects.culture.tenet.opinionated;
+package com.objects.culture.object;
 
-import com.Global.*;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.condition.apply.ApplyCondition;
@@ -11,8 +10,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.instance.TOReference;
-import com.objects.culture.instance.TenetInstance;
-import com.objects.culture.tenet.types.Tenet;
 import com.utilities.serialization.RegistrySerialManager;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -32,7 +29,7 @@ public class InfluencerMapChange<T extends DateMutableEntity<T>> extends Timelin
 
     @Override
     protected Map<TOReference<?>, InfluencerInstance> getMapFromObject(DMEReference<? extends T> object) {
-        if (object.get() instanceof TenetOpinionated<?, ?, ?> to){
+        if (object.get() instanceof CultureObject<?, ?, ?> to){
             return to.getInfluencers();
         } else {
             throw new IllegalArgumentException("Object must be a TenetOpinionated");

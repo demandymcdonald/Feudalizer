@@ -4,16 +4,16 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.opinionated.TenetOpinionated;
+import com.objects.culture.object.CultureObject;
 
-public class TOReference<T extends TenetOpinionated<?, ?, ?>> extends StateReference {
+public class TOReference<T extends CultureObject<?, ?, ?>> extends StateReference {
     DMEReference<?> holder;
     public static final String TO_SR_TYPE = "TOReference";
     public TOReference(T e) {
         holder = e.getOwner();
     }
     public TOReference(DMEReference<?> holder) {
-        if (holder.get() instanceof TenetOpinionated<?, ?, ?>){
+        if (holder.get() instanceof CultureObject<?, ?, ?>){
             this.holder = holder;
         } else {
             throw new IllegalArgumentException("Holder must be a TenetOpinionated");
@@ -21,7 +21,7 @@ public class TOReference<T extends TenetOpinionated<?, ?, ?>> extends StateRefer
     }
     public T get() {
         DateMutableEntity<?> t =  holder.get();
-        if (t instanceof TenetOpinionated<?,?,?> to){
+        if (t instanceof CultureObject<?,?,?> to){
             return (T) to;
         } else {
             throw new IllegalArgumentException("Holder must be a TenetOpinionated");
@@ -40,7 +40,7 @@ public class TOReference<T extends TenetOpinionated<?, ?, ?>> extends StateRefer
         object.add("holder", holder.serialize());
         return object;
     }
-    public static<T extends TenetOpinionated<?, ?, ?>> TOReference<T> deserialize(JsonObject json){
+    public static<T extends CultureObject<?, ?, ?>> TOReference<T> deserialize(JsonObject json){
         JsonObject o = json.getAsJsonObject("holder");
         return new TOReference<T>(DMEReference.deserialize(o));
     }

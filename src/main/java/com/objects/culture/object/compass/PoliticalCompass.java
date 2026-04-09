@@ -1,7 +1,6 @@
-package com.objects.culture.tenet.compass;
+package com.objects.culture.object.compass;
 
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetManager;
 import com.utilities.number.BoundedInteger;
 import com.utilities.serialization.JsonSerializable;

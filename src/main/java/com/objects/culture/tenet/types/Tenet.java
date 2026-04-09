@@ -9,7 +9,7 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetCondition;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.TenetReference;
-import com.objects.culture.tenet.compass.PoliticalCompass;
+import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.Displayable;
 
