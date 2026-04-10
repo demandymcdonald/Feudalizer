@@ -1,27 +1,19 @@
-package com.objects.title.land.resources;
+package com.objects.title.land;
 
-import com.display.geography.GeometryType;
-import com.objects.title.land.AbstractLandDivision;
+import com.objects.culture.object.CultureObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.title.Title;
+import com.objects.title.land.resources.Resource;
+import com.objects.title.land.resources.ResourceType;
 
-import java.time.LocalDate;
 import java.util.*;
 
-public abstract class HabitableLand<R extends HabitableLand<R>> extends AbstractLandDivision<R> {
+public abstract class HabitableLand<R extends HabitableLand<R>> extends AbstractLandDivision<R> implements CultureObject<> {
     final Set<Resource> resources = new HashSet<>();
     long population;
-    public HabitableLand(UUID id, String name, LocalDate created, LocalDate ended, GeometryType type, String GeoID) {
-        super(id, name, created, ended, type, GeoID);
-        this.population = 0;
-    }
-    public HabitableLand(UUID id, String name, LocalDate created, LocalDate ended, GeometryType type, String GeoID, long population, Resource... resources) {
-        super(id, name, created, ended, type, GeoID);
-        this.population = population;
-        this.resources.addAll(Arrays.asList(resources));
-    }
+
 
     public HabitableLand(JsonObject payload) {
         super(payload);

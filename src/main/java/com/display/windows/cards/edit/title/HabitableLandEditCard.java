@@ -1,7 +1,7 @@
 package com.display.windows.cards.edit.title;
 
 
-import com.objects.title.land.resources.HabitableLand;
+import com.objects.title.land.HabitableLand;
 import com.objects.title.land.resources.Resource;
 import com.objects.title.land.resources.ResourceType;
 import com.objects.title.land.resources.Resources;
