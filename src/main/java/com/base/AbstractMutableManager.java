@@ -2,16 +2,20 @@ package com.base;
 
 import com.Global;
 import com.base.reference.DMEReference;
+import com.base.timeline.sandbox.core.SandboxHandler;
 import com.google.gson.JsonObject;
 import com.utilities.Factory;
 import com.utilities.serialization.SuperclassRegistry;
 import com.utilities.ThreadManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,T>,T extends DateMutableEntity<?>>
         extends SuperclassRegistry<M,T,UUID,JsonObject> {
+    private final ThreadLocal<List<DateMutableEntity<?>>> toSave = ThreadLocal.withInitial(ArrayList::new);
     protected AbstractMutableManager(String uniqueKey) {
         super(uniqueKey);
         DMRegistry.registerManager(this);
@@ -67,7 +71,15 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
 
     public abstract Class<?> instanceClass();
 
+    public void addDirtyObject(DateMutableEntity<?> dirty){
+        if (ThreadManager.isMainThread()){
+            toSave.get().add(dirty);
+        } else {
+            SandboxHandler<?> handler = Global.getSandboxHandler();
+            handler.addDirtyObject(dirty);
+        }
 
+    }
 
 
 }

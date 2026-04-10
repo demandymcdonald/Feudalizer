@@ -1,4 +1,4 @@
-package com.objects.culture.instance;
+package com.objects.culture.tenet.instance;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;

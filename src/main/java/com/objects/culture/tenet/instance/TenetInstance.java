@@ -1,10 +1,10 @@
-package com.objects.culture.instance;
+package com.objects.culture.tenet.instance;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.map.TimelineMapChange;
-import com.base.timeline.variable.TimelineEasingVariable;
+import com.base.utilities.TimelineEasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.types.Tenet;

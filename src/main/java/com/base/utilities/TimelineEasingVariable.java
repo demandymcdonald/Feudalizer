@@ -1,4 +1,4 @@
-package com.base.timeline.variable;
+package com.base.utilities;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
@@ -30,13 +30,13 @@ public abstract class TimelineEasingVariable<E extends TimelineEasingVariable<E,
         QUAD(new EasingFunction(){
             @Override
             protected double apply(double a, double b, double t) {
-                return a + (b - a) * (t * t);
+                return a + (b - a) * (t < 0.5 ? 2 * Math.pow(t, 2) : 1 - Math.pow(-2 * t + 2, 2) / 2);
             }
         }),
         CUBIC(new EasingFunction(){
             @Override
             protected double apply(double a, double b, double t) {
-                return a + (b - a) * (t * t * t);
+                return a + (b - a) * (t < 0.5 ? 4 * Math.pow(t, 3) : 1 - Math.pow(-2 * t + 2, 3) / 2);
             }
         }),
         EXPONENTIAL(new EasingFunction(){
@@ -66,7 +66,6 @@ public abstract class TimelineEasingVariable<E extends TimelineEasingVariable<E,
 
     protected abstract double getCurrent();
     protected abstract E findE(DMEReference<T> ref, ChangeID current);
-
 
     protected final double getFinal(){
         E other = findE(owner,thisChange);

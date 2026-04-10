@@ -56,6 +56,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     private List<DMEReference<?>> sandbox_newSaves = new ArrayList<>();
     private LocalDate end;
     private boolean deactivated = false;
+    private boolean isDirty = false;
     private final Map<Long,String> resolutionLog = new HashMap<>();
     protected TimelineChange(DMEReference<? extends T> owner, LocalDate date) {
         this.owner = owner;
@@ -130,7 +131,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         SandboxCode c = SandboxCode.END_SAVE;
         if (!isSandbox){
             com.base.timeline.sandbox.core.SandboxHandler<?> h = SandboxHandler.StartSandbox(Objective.buildInChange(owner,
-                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.CanAddChange<>(th)),end.plusDays(2),null, null);
+                    Global.TimeDirection.FORWARD,this,new SandboxFunctions.CanAddChange<>()),end.plusDays(2),null, null);
             c = h.getEndCode().join();
         }
         if (c == SandboxCode.END_SAVE){
@@ -138,6 +139,8 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
             deactivated = true;
         }
     }
+
+
     public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
 
         Timeline<? extends T> timeline = (Timeline<? extends T>) owner.get().getTimeline();
@@ -227,8 +230,12 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         return toReturn;
     };
     protected abstract String getText();
-
-
+    public final Timeline<? extends T> getTimeline(){
+        return (Timeline<? extends T>) getOwner().get().getTimeline();
+    }
+    public final TimelineState<? extends T> getTimelineState(){
+        return getTimeline().getStateAtExact(getStart(),true);
+    }
 
     public final LocalDate getStart() {
         return start;
@@ -299,7 +306,10 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     protected final List<DeactivateCondition<? super T>> getDeactivateConditions(){
         return deactivateConditions.get();
     }
-
+    public TimelineChange<?> getNextMatching(){
+        Timeline<? extends T> timeline = getTimeline();
+        return timeline.findChangeByClassID(this.getStart().plusDays(1), Global.TimeDirection.FORWARD,this.getClass().getName(),false).getFirst();
+    }
 
 
     public boolean hasMultipleApplyChecks(){
@@ -381,6 +391,12 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
                 return Optional.of(e.addEndSave().addEndCancel().addOverride());
             }
             return Optional.empty();
+        }
+    }
+    public final void setDirty(){
+        if (!isDirty){
+            isDirty = true;
+            getTimelineState().setDirty();
         }
     }
     public class IsOnlyData extends DeactivateCondition<T> {

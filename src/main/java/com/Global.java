@@ -2,11 +2,14 @@ package com;
 
 import com.base.DMRegistry;
 import com.base.timeline.sandbox.core.SandboxHandler;
+import com.base.utilities.TimelineSynced;
 import com.utilities.LoadingManager;
 import com.utilities.ThreadMutable;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Global implements ThreadMutable<Global, Global.DateWrapper> {
 
@@ -20,13 +23,16 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
     public static final boolean SQL_ENABLED = false;
     public static final Path SHAPE_PATH = Path.of("data/shapefiles/");
     private static final LoadingManager LOADING_MANAGER = new LoadingManager();
+    private static final ThreadLocal<List<TimelineSynced>> listeners = ThreadLocal.withInitial(ArrayList::new);
     //--- Thread Specific Globals ---
     private static final ThreadLocal<DateWrapper> CurrentDate = ThreadLocal.withInitial(() -> DateWrapper.of(CONFEDERACY_FOUNDED));
     private static ThreadLocal<SandboxHandler<?>> SANDBOX_HANDLER = new ThreadLocal<>();
 
     public static void setCurrentDate(LocalDate newDate) {
         CurrentDate.get().set(newDate);
+        alertListeners(newDate,true);
         DMRegistry.onDateChange();
+        alertListeners(newDate,false);
         //TODO use this as a trigger for Updating EVERY registered state to the proper date?
     }
     @Deprecated(forRemoval = true)
@@ -40,16 +46,26 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
         return LOADING_MANAGER;
     }
 
-
+    private static void alertListeners(LocalDate date, boolean pre){
+        listeners.get().forEach(listener -> {
+            if(pre) listener.onLoad(date);
+            else listener.afterLoad(date);
+        });
+    }
     @Override
     public String uniqueKey() {
-        return "";
+        return "global_controls";
     }
 
     @Override
     public void onThreadInit(boolean shared) {
 
     }
+    public static void addListener(TimelineSynced listener){
+        listeners.get().add(listener);
+    }
+
+
 
     @Override
     public DateWrapper share() {

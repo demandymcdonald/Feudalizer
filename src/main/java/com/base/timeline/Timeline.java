@@ -1,6 +1,7 @@
 package com.base.timeline;
 
 import com.Global;
+import com.base.DMRegistry;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
@@ -22,7 +23,8 @@ import java.util.function.Consumer;
 public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> {
     private final TreeMap<LocalDate, TimelineState<T>> timeline = new TreeMap<>();
     //TODO Caching for performance?
-    public boolean isLoaded = false;
+    private boolean isLoaded = false;
+    private boolean isDirty = false;
     public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<ChangeSupplier<T,?>> initialState) {
         super(owner);
         //AbstractMutableManager<?,T,?> manager = DMRegistry.getManager(o.getClass());
@@ -81,6 +83,15 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
     @Override
     public LocalDate getEnd(){
         return timeline.lastKey();
+    }
+
+    @Override
+    public void setDirty() {
+        if(!isDirty){
+            isDirty = true;
+            T owner = getOwner().get();
+            DMRegistry.getManager(owner.getClass()).addDirtyObject(owner);
+        }
     }
 
     public void moveStart(LocalDate date){

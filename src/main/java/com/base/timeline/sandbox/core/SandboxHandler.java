@@ -119,6 +119,10 @@ public class SandboxHandler<T extends DateMutableEntity<T>> {
     public CompletableFuture<SandboxCode> getEndCode(){
         return future;
     }
+
+    public void addDirtyObject(DateMutableEntity<?> entity){
+        sandbox.getToSave().add(entity.getReference());
+    }
     ///  Main Method To be Utilized
     @SuppressWarnings("unchecked")
     public static <T extends DateMutableEntity<T>> SandboxHandler<T> StartSandbox(Objective<T> objective, @Nullable LocalDate endDate, @Nullable SandboxHandler<?> parent, @Nullable Consumer<SandboxCode> doAfter){

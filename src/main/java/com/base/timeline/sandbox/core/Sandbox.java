@@ -25,7 +25,7 @@ import static com.base.timeline.error.SandboxCode.*;
 
 public class Sandbox<T extends DateMutableEntity<T>> {
     private CompletableFuture<Map<DMEReference<?>, JsonObject>> toReturn = new CompletableFuture<>();
-    private final List<DMEReference<?>> toSave = new ArrayList<>();
+    private final List<DMEReference<?>> toSave = Collections.synchronizedList(new ArrayList<>());
     private final Map<DMEReference<?>, JsonObject> dirty = new HashMap<>();
     private HashMap<DMEReference<?>, JsonObject> Scope = new HashMap<>();
 

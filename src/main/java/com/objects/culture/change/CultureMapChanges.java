@@ -11,7 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.Culture;
-import com.objects.culture.instance.CultureTenetInstance;
+import com.objects.culture.tenet.instance.CultureTenetInstance;
 import com.objects.culture.tenet.types.Tenet;
 import com.objects.culture.tenet.TenetManager;
 import org.apache.commons.lang3.tuple.Pair;

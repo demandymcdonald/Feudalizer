@@ -9,7 +9,7 @@ import com.base.timeline.change.map.TimelineMapChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.Influencers.InfluencerInstance;
-import com.objects.culture.instance.TOReference;
+import com.objects.culture.tenet.instance.TOReference;
 import com.utilities.serialization.RegistrySerialManager;
 import org.apache.commons.lang3.tuple.Pair;
 

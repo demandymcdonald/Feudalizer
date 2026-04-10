@@ -260,5 +260,5 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
     }
     public abstract LocalDate getStart();
     public abstract LocalDate getEnd();
-
+    public abstract void setDirty();
 }

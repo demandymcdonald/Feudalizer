@@ -1,6 +1,5 @@
 package com.objects.culture;
 
-import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
@@ -9,11 +8,12 @@ import com.objects.CauseOfEnd;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.change.CultureMapChanges;
-import com.objects.culture.instance.CultureTenetInstance;
-import com.objects.culture.instance.TOReference;
+import com.objects.culture.tenet.instance.CultureTenetInstance;
+import com.objects.culture.tenet.instance.TOReference;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.types.Tenet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     private final List<Culture> linkedChildCultures = new ArrayList<>();
     private final Map<Tenet,CultureTenetInstance> tenetOpinions = new HashMap<>();
     private final Map<TOReference<?>, InfluencerInstance> influencers = new HashMap<>();
-
+    private PoliticalCompass compass = new PoliticalCompass();
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
         super(created, ended, initialState);
     }
@@ -43,14 +43,25 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     }
 
     @Override
+    public Optional<Pair<TOReference<?>, InfluencerRelationship>> getParentObject() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setParentObject(TOReference<?> influencer, InfluencerRelationship relationship) {
+
+    }
+
+    @Override
     public Map<TOReference<?>, InfluencerInstance> getInfluencers() {
         return influencers;
     }
 
     @Override
-    public Map<TOReference<?>, InfluencerRelationship> getStandardInfluencers() {
-        return Map.of();
+    public void updateProceduralInfluencers() {
+
     }
+
 
     @Override
     public double influencerResistance(TOReference<?> influencer) {
@@ -64,12 +75,12 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
 
     @Override
     public void internalSetCompass(PoliticalCompass compass) {
-
+        this.compass = compass;
     }
 
     @Override
     public PoliticalCompass getCompass() {
-        return null;
+        return compass;
     }
 
 

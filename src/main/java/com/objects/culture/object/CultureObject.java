@@ -3,20 +3,24 @@ package com.objects.culture.object;
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.map.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
+import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
+import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.instance.TOReference;
-import com.objects.culture.instance.TenetInstance;
+import com.objects.culture.object.compass.IPoliticalCompass;
+import com.objects.culture.tenet.instance.TOReference;
+import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.types.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
 
@@ -35,10 +39,12 @@ public interface CultureObject<
     static final int oc = MAX_VALUE; // upper and lower bound for opinion values
 
 
-
+    TLSyncedCache<Tenet,Double> getInfluencedCache();
     Map<Tenet,I> getOpinions();
+    Optional<Pair<TOReference<?>, InfluencerRelationship>> getParentObject(); //todo, implement opinion crushing for Hegamon.
+    void setParentObject(TOReference<?> influencer, InfluencerRelationship relationship);
     Map<TOReference<?>, InfluencerInstance> getInfluencers();
-    Map<TOReference<?>, InfluencerRelationship> getStandardInfluencers();
+    void updateProceduralInfluencers(); //Idea here is that the code can automatically add and remove procedural influencers (like dead people, or new lieges)
     double influencerResistance(TOReference<?> influencer); // clamped between -1 and 1. Used to model things like personal opinion of an influencer for people -> people influencer,
     // or situations where a person might have less influence than the relationship suggests (power imbalance, for example).
     DMEReference<T> getOwner();
@@ -50,8 +56,7 @@ public interface CultureObject<
     default Acceptance getAcceptance(Tenet tenet, boolean includeInfluencers){
         return Acceptance.get((int) Math.round(getAcceptanceValue(tenet, includeInfluencers)));
     }
-    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, TOReference<?>... blacklist){
-
+    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, TOReference<?>... bls){
         Map<Tenet,I> opinions = getOpinions();
         double acceptance = 0;
         if (opinions.containsKey(tenet)){
@@ -59,17 +64,33 @@ public interface CultureObject<
         } else {
             acceptance =  tenet.getCompassEntry().getCompatibilityValue(getCompass());
         }
+        List<TOReference<?>> blacklist = new ArrayList<>(List.of(bls));
+        blacklist.add(this.getTOReference()); //prevents recursion might rewrite the influencer code to settle instead of looping like this, but idk.
+        if (this.getParentObject().isPresent()){
+            Pair<TOReference<?>, InfluencerRelationship> parentPair = this.getParentObject().get();
+            TOReference<?> parent = parentPair.getLeft();
+            InfluencerRelationship parentRel = parentPair.getRight();
+            if (parentRel.hasWeightFor(tenet.getGroup()) && parentRel.getWeight(tenet.getGroup()) == 1){ //Simulated hegamonic control, especially used on the systemic side of
+                return parent.get().getAcceptanceValue(tenet,includeInfluencers,blacklist.toArray(TOReference[]::new));
+            }
+        }
         if (includeInfluencers){
-            return AdjustForInfluence(this,tenet,true,acceptance,blacklist);
+            Double val = getInfluencedCache().get(tenet);
+            if (val != null){
+                return val;
+            }
+            val = AdjustForInfluence(this,tenet,true,acceptance,blacklist.toArray(TOReference[]::new));
+            getInfluencedCache().put(tenet,val);
+            return val;
         }
         return acceptance;
     }
-    void internalSetCompass(PoliticalCompass compass);
-    PoliticalCompass getCompass();
-    default void amendCompass(Pair<PoliticalCompass.Axis,Integer>... values){
-        PoliticalCompass compass = getCompass();
+    void internalSetCompass(InterpolatedPoliticalCompass<?> compass);
+    InterpolatedPoliticalCompass<?> getCompass();
+    default void amendCompass(Pair<IPoliticalCompass.Axis,Integer>... values){
+        InterpolatedPoliticalCompass<?> compass = getCompass();
         boolean changed = false;
-        for (Pair<PoliticalCompass.Axis,Integer> pair : values) {
+        for (Pair<IPoliticalCompass.Axis,Integer> pair : values) {
             if (pair.getLeft() == null || (pair.getRight() == null || pair.getRight() == 0)){
                 continue;
             }
@@ -79,6 +100,7 @@ public interface CultureObject<
         if (changed){
             DMEReference<?> owner = getOwner();
             owner.get().getTimeline().addChange(new CompassChange<>(owner, Global.getDate(),compass));
+            getInfluencedCache().invalidateAll();
         }
     }
     default boolean isInfluencer(TOReference<?> ref){
@@ -128,6 +150,7 @@ public interface CultureObject<
         for (Pair<TOReference<?>,InfluencerInstance> inst : insts){
             ch.addChange(inst);
         }
+        getInfluencedCache().invalidateAll();
     }
     default InfluencerMapChange<T> getInfluencerChange(){
         DMEReference<T> owner = getOwner();

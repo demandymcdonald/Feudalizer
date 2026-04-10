@@ -27,7 +27,7 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     private final boolean isBoundary;
     private final List<ChangeID> breadcrumbs;
     private final Map<ChangeID, TimelineChange<? super T>> activeChanges;
-
+    private boolean isDirty = false;
     public TimelineState(Timeline<T> timeline, LocalDate start, LocalDate end, boolean isBoundary, List<ChangeID> breadcrumbs, Map<ChangeID,TimelineChange<? super T>> activeChanges) {
         super(timeline.getOwner());
         this.timeline = timeline;
@@ -59,6 +59,14 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     @Override
     public LocalDate getEnd() {
         return end;
+    }
+
+    @Override
+    public void setDirty() {
+        if (!isDirty){
+            isDirty = true;
+            timeline.setDirty();
+        }
     }
 
     public boolean isBoundary() {
@@ -160,14 +168,16 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
 
     public void insertBreadcrumb(ChangeID id){
         breadcrumbs.add(id);
+        setDirty();
     }
     public void insertAndPropagateBreadcrumb(TimelineChange<? super T> change){
         insertBreadcrumb(change.getID());
         propagateBreadcrumbs(timeline,change);
+        setDirty();
     }
     public void removeBreadcrumb(ChangeID id){
         breadcrumbs.remove(id);
-
+        setDirty();
     }
     public boolean isActiveChange(TimelineChange<?> change){
         return activeChanges.containsValue(change);
@@ -177,9 +187,11 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
     }
     public void insertChange(TimelineChange<? super T> change){
         activeChanges.put(change.getID(), change);
+        setDirty();
     }
     public void removeChange(ChangeID id){
         activeChanges.remove(id);
+        setDirty();
     }
 
     public void deactivateChange(ChangeID id, boolean sandbox){
