@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 import com.utilities.serialization.SuperclassSerializable;
 
 import java.time.LocalDate;
-
+@Deprecated(forRemoval = true)
 public abstract class TimelineEasingVariable<E extends TimelineEasingVariable<E,C,T>,C extends TimelineChange<? super T>, T extends DateMutableEntity<T>> implements SuperclassSerializable<TimelineEasingVariable<E,C,T>> {
     DMEReference<T> owner;
     ChangeID thisChange;
