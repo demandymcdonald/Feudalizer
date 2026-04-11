@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -41,22 +41,22 @@ public class LandMapChanges {
         }
 
         @Override
-        protected JsonElement serializeK(Tenet tenet) {
+        protected JsonElement kSerialize(Tenet tenet) {
             return new JsonPrimitive(tenet.getID());
         }
 
         @Override
-        protected Tenet deserializeK(JsonElement m) {
+        protected Tenet kDeserialize(JsonElement m) {
             return TenetManager.getTenet(m.getAsString());
         }
 
         @Override
-        protected LandTenetInstance<T> deserializeV(JsonElement m) {
+        protected LandTenetInstance<T> vDeserialize(JsonElement m) {
             return null;
         }
 
         @Override
-        protected JsonElement serializeV(LandTenetInstance<T> tLandTenetInstance) {
+        protected JsonElement vSerialize(LandTenetInstance<T> tLandTenetInstance) {
             return null;
         }
 

@@ -156,7 +156,9 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
     public TimelineState<T> getLastState(){
         return timeline.lastEntry().getValue();
     }
-
+    public TimelineState<T> getFirstState(){
+        return timeline.firstEntry().getValue();
+    }
     public TimelineState<T> makeNewState(LocalDate start){
         TimelineState<T> before = timeline.floorEntry(start.minusDays(1)).getValue();
         TimelineState<T> after = timeline.ceilingEntry(start.plusDays(1)).getValue();
@@ -227,13 +229,13 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
     public final <TC extends TimelineChange<? super T>> TC followBreadcrumb(ChangeID id){
         return followBreadcrumb(this,id);
     }
-    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(LocalDate starting, Global.TimeDirection direction, String classType,
+    public final <TC extends TimelineChange<? super T>> TC findChangeByClassID(LocalDate starting, Global.TimeDirection direction, String classType,
                                                                      final boolean includeDeactivated) {
-        return findChangeByClassID(this, starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType));
+        return findChangeByClass(this, starting,direction,includeDeactivated,ChangeID.buildChangeClassID(classType));
     }
-    public final <TC extends TimelineChange<? super T>> List<TC> findChangeByClassID(LocalDate starting, Global.TimeDirection direction, TC example,
+    public final <TC extends TimelineChange<? super T>> TC findChangeByClassID(LocalDate starting, Global.TimeDirection direction, TC example,
                                                                                      final boolean includeDeactivated) {
-        return findChangeByClassID(this,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(example.getClass().getName()));
+        return findChangeByClass(this,starting,direction,includeDeactivated,ChangeID.buildChangeClassID(example.getClass().getName()));
     }
     //==== Serializers ====
 

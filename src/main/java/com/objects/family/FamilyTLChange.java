@@ -3,7 +3,7 @@ package com.objects.family;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
@@ -34,20 +34,20 @@ public abstract class FamilyTLChange {
         }
 
         @Override
-        protected JsonElement serializeK(DMEReference<HumanCharacter> ref) {
+        protected JsonElement kSerialize(DMEReference<HumanCharacter> ref) {
             return ref.serialize();
         }
 
         @Override
-        protected DMEReference<HumanCharacter> deserializeK(JsonElement m) {
+        protected DMEReference<HumanCharacter> kDeserialize(JsonElement m) {
             return DMEReference.deserialize(m.getAsJsonObject());
         }
         @Override
-        protected JsonElement serializeV(Family.Relationship relationship) {
+        protected JsonElement vSerialize(Family.Relationship relationship) {
             return new JsonPrimitive(relationship.name());
         }
         @Override
-        protected Family.Relationship deserializeV(JsonElement m) {
+        protected Family.Relationship vDeserialize(JsonElement m) {
             return Family.Relationship.valueOf(m.getAsString());
         }
 
@@ -107,7 +107,7 @@ public abstract class FamilyTLChange {
         @Override
         protected Optional<StateError> doCheck(DMEReference<? extends Family> entity, TimelineChange<? extends Family> thisChange, TimelineChange<?> checkAgainst) {
             if(thisChange instanceof MemberChange mc){
-                Map<DMEReference<HumanCharacter>, Family.Relationship> changeFragment = mc.getChangeFragment();
+                Map<DMEReference<HumanCharacter>, Family.Relationship> changeFragment = mc.getActiveChanges();
                 if(changeFragment.containsValue(CHILD_BORN) || changeFragment.containsValue(CHILD_BORN_DISOWNED)) {
                     for (Map.Entry<DMEReference<HumanCharacter>, Family.Relationship> entry : changeFragment.entrySet()) {
                         if (entry.getValue() == CHILD_BORN || entry.getValue() == CHILD_BORN_DISOWNED) {

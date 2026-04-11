@@ -3,8 +3,7 @@ package com.objects.culture.object;
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
@@ -20,7 +19,6 @@ import com.objects.culture.tenet.types.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
 

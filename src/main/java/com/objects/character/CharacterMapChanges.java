@@ -5,7 +5,7 @@ import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.condition.Condition;
 import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
@@ -69,9 +69,9 @@ public class CharacterMapChanges {
 
         @Override
         protected String getText() {
-            final int size = getChangeFragment().size();
+            final int size = getActiveChanges().size();
             if(size == 1){
-                return this.getOwner().parse() + " changed their opinion of " + getChangeFragment().keySet().iterator().next().toString();
+                return this.getOwner().parse() + " changed their opinion of " + getActiveChanges().keySet().iterator().next().toString();
             } else {
                 return this.getOwner().parse() + " changed their opinion of " + size + " people.";
             }
@@ -100,7 +100,7 @@ public class CharacterMapChanges {
                 return ch.getLeapfrog();
             };
             final BiConsumer<OpinionChange,Map<LocalDate,List<OpinionReason>>> consumer = (ch, finalMap) -> {
-                Map<UUID,Opinion> localMap = ch.getChangeFragment();
+                Map<UUID,Opinion> localMap = ch.getActiveChanges();
                 Opinion oo = localMap.get(otherID);
                 if(oo != null){
                     finalMap.put(ch.getStart(),oo.getActiveReasons());
@@ -125,7 +125,7 @@ public class CharacterMapChanges {
 
         @Override
         protected void onBuildMapStep(OpinionChange stepChange) {
-            for (Map.Entry<UUID, Opinion> entry : stepChange.getChangeFragment().entrySet()) {
+            for (Map.Entry<UUID, Opinion> entry : stepChange.getActiveChanges().entrySet()) {
                 Opinion current = this.activeChanges.get(entry.getKey());
                 if (current != null){
                     current.amendPastTotal(entry.getValue().getActiveTotal());
@@ -152,27 +152,27 @@ public class CharacterMapChanges {
 
         @Override
         public void additionalLoad(JsonObject data) {
-            for (Opinion entry : getChangeFragment().values()) {
+            for (Opinion entry : getActiveChanges().values()) {
                 entry.setParent(this);
             }
         }
         @Override
-        protected JsonElement serializeV(Opinion opinion) {
+        protected JsonElement vSerialize(Opinion opinion) {
             return opinion.toJson();
         }
 
         @Override
-        protected JsonElement serializeK(UUID uuid) {
+        protected JsonElement kSerialize(UUID uuid) {
             return new JsonPrimitive(uuid.toString());
         }
 
         @Override
-        protected Opinion deserializeV(JsonElement m) {
+        protected Opinion vDeserialize(JsonElement m) {
             return new Opinion(m.getAsJsonObject());
         }
 
         @Override
-        protected UUID deserializeK(JsonElement m) {
+        protected UUID kDeserialize(JsonElement m) {
             return UUID.fromString(m.getAsString());
         }
     }

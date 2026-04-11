@@ -15,6 +15,7 @@ import com.base.timeline.change.condition.nullify.NullifyResult;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
+import com.base.timeline.sandbox.function.SandboxFunction;
 import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
@@ -139,7 +140,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
             deactivated = true;
         }
     }
-
+    public void complete(Sandbox<? extends T> sandbox,SandboxFunction<? extends T> function, SandboxCode code){
+        onSandboxEnd(sandbox,function,code);
+    }
 
     public void moveChange(@Nullable LocalDate newStart, @Nullable LocalDate newEnd){
 
@@ -175,6 +178,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     protected void onReactivate(){}
     protected void onStageAdvance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance){}
     protected void onSandboxInit(Sandbox<? extends T> sandbox){}
+    protected void onSandboxEnd(Sandbox<? extends T> sandbox,SandboxFunction<? extends T> function, SandboxCode code){}
     protected void onMove(LocalDate newStart, LocalDate newEnd,  TimelineState<? extends T> newState, TimelineState<? extends T> oldState){}
     public boolean isOpposite(TimelineChange<?>state){
         return oppositeChanges().contains(state.getClass());

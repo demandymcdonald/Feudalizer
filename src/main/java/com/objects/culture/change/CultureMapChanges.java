@@ -3,7 +3,7 @@ package com.objects.culture.change;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
@@ -81,22 +81,22 @@ public class CultureMapChanges {
 
         }
         @Override
-        protected JsonElement serializeK(Tenet tenet) {
+        protected JsonElement kSerialize(Tenet tenet) {
             return new JsonPrimitive(tenet.getID());
         }
 
         @Override
-        protected JsonElement serializeV(CultureTenetInstance tenetInstance) {
+        protected JsonElement vSerialize(CultureTenetInstance tenetInstance) {
             return tenetInstance.serialize();
         }
 
         @Override
-        protected Tenet deserializeK(JsonElement m) {
+        protected Tenet kDeserialize(JsonElement m) {
             return TenetManager.getTenet(m.getAsString());
         }
 
         @Override
-        protected CultureTenetInstance deserializeV(JsonElement m) {
+        protected CultureTenetInstance vDeserialize(JsonElement m) {
             CultureTenetInstance t = new CultureTenetInstance();
             t.deserialize(m.getAsJsonObject());
             return t;

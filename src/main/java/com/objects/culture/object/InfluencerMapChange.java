@@ -5,7 +5,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.Influencers.InfluencerInstance;
@@ -42,22 +42,22 @@ public class InfluencerMapChange<T extends DateMutableEntity<T>> extends Timelin
     }
 
     @Override
-    protected JsonElement serializeK(TOReference<?> toReference) {
+    protected JsonElement kSerialize(TOReference<?> toReference) {
         return toReference.serialize();
     }
 
     @Override
-    protected TOReference<?> deserializeK(JsonElement m) {
+    protected TOReference<?> kDeserialize(JsonElement m) {
         return TOReference.deserialize(m.getAsJsonObject());
     }
 
     @Override
-    protected InfluencerInstance deserializeV(JsonElement m) {
+    protected InfluencerInstance vDeserialize(JsonElement m) {
         return RegistrySerialManager.deserialize(m.getAsJsonObject());
     }
 
     @Override
-    protected JsonElement serializeV(InfluencerInstance influencerInstance) {
+    protected JsonElement vSerialize(InfluencerInstance influencerInstance) {
         return influencerInstance.serialize();
     }
 

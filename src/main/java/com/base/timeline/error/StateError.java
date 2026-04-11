@@ -165,7 +165,7 @@ public class StateError implements ConditionResult {
     }
 
     public StateError addMergeContinue(){
-
+        return addOption(new ErrorResolution.MapMergeContinue());
     }
 
     public StateError addOption(ErrorResolution option){

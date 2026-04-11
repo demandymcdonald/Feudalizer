@@ -6,17 +6,12 @@ import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.change.map.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
-import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.instance.CultureTenetInstance;
-import com.objects.culture.tenet.types.Tenet;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 public class CompassChange<T extends DateMutableEntity<?>> extends TimelineSingleChange<T> {
 

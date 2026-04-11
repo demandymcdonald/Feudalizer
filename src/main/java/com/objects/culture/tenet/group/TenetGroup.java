@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableList;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetManager;
 import com.utilities.Displayable;
+import com.utilities.hierarchy.Parented;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connected, String id, String name, String description) implements Displayable {
+public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connected, String id, String name, String description) implements Displayable, Parented<TenetGroup> {
     public static final int SYSTEM_MAX = 10;
     public static final int BELIEF_MAX = 10;
     public static final int VALUE_MAX = 3;
@@ -69,6 +71,12 @@ public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connec
     public boolean isChildOf(TenetGroup parent){
         return TenetManager.isParentGroup(parent,this);
     }
+
+    @Override
+    public Optional<TenetGroup> getParent() {
+        return Optional.ofNullable(parent);
+    }
+
     public record AcceptanceContainer(int maxNumber, Acceptance... accept){}
     public static TenetGroup builder(TGType type, String id, String name, String description){
         return new TenetGroup(type, null,ImmutableList.of(), id, name, description);

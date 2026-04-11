@@ -2,7 +2,8 @@ package com.base.timeline.error;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.map.TimelineMapChange;
+import com.base.timeline.change.multi.TimelineMultiChange;
+import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
@@ -132,10 +133,10 @@ public abstract class ErrorResolution implements Displayable {
         }
         @Override
         public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            if (newChange instanceof TimelineMapChange<?,?,?,?> currentTMC && oldChange instanceof TimelineMapChange<?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
-                currentTMC.merge(oldTMC);
+            if (newChange instanceof TimelineMultiChange<?,?,?,?> currentTMC && oldChange instanceof TimelineMultiChange<?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
+                currentTMC.mergeSafe(oldTMC);
                 newChange.override(state,oldTMC,true,false);
-                return END_SAVE;
+                return CONTINUE;
             }
             return CONTINUE;
         }
