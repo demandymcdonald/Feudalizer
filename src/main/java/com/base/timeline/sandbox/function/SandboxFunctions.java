@@ -14,6 +14,7 @@ import com.objects.title.succession.SuccessionPlanner;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SandboxFunctions {
 
@@ -53,6 +54,44 @@ public class SandboxFunctions {
                     break;
                 }
             }
+        }
+
+        @Override
+        public SandboxCode onCycle(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, List<Condition.ShouldRun> shouldRun) {
+            List<StateError> errors = newChange.doesConflict(existingChange,shouldRun);
+            if (errors.isEmpty()) {
+                return SandboxCode.CONTINUE;
+            }
+            return resolveStateErrors(sandbox, state, newChange, errors);
+        }
+
+        @Override
+        public void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+            if (isFirstCycle) {
+                sandbox.buildDirtyMap();
+            }
+        }
+    }
+    public static class MultiChange<T extends DateMutableEntity<T>> extends SandboxFunction<T> {
+
+        private final Consumer<SandboxCode> onComplete;
+
+        public MultiChange(Consumer<SandboxCode> onComplete) {
+            this.onComplete = onComplete;
+        }
+
+        @Override
+        public void onComplete(Sandbox<T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<T> entity, TimelineChange<? super T> newChange) {
+            final Timeline<T> timeline = sandbox.getSubject().get().getTimeline();
+            final TimelineChange<? super T> change = sandbox.getObjective().change();
+            final TimelineState<T> state = timeline.getStateAtExact(change.getStart(),true);
+            switch (code){
+                case END_DISCARD,CRITICAL_ERROR -> {
+                    sandbox.getWorkingDirty().clear();
+                    break;
+                }
+            }
+            onComplete.accept(code);
         }
 
         @Override

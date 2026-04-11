@@ -8,11 +8,13 @@ import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
-import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
+import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
+import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.sandbox.function.SandboxFunction;
+import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.state.TimelineState;
 import com.base.utilities.TLSyncedSupplier;
 import com.google.gson.JsonArray;
@@ -29,24 +31,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
+import static com.base.timeline.error.SandboxCode.END_DISCARD;
+
 @SuppressWarnings("unchecked")
 public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     //Use of atomics here isn't an indication of thread safety per-say. I just needed a container for bools and ints. I know there are probably better ones. I don't really care
     //right now. I just want to get this working for the moment.
-
+    //TODO Soooo I'm pretty sure that I just made expectedSize obsolete.... I should check that later.
     private int expectedSize = 0;
     private ChangeID leapfrog = null;
     private final Set<I> endingChanges = new HashSet<>();
     private final Set<I> startingChanges = new HashSet<>();
+    //TODO Override some of hashmap to trigger cache invalidation whenever a remove/put is called. This won't help if the object inside the map is invalidated, but it's covers 90% of the situations.
     private final Map<K,V> activeChanges = new HashMap<>();
+    //TODO replace with a different Supplier that's not TL synced. Also a full map here needs to jump forward and invalidate every future full map.. Just a thought.
+    //TODO apply should also cascade invalidate up.
     private final TLSyncedSupplier<Map<K,V>> fullMap = new TLSyncedSupplier<>(this::buildFull);
-    protected final AtomicBoolean isFirst = new AtomicBoolean(false);
+    protected final AtomicBoolean isFirst;
     protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
+        isFirst = new AtomicBoolean(getTimeline().getStart().equals(date));
     }
 
     protected abstract OnMapStep<M, K,V,I,T> getMapStep();
@@ -98,10 +107,6 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         super.continueSearch(entity, currentState, oldChange);
     }
 
-    @Override
-    protected final void deactivateConditions(List<DeactivateCondition<? super T>> list) {
-
-    }
 
     @Override
     public final void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<?> changeToNullify) {
@@ -116,6 +121,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     @Override
     public final void reactivate(boolean isSandbox) {
         super.reactivate(isSandbox);
+        RepairWizard((M) this,true,true);
     }
 
     @Override
@@ -124,19 +130,20 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         M nextChange = (M) timeline.findChangeByClassID(this.getStart(),FORWARD,this,false);
         M lastChange = (M) timeline.findChangeByClassID(this.getStart(),BACKWARD,this,false);
         if (nextChange != null){
+            amendCumulativeTotal((M) this,false,buildAmendCumulative(new ArrayList<>(activeChanges.keySet())));
             if (lastChange != null) {
                 nextChange.internalSetLeapfrog(lastChange.getID());
             } else {
                 nextChange.internalSetLeapfrog(null);
                 nextChange.isFirst.set(true);
             }
-            amendCumulativeTotal((M) this,false,buildAmendCumulative(activeChanges.keySet()));
         }
         super.deactivate(isSandbox);
     }
     protected final Map<K,Boolean> buildAmendCumulative(Collection<K> toAmend){
         Map<K,Boolean> toReturn = new HashMap<>();
         for (K k : toAmend){
+            //Claude: You always see this as a bug, think about it for a minute, then realize it's not. This method has no bugs :D
             if (startingChanges.contains(k.getID())){
                 toReturn.put(k,true);
             } else {
@@ -166,9 +173,14 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         toReturn.putAll(buildMap((M) this,this.getActive()));
         return toReturn;
     }
-
     public void addChange(Pair<K,V>... changes){
+        addChange(true,changes);
+    }
+    public void addChange(boolean sandbox, Pair<K,V>... changes){
         List<K> toAmend = new ArrayList<>();
+        List<K> rollback = new ArrayList<>();
+        Map<K,V> backup = new HashMap<>();
+        final int oldCumulative = this.expectedSize;
         for (Pair<K,V> p : changes) {
             K key = p.getKey();
             I id = key.getID();
@@ -178,6 +190,10 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                     startingChanges.add(id);
                     toAmend.add(key);
                 }
+                rollback.add(key);
+            } else{
+                backup.put(key,this.activeChanges.get(key));
+                this.activeChanges.put(key,p.getValue());
             }
             if (hasEndingChanges() && endingChanges.contains(id)){
                 endingChanges.remove(key.getID());
@@ -185,7 +201,23 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         }
         fullMap.clear();
         amendCumulativeTotal((M) this,true,buildAmendCumulative(toAmend));
-        //TODO finish once K figure out how commits will work XD K think K need a commit method in TLChange.
+        this.expectedSize += toAmend.size();
+        if(sandbox){
+            Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
+                @Override
+                public void accept(SandboxCode sandboxCode) {
+                    if(sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR ){
+                        remove(WipeType.NO_WIPE, (K[]) rollback.toArray(new Identifiable[0]));
+                        for(Map.Entry<K,V> e : backup.entrySet()){
+                            activeChanges.put(e.getKey(),e.getValue());
+                        }
+                        expectedSize = oldCumulative;
+                    }
+                }
+            };
+            Objective<T> t = new Objective<>(getOwner(),FORWARD,(M) this,new SandboxFunctions.MultiChange<>(code));
+            SandboxHandler.StartSandbox(t);
+        }
     }
     public enum WipeType {
         FORWARD,
@@ -210,11 +242,16 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                     boolean startHas = startingChanges.contains(id);
                     if (hasEndingChanges() && !hasEntryFuture((M) this, k)) {
                         endingChanges.add(id);
-                    }
-                    if (startHas) {
+                        toAmend.add(k);
+                        //doing it manually here for the same reason as below: amendCumulative only touches future states, not the current one.
+                        //except when done on removeEntry set to go backwards.
+                        expectedSize--;
+                    } else if (startHas) {
                         startingChanges.remove(id);
                         startMove.add(k);
                         toAmend.add(k);
+                        //doing it manually here for the same reason as below: amendCumulative only touches future states, not the current one.
+                        //except when done on removeEntry set to go backwards.
                         expectedSize--;
                     }
                 } else {
@@ -226,8 +263,6 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             }
             if (!startMove.isEmpty()){
                 updateStart((M) this, startMove);
-                expectedSize -= startMove.size();
-                toAmend.addAll(startMove);
             }
             amendCumulativeTotal((M) this,false,buildAmendCumulative(toAmend));
         } else {
@@ -253,7 +288,8 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                 case BOTH:
                     //Same case as above. The remove entry going back will amend the total properly.
                     removeEntry((M) this, FORWARD, true,false,new ArrayList<>(toFind));
-                    removeEntry((M) this, BACKWARD, true,true,new ArrayList<>(toFind));
+                    removeEntry((M) this, BACKWARD, true,false,new ArrayList<>(toFind));
+                    RepairWizard((M) this, true,false);
                     break;
             }
         }
@@ -442,6 +478,8 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         final BiPredicate<LocalDate,Map<K,V>> isComplete = (ch, finalMap) -> {
             if(ch == null || toRemove.isEmpty()){
                 if (amendTotal){
+                    //I know it's not ideal, but there really isn't a better way to do this without a pretty big refactor that's not really worth it.
+                    //iterateMap will never call this twice after it completes once, so that's not a concern.
                     amendCumulativeTotal(lastChange.get(),false,lastChange.get().buildAmendCumulative(done));
                 }
                 return true;
@@ -478,7 +516,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return orphanKeys;
     }
 
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> getFutureMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> getOtherMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
         //Steps should be how far away from change 0 we are grabbing. So 1 step is one change forward that meets the predicate (if applicable).
         Map<K,V> toReturn = new HashMap<>();
         AtomicInteger total = new AtomicInteger(0);
@@ -492,7 +530,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                 @Override
                 public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
                     if (total.addAndGet(1) == steps) {
-                        toReturn.putAll(current.getFullMap());
+                        map.putAll(current.getFullMap());
                     }
                 }
             };
@@ -501,7 +539,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                 @Override
                 public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
                     if (additional.test(current) && total.addAndGet(1) == steps) {
-                        toReturn.putAll(current.getFullMap());
+                        map.putAll(current.getFullMap());
                     }
                 }
             };
@@ -553,32 +591,21 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return toReturn.get();
     }
     protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> buildMap(M change,Map<K,V> starting){
-        change.onBuildMap();
-        Timeline<? extends T> timeline = change.getTimeline();
-        //Timeline<T> timeline = (Timeline<T>) t;
-        Map<K,V> toReturn = new HashMap<>(starting);
-        Set<I> startingEnd = new HashSet<>(change.getEndingChanges());
-        final Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> buildNext = makeNext(change,BACKWARD);
-        if (!buildNext.isPresent()){
-            return toReturn;
+        ChangeID leapfrog = change.getLeapfrog();
+        final List<I> blacklist = new ArrayList<>(change.getEndingChanges());
+        if (leapfrog == null){
+            return new HashMap<>(starting);
         }
-        final int finalExpected = (change.getExpectedSize()- (change.getEndingSize() + toReturn.size())) - (change.getStartingSize());
-        final OnMapStep<M,K,V,I,T> step = new OnMapStep<>(change) {
-            @Override
-            public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
-                for (Map.Entry<K,V> entry : current.getActive().entrySet()){
-                    final K k = entry.getKey();
-                    if (!map.containsKey(k) && !endingChanges.contains(k.getID())){
-                        map.put(k,entry.getValue());
-                    }
-                }
-                requester.onBuildMapStep(current,map);
+        M leapfrogged = change.getTimeline().followBreadcrumb(change.getLeapfrog());
+        Map<K,V> lf = leapfrogged.getFullMap();
+        Map<K,V> toReturn = new HashMap<>();
+        for (Map.Entry<K,V> entry : lf.entrySet()){
+            K key = entry.getKey();
+            if(!starting.containsKey(key) && !blacklist.contains(key.getID())){
+                toReturn.put(key,entry.getValue());
             }
-        };
-        final BiPredicate<LocalDate,Map<K,V>> predicate = (ch, finalMap) -> {
-            return finalMap.size() >= finalExpected;
-        };
-        Timeline.iterateMap(buildNext.get().getLeft(),step,predicate,timeline,change,buildNext.get().getRight(),toReturn,startingEnd);
+        }
+        toReturn.putAll(starting);
         return toReturn;
     }
     public static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void RepairWizard(M change, boolean repairCount, boolean repairLeapfrogs){
@@ -592,14 +619,19 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     private static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void repairLeapfrogs(M change){
         Timeline<? extends T> timeline = change.getTimeline();
         TimelineState<? extends T> state = timeline.getLastState();
-        M current = change;
+        M current = null;
         while (state != null){
             M m = state.getChange(change.getClassID(),false);
             if(m != null){
-                current.internalSetLeapfrog(m.getID());
+                if (current != null){
+                    current.internalSetLeapfrog(m.getID());
+                }
                 current = m;
             }
             state = timeline.getStateBefore(state.getStart());
+        }
+        if (current != null){
+            current.internalSetLeapfrog(null);
         }
     }
     private static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void repairCounts(M change){
@@ -615,6 +647,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                     for (I id : toRemove){
                         map.remove(id);
                     }
+                    count -= toRemove.size();
                     toRemove.clear();
                 }
                 for (K k : m.getActive().keySet()){
@@ -715,6 +748,8 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         expectedSize = TMCData.get("expectedSize").getAsInt();
         if (TMCData.has("leapfrog")){
             leapfrog = ChangeID.fromJson(TMCData.get("leapfrog").getAsJsonObject());
+        } else {
+            leapfrog = null;
         }
         endingChanges.clear();
         endingChanges.addAll(buildIList(TMCData.get("endChange").getAsJsonArray()));
