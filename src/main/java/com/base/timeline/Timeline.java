@@ -119,6 +119,9 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
     public TimelineState<T> getNextState(LocalDate date){
         return timeline.higherEntry(date).getValue();
     }
+    public TimelineState<T> getPreviousState(LocalDate date){
+        return timeline.lowerEntry(date).getValue();
+    }
     public TimelineState<T> getStateAt(LocalDate date){
         TimelineState<T> state = timeline.floorEntry(date).getValue();
         if (state == null){
@@ -133,15 +136,17 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         }
         return state;
     }
+    public TimelineState<T> getStateBefore(){
+        return timeline.lowerEntry(getStart()).getValue();
+    }
     public TimelineState<T> getStateBefore(LocalDate date){
-        TimelineState<T> state = timeline.floorEntry(date.minusDays(1)).getValue();
-        date = state.getStart().minusDays(1);
-        return timeline.floorEntry(date).getValue();
+        return timeline.lowerEntry(date).getValue();
+    }
+    public TimelineState<T> getStateAfter(){
+        return timeline.higherEntry(getEnd()).getValue();
     }
     public TimelineState<T> getStateAfter(LocalDate date){
-        TimelineState<T> state = timeline.ceilingEntry(date.plusDays(1)).getValue();
-        date = state.getStart().minusDays(1);
-        return timeline.floorEntry(date).getValue();
+        return timeline.higherEntry(date).getValue();
     }
     public TimelineState<T> getOrMakeState(LocalDate d){
         TimelineState<T> state = timeline.get(d);

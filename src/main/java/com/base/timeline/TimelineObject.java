@@ -11,11 +11,10 @@ import com.utilities.id.Identifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
+import java.util.function.*;
 
 public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
 
@@ -258,6 +257,39 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
             iterateMap(getNext,toDo,isComplete,timeline,startingChange,starting,map,startEnd,true);
         }
     }
+    public static <TC extends TimelineChange<? super T>,T extends DateMutableEntity<T>> TC getChangeStep(Timeline<T> timeline, TC current, TimeDirection direction, boolean includeDeactivated, int steps, @Nullable Predicate<TC> additional){
+        TC toReturn = null;
+        final long changeID = current.getClassID();
+        LocalDate currentDate = current.getStart();
+        Function<LocalDate,TimelineState<T>> get;
+        if (additional == null){
+            additional = (tc) -> true;
+        }
+        if (direction == TimeDirection.FORWARD){
+            get = timeline::getNextState;
+        }else{
+            get = timeline::getPreviousState;
+        }
+        steps = Math.abs(steps);
+        int currentStep = 0;
+        while (toReturn == null){
+            TimelineState<T> state = get.apply(currentDate);
+            if (state == null){
+                break;
+            }
+            TC change = state.getChange(changeID,includeDeactivated);
+            if(change != null && additional.test(change) && currentStep++ >= steps){
+                toReturn = change;
+                break;
+            }
+            currentDate = state.getStart();
+        }
+        return toReturn;
+    }
+
+
+
+
     public static <T extends DateMutableEntity<T>,TC extends TimelineChange<? super T>> Class<TC> getChangeClass(TC tc){
         return (Class<TC>) tc.getClass();
     }
