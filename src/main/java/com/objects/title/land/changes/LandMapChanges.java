@@ -11,7 +11,7 @@ import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.instance.LandTenetInstance;
 import com.objects.culture.tenet.types.Tenet;
-import com.objects.title.land.HabitableLand;
+import com.objects.title.land.habitable.HabitableLand;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;

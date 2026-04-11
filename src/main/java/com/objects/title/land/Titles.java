@@ -1,6 +1,9 @@
 package com.objects.title.land;
 
 import com.display.geography.GeometryType;
+import com.objects.title.land.habitable.County;
+import com.objects.title.land.habitable.Province;
+import com.objects.title.land.habitable.Town;
 
 import java.time.LocalDate;
 import java.util.UUID;

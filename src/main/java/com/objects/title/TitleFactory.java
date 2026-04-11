@@ -2,6 +2,9 @@ package com.objects.title;
 
 import com.objects.title.land.*;
 import com.google.gson.JsonObject;
+import com.objects.title.land.habitable.County;
+import com.objects.title.land.habitable.Province;
+import com.objects.title.land.habitable.Town;
 
 import java.util.HashMap;
 import java.util.function.Function;

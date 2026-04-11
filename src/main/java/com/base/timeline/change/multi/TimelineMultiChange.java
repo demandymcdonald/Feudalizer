@@ -58,9 +58,6 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         isFirst = new AtomicBoolean(getTimeline().getStart().equals(date));
     }
 
-    protected abstract OnMapStep<M, K,V,I,T> getMapStep();
-
-    public abstract int getFullSize();
     public int getActiveSize(){
         return  getActive().size();
     }

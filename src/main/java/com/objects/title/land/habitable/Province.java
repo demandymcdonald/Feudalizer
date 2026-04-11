@@ -1,4 +1,4 @@
-package com.objects.title.land;
+package com.objects.title.land.habitable;
 
 import com.base.reference.StateReference;
 import com.display.geography.GeometryType;

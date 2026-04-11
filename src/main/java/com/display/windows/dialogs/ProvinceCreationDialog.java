@@ -5,7 +5,7 @@ import com.base.DMRegistry;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
 import com.objects.character.human.HumanCharacter;
-import com.objects.title.land.Province;
+import com.objects.title.land.habitable.Province;
 import com.objects.title.land.Titles;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

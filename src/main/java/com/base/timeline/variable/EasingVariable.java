@@ -6,7 +6,6 @@ import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
-import com.base.utilities.TimelineEasingVariable;
 import com.base.utilities.TimelineSynced;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,7 +20,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends TimelineChange<? super T> & EasingChange<?,C,T>, T extends DateMutableEntity<?>> extends TimelineSynced, SuperclassSerializable<E> {
-    Class<C> getChangeClass();
+    String getChangeClassName();
     DMEReference<? extends T> getOwner();
     ImmutableList<VariableContainer> getEasingFunctions();
     Predicate<C> getMatching();
@@ -29,10 +28,10 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
         return (Timeline<? extends T>) getOwner().get().getTimeline();
     }
     default C getCurrentChange(){
-        return getTimeline().findChangeByClassID(Global.getDate().plusDays(1), Global.TimeDirection.BACKWARD, getChangeClass().getName(),false);
+        return getTimeline().findChangeByClassID(Global.getDate().plusDays(1), Global.TimeDirection.BACKWARD, getChangeClassName(),false);
     }
     default C getNextChange() {
-        return getTimeline().findChangeByClassID(Global.getDate(), Global.TimeDirection.BACKWARD, getChangeClass().getName(), false);
+        return getTimeline().findChangeByClassID(Global.getDate(), Global.TimeDirection.BACKWARD, getChangeClassName(), false);
     }
     enum EasingType {
         LERP(new EasingFunction(){
