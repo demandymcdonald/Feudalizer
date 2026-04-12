@@ -100,15 +100,18 @@ public abstract class SentientCharacter<T extends SentientCharacter<T,S>,S exten
         getTimeline().addChange(new CharacterChanges.SetDefaultSuccession<>(getReference(),Global.getDate(),preferredSuccession));
     }
     public final void addOpinion(Opinion opinion) {
-        UUID id = opinion.getOther().getID();
         SimpleUUID simpleUUID = new SimpleUUID(opinion.getOther().getID());
         if (opinions.containsKey(simpleUUID)) {
             Opinion o = opinions.get(simpleUUID);
             for (OpinionReason r : opinion.getActiveReasons()){
                 o.addOpinions(r);
             }
+            SentientMapChange.OpinionMapChange<T> change =
+                    getCurrentState().getChange(SentientMapChange.OpinionMapChange.class.getName(),false);
+            change.setChanged(simpleUUID);
+        } else {
+            opinions.put(simpleUUID,opinion);
         }
-        opinions.put(,opinion);
     }
     public final void internalSetForename(String forename){
         this.firstName = forename;
