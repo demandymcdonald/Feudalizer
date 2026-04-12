@@ -227,57 +227,75 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
             return null;
         }
     }
-
     public static <TC extends TimelineMultiChange<TC,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void iterateMap(
-            BiFunction<Timeline<? extends T>,TC,ChangeID> getNext, TimelineMultiChange.OnMapStep<TC,K,V,I,T> toDo, BiPredicate<LocalDate, Map<K,V>> isComplete,
-            Timeline<? extends T> timeline, TC startingChange, ChangeID starting, Map<K,V> map, Set<I> startEnd){
-        iterateMap(getNext,toDo,isComplete,timeline,startingChange,starting,map,startEnd,false);
+        TC change,
+        TimeDirection direction,
+        TimelineMultiChange.MapTask<TC,K,V,I,T> task,
+        boolean includeCurrent){
+        final Timeline<? extends T> timeline = change.getTimeline();
+        final Function<LocalDate,TimelineState<? extends T>> get = buildStateGetterChange(timeline,direction);
+        final long classID = change.getClassID();
+
+        boolean isComplete = false;
+        LocalDate currentDate;
+        if(includeCurrent){
+            if(direction == TimeDirection.FORWARD){
+                currentDate = change.getStart().minusDays(1);
+            }else{
+                currentDate = change.getStart().plusDays(1);
+            }
+        } else {
+            currentDate = change.getStart();
+        }
+        while (!isComplete){
+            TimelineState<? extends T> currentState = get.apply(currentDate);
+            TC currentChange = null;
+            if(currentState != null) {
+                currentDate = currentState.getStart();
+                currentChange = currentState.getChange(classID, false);
+                if (currentChange != null) {
+                    task.step(currentChange);
+                }
+            }
+            if(task.isComplete(currentState,currentChange)){
+                isComplete = true;
+            } else if (currentState == null){
+                break;
+            }
+        }
+        if (!isComplete){
+            logger.warn("Could not complete iterate for: {} starting at {}. Stacktrace: " + change.getClass().getName(), change.getStart(), Thread.currentThread().getStackTrace());
+        }
+
     }
 
-    private static <TC extends TimelineMultiChange<TC,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void iterateMap(
-            BiFunction<Timeline<? extends T>,TC,ChangeID> getNext, TimelineMultiChange.OnMapStep<TC,K,V,I,T> toDo, BiPredicate<LocalDate, Map<K,V>> isComplete,
-            Timeline<? extends T> timeline, TC startingChange, ChangeID starting, Map<K,V> map, Set<I> startEnd, boolean afterRepair){
-        ChangeID current = starting;
-        boolean complete = false;
-        HashSet<I> fullEnd = new HashSet<>(startEnd);
-        while(current != null && !complete){
-            TC tc = (TC) timeline.followBreadcrumb(current);
-            fullEnd.addAll(tc.getEndingChanges());
-            toDo.mapDo(tc,map,fullEnd);
-            current = getNext.apply(timeline,tc);
-            complete = isComplete.test(current.getDate(), map);
+
+    public static <TC extends TimelineChange<T>,T extends DateMutableEntity<T>> TC getChangeStep(
+            TC current,
+            TimeDirection direction,
+            boolean includeDeactivated,
+            int steps,
+            @Nullable Predicate<TC> additional){
+        //TODO: add support for deactivated when I actually need it in a class.
+        if (includeDeactivated){
+            throw new UnsupportedOperationException("Deactivated changes are not supported yet.");
         }
-        if (current == null && !isComplete.test(current.getDate(), map)){
-            if (afterRepair){
-                throw new IllegalStateException("Map for change "+ startingChange.getClass().getName() +" is not complete after repairing! ");
-            }
-            logger.error("Map is not complete! Starting Repair for classtype: {} ",startingChange.getClass().getName());
-            TimelineMultiChange.RepairWizard(startingChange,true,true);
-            map.clear();
-            iterateMap(getNext,toDo,isComplete,timeline,startingChange,starting,map,startEnd,true);
-        }
-    }
-    public static <TC extends TimelineChange<? super T>,T extends DateMutableEntity<T>> TC getChangeStep(Timeline<T> timeline, TC current, TimeDirection direction, boolean includeDeactivated, int steps, @Nullable Predicate<TC> additional){
         TC toReturn = null;
+        Timeline<? extends T> timeline = current.getTimeline();
         final long changeID = current.getClassID();
         LocalDate currentDate = current.getStart();
-        Function<LocalDate,TimelineState<T>> get;
+        final Function<LocalDate,TimelineState<? extends T>> get = buildStateGetterChange(timeline,direction);
         if (additional == null){
             additional = (tc) -> true;
-        }
-        if (direction == TimeDirection.FORWARD){
-            get = timeline::getNextState;
-        }else{
-            get = timeline::getPreviousState;
         }
         steps = Math.abs(steps);
         int currentStep = 0;
         while (toReturn == null){
-            TimelineState<T> state = get.apply(currentDate);
+            TimelineState<? extends T> state = get.apply(currentDate);
             if (state == null){
                 break;
             }
-            TC change = state.getChange(changeID,includeDeactivated);
+            TC change = state.getChange(changeID,false);
             if(change != null && additional.test(change) && currentStep++ >= steps){
                 toReturn = change;
                 break;
@@ -286,8 +304,24 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
         }
         return toReturn;
     }
-
-
+    private static <T extends DateMutableEntity<T>> Function<LocalDate,TimelineState<? extends T>> buildStateGetterChange(Timeline<? extends T> timeline, TimeDirection direction){
+        Function<LocalDate,TimelineState<? extends T>> get;
+        if (direction == TimeDirection.FORWARD){
+            get = timeline::getNextState;
+        }else{
+            get = timeline::getPreviousState;
+        }
+        return get;
+    }
+    private static <T extends DateMutableEntity<T>> Function<LocalDate,TimelineState<T>> buildStateGetter(Timeline<T> timeline, TimeDirection direction){
+        Function<LocalDate,TimelineState<T>> get;
+        if (direction == TimeDirection.FORWARD){
+            get = timeline::getNextState;
+        }else{
+            get = timeline::getPreviousState;
+        }
+        return get;
+    }
 
 
     public static <T extends DateMutableEntity<T>,TC extends TimelineChange<? super T>> Class<TC> getChangeClass(TC tc){

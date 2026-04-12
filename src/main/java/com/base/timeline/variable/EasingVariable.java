@@ -4,11 +4,13 @@ import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
+import com.base.timeline.TimelineObject;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
 import com.base.utilities.TimelineSynced;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.utilities.id.Identifiable;
 import com.utilities.serialization.SuperclassSerializable;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -19,11 +21,11 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends TimelineChange<? super T> & EasingChange<?,C,T>, T extends DateMutableEntity<?>> extends TimelineSynced, SuperclassSerializable<E> {
+public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends TimelineChange<? super T> & EasingChange<?,C,T>, T extends DateMutableEntity<T>> extends TimelineSynced, SuperclassSerializable<E> {
     String getChangeClassName();
     DMEReference<? extends T> getOwner();
-    ImmutableList<VariableContainer> getEasingFunctions();
-    Predicate<C> getMatching();
+    Map<Identifiable<?>,VariableContainer> getEasingFunctions();
+    Predicate<E> getMatching();
     default Timeline<? extends T> getTimeline(){
         return (Timeline<? extends T>) getOwner().get().getTimeline();
     }
@@ -31,7 +33,7 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
         return getTimeline().findChangeByClassID(Global.getDate().plusDays(1), Global.TimeDirection.BACKWARD, getChangeClassName(),false);
     }
     default C getNextChange() {
-        return getTimeline().findChangeByClassID(Global.getDate(), Global.TimeDirection.BACKWARD, getChangeClassName(), false);
+        return getCurrentChange().getNext();
     }
     enum EasingType {
         LERP(new EasingFunction(){
@@ -76,18 +78,18 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
         }
     }
     private void calculateVariables(){
-        final ImmutableList<VariableContainer> ourEase = this.getEasingFunctions();
+        final Map<Identifiable<?>,VariableContainer> ourEase = this.getEasingFunctions();
         final C future = getNextChange();
         if (future == null){
-            for (VariableContainer v : ourEase){
+            for (VariableContainer v : ourEase.values()){
                 v.consumer().accept(v.base().get());
             }
             return;
         }
-        final ImmutableList<VariableContainer> otherEase = future.getEasingVariable(this.getMatching()).getEasingFunctions();
+        final Map<Identifiable<?>,VariableContainer> otherEase = future.getEasingVariableCast(getMatching()).getEasingFunctions();
         final LocalDate startLerp = getCurrentChange().getStart();
         final LocalDate endLerp = future.getEnd();
-        for(int i = 0; i < ourEase.size(); i++){
+        for(Identifiable<?> i : ourEase.keySet()){
             VariableContainer our = ourEase.get(i);
             VariableContainer other = otherEase.get(i);
             our.consumer().accept(our.type().easingFunction.calculate(our.base().get(), other.base().get(), startLerp, endLerp));
@@ -100,7 +102,7 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
     default void afterLoad(LocalDate date){
         calculateVariables();
     };
-    record VariableContainer(EasingType type,Supplier<Double> base, Consumer<Double> consumer){
+    record VariableContainer(EasingType type, Supplier<Double> base, Consumer<Double> consumer){
 
     }
     abstract class EasingFunction{

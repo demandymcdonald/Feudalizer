@@ -57,7 +57,7 @@ public class Town extends HabitableLand<Town> {
     protected JsonObject getPassthroughData() {
         JsonObject obj = super.getPassthroughData();
         if (Mayor.isPresent()) {
-            obj.addProperty("Mayor", Mayor.get().getId().toString());
+            obj.addProperty("Mayor", Mayor.get().getDisplayID().toString());
         } else if (MayorID.isPresent()) {
             obj.addProperty("Mayor", MayorID.get().toString());
         }

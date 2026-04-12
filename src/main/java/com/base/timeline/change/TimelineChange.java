@@ -310,10 +310,6 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     protected final List<DeactivateCondition<? super T>> getDeactivateConditions(){
         return deactivateConditions.get();
     }
-    public TimelineChange<?> getNextMatching(){
-        Timeline<? extends T> timeline = getTimeline();
-        return timeline.findChangeByClassID(this.getStart().plusDays(1), Global.TimeDirection.FORWARD,this.getClass().getName(),false).getFirst();
-    }
 
 
     public boolean hasMultipleApplyChecks(){

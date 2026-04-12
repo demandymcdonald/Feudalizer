@@ -40,22 +40,22 @@ public class Scopes {
         if (exclude == null){
             exclude = new HashSet<>();
         }
-        exclude.add(character.getId());
+        exclude.add(character.getDisplayID());
         HashMultimap<ObjectType, JsonObject> data = HashMultimap.create();
         data.put(ObjectType.CHARACTER,character.serialize());
         for (Family f : character.getFamilies().keySet()){
             if (includeFullSpouse){
                 for (HumanCharacter spouse : f.getSpouses()){
-                    if (spouse != null && !spouse.equals(character) && !exclude.contains(spouse.getId())){
-                        exclude.add(spouse.getId());
+                    if (spouse != null && !spouse.equals(character) && !exclude.contains(spouse.getDisplayID())){
+                        exclude.add(spouse.getDisplayID());
                         data.putAll(getPersonData(spouse,false,includeFullHouse,exclude));
                     }
                 }
 
             }
             for (HumanCharacter child : f.getMembers()){
-                if (child != null && !child.equals(character) && !exclude.contains(child.getId())){
-                    exclude.add(child.getId());
+                if (child != null && !child.equals(character) && !exclude.contains(child.getDisplayID())){
+                    exclude.add(child.getDisplayID());
                     data.putAll(getPersonData(child,includeFullSpouse,false,exclude));
                 }
             }
@@ -63,8 +63,8 @@ public class Scopes {
         if (includeFullHouse && character.getHouse().isPresent()){
             House house = character.getHouse().get();
             for (HumanCharacter c : house.getAllCharacters()){
-                if (!c.equals(character) && !exclude.contains(c.getId())){
-                    exclude.add(c.getId());
+                if (!c.equals(character) && !exclude.contains(c.getDisplayID())){
+                    exclude.add(c.getDisplayID());
                     data.putAll(getPersonData(c,false,false,exclude));
                 }
             }

@@ -11,7 +11,7 @@ import java.util.Map;
 public record CauseOfEnd<T extends DateMutableEntity<?>>(String id, String displayName, String description) implements Displayable{
     private static final Map<String,CauseOfEnd<?>> CAUSE_MAP = new HashMap<>();
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

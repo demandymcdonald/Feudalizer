@@ -5,17 +5,18 @@ import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.types.Tenet;
+import com.utilities.id.StringIdentifiable;
 
 import java.util.function.Supplier;
 
-public class TenetReference extends StateReference {
+public class TenetReference extends StateReference implements StringIdentifiable {
     public static final String TENET_SR_TYPE = "TenetReference";
 
     public final Supplier<Tenet> tenet = (Supplier<Tenet>) Suppliers.memoize(this::link);
     private final String id;
     private final TenetGroup group;
     public TenetReference(Tenet tenet) {
-        this.id = tenet.getID();
+        this.id = tenet.getDisplayID();
         this.group = tenet.getGroup();
     }
     public TenetReference(String id, String groupID) {
@@ -34,7 +35,7 @@ public class TenetReference extends StateReference {
         JsonObject object = new JsonObject();
         object.addProperty(TYPE_VARIABLE_NAME, TENET_SR_TYPE);
         object.addProperty("id", id);
-        object.addProperty("group", group.getID());
+        object.addProperty("group", group.getDisplayID());
         return null;
     }
     public Tenet get(){
@@ -47,5 +48,10 @@ public class TenetReference extends StateReference {
     }
     public static  TenetReference of(Tenet te){
         return new TenetReference(te);
+    }
+
+    @Override
+    public String getID() {
+        return id;
     }
 }

@@ -7,20 +7,23 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ChangeSupplier<T, C extends TimelineChange<?>> {
+public class CachingSupplier<T, C extends TimelineChange<?>> {
     private final Supplier<T> supplier;
     private Supplier<T> usableSupplier;
     private Consumer<C> consumer;
-    public ChangeSupplier(Supplier<T> supplier, @Nullable Consumer<C> consumer) {
+    private boolean isMemoized = false;
+    public CachingSupplier(Supplier<T> supplier, @Nullable Consumer<C> consumer) {
         this.supplier = supplier;
         this.consumer = consumer;
         resetCache();
     }
     private void resetCache(){
+        isMemoized = false;
         usableSupplier = Suppliers.memoize(supplier::get);
     }
 
     public T get(){
+        isMemoized = true;
         return usableSupplier.get();
     }
     public void clear(){
@@ -36,6 +39,8 @@ public class ChangeSupplier<T, C extends TimelineChange<?>> {
         this.consumer = consumer;
     }
 
-
+    public boolean isMemoized(){
+        return isMemoized;
+    }
 
 }

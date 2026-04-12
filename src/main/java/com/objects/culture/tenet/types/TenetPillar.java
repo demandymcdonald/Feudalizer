@@ -23,7 +23,7 @@ public abstract class TenetPillar<CP extends TenetPillar<CP>> extends Tenet {
         if (child.getGroup().isChildOf(this.getGroup())) {
             children.put(child.getGroup(), childRef);
         } else {
-            throw new RuntimeException("Cannot add an unrelated child to cultural pillar: "+ this.getID());
+            throw new RuntimeException("Cannot add an unrelated child to cultural pillar: "+ this.getDisplayID());
         }
         return (CP) this;
     }

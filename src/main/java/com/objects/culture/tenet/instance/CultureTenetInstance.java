@@ -4,6 +4,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
 import com.objects.culture.Culture;
 import com.objects.culture.change.CultureMapChanges;
+import com.objects.culture.object.instance.TenetInstance;
 
 public class CultureTenetInstance extends TenetInstance<CultureTenetInstance, CultureMapChanges.TenetMapChange, Culture> {
     @Override

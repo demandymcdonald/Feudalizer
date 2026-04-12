@@ -17,15 +17,15 @@ public record FamilyState(UUID PrimarySpouse, @Nullable UUID SecondarySpouse,
     public static FamilyState builder(HumanCharacter primary, @Nullable HumanCharacter secondary, List<HumanCharacter> children) {
         List<UUID> Children = new ArrayList<>();
         for (HumanCharacter child : children) {
-            Children.add(child.getId());
+            Children.add(child.getDisplayID());
         }
         UUID cleanSecondary;
         if (secondary != null) {
-            cleanSecondary = secondary.getId();
+            cleanSecondary = secondary.getDisplayID();
         } else {
             cleanSecondary = null;
         }
-        return new FamilyState(primary.getId(), cleanSecondary, Children);
+        return new FamilyState(primary.getDisplayID(), cleanSecondary, Children);
     }
 
     public JsonObject getSerialized() {

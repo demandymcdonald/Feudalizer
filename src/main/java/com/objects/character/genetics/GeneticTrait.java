@@ -58,7 +58,7 @@ public class GeneticTrait implements Displayable {
     }
 
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

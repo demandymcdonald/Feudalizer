@@ -1,7 +1,7 @@
 package com.utilities;
 
 public interface Displayable {
-    String getID();
+    String getDisplayID();
     String displayName();
     String description();
     //TODO ICONS

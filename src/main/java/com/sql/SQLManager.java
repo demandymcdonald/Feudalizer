@@ -83,12 +83,12 @@ public class SQLManager {
         String sql = "INSERT OR REPLACE INTO data_store (uuid, class_type, payload) VALUES (?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, entity.getId().toString());
+            pstmt.setString(1, entity.getDisplayID().toString());
             pstmt.setString(2, entity.getClass().getSimpleName());
             pstmt.setString(3, entity.serialize().toString());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Failed to save entity: " + entity.getId());
+            System.err.println("Failed to save entity: " + entity.getDisplayID());
             e.printStackTrace();
         }
     }

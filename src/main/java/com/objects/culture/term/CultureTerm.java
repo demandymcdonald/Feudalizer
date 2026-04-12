@@ -6,7 +6,7 @@ import com.utilities.Displayable;
 
 public class CultureTerm extends StateReference implements Displayable {
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return "";
     }
 

@@ -20,11 +20,40 @@ import static com.Global.TimeDirection.FORWARD;
 
 public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineMultiChange<M,K,V,I,T> {
 
+    public TimelineMapChange(DMEReference<? extends T> owner, LocalDate date, Map<K, V> initial) {
+        super(owner, date, initial);
+    }
 
     protected TimelineMapChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
     }
 
+    public abstract void setRuntimeMap(TimelineMap<K,V,T> map);
+    public abstract TimelineMap<K,V,T> getRuntimeMap();
 
+    @Override
+    public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        super.apply(entity, currentState);
+        pauseCacheChecks.set(true);
+        try{
+            Map<K,V> existing = getRuntimeMap();
+            if(existing == null){
+                setRuntimeMap(getFullMap());
+            } else {
+                existing.clear();
+                existing.putAll(getFullMap());
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            pauseCacheChecks.set(false);
+        }
+    }
 
+    public Map<K,V> buildNewMap(){
+        return buildChangeMap();
+    }
+    public Map<K,V> buildNewMap(Map<K,V> initial){
+        return buildChangeMap(initial);
+    }
 }

@@ -2,13 +2,9 @@ package com.objects.culture.object.compass;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.TenetManager;
 import com.utilities.number.BoundedInteger;
-import com.utilities.serialization.JsonSerializable;
 
 import java.util.Arrays;
-
-import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
 
 public class PoliticalCompass implements IPoliticalCompass {
 
@@ -149,27 +145,27 @@ public class PoliticalCompass implements IPoliticalCompass {
     }
 
     @Override
-    public BoundedInteger getICAxis() {
+    public BoundedInteger getAxisA() {
         return individualCollectiveAxis;
     }
 
     @Override
-    public BoundedInteger getUPAxis() {
+    public BoundedInteger getAxisB() {
         return universalParticularAxis;
     }
 
     @Override
-    public BoundedInteger getTOSAxis() {
+    public BoundedInteger getAxisC() {
         return trustInOpacityAxis;
     }
 
     @Override
-    public BoundedInteger getEHAxis() {
+    public BoundedInteger getAxisD() {
         return egalitarianHierarchyAxis;
     }
 
     @Override
     public IPoliticalCompass clone() {
-        return new PoliticalCompass(getUPAxis().get(),getICAxis().get(),getTOSAxis().get(),getEHAxis().get());
+        return new PoliticalCompass(getAxisB().get(), getAxisA().get(), getAxisC().get(), getAxisD().get());
     }
 }

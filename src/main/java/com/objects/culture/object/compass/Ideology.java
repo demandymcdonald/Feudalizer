@@ -21,7 +21,7 @@ public class Ideology implements Displayable {
             TenetManager.registerIdeology(this);
         }
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

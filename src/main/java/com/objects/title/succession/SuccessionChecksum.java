@@ -17,12 +17,12 @@ public record SuccessionChecksum(int entries, long checksum) {
     public static SuccessionChecksum of(Collection<HumanCharacter> container) {
         List<UUID> ids = new ArrayList<>();
         for (HumanCharacter ref : container) {
-            ids.add(ref.getId());
+            ids.add(ref.getDisplayID());
         }
         return of(ids.toArray(UUID[]::new));
     }
     public static SuccessionChecksum of(List<HumanCharacter> characters) {
-        List<UUID> uuids = characters.stream().map(HumanCharacter::getId).toList();
+        List<UUID> uuids = characters.stream().map(HumanCharacter::getDisplayID).toList();
         return of(uuids.toArray(UUID[]::new));
     }
     public static SuccessionChecksum of(UUID... characters) {

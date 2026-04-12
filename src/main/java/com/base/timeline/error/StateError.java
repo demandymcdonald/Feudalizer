@@ -48,7 +48,7 @@ public class StateError implements ConditionResult {
     private Map<String,ErrorResolution> buildOptionsString(ErrorResolution... options){
         Map<String,ErrorResolution> map = new HashMap<>();
         for (ErrorResolution e : options) {
-            map.put(e.getID(),e);
+            map.put(e.getDisplayID(),e);
         }
         return map;
     }
@@ -108,7 +108,7 @@ public class StateError implements ConditionResult {
             return "";
         }
         ErrorResolution er = getResolutions().values().stream().findFirst().orElseThrow();
-        return er.getID();
+        return er.getDisplayID();
     }
 
     public ErrorResolution getResolutionIfComplete(){
@@ -169,7 +169,7 @@ public class StateError implements ConditionResult {
     }
 
     public StateError addOption(ErrorResolution option){
-        options.put(option.getID(),option);
+        options.put(option.getDisplayID(),option);
         return this;
     }
 

@@ -20,7 +20,7 @@ public record CasteObject(TenetGroup group,String id, String name, String descri
         this.compass = compass;
     }
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

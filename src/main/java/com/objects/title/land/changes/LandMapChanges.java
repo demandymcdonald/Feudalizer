@@ -42,7 +42,7 @@ public class LandMapChanges {
 
         @Override
         protected JsonElement kSerialize(Tenet tenet) {
-            return new JsonPrimitive(tenet.getID());
+            return new JsonPrimitive(tenet.getDisplayID());
         }
 
         @Override

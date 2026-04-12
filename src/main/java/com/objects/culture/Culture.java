@@ -3,11 +3,17 @@ package com.objects.culture;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.multi.TimelineMap;
+import com.base.utilities.TLSyncedCache;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.change.CultureMapChanges;
+import com.objects.culture.object.CultureObjectContainer;
+import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
+import com.objects.culture.object.instance.TenetInstance;
+import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.instance.CultureTenetInstance;
 import com.objects.culture.tenet.instance.TOReference;
 import com.objects.culture.object.compass.PoliticalCompass;
@@ -19,82 +25,26 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 
-public class Culture extends AbstractCulture<Culture> implements CultureObject<CultureTenetInstance,CultureMapChanges.TenetMapChange,Culture> {
-    //Todo, replace with Map<DMEReference<Culture>, Influence Container(Enum for relationship type, String for why, Map<TenetGroup,Int for base tenet influence)
-    private final List<Culture> linkedChildCultures = new ArrayList<>();
-    private final Map<Tenet,CultureTenetInstance> tenetOpinions = new HashMap<>();
-    private final Map<TOReference<?>, InfluencerInstance> influencers = new HashMap<>();
-    private PoliticalCompass compass = new PoliticalCompass();
+public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture> {
+    CultureObjectContainer<Culture> container;
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
         super(created, ended, initialState);
-    }
-
-    public Culture(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
-        super(id, created, ended, initialState);
+        container = new CultureObjectContainer<>(getReference());
     }
 
     public Culture(DMEReference<Culture> dme) {
         super(dme);
+        container = new CultureObjectContainer<>(dme);
     }
-
-    @Override
-    public Map<Tenet, CultureTenetInstance> getOpinions() {
-        return tenetOpinions;
-    }
-
-    @Override
-    public Optional<Pair<TOReference<?>, InfluencerRelationship>> getParentObject() {
-        return Optional.empty();
-    }
-
-    @Override
-    public void setParentObject(TOReference<?> influencer, InfluencerRelationship relationship) {
-
-    }
-
-    @Override
-    public Map<TOReference<?>, InfluencerInstance> getInfluencers() {
-        return influencers;
-    }
-
-    @Override
-    public void updateProceduralInfluencers() {
-
-    }
-
-
-    @Override
-    public double influencerResistance(TOReference<?> influencer) {
-        return 0;
-    }
-
-    @Override
-    public DMEReference<Culture> getOwner() {
-        return null;
-    }
-
-    @Override
-    public void internalSetCompass(PoliticalCompass compass) {
-        this.compass = compass;
-    }
-
-    @Override
-    public PoliticalCompass getCompass() {
-        return compass;
-    }
-
-
-
 
     @Override
     protected void onLink() {
 
     }
 
-
     @Override
     public void doDateChange() {
-        linkedChildCultures.clear();
+
     }
 
     @Override
@@ -112,6 +62,25 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
         return null;
     }
 
+    public Culture(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
+        super(id, created, ended, initialState);
+    }
+
+    @Override
+    public void updateProceduralInfluencers() {
+
+    }
+
+    @Override
+    public double influencerResistance(TOReference<?> influencer) {
+        return 0;
+    }
+
+    @Override
+    public CultureObjectContainer<Culture> getContainer() {
+        return container;
+    }
+
     @Override
     public void additionalSave(JsonObject data) {
 
@@ -121,7 +90,4 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     public void additionalLoad(JsonObject data) {
 
     }
-
-
-
 }

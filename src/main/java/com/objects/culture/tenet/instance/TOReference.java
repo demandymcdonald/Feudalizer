@@ -5,23 +5,26 @@ import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
+import com.utilities.id.Identifiable;
 
-public class TOReference<T extends CultureObject<?, ?, ?>> extends StateReference {
-    DMEReference<?> holder;
+import java.util.UUID;
+
+public class TOReference<T extends DateMutableEntity<T> & CultureObject<T>> extends StateReference implements Identifiable<UUID> {
+    DMEReference<T> holder;
     public static final String TO_SR_TYPE = "TOReference";
     public TOReference(T e) {
-        holder = e.getOwner();
+        holder = e.getReference();
     }
-    public TOReference(DMEReference<?> holder) {
-        if (holder.get() instanceof CultureObject<?, ?, ?>){
+    public TOReference(DMEReference<T> holder) {
+        if (holder.get() instanceof CultureObject<?>){
             this.holder = holder;
         } else {
             throw new IllegalArgumentException("Holder must be a TenetOpinionated");
         }
     }
     public T get() {
-        DateMutableEntity<?> t =  holder.get();
-        if (t instanceof CultureObject<?,?,?> to){
+        DateMutableEntity<T> t =  holder.get();
+        if (t instanceof CultureObject<?> to){
             return (T) to;
         } else {
             throw new IllegalArgumentException("Holder must be a TenetOpinionated");
@@ -40,8 +43,13 @@ public class TOReference<T extends CultureObject<?, ?, ?>> extends StateReferenc
         object.add("holder", holder.serialize());
         return object;
     }
-    public static<T extends CultureObject<?, ?, ?>> TOReference<T> deserialize(JsonObject json){
+    public static <T extends DateMutableEntity<T> & CultureObject<T>> TOReference<T> deserialize(JsonObject json){
         JsonObject o = json.getAsJsonObject("holder");
         return new TOReference<T>(DMEReference.deserialize(o));
+    }
+
+    @Override
+    public UUID getID() {
+        return holder.getID();
     }
 }

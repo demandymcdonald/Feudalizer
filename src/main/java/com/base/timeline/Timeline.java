@@ -50,22 +50,26 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         return last.getEnd();
     }
     //Note: Sandbox methods should never be used outside of a sandbox's worker thread! Probably wouldn't break anything, but it's not built for main thread use!
-    public void addChange(TimelineChange<T> change){
+    public void addChange(TimelineChange<? super T> change){
         //This is the safe way to insert a change using propagation. It should be used by all runtime setters.
         getOrMakeState(change.getStart()); //We just need a state at the exact start date.
         Consumer<SandboxCode> afterChange = (code) -> {
-            TimelineState<T> state = getStateAt(change.getStart());
-            if (state.isEmpty()){
-                removeState(change.getStart());
-                TimelineState<T> before = getStateBefore(state.getStart());
-                TimelineState<T> after = getStateAfter(state.getStart());
-                if (before != null && after != null){
-                    before.setEnd(after.getStart().minusDays(1));
-                }
-            }
+            if (code != SandboxCode.END_SAVE){ return;}
+            internalAddChange(change);
         };
         SandboxHandler.StartSandbox(new Objective<>(owner,Global.TimeDirection.FORWARD,change,
                 new SandboxFunctions.CanAddChange<>()),getEnd(),null,afterChange);
+    }
+    public void internalAddChange(TimelineChange<? super T> change){
+        TimelineState<T> state = getOrMakeState(change.getStart());
+        if (state.isEmpty()){
+            removeState(change.getStart());
+            TimelineState<T> before = getStateBefore(state.getStart());
+            TimelineState<T> after = getStateAfter(state.getStart());
+            if (before != null && after != null){
+                before.setEnd(after.getStart().minusDays(1));
+            }
+        }
     }
     public boolean isEmpty(){
         return timeline.isEmpty();

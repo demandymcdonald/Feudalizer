@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class Global implements ThreadMutable<Global, Global.DateWrapper> {
 
@@ -23,7 +25,7 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
     public static final boolean SQL_ENABLED = false;
     public static final Path SHAPE_PATH = Path.of("data/shapefiles/");
     private static final LoadingManager LOADING_MANAGER = new LoadingManager();
-    private static final ThreadLocal<List<TimelineSynced>> listeners = ThreadLocal.withInitial(ArrayList::new);
+    private static final ThreadLocal<Map<TimelineSynced,Boolean>> listeners = ThreadLocal.withInitial(WeakHashMap::new);
     //--- Thread Specific Globals ---
     private static final ThreadLocal<DateWrapper> CurrentDate = ThreadLocal.withInitial(() -> DateWrapper.of(CONFEDERACY_FOUNDED));
     private static ThreadLocal<SandboxHandler<?>> SANDBOX_HANDLER = new ThreadLocal<>();
@@ -62,7 +64,7 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
 
     }
     public static void addListener(TimelineSynced listener){
-        listeners.get().add(listener);
+        listeners.get().put(listener,false);
     }
 
 

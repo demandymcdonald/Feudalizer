@@ -1,4 +1,6 @@
 package com.objects.culture.tenet.instance;
 
-public class CharacterTenetInstance extends TenetInstance<CharacterTenetInstance,>{
+import com.objects.culture.object.instance.TenetInstance;
+
+public class CharacterTenetInstance extends TenetInstance<CharacterTenetInstance,> {
 }

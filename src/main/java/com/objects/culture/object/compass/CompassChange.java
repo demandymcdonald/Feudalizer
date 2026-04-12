@@ -1,27 +1,31 @@
 package com.objects.culture.object.compass;
 
+import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
+import com.base.timeline.TimelineObject;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.state.TimelineState;
+import com.base.timeline.variable.EasingChange;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
 
-public class CompassChange<T extends DateMutableEntity<?>> extends TimelineSingleChange<T> {
+public class CompassChange<T extends DateMutableEntity<T> & CultureObject<T>> extends TimelineSingleChange<T> implements EasingChange<InterpolatedPoliticalCompass<T>,CompassChange<T>,T> {
 
-    private InterpolatedPoliticalCompass<T> compass;
+    private InterpolatedPoliticalCompass<? extends T> compass;
     protected CompassChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
     }
 
 
-    public CompassChange(DMEReference<?> owner, LocalDate date, InterpolatedPoliticalCompass<?> compass) {
+    public CompassChange(DMEReference<? extends T> owner, LocalDate date, InterpolatedPoliticalCompass<? extends T> compass) {
         super((DMEReference<? extends T>) owner, date);
         this.compass = (InterpolatedPoliticalCompass<T>) compass;
     }
@@ -33,11 +37,11 @@ public class CompassChange<T extends DateMutableEntity<?>> extends TimelineSingl
     }
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-        if (getOwner() instanceof CultureObject<?,?,?> to){
+        if (getOwner() instanceof CultureObject<?> to){
             to.internalSetCompass(compass);
         }
     }
-    public InterpolatedPoliticalCompass<T> getCompass() {
+    public InterpolatedPoliticalCompass<? extends T> getCompass() {
         return compass;
     }
 
@@ -63,6 +67,17 @@ public class CompassChange<T extends DateMutableEntity<?>> extends TimelineSingl
 
     @Override
     public void additionalLoad(JsonObject data) {
-        compass = (InterpolatedPoliticalCompass<T>) InterpolatedPoliticalCompass.build(data.get("compass").getAsJsonObject());
+        compass = new InterpolatedPoliticalCompass<>();
+        compass.deserialize(data.get("compass").getAsJsonObject());
+    }
+
+    @Override
+    public InterpolatedPoliticalCompass<T> getEasingVariable(Predicate<InterpolatedPoliticalCompass<T>> matching) {
+        return getOwner().get().getCompass();
+    }
+
+    @Override
+    public CompassChange<T> getNext() {
+        return TimelineObject.getChangeStep(this, Global.TimeDirection.FORWARD,false,1,null);
     }
 }

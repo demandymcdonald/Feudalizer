@@ -12,11 +12,12 @@ import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.Displayable;
+import com.utilities.id.StringIdentifiable;
 
 import java.util.*;
 import java.util.function.Supplier;
 
-public abstract class Tenet implements Displayable {
+public abstract class Tenet implements Displayable, StringIdentifiable {
     private final TenetReference reference;
     private final TenetGroup group;
     private final String id;
@@ -44,10 +45,13 @@ public abstract class Tenet implements Displayable {
     protected abstract Multimap<Class<? extends TimelineChange<?>>,TenetCondition<?,?,?>> conditions();
     protected abstract Map<TenetReference, Acceptance> related();
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
-
+    @Override
+    public String getID(){
+        return id;
+    }
     @Override
     public String displayName() {
         return description;
@@ -73,7 +77,7 @@ public abstract class Tenet implements Displayable {
         return related.get();
     }
     private static String buildID(TenetGroup group, String id){
-        return group.getID() + "." + id;
+        return group.getDisplayID() + "." + id;
     }
 
 }

@@ -50,11 +50,11 @@ public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connec
         if (parent == null){
             return id.toLowerCase();
         } else {
-            return parent.getID() + ":" + id.toLowerCase();
+            return parent.getDisplayID() + ":" + id.toLowerCase();
         }
     }
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

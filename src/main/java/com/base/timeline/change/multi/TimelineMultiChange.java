@@ -5,7 +5,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.timeline.Timeline;
-import com.base.timeline.change.ChangeID;
+import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.error.SandboxCode;
@@ -16,24 +16,23 @@ import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.sandbox.function.SandboxFunction;
 import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.state.TimelineState;
-import com.base.utilities.ChangeSupplier;
-import com.base.utilities.TLSyncedSupplier;
+import com.base.utilities.CachingSupplier;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.utilities.id.Identifiable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.logging.LogManager;
 
 import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
@@ -43,63 +42,78 @@ import static com.base.timeline.error.SandboxCode.END_DISCARD;
 public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     //Use of atomics here isn't an indication of thread safety per-say. I just needed a container for bools and ints. I know there are probably better ones. I don't really care
     //right now. I just want to get this working for the moment.
-    //TODO Soooo I'm pretty sure that I just made expectedSize obsolete.... I should check that later.
-    //private int expectedSize = 0;
-    private ChangeID leapfrog = null;
+    public static final Logger LOGGER = LoggerFactory.getLogger(TimelineMultiChange.class);
+    public Logger logger(){
+        return LOGGER;   
+    }
+    public enum WipeType {
+        FORWARD,
+        BACKWARD,
+        BOTH,
+        NO_WIPE
+    }
+    public enum ChangeType{
+        ADD,
+        REMOVE,
+        REMOVE_WIPE,
+        MODIFY_VALUE,
+    }
+
     private final Set<I> endingChanges = new HashSet<>();
-    private final Set<I> startingChanges = new HashSet<>();
-    //TODO Override some of hashmap to trigger cache invalidation whenever a remove/put is called. This won't help if the object inside the map is invalidated, but it's covers 90% of the situations.
-    private final Map<K,V> activeChanges = new HashMap<>();
-    //TODO replace with a different Supplier that's not TL synced. Also a full map here needs to jump forward and invalidate every future full map.. Just a thought.
-    //TODO apply should also cascade invalidate up.
-    private final Consumer<M> cascadeInvalidate = TimelineMultiChange::cascadeInvalidate;
-    private final ChangeSupplier<Map<K,V>,M> fullMap = new ChangeSupplier<>(this::buildFull,cascadeInvalidate);
-    protected final AtomicBoolean isFirst;
+    private final Map<K,V> activeChanges;
+
+
+
+    private final CachingSupplier<TimelineMap<K,V,T>,M> fullMap = new CachingSupplier<>(this::buildFull,null);
+    protected final AtomicBoolean pauseCacheChecks = new AtomicBoolean(false);
 
     protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
-        isFirst = new AtomicBoolean(getTimeline().getStart().equals(date));
+        activeChanges = buildChangeMap();
+    }
+    protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date, Map<K,V> initial) {
+        super(owner, date);
+        activeChanges = buildChangeMap(initial);
+    }
+    protected final Map<K,V> buildChangeMap(){
+        return buildChangeMap(new HashMap<>());
     }
 
+    protected final Map<K,V> buildChangeMap(Map<K,V> initial){
+        return new TimelineMap<>(this,initial);
+    }
     public int getActiveSize(){
         return  getActive().size();
     }
     public abstract boolean hasEndingChanges();
-    protected void onDeactivateStep(M stepChange){};
+    public boolean shouldInvalidate(M initiator, K key, ChangeType type){
+        if (!fullMap.isMemoized()){
+            return false;
+        } else if(endingChanges.contains(key.getID())) {
+            return false;
+        } else return type != ChangeType.MODIFY_VALUE || !(initiator.getActive().get(key) == this.getFullMap().get(key));
+    };
     protected void onRemoveEntry(WipeType wipe, K... key){};
     protected void onBuildMap(){};
     protected void onBuildMapStep(M stepChange, Map<K,V> map){};
-    protected void onAmendSizeStep(M stepChange, int amount){};
-    protected void onBeingSizeAmended(M amendingChange, int amount){};
-    protected void onRemoveEntryStep(M stepChange, K k){};
-    protected void onRemovedEntry(M stepChange, K k){};
+    protected void onRemoveEntryStep(M stepChange, List<K> removed){};
+    protected void onRemovedEntryStep(M stepChange, List<K> removed){};
+    protected void onCacheInvalidation(M initiator, Map<K,ChangeType> changes){}
     public final boolean contains(K k){
         return activeChanges.containsKey(k);
     }
-
+    public final void setChanged(K... key){
+        List<K> toAdd = new ArrayList<>(Arrays.stream(key).toList());
+        cascadeInvalidate((M) this,buildChangeTypes(toAdd,ChangeType.MODIFY_VALUE));
+    }
     @Override
     public final void complete(Sandbox<? extends T> sandbox, SandboxFunction<? extends T> function, SandboxCode code) {
         super.complete(sandbox, function, code);
-        if(code == SandboxCode.END_SAVE){
-            //Not ideal since this affects the whole timeline, but it's probably the best way to keep the count updated since it validates every count, which is good housekeeping.
-            RepairWizard((M) this,true);
-        }
+        cascadeInvalidate((M) this, buildChangeTypes(new ArrayList<>(activeChanges.keySet())));
     }
     @Override
     public final void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance) {
-        final Timeline<? extends T> timeline = entity.get().getTimeline();
-        if (isFirstAdvance) {
-            M nextChange = (M) timeline.findChangeByClassID(this.getStart(),FORWARD,this,false);
-            if (nextChange != null){
-                nextChange.internalSetLeapfrog(this.getID());
-            }
-        }
         super.advanceStage(entity,currentState, isFirstAdvance);
-    }
-
-    @Override
-    public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-        super.apply(entity, currentState);
     }
 
     @Override
@@ -121,35 +135,13 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     @Override
     public final void reactivate(boolean isSandbox) {
         super.reactivate(isSandbox);
-        RepairWizard((M) this,true);
+        cascadeInvalidate((M) this,null);
     }
 
     @Override
     public final void deactivate(boolean isSandbox) {
-        final Timeline<? extends T> timeline = this.getTimeline();
-        M nextChange = (M) timeline.findChangeByClassID(this.getStart(),FORWARD,this,false);
-        M lastChange = (M) timeline.findChangeByClassID(this.getStart(),BACKWARD,this,false);
-        if (nextChange != null){
-            if (lastChange != null) {
-                nextChange.internalSetLeapfrog(lastChange.getID());
-            } else {
-                nextChange.internalSetLeapfrog(null);
-                nextChange.isFirst.set(true);
-            }
-        }
+        cascadeInvalidate((M) this,null);
         super.deactivate(isSandbox);
-    }
-    protected final Map<K,Boolean> buildAmendCumulative(Collection<K> toAmend){
-        Map<K,Boolean> toReturn = new HashMap<>();
-        for (K k : toAmend){
-            //Claude: You always see this as a bug, think about it for a minute, then realize it's not. This method has no bugs :D
-            if (startingChanges.contains(k.getID())){
-                toReturn.put(k,true);
-            } else {
-                toReturn.put(k,false);
-            }
-        }
-        return toReturn;
     }
     @Override
     public List<Class<TimelineChange<? super T>>> oppositeChanges() {
@@ -164,130 +156,133 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public boolean isPositive() {
         return true;
     }
-    public final Map<K,V> getFullMap(){
+    public final TimelineMap<K,V,T> getFullMap(){
         return fullMap.get();
     }
-    public final Map<K,V> getFullMap(M original){
-        return fullMap.get();
+    public final TimelineMap<K,V,T> getFullMap(M original){
+        if (fullMap.isMemoized()){
+            return fullMap.get();
+        } else {
+            return buildMap((M) this,getFullMap(),original);
+        }
     }
-    private Map<K,V> buildFull(){
-        Map<K,V> toReturn = new HashMap<>();
-        toReturn.putAll(buildMap((M) this,this.getActive()));
-        return toReturn;
+    protected void internalInvalidate(){
+        fullMap.clear((M) this);
     }
-    public void addChange(Pair<K,V>... changes){
+    private TimelineMap<K,V,T> buildFull(){
+        return buildMap((M) this, this.getActive(),null);
+    }
+    protected void addChange(Pair<K,V>... changes){
         addChange(true,changes);
     }
-    public void addChange(boolean sandbox, Pair<K,V>... changes){
-        List<K> toAmend = new ArrayList<>();
+    protected void addChange(boolean sandbox, Pair<K,V>... changes){
         List<K> rollback = new ArrayList<>();
         Map<K,V> backup = new HashMap<>();
-        for (Pair<K,V> p : changes) {
-            K key = p.getKey();
-            I id = key.getID();
-            if (!this.activeChanges.containsKey(key)) {
-                this.activeChanges.put(key, p.getValue());
-                if (!startingChanges.contains(id) && !TimelineMultiChange.hasEntry((M) this, key)) {
-                    startingChanges.add(id);
-                    toAmend.add(key);
+        Map<K,V> toAdd = new HashMap<>();
+        pauseCacheChecks.set(true);
+        try {
+            for (Pair<K, V> p : changes) {
+                K key = p.getKey();
+                I id = key.getID();
+                if (!this.activeChanges.containsKey(key)) {
+                    // this.activeChanges.put(key, p.getValue());
+                    rollback.add(key);
+                } else {
+                    backup.put(key, this.activeChanges.get(key));
+                    //this.activeChanges.put(key,p.getValue());
                 }
-                rollback.add(key);
-            } else{
-                backup.put(key,this.activeChanges.get(key));
-                this.activeChanges.put(key,p.getValue());
+                if (hasEndingChanges() && endingChanges.contains(id)) {
+                    endingChanges.remove(key.getID());
+                }
+                toAdd.put(key, p.getValue());
             }
-            if (hasEndingChanges() && endingChanges.contains(id)){
-                endingChanges.remove(key.getID());
-            }
-        }
-        fullMap.clear();
-        if(sandbox){
-            Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
-                @Override
-                public void accept(SandboxCode sandboxCode) {
-                    if(sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR ){
-                        remove(WipeType.NO_WIPE, (K[]) rollback.toArray(new Identifiable[0]));
-                        for(Map.Entry<K,V> e : backup.entrySet()){
-                            activeChanges.put(e.getKey(),e.getValue());
+            activeChanges.putAll(toAdd);
+            if (sandbox) {
+                Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
+                    @Override
+                    public void accept(SandboxCode sandboxCode) {
+                        if (sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR) {
+                            removeEntry(WipeType.NO_WIPE, (K[]) rollback.toArray(new Identifiable[0]));
+                            activeChanges.putAll(backup);
                         }
                     }
+                };
+                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new SandboxFunctions.MultiChange<>(code));
+                SandboxHandler.StartSandbox(t);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Map<K,ChangeType> ct = new HashMap<>();
+            for (K k : toAdd.keySet()) {
+                if(rollback.contains(k)){
+                    ct.put(k,ChangeType.ADD);
+                } else {
+                    ct.put(k,ChangeType.MODIFY_VALUE);
                 }
-            };
-            Objective<T> t = new Objective<>(getOwner(),FORWARD,(M) this,new SandboxFunctions.MultiChange<>(code));
-            SandboxHandler.StartSandbox(t);
+            }
+            pauseCacheChecks.set(false);
+            cascadeInvalidate((M) this, ct);
         }
     }
-    public enum WipeType {
-        FORWARD,
-        BACKWARD,
-        BOTH,
-        NO_WIPE
-    }
-    private final void remove(WipeType wipe, K... key){
-        Set<K> startMove = new HashSet<>();
+    protected final void removeEntry(WipeType wipe, K... key){
+        Map<K,ChangeType> toInvalidate = new HashMap<>();
         List<K> toFind;
         if(key.length == 0){
             return;
         }
         onRemoveEntry(wipe,key);
-        if (wipe == WipeType.NO_WIPE) {
-            List<K> toAmend = new ArrayList<>();
-            toFind = new ArrayList<>();
-            for (K k : key) {
-                I id = k.getID();
-                if (activeChanges.containsKey(k)) {
-                    activeChanges.remove(k);
-                    boolean startHas = startingChanges.contains(id);
-                    if (hasEndingChanges() && !hasEntryFuture((M) this, k)) {
-                        endingChanges.add(id);
-                        toAmend.add(k);
-                        //doing it manually here for the same reason as below: amendCumulative only touches future states, not the current one.
-                        //except when done on removeEntry set to go backwards.
-                    } else if (startHas) {
-                        startingChanges.remove(id);
-                        startMove.add(k);
-                        toAmend.add(k);
-                        //doing it manually here for the same reason as below: amendCumulative only touches future states, not the current one.
-                        //except when done on removeEntry set to go backwards.
+        pauseCacheChecks.set(true);
+        try {
+            if (wipe == WipeType.NO_WIPE) {
+                toFind = new ArrayList<>();
+                for (K k : key) {
+                    I id = k.getID();
+                    if (activeChanges.containsKey(k)) {
+                        activeChanges.remove(k);
+                        if (hasEndingChanges()) {
+                            endingChanges.add(id);
+                        }
+                    } else {
+                        toFind.add(k);
                     }
-                } else {
-                    toFind.add(k);
+                    toInvalidate.put(k, ChangeType.REMOVE);
+                }
+                if (!toFind.isEmpty()) {
+                    removeEntry((M) this, BACKWARD, false, true, toFind);
+                }
+            } else {
+                toFind = new ArrayList<>(Arrays.stream(key).toList());
+                for (K k : toFind) {
+                    activeChanges.remove(k);
+                    endingChanges.remove(k.getID());
+                    toInvalidate.put(k, ChangeType.REMOVE_WIPE);
+                }
+                switch (wipe) {
+                    case FORWARD:
+                        removeEntry((M) this, FORWARD, true, true, toFind);
+                        //This is a workaround for the problem described below.
+                        break;
+                    case BACKWARD:
+                        //Not changing effectivesize because the removeEntry will take care of it.
+                        //Because removeEntry on backs goes back to the oldest date with the change and adjusts the count dynamically.
+                        //That means that the current change would be included in that. Forward doesn't because forward starts at the
+                        //Next state after the current one.
+                        removeEntry((M) this, BACKWARD, true, true, toFind);
+                        break;
+                    case BOTH:
+                        //Same case as above. The remove entry going back will amend the total properly.
+                        removeEntry((M) this, FORWARD, true, false, new ArrayList<>(toFind));
+                        removeEntry((M) this, BACKWARD, true, false, new ArrayList<>(toFind));
+                        break;
                 }
             }
-            if (!toFind.isEmpty()) {
-                removeEntry((M) this, BACKWARD, false,true,toFind);
-            }
-            if (!startMove.isEmpty()){
-                updateStart((M) this, startMove);
-            }
-        } else {
-            toFind = new ArrayList<>(Arrays.stream(key).toList());
-            for (K k : toFind){
-                activeChanges.remove(k);
-                endingChanges.remove(k.getID());
-                startingChanges.remove(k.getID());
-            }
-            switch (wipe){
-                case FORWARD:
-                    removeEntry((M) this, FORWARD, true,true,toFind);
-                    //This is a workaround for the problem described below.
-                    break;
-                case BACKWARD:
-                    //Not changing effectivesize because the removeEntry will take care of it.
-                    //Because removeEntry on backs goes back to the oldest date with the change and adjusts the count dynamically.
-                    //That means that the current change would be included in that. Forward doesn't because forward starts at the
-                    //Next state after the current one.
-                    removeEntry((M) this, BACKWARD, true,true,toFind);
-                    break;
-                case BOTH:
-                    //Same case as above. The remove entry going back will amend the total properly.
-                    removeEntry((M) this, FORWARD, true,false,new ArrayList<>(toFind));
-                    removeEntry((M) this, BACKWARD, true,false,new ArrayList<>(toFind));
-                    RepairWizard((M) this, true);
-                    break;
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            pauseCacheChecks.set(false);
+            cascadeInvalidate((M) this, toInvalidate);
         }
-        fullMap.clear();
     }
 //    private void getChangeCount(M other){
 //        List<I> toFind = new ArrayList<>(startingChanges);
@@ -301,281 +296,209 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     protected final Map<K,V> getActive(){
         return new HashMap<>(activeChanges);
     };
-    protected final void internalSetLeapfrog(ChangeID leapFrog){
-        leapfrog = leapFrog;
-        isFirst.set(leapFrog == null);
-    }
-    public final ChangeID getLeapfrog(){
-        if (leapfrog == null && !isFirst.get()){
-            M ch = (M) getTimeline().findChangeByClassID(this.getStart(), Global.TimeDirection.BACKWARD,this,false);
-            if (ch == null){
-                isFirst.set(true);
-                return null;
-            }
-            leapfrog = ch.getID();
-            return leapfrog;
-        }
-        return leapfrog;
-    }
 
-    protected final int getStartingSize(){
-        return startingChanges.size();
-    }
+
     protected final int getEndingSize(){
         return endingChanges.size();
     }
     public Set<I> getEndingChanges(){
         return new HashSet<>(endingChanges);
     }
-    public Set<I> getStartingChanges(){
-        return new HashSet<>(startingChanges);
-    }
-    protected final void internalRemoveStarting(I key){
-        startingChanges.remove(key);
+
+
+
+    protected void internalRemoveEnding(K k){
+        endingChanges.remove(k.getID());
         fullMap.clear();
     }
-    protected final void internalAddStarting(I key){
-        startingChanges.add(key);
-        fullMap.clear();
-    }
-    protected final void internalAddStarting(K key){
-        startingChanges.add(key.getID());
+    protected void internalAddEnding(K k){
+        endingChanges.add(k.getID());
         fullMap.clear();
     }
     protected void internalRemoveChange(K k){
         activeChanges.remove(k);
-        startingChanges.remove(k.getID());
-        endingChanges.remove(k.getID());
         fullMap.clear();
     }
-    private static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> makeNext(M change, Global.TimeDirection direction){
-        if (direction == FORWARD) {
-            final String className = change.getClass().getName();
-            M nextChange = (M) change.getTimeline().findChangeByClassID(change.getStart(), FORWARD, className, false);
-            if (nextChange == null) {
-                return Optional.empty();
-            }
-            final BiFunction<Timeline<? extends T>, M, ChangeID> buildNext = (tl, ch) -> {
-                M tcl = (M) tl.findChangeByClassID(ch.getStart(), FORWARD, className, false);
-                if (tcl == null) {
-                    return null;
+    protected Map<K,ChangeType> buildChangeTypes(List<K> keys){
+        return buildChangeTypes(keys,null);
+    }
+    protected Map<K,ChangeType> buildChangeTypes(List<K> keys, @Nullable ChangeType type){
+        Map<K,ChangeType> toReturn = new HashMap<>();
+        if (type == null){
+            for(K k : keys){
+                if(hasEntry(BACKWARD,(M) this,k,false)){
+                    toReturn.put(k,ChangeType.MODIFY_VALUE);
+                }else if(getActive().containsKey(k)){
+                    toReturn.put(k,ChangeType.ADD);
+                } else {
+                    toReturn.put(k,ChangeType.REMOVE);
                 }
-                return tcl.getID();
-            };
-            return Optional.of(Pair.of(buildNext, nextChange.getID()));
+            }
         } else {
-            ChangeID next = change.getLeapfrog();
-            if (next == null) {
-                return Optional.empty();
+            for (K k : keys){
+                toReturn.put(k,type);
             }
-            final BiFunction<Timeline<? extends T>, M, ChangeID> buildNext = (t, ch) -> {
-                return ch.getLeapfrog();
-            };
-            return Optional.of(Pair.of(buildNext, next));
         }
+        return toReturn;
     }
 
 
-    protected static <M extends TimelineMultiChange<M, K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> void removeEntry(M change, final Global.TimeDirection direction, final boolean wipe, List<K> toRemove){
-        List<K> done = new ArrayList<>();
-        final AtomicReference<M> lastChange = new AtomicReference<>(change);
-        final Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> buildNext = makeNext(change,direction);
-        if (!buildNext.isPresent()){
-            return;
-        }
-        final OnMapStep<M, K,V,I,T> consumer = new OnMapStep<>(change) {
+
+    protected static <M extends TimelineMultiChange<M, K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> void removeEntry(M change, final Global.TimeDirection direction, final boolean wipe, final boolean includeCurrent, List<K> toRemove){
+        MapTask<M,K,V,I,T> consumer = new MapTask<>(change) {
             @Override
-            public void onMapDo(M requester, M change, Map<K, V> map, Set<I> endingChanges) {
-                List<K> toRemoveCopy = new ArrayList<>(toRemove);
-                for (K k : toRemoveCopy){
-                    if (change.contains(k)){
-                        change.internalRemoveChange(k);
-                        requester.onRemoveEntryStep(change,k);
-                        change.onRemovedEntry(requester,k);
-                        if (!wipe){
+            protected void onStep(M main, M current, Map<K, V> finalMap, Set<I> endingChanges) {
+                List<K> removed = new ArrayList<>();
+                for(K k : new ArrayList<>(toRemove)){
+                    if(current.contains(k)) {
+                        current.internalRemoveChange(k);
+                        if (!wipe) {
                             toRemove.remove(k);
+                            current.internalAddEnding(k);
+                        } else {
+                            current.internalRemoveEnding(k);
                         }
-                        if (!done.contains(k)){
-                            done.add(k);
-                        }
+                        removed.add(k);
                     }
                 }
-                if(direction == BACKWARD){
-                    lastChange.set(change);
+                if (!removed.isEmpty()){
+                    current.onRemovedEntryStep(main,new ArrayList<>(removed));
+                    main.onRemoveEntryStep(current,new ArrayList<>(removed));
                 }
             }
-        };
-        final BiPredicate<LocalDate,Map<K,V>> isComplete = (ch, finalMap) -> {
-            return ch == null || toRemove.isEmpty();
-        };
-        Timeline.iterateMap(buildNext.get().getLeft(),consumer,isComplete,change.getTimeline(),change,buildNext.get().getRight(),new HashMap<>(),new HashSet<>());
-    }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> Set<K> updateStart(M change, Set<K> orphanKeys){
-        Map<K,V> toReturn = new HashMap<>();
-        final Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> buildNext = makeNext(change,FORWARD);
-        if (!buildNext.isPresent()){
-            return orphanKeys;
-        }
-        final OnMapStep<M, K,V,I,T> consumer;
-        consumer = new OnMapStep<>(change) {
+
             @Override
-            public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
-                List<K> toRemove = new ArrayList<>();
-                for (K k : orphanKeys){
-                    if (current.getActive().containsKey(k)){
-                        current.internalAddStarting(k);
-                        toRemove.add(k);
-                    }
-                }
-                toRemove.forEach(orphanKeys::remove);
+            protected boolean checkComplete(TimelineState<? extends T> currentState, M requester, Optional<M> currentChange, Map<K, V> finalMap) {
+                return currentState == null;
             }
         };
-        final BiPredicate<LocalDate,Map<K,V>> isComplete = (ch, finalMap) -> {
-            return ch == null || orphanKeys.isEmpty();
-        };
-        Timeline.iterateMap(buildNext.get().getLeft(),consumer,isComplete,change.getTimeline(),change,buildNext.get().getRight(),toReturn,new HashSet<>());
-        //I probably don't need this return anymore. It was meant for start points that couldn't be reassigned. I might need it eventually, so I'll leave it for now.
-        return orphanKeys;
+        Timeline.iterateMap(change,direction,consumer,includeCurrent);
     }
 
     protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> getOtherMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
-        //Steps should be how far away from change 0 we are grabbing. So 1 step is one change forward that meets the predicate (if applicable).
-        Map<K,V> toReturn = new HashMap<>();
-        AtomicInteger total = new AtomicInteger(0);
-        final Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> buildNext = makeNext(change,direction);
-        if (!buildNext.isPresent()){
-            return toReturn;
+        M desiredChange = TimelineObject.getChangeStep(change, direction, false, steps, additional);
+        if (desiredChange == null){
+            return null;
         }
-        final OnMapStep<M,K,V,I,T> consumer;
-        if (additional == null){
-            consumer= new OnMapStep<>(change) {
-                @Override
-                public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
-                    if (total.addAndGet(1) == steps) {
-                        map.putAll(current.getFullMap());
-                    }
+        return desiredChange.getFullMap();
+    }
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasPastEntry(M change, K key, boolean includeCurrent){
+        return hasEntry(Global.TimeDirection.BACKWARD,change,key,includeCurrent);
+    }
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasFutureEntry(M change, K key, boolean includeCurrent){
+        return hasEntry(Global.TimeDirection.FORWARD,change,key,includeCurrent);
+    }
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(M change, K key, boolean includeCurrent){
+        return hasEntry(FORWARD,change,key,includeCurrent) || hasEntry(BACKWARD,change,key,includeCurrent);
+    }
+    private static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(Global.TimeDirection direction, M change, final K key, boolean includeCurrent){
+        AtomicBoolean toReturn = new AtomicBoolean(false);
+        MapTask<M,K,V,I,T> step = new MapTask<>(change) {
+            @Override
+            public void onStep(M requester, M current, Map<K, V> finalMap, Set<I> endingChanges) {
+                if (current.contains(key)){
+                    toReturn.set(true);
                 }
-            };
+            }
+            @Override
+            protected boolean checkComplete(TimelineState<? extends T> currentState, M requester, Optional<M> currentChange, Map<K, V> finalMap) {
+                return currentState == null || toReturn.get();
+            }
+        };
+        TimelineObject.iterateMap(change,direction,step,includeCurrent);
+        return toReturn.get();
+
+    }
+    protected void cascadeInvalidate(M change, @Nullable final Map<K,ChangeType> changes){
+        cascadeInvalidate(change,changes,pauseCacheChecks.get());
+    }
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void cascadeInvalidate(M change, @Nullable final Map<K,ChangeType> changes, boolean isPaused){
+        final boolean bypass = changes == null;
+        final Map<K,ChangeType> finalChanges;
+        if (bypass){
+            finalChanges = new HashMap<>();
+        } else if(changes.isEmpty() || isPaused){
+            return;
         } else {
-            consumer=new OnMapStep<>(change) {
-                @Override
-                public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
-                    if (additional.test(current) && total.addAndGet(1) == steps) {
-                        map.putAll(current.getFullMap());
+            finalChanges = new HashMap<>(changes);
+        }
+
+
+
+        MapTask<M,K,V,I,T> task = new MapTask<>(change) {
+            @Override
+            protected void onStep(M main, M current, Map<K, V> finalMap, Set<I> endingChanges) {
+                boolean invalidate = false;
+                if (!bypass){
+                    for (Map.Entry<K, ChangeType> entry : new ArrayList<>(finalChanges.entrySet())) {
+                        ChangeType type = entry.getValue();
+                        boolean should = current.shouldInvalidate(main, entry.getKey(), type);
+                        if (!should){
+                            finalChanges.remove(entry.getKey());
+                        } else {
+                            invalidate = true;
+                            //I know we could break here, but I want to check everything to catch end cases.
+                        }
                     }
+                } else {
+                    invalidate = true;
                 }
-            };
-        }
-        final BiPredicate<LocalDate,Map<K,V>> isComplete = (ch, finalMap) -> {
-            return ch == null || total.get() >= steps;
-        };
-        Timeline.iterateMap(buildNext.get().getLeft(),consumer,isComplete,change.getTimeline(),change,buildNext.get().getRight(),toReturn,new HashSet<>());
-        return toReturn;
-    }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(M change, K k){
-        final Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> buildNext = makeNext(change,BACKWARD);
-        if (!buildNext.isPresent()){
-            return false;
-        }
-        AtomicBoolean toReturn = new AtomicBoolean(false);
-        final OnMapStep<M,K,V,I,T> step = new OnMapStep<>(change) {
-            @Override
-            public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
-                if (current.contains(k)){
-                    toReturn.set(true);
+                if (invalidate){
+                    current.internalInvalidate();
+                    current.onCacheInvalidation(main,finalChanges);
                 }
             }
-        };
-        final BiPredicate<LocalDate,Map<K,V>> isComplete = (ch, finalMap) -> {
-            return ch == null || toReturn.get();
-        };
-        Timeline.iterateMap(buildNext.get().getLeft(),step,isComplete,change.getTimeline(),change,buildNext.get().getRight(),new HashMap<>(),new HashSet<>());
-        return toReturn.get();
-    }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntryFuture(M change, K k){
-        final Optional<Pair<BiFunction<Timeline<? extends T>,M,ChangeID>,ChangeID>> buildNext = makeNext(change,FORWARD);
-        if (!buildNext.isPresent()){
-            return false;
-        }
-        AtomicBoolean toReturn = new AtomicBoolean(false);
-        final OnMapStep<M,K,V,I,T> step = new OnMapStep<>(change) {
+
             @Override
-            public void onMapDo(M requester, M current, Map<K, V> map, Set<I> endingChanges) {
-                if (current.contains(k)){
-                    toReturn.set(true);
-                }
+            protected boolean checkComplete(TimelineState<? extends T> currentState, M requester, Optional<M> currentChange, Map<K, V> finalMap) {
+                return currentState == null;
             }
         };
-        final BiPredicate<LocalDate,Map<K,V>> isComplete = (ch, finalMap) -> {
-            return ch == null || toReturn.get();
-        };
-        Timeline.iterateMap(buildNext.get().getLeft(),step,isComplete,change.getTimeline(),change,buildNext.get().getRight(),new HashMap<>(),new HashSet<>());
-        return toReturn.get();
-    }
-
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void cascadeInvalidate(M change){
-
+        TimelineObject.iterateMap(change,FORWARD,task,true);
     }
 
 
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> buildMap(M change,Map<K,V> starting, @Nullable M original){
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> TimelineMap<K,V,T> buildMap(M change,Map<K,V> starting, @Nullable M original){
         change.onBuildMap();
-        ChangeID leapfrog = change.getLeapfrog();
-        final List<I> blacklist = new ArrayList<>(change.getEndingChanges());
-        if (leapfrog == null){
-            return new HashMap<>(starting);
+        if(original == null){
+            original = change;
         }
-        M leapfrogged = change.getTimeline().followBreadcrumb(change.getLeapfrog());
-
-        Map<K,V> lf = leapfrogged.getFullMap();
-        Map<K,V> toReturn = new HashMap<>();
+        final List<I> blacklist = new ArrayList<>(change.getEndingChanges());
+        M leapfrogged = TimelineObject.getChangeStep(change,BACKWARD,false,0,null);
+        Map<K,V> lf = leapfrogged.getFullMap(original);
+        TimelineMap<K,V,T> toReturn = new TimelineMap<>(change);
         for (Map.Entry<K,V> entry : lf.entrySet()){
             K key = entry.getKey();
             if(!starting.containsKey(key) && !blacklist.contains(key.getID())){
                 toReturn.put(key,entry.getValue());
             }
         }
-        if( original != null){
-            original.onBuildMapStep(leapfrogged,toReturn);
-        }
+        original.onBuildMapStep(leapfrogged,toReturn);
         toReturn.putAll(starting);
         return toReturn;
     }
-    public static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void RepairWizard(M change,boolean repairLeapfrogs){
-        if(repairLeapfrogs){
-            repairLeapfrogs(change);
-        }
-    }
-    private static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void repairLeapfrogs(M change){
-        Timeline<? extends T> timeline = change.getTimeline();
-        TimelineState<? extends T> state = timeline.getLastState();
-        M current = null;
-        while (state != null){
-            M m = state.getChange(change.getClassID(),false);
-            if(m != null){
-                if (current != null){
-                    current.internalSetLeapfrog(m.getID());
-                }
-                current = m;
-            }
-            state = timeline.getStateBefore(state.getStart());
-        }
-        if (current != null){
-            current.internalSetLeapfrog(null);
-        }
-    }
 
 
 
-    public static abstract class OnMapStep<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
+    public static abstract class MapTask<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
         private final M main;
-        public OnMapStep(M main){
+        private final Map<K,V> map;
+        public MapTask(M main){
             this.main = main;
+            this.map = new HashMap<>();
         }
-        public void mapDo(M change, Map<K,V> map, Set<I> endingChanges){
-            onMapDo(main,change,map,endingChanges);
+        public MapTask(M main, Map<K,V> map){
+            this.main = main;
+            this.map = map;
         }
-        protected abstract void onMapDo(M main, M current, Map<K,V> map, Set<I> endingChanges);
+        public final void step(M change){
+            onStep(main,change,map,change.getEndingChanges());
+        }
+        protected abstract void onStep(M main, M current, Map<K,V> finalMap, Set<I> endingChanges);
+        public boolean isComplete(TimelineState<? extends T> currentState, @Nullable M currentChange){
+            return checkComplete(currentState,main,Optional.ofNullable(currentChange),map);
+        }
+        protected abstract boolean checkComplete(TimelineState<? extends T> currentState, M requester, Optional<M> currentChange, Map<K,V> finalMap);
     }
 //==== SERIALIZERS ====
     protected abstract JsonElement kSerialize(K k);
@@ -619,40 +542,31 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         }
         return array;
     }
-    private JsonArray serializeStartList(){
-        JsonArray array = new JsonArray();
-        for (I id : startingChanges){
-            array.add(iSerialize(id));
-        }
-        return array;
-    }
     @Override
     public final void mainSave(JsonObject o) {
         super.mainSave(o);
         JsonObject TMCData = new JsonObject();
-        if (leapfrog != null){
-            TMCData.add("leapfrog",leapfrog.toJson());
-        }
         TMCData.add("active",serializeMap(getActive()));
         TMCData.add("endChange",serializeEndList());
-        TMCData.add("startChange",serializeStartList());
         o.add("TMCData",TMCData);
     }
     @Override
     public final void mainLoad(JsonObject object) {
         super.mainLoad(object);
         JsonObject TMCData = object.getAsJsonObject("TMCData");
-        if (TMCData.has("leapfrog")){
-            leapfrog = ChangeID.fromJson(TMCData.get("leapfrog").getAsJsonObject());
-        } else {
-            leapfrog = null;
-        }
         endingChanges.clear();
         endingChanges.addAll(buildIList(TMCData.get("endChange").getAsJsonArray()));
-        startingChanges.clear();
-        startingChanges.addAll(buildIList(TMCData.get("startChange").getAsJsonArray()));
-        activeChanges.clear();
-        activeChanges.putAll(buildMap(TMCData.get("active").getAsJsonArray()));
+        pauseCacheChecks.set(true);
+        try {
+            activeChanges.clear();
+            activeChanges.putAll(buildMap(TMCData.get("active").getAsJsonArray()));
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            pauseCacheChecks.set(false);
+        }
+
+        //TODO, have the first change call invalidate caches to invalidate every cache on load.
     }
 
     @Override
@@ -662,7 +576,9 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public void mergeSafe(TimelineMultiChange<?,?,?,?,?> other){
         merge((M) other);
     }
-    public abstract void merge(M other);
+    public void merge(M other){
+        this.activeChanges.putAll(other.getActive());
+    };
 
 
     public class CanMerge extends ApplyCondition<T>{

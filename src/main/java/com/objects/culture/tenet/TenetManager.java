@@ -25,11 +25,11 @@ public class TenetManager {
     public static final TenetGroup SOFT_CULTURE = builder(TGType.SORT_ONLY,"soft", "Soft Culture", "");
 
     public static void registerTenet(Tenet tenet) {
-        tenets.put(tenet.getID(), tenet);
+        tenets.put(tenet.getDisplayID(), tenet);
         tenetsByGroup.put(tenet.getGroup(), tenet);
     }
     public static void registerGroup(TenetGroup group) {
-        String id = group.getID();
+        String id = group.getDisplayID();
         if (groups.containsKey(id)) {
             if (groups.get(id).equals(group)) {
                 return;
@@ -37,7 +37,7 @@ public class TenetManager {
                 throw new RuntimeException("Duplicate group ID: " + id);
             }
         }
-        groups.put(group.getID(), group);
+        groups.put(group.getDisplayID(), group);
         handleGroupRelations(group, group.connected());
         TenetGroup parent = group.parent();
         if (parent != null) {
@@ -45,14 +45,14 @@ public class TenetManager {
         }
     }
     public static void registerIdeology(Ideology ideology){
-        if (ideologies.containsKey(ideology.getID())) {
-            if (ideologies.get(ideology.getID()).equals(ideology)) {
+        if (ideologies.containsKey(ideology.getDisplayID())) {
+            if (ideologies.get(ideology.getDisplayID()).equals(ideology)) {
                 return;
             } else {
-                throw new RuntimeException("Duplicate ideology ID: " + ideology.getID());
+                throw new RuntimeException("Duplicate ideology ID: " + ideology.getDisplayID());
             }
         }
-        ideologies.put(ideology.getID(), ideology);
+        ideologies.put(ideology.getDisplayID(), ideology);
     }
     private static void handleGroupRelations(TenetGroup group, List<TenetGroup> linkedGroups){
         for (TenetGroup linkedGroup : linkedGroups) {

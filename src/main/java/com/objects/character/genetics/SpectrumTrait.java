@@ -61,7 +61,7 @@ public class SpectrumTrait extends GeneticTrait {
     public JsonObject serialize(){
         JsonObject object = super.serialize();
         object.addProperty("type", "spectrumTrait");
-        object.addProperty("id", getID());
+        object.addProperty("id", getDisplayID());
         return object;
     }
 }

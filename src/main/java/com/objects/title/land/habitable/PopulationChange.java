@@ -1,45 +1,66 @@
 package com.objects.title.land.habitable;
 
+import com.Global;
 import com.Global.*;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineContainer;
+import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
+import com.base.timeline.change.multi.TimelineMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.variable.EasingChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.caste.CasteObject;
 import com.utilities.number.BoundedDouble;
 import com.utilities.number.BoundedInteger;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
-public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapChange<PopulationChange<T>, CasteObject, BoundedDouble,String,T> implements EasingChange<PopulationContainer<T>,PopulationChange<T>,T> {
+public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapChange<PopulationChange<T>, CasteObject, BoundedInteger,String,T> implements EasingChange<PopulationContainer<T>,PopulationChange<T>,T> {
     long population;
 
+    public PopulationChange(DMEReference<? extends T> owner, LocalDate date, Map<CasteObject, BoundedInteger> initial) {
+        super(owner, date, initial);
+        population = 0;
+    }
 
     protected PopulationChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
     }
 
+    @Override
+    public void setRuntimeMap(Map<CasteObject, BoundedInteger> map) {
+        getOwner().get().getPopulationContainer().internalSetMap(map);
+    }
 
+    @Override
+    public TimelineMap<CasteObject, BoundedInteger,T> getRuntimeMap() {
+        return getOwner().get().getPopulationContainer().internalGetPopulationMap();
+    }
+    public void setPopulation(long population){
+        this.population = population;
+    }
 
     @Override
     public boolean hasEndingChanges() {
-        return true;
+        return false;
     }
 
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-
+        PopulationContainer<T> container = entity.get().getPopulationContainer();
+        container.internalSetPopulation(population);
+        container.internalSetChange(this);
     }
-
     @Override
     public List<Class<TimelineChange<? super T>>> oppositeChanges() {
         return List.of();
@@ -57,9 +78,10 @@ public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapCha
         return null;
     }
 
+
     @Override
-    protected JsonElement vSerialize(BoundedInteger boundedInteger) {
-        return null;
+    protected JsonElement vSerialize(BoundedInteger boundedDouble) {
+        return new JsonPrimitive(boundedDouble.get());
     }
 
     @Override
@@ -97,18 +119,25 @@ public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapCha
 
     }
 
-    @Override
-    public PopulationContainer<T> getEasingVariable(Predicate<PopulationChange<T>> matching) {
-        return getOwner().get().getPopulationContainer();
-    }
+
 
     @Override
     public void additionalSave(JsonObject data) {
-
+        data.addProperty("population",population);
     }
 
     @Override
     public void additionalLoad(JsonObject data) {
+        population = data.get("population").getAsInt();
+    }
 
+    @Override
+    public PopulationContainer<T> getEasingVariable(Predicate<PopulationContainer<T>> matching) {
+        return getOwner().get().getPopulationContainer();
+    }
+
+    @Override
+    public PopulationChange<T> getNext() {
+        return TimelineObject.getChangeStep(this, Global.TimeDirection.FORWARD,false,1,null);
     }
 }

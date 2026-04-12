@@ -138,12 +138,14 @@ public class TimelineState<T extends DateMutableEntity<T>> extends TimelineObjec
         }
         return active;
     }
-
+    public <TC extends TimelineChange<? super T>> TC getChange(String className, boolean includeDeactivated) {
+        return getChange(ChangeID.buildChangeClassID(className), includeDeactivated);
+    }
 
     public <TC extends TimelineChange<? super T>> TC getChange(long classID, boolean includeDeactivated) {
-        for (ChangeID t : activeChanges.keySet()) {
+        for (TimelineChange<? super T> t : getAllChanges(false)) {
             if (t.getClassID() == (classID) || t.getFullID() == classID){
-                TC c= (TC) activeChanges.get(t);
+                TC c= (TC) t;
                 if (includeDeactivated || !c.isDeactivated()){
                     return c;
                 }

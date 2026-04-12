@@ -9,7 +9,7 @@ public interface IDateMutableEntity {
     static <R extends DateMutableEntity<R>,B extends Collection<R>> List<UUID> convert(B b){
         List<UUID> result = new ArrayList<>();
         for (R r : b){
-            result.add(r.getId());
+            result.add(r.getDisplayID());
         }
         return result;
     }
@@ -28,7 +28,7 @@ public interface IDateMutableEntity {
         for (R r : ent){
             JsonObject obj = new JsonObject();
             obj.addProperty("type",r.getClass().getSimpleName());
-            obj.addProperty("id", r.getId().toString());
+            obj.addProperty("id", r.getDisplayID().toString());
             json.add(obj);
         }
         return buildJson(convert(List.of(ent)));
@@ -46,7 +46,7 @@ public interface IDateMutableEntity {
     static Map<UUID,ObjectType> quickBuildID(DateMutableEntity<?>... entities){
         Map<UUID,ObjectType> result = new HashMap<>();
         for (DateMutableEntity<?> e : entities){
-            result.put(e.getId(),DMRegistry.getObjectType(e));
+            result.put(e.getDisplayID(),DMRegistry.getObjectType(e));
         }
         return result;
     }

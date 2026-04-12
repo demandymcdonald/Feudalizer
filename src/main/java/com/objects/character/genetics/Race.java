@@ -21,7 +21,7 @@ public class Race implements Displayable{
     }
     //note on the common traits: I should add some randomness to the spectrum values if we only use these (parent 0's for example).
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

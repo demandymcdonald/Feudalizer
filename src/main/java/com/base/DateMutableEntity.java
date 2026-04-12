@@ -8,6 +8,7 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.utilities.id.Identifiable;
 import com.utilities.number.DateUtilities;
 import com.utilities.serialization.SuperclassSerializable;
 
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @param <T> The type representing the state of the entity.
  */
-public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable<DateMutableEntity<?>> {
+public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable<DateMutableEntity<?>>, Identifiable<UUID> {
     private final UUID id;
     private final Timeline<T> timeline;
     private final DMEReference<T> reference;
@@ -55,11 +56,12 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public boolean isAlive(){
         return DateUtilities.isBetween(timeline.getStart(),timeline.getEnd(),current());
     }
-
-    public final UUID getId() {
+    public final String getDisplayID() {
+        return id.toString();
+    }
+    public final UUID getID() {
         return id;
     }
-
     public LocalDate getCreated(){
         return timeline.getStart();
     };
@@ -108,14 +110,19 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     @Override
     public final boolean equals(Object obj) {
         if (obj instanceof DateMutableEntity<?> dme && this.getClass().equals(dme.getClass())) {
-            return this.getId().equals(dme.getId());
+            return this.getDisplayID().equals(dme.getDisplayID());
         }
         return false;
     }
     public final Timeline<T> getTimeline(){
         return timeline;
     }
+    public final TimelineState<T> getCurrentState(){
 
+    }
+    public final List<TimelineChange<? super T>> getCurrentChanges(){
+        return getCurrentState().getAllCurrentChanges(false);
+    }
     public final TimelineState<T> buildBirth(DMEReference<T> dme, LocalDate date, List<ChangeSupplier<T,?>> defaults){
         List<TimelineChange<? super T>> changes = buildChangeList(date,getBirthChange(dme,date),dme,defaults);
         return new TimelineState<T>(dme.get().getTimeline(), date, date,true, changes);

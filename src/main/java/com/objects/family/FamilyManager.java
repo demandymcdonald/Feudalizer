@@ -112,7 +112,7 @@ public class FamilyManager extends AbstractMutableManager<Family, FamilyState> {
                 families.add(family);
                 HumanCharacter spouse1 = family.getHeadofFamily();
                 HumanCharacter spouse2 = family.getSecondarySpouse().orElse(null);
-                if (spouse2 != null && !spouse2.getId().equals(primary.getId())) {
+                if (spouse2 != null && !spouse2.getDisplayID().equals(primary.getDisplayID())) {
                     nextChecks.add(spouse2);
                     dynasty.add(spouse2);
                 } else {

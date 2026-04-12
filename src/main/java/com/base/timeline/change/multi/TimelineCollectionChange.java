@@ -2,108 +2,120 @@ package com.base.timeline.change.multi;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.condition.apply.ApplyCondition;
-import com.base.timeline.sandbox.core.Sandbox;
-import com.base.timeline.state.TimelineState;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.utilities.id.Identifiable;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public abstract class TimelineCollectionChange<M extends TimelineCollectionChange<M,T,C, V,I>,T extends DateMutableEntity<T>,C extends Collection<V>, V extends Identifiable<I>,I> extends TimelineMultiChange<M,I, V,T> {
-    protected final C activeChanges;
-    private boolean isFirst = true;
-    protected TimelineCollectionChange(DMEReference<? extends T> owner, LocalDate date, C container) {
+public abstract class TimelineCollectionChange<M extends TimelineCollectionChange<M,T,C, K,I>,T extends DateMutableEntity<T>,C extends Collection<K>, K extends Identifiable<I>,I> extends TimelineMultiChange<M, K,Integer,I,T> {
+    private final boolean isOrdered;
+    protected TimelineCollectionChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
-        this.activeChanges = container;
+        C temp = newBaseContainer();
+        isOrdered = temp instanceof SequencedCollection<?>;
     }
-
-
-    //==================================================================================================================
-
-
-    @Override
-    protected void applyConditions(List<ApplyCondition<? super T>> list) {
-        super.applyConditions(list);
-    }
-
-
-    protected Comparator<? super V> getComparator(){
-        return null;
-    }
-    //==================================================================================================================
-    //==== Overrides ====
-    @Override
-    public void sandboxInit(Sandbox<? extends T> sandbox) {
-        super.sandboxInit(sandbox);
-        isFirst = true;
-    }
-
-    @Override
-    protected void onStageAdvance(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance) {
-        super.onStageAdvance(entity, currentState, isFirstAdvance);
-        isFirst = false;
-    }
-    //==================================================================================================================
-    //==== Abstract Methods ====
-    protected abstract Supplier<C> getNewList();
-    protected abstract C getListFromObject();
-
-    //==================================================================================================================
-    //==== Getters and Setters ====
-    @Override
-    public final int getFullSize(){
-        return getExpectedSize() + activeChanges.size();
-    }
-
-    public final C getActiveChanges(){
-        return activeChanges;
-    }
-    //==================================================================================================================
-    @Override
-    public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-        C list = getListFromObject();
-        list.clear();
-        list.addAll(buildMap(getOwner().get().getTimeline(),(M) this).values());
-        super.apply(entity, currentState);
-    }
-
-
-    //==================================================================================================================
-    //==== Serializers ====
-    protected abstract JsonObject vSerialize(V v);
-    protected abstract V deserializeV(JsonObject m);
-    private JsonArray serializeC(C c){
-        JsonArray array = new JsonArray();
-        for (V v : c){
-            array.add(vSerialize(v));
-        }
-        return array;
-    }
-    private C buildC(JsonArray a){
-        C c = getNewList().get();
-        for (JsonElement e : a){
-            c.add(deserializeV(e.getAsJsonObject()));
-        }
+    public abstract C newSafeContainer();
+    public abstract C newBaseContainer();
+    protected abstract C getRuntimeContainer();
+    public final C getActiveChanges() {
+        C c = newBaseContainer();
+        c.addAll(super.getActive().keySet());
         return c;
     }
-    @Override
-    public final void mainSave(JsonObject o) {
-        super.mainSave(o);
-        o.add("active_changes",serializeC(activeChanges));
+    private void buildContainer(){
+        C c = getRuntimeContainer();
+        c.clear();
+        Map<K,Integer> full = getFullMap();
+        this.pauseCacheChecks.set(true);
+        try {
+            if (!isOrdered) {
+                c.addAll(full.keySet());
+            } else {
+                populateOrdered(c, full);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            this.pauseCacheChecks.set(false);
+        }
     }
-    @Override
-    public final void mainLoad(JsonObject object) {
-        super.mainLoad(object);
-        activeChanges.clear();
-        activeChanges.addAll(buildC(object.getAsJsonArray("active_changes")));
+    public final void add(K... key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        addChange(buildList(getActiveChanges().size(),key));
+        buildContainer();
     }
-
+    public final void set(int index, K key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        addChange(buildList(index-1,key));
+        buildContainer();
+    }
+    public final void addFirst(K key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        addChange(buildList(-1,key));
+        buildContainer();
+    }
+    public final void addLast(K key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        addChange(buildList(getActiveChanges().size(),key));
+        buildContainer();
+    }
+    public final void addAll(Collection<? extends K> key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        addChange(buildList(getActiveChanges().size(),key.toArray((K[]) new Identifiable[key.size()])));
+        buildContainer();
+    }
+    public final void remove(WipeType type, K... key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        removeEntry(type,key);
+        buildContainer();
+    }
+    public final void removeAll(WipeType type, Collection<? extends K> key){
+        if (pauseCacheChecks.get()){
+            return;
+        }
+        removeEntry(type,key.toArray((K[]) new Identifiable[key.size()]));
+        buildContainer();
+    }
+    private static <C extends Collection<K>, K extends Identifiable<I>,I> void populateOrdered(C orderedCollection, Map<K,Integer> full){
+        orderedCollection.addAll(full.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList()));
+    }
+    private static <C extends Collection<K>, K extends Identifiable<I>,I> Pair<K,Integer>[] buildList(int size,K... keys){
+        List<Pair<K,Integer>> toReturn = new ArrayList<>();
+        for(K k : keys){
+            toReturn.add(Pair.of(k,size++));
+        }
+        return toReturn.toArray(new Pair[0]);
+    }
 
     //==================================================================================================================
 
+
+    @Override
+    protected final Integer vDeserialize(JsonElement o) {
+        return o.getAsInt();
+    }
+
+    @Override
+    protected final JsonElement vSerialize(Integer integer) {
+        return new JsonPrimitive(integer);
+    }
 }

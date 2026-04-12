@@ -57,7 +57,7 @@ public enum Acceptance implements Displayable {
         return floorMap.values().toArray(new Acceptance[0]);
     }
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 

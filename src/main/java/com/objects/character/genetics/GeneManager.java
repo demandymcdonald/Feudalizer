@@ -14,14 +14,14 @@ public class GeneManager {
         if (t instanceof SpectrumTrait st) {
             registerSpectrum(st);
         }
-        traits.put(t.getID(), t);
+        traits.put(t.getDisplayID(), t);
     }
     private static void registerSpectrum(SpectrumTrait trait){
         Spectrums.computeIfAbsent(trait.getType(), k -> new TreeMap<>()).put(trait.getLow(), trait);
     }
 
     public static void registerRace(Race race){
-        races.put(race.getID(), race);
+        races.put(race.getDisplayID(), race);
     }
     public static GeneticTrait getGeneSpectrum(SpectrumTrait.Type type, int value){
         return Spectrums.get(type).floorEntry(value).getValue();

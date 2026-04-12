@@ -21,17 +21,17 @@ public record HouseState(String name, UUID headOfHouse, Set<UUID> vassalHouses, 
     public static HouseState builder(String name, HashMultimap<House, County> counties, HumanCharacter headOfHouse, Set<Family> directMembers, HashMultimap<House.RetainerType, HumanCharacter> retainer) {
         Set<UUID> Houses = Sets.newHashSet();
         for (House house : counties.keySet()) {
-            Houses.add(house.getId());
+            Houses.add(house.getDisplayID());
         }
         Set<UUID> dFamilies = Sets.newHashSet();
         for (Family family : directMembers) {
-            dFamilies.add(family.getId());
+            dFamilies.add(family.getDisplayID());
         }
         HashMap<UUID, House.RetainerType> iRetainers = new HashMap<>();
         for (Map.Entry<House.RetainerType, HumanCharacter> family : retainer.entries()) {
-            iRetainers.put(family.getValue().getId(), family.getKey());
+            iRetainers.put(family.getValue().getDisplayID(), family.getKey());
         }
-        return new HouseState(name, headOfHouse.getId(), Houses, dFamilies, iRetainers);
+        return new HouseState(name, headOfHouse.getDisplayID(), Houses, dFamilies, iRetainers);
     }
 
     public JsonObject getSerialized() {

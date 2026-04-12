@@ -5,7 +5,7 @@ import com.utilities.Displayable;
 public record ResourceType(String id, String name, String description) implements Displayable {
 
     @Override
-    public String getID() {
+    public String getDisplayID() {
         return id;
     }
 
