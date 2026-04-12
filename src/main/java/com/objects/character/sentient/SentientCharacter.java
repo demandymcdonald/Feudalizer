@@ -4,6 +4,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.multi.TimelineMap;
+import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
 import com.objects.character.genetics.GeneticContainer;
 import com.objects.character.opinion.Opinion;
@@ -12,15 +13,16 @@ import com.objects.character.sentient.change.CharacterChanges;
 import com.objects.character.sentient.change.SentientMapChange;
 import com.objects.culture.object.instance.TenetInstance;
 import com.objects.culture.term.CulturalObject;
+import com.objects.family.Family;
+import com.objects.government.GoverningEntity;
+import com.objects.government.House;
+import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 import com.utilities.id.SimpleUUID;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public abstract class SentientCharacter<T extends SentientCharacter<T,S>,S extends SentientSpecies> extends LivingCreature<T> implements CulturalObject<T> {
     private GeneticContainer<S> geneticContainer;
@@ -30,6 +32,15 @@ public abstract class SentientCharacter<T extends SentientCharacter<T,S>,S exten
     private Orientation orientation;
     private SuccessionEntry<?> preferredSuccession;
     private TimelineMap<SimpleUUID, Opinion,T> opinions;
+
+
+    private Optional<GoverningEntity<?>> linked_government;
+    private final Map<Family, Family.Relationship> linked_families = Maps.newHashMap();
+    private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
+
+
+
+
     public enum Pronouns {
         Masculine,
         Feminine,

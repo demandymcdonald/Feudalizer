@@ -37,9 +37,7 @@ public class HumanCharacter extends SentientCharacter<HumanCharacter, Species.Hu
 
     //TODO Add: Religion, Culture, Political Ideology.
 
-    private Optional<House> linked_house;
-    private final Map<Family, Family.Relationship> linked_families = Maps.newHashMap();
-    private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
+
 
 
     public HumanCharacter(String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
@@ -151,9 +149,6 @@ public class HumanCharacter extends SentientCharacter<HumanCharacter, Species.Hu
 
     public List<DMEReference<? extends Title<?>>> getTitles(){
         return linked_titles;
-    }
-    public SuccessionEntry<?> getPreferredSuccession(){
-        return preferredSuccession;
     }
 
     //==== FamilyGroups Stuff ====
