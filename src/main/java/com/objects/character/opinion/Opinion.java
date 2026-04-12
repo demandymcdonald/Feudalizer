@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.CharacterMapChanges;
 import com.utilities.serialization.JsonSerializable;
 
@@ -86,8 +86,5 @@ public class Opinion implements JsonSerializable {
             activeReasons.add(OpinionReason.fromJson(reason));
         }
     }
-    @Override
-    public Opinion empty() {
-        return null;
-    }
+
 }

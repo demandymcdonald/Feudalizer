@@ -1,9 +1,11 @@
 package com.objects.character.genetics;
 
 import com.google.gson.JsonObject;
+import com.objects.character.sentient.SentientCharacter;
+import com.objects.character.sentient.SentientSpecies;
 import com.utilities.Displayable;
 
-public class GeneticTrait implements Displayable {
+public class GeneticTrait<T extends SentientSpecies> implements Displayable {
     private final TraitGroup group;
     private final String id;
     private final String name;
@@ -85,7 +87,7 @@ public class GeneticTrait implements Displayable {
         object.addProperty("id", id);
         return object;
     }
-    public static GeneticTrait deserialize(JsonObject json){
+    public static <T extends SentientSpecies> GeneticTrait<T> deserialize(JsonObject json){
             return GeneManager.getGene(json.get("id").getAsString());
     }
 }

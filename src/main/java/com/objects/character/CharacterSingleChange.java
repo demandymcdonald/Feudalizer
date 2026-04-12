@@ -9,7 +9,7 @@ import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,64 +24,6 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
     }
 
 
-    //=================================================================================================================
-    // Start of Subclasses
-    //=================================================================================================================
-
-    public static class Birth extends CharacterSingleChange {
-        public Birth(DMEReference<HumanCharacter> primary, LocalDate date) {
-            super(primary,date);
-        }
-
-
-        @Override
-        protected void onApply(DMEReference<? extends HumanCharacter> entity, TimelineState<? extends HumanCharacter> currentState) {
-
-        }
-
-        @Override
-        public List<Class<TimelineChange<? super HumanCharacter>>> oppositeChanges() {
-            return List.of();
-        }
-
-
-        @Override
-        public boolean isPositive() {
-            return true;
-        }
-
-
-        @Override
-        protected List<Condition<StateError, ? super HumanCharacter>> buildApplyConditions() {
-            return List.of();
-        }
-
-        @Override
-        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
-            return List.of((Condition<ConditionResult.Nullify,? super HumanCharacter>) NEVER_NULLIFY);
-        }
-
-        @Override
-        protected List<Condition<StateError, ? super HumanCharacter>> buildCanDeactivateConditions() {
-            return List.of();
-        }
-
-
-        @Override
-        protected String getText() {
-            return getOwner().toString() + "was born.";
-        }
-
-        @Override
-        public void additionalSave(JsonObject data) {
-
-        }
-
-        @Override
-        public void additionalLoad(JsonObject data) {
-
-        }
-    }
     public static class Death extends CharacterSingleChange {
         CauseOfEnd cause;
         public Death(DMEReference<HumanCharacter> primary, LocalDate date, CauseOfEnd cause) {

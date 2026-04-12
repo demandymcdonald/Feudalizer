@@ -3,7 +3,7 @@ package com.objects.character;
 import com.base.AbstractMutableManager;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.utilities.Factory;
 
 import java.time.LocalDate;

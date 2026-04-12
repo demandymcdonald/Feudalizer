@@ -9,7 +9,7 @@ import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.utilities.Displayable;
 
 import static com.base.timeline.error.SandboxCode.*;

@@ -3,7 +3,7 @@ package com.base;
 import com.base.reference.StateReference;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 
 import java.util.Arrays;
 import java.util.Date;

@@ -1,7 +1,7 @@
 package com.objects.title.succession;
 
 import com.base.reference.DMEReference;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 
 import java.util.*;
 

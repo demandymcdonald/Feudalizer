@@ -9,7 +9,7 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.utilities.number.DateUtilities;
 import org.apache.commons.lang3.tuple.Pair;
 

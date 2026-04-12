@@ -7,12 +7,11 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.error.StateError;
 import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.LivingCreature;
 import com.objects.government.GoverningEntity;
 import com.objects.title.change.TitleSingleChange;
 import com.objects.title.condition.CanHoldCondition;
-import com.objects.title.condition.CanInheritCondition;
 import com.objects.title.succession.rules.SuccessionEntry;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

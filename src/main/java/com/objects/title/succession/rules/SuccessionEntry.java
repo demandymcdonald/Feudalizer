@@ -3,7 +3,7 @@ package com.objects.title.succession.rules;
 import com.base.reference.DMEReference;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.Title;
 import com.google.gson.JsonObject;
 import com.utilities.serialization.SuperclassSerializable;

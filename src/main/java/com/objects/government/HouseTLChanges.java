@@ -7,7 +7,7 @@ import com.base.timeline.error.StateError;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.family.Family;
 
 import java.util.Optional;

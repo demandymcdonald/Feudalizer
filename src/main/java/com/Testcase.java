@@ -1,6 +1,6 @@
 package com;
 
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.CharacterManager;
 
 public class Testcase {

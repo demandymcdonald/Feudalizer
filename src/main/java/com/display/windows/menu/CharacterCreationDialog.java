@@ -1,7 +1,7 @@
 package com.display.windows.menu;
 
 import com.Global;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.CharacterManager;
 import com.objects.government.House;
 import com.base.DMRegistry;

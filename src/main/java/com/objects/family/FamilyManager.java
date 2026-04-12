@@ -4,7 +4,7 @@ import com.Feudalizer;
 import com.Global;
 import com.base.AbstractMutableManager;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import javafx.util.Pair;
 
 import java.time.LocalDate;

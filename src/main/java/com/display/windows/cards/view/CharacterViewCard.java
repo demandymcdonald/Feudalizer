@@ -1,7 +1,7 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.UIComponents;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.family.FamilyManager;
 import com.objects.title.Title;
 import javafx.geometry.Insets;

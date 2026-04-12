@@ -7,7 +7,7 @@ import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.Title;
 import com.objects.title.change.TitleSingleChange;
 import com.objects.title.succession.rules.SuccessionEntry;

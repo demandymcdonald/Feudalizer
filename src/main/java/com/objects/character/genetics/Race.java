@@ -1,18 +1,20 @@
 package com.objects.character.genetics;
 
 import com.google.gson.JsonObject;
+import com.objects.character.sentient.SentientCharacter;
+import com.objects.character.sentient.SentientSpecies;
 import com.utilities.Displayable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 
-public class Race implements Displayable{
+public class Race<T extends SentientSpecies> implements Displayable{
     private final String id;
     private final String name;
     private final String description;
-    private final Map<GeneticTrait,Float> baseTraits;
+    private final Map<GeneticTrait<T>,Float> baseTraits;
 
-    public Race(String id, String name, String description, Map<GeneticTrait,Float> base)  {
+    public Race(String id, String name, String description, Map<GeneticTrait<T>,Float> base)  {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -25,7 +27,7 @@ public class Race implements Displayable{
         return id;
     }
 
-    public Map<GeneticTrait, Float> getBaseTraits() {
+    public Map<GeneticTrait<T>, Float> getBaseTraits() {
         return baseTraits;
     }
 
@@ -44,13 +46,13 @@ public class Race implements Displayable{
         object.addProperty("id", id);
         return object;
     }
-    public static Race deserialize(JsonObject json){
+    public static <T extends SentientSpecies> Race<T> deserialize(JsonObject json){
         return GeneManager.getRace(json.get("id").getAsString());
     }
     @SuppressWarnings("unchecked")
-    public static Race build(String id, String name, String description, Pair<GeneticTrait,Float>... baseTraits){
-        Map<GeneticTrait,Float> commonTraitsMap = Map.ofEntries(baseTraits);
-        return new Race(id, name, description, commonTraitsMap);
+    public static <T extends SentientSpecies> Race<T> build(String id, String name, String description, Pair<GeneticTrait<T>,Float>... baseTraits){
+        Map<GeneticTrait<T>,Float> commonTraitsMap = Map.ofEntries(baseTraits);
+        return new Race<T>(id, name, description, commonTraitsMap);
     }
 
 }

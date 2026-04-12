@@ -60,7 +60,15 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> exten
     public final void reactivate(boolean isSandbox) {
         super.reactivate(isSandbox);
     }
+    @Override
+    public final List<Class<TimelineChange<? super T>>> oppositeChanges() {
+        return List.of();
+    }
 
+    @Override
+    public final boolean isPositive() {
+        return true;
+    }
     @Override
     public final void mainSave(JsonObject o) {
         super.mainSave(o);

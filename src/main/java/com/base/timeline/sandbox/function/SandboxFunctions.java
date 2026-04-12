@@ -9,7 +9,7 @@ import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.succession.SuccessionPlanner;
 
 import java.time.LocalDate;

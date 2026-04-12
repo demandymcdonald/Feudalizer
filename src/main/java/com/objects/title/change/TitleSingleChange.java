@@ -12,7 +12,7 @@ import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.government.GoverningEntity;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;

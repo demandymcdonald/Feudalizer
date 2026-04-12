@@ -1,4 +1,4 @@
-package com.objects.character.human;
+package com.objects.character.sentient;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
@@ -19,52 +19,13 @@ import com.objects.title.succession.rules.SuccessionEntry;
 import java.time.LocalDate;
 import java.util.*;
 
-public class HumanCharacter extends LivingCreature<HumanCharacter> implements CulturalObject<HumanCharacter> {
-
-    public enum Pronouns {
-        Masculine,
-        Feminine,
-        Neutral,
-    }
+public class HumanCharacter extends SentientCharacter<HumanCharacter, Species.Human> implements CulturalObject<HumanCharacter> {
 
 
-    public enum Gender {
-        Male("Male",Pronouns.Masculine),
-        Female("Female",Pronouns.Feminine),
-        Trans_Male("Trans-Male",Pronouns.Masculine),
-        Trans_Female("Trans-Female",Pronouns.Feminine),
-        Non_Binary("Non-Binary",Pronouns.Neutral);
-//        Other("Other");
 
-        private final String display;
-        private final Pronouns pronouns;
-        Gender(String d, Pronouns pronouns){
-            display = d;
-            this.pronouns = pronouns;
-        }
-        public String getFlavor(){
-            return display;
-        }
-        public Pronouns getPronouns(){
-            return pronouns;
-        }
-    }
-    public enum Orientation {
-        Heterosexual("Heterosexual"),
-        Homosexual("Homosexual"),
-        Bisexual("Bisexual"),
-        Asexual("Asexual"),
-        Questioning("Questioning"),
-        Other("Other");
 
-        private final String display;
-        Orientation(String d){
-            display = d;
-        }
-        public String getFlavor(){
-            return display;
-        }
-    }
+
+
     private String givenName;
     private String surname;
     private Gender gender;
@@ -176,22 +137,7 @@ public class HumanCharacter extends LivingCreature<HumanCharacter> implements Cu
     public void internalSetCulture(DMEReference<Culture> culture){
         this.culture = culture;
     }
-    public void internalSetForename(String forename){
-        this.givenName = forename;
-    }
-    public void internalSetSurname(String surname){
-        this.surname = surname;
-    }
-    public void internalSetGender(Gender gender){
-        this.gender = gender;
-    }
-    public void internalSetOrientation(Orientation orientation){
-        this.orientation = orientation;
-    }
-    public void internalSetOpinionMap(Map<UUID, Opinion> opinions){
-        this.opinions.clear();
-        this.opinions.putAll(opinions);
-    }
+
 
 //    public void internalSetOpinion(Map<UUID, Opinion> opinions){
 //        this.opinions.clear();
@@ -202,21 +148,7 @@ public class HumanCharacter extends LivingCreature<HumanCharacter> implements Cu
         //TODO When culture gets implemented, we'll flip have a rule setting how this'll be handled.
         return givenName + " " + surname;
     }
-    public String getForename(){
-        return givenName;
-    }
-    public String getSurname(){
-        return surname;
-    }
-    public Gender getGender(){
-        return gender;
-    }
-    public Orientation getOrientation(){
-        return orientation;
-    }
-    public Map<UUID,Opinion> getOpinions(){
-        return opinions;
-    }
+
     public List<DMEReference<? extends Title<?>>> getTitles(){
         return linked_titles;
     }

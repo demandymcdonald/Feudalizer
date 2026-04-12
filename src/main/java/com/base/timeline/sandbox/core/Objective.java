@@ -11,7 +11,7 @@ import com.base.timeline.sandbox.function.SandboxFunction;
 import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 
 import java.time.LocalDate;
 import java.util.List;

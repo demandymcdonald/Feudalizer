@@ -1,7 +1,7 @@
 package com.display.windows.cards.view;
 
 import com.display.windows.cards.BaseCard;
-import com.objects.character.human.HumanCharacter;
+import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.Title;
 
 import java.util.function.Consumer;
