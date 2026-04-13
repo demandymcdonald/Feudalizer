@@ -31,6 +31,6 @@ public interface Tenet extends Displayable, ICultureObject, UUIDIdentifiable {
         if (getRelated().containsKey(tenet)) {
             return getRelated().get(tenet).getValue();
         }
-        return getCompass().getCompatibilityValue(tenet.get().getCompassEntry());
+        return getCompass().getCompatibilityValue(tenet.get().getCompass());
     }
 }

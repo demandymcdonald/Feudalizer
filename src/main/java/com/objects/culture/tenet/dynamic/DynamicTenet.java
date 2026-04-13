@@ -90,7 +90,9 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public void additionalSave(JsonObject data) {
 
     }
-
+    public final boolean isAllowedTenet(Tenet tenet){
+        return getGroup().isParentOf(tenet.getGroup());
+    }
     @Override
     public void additionalLoad(JsonObject data) {
 
