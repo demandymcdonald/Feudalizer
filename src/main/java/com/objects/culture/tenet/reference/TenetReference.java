@@ -2,13 +2,11 @@ package com.objects.culture.tenet.reference;
 
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.types.DynamicTenet;
+import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.types.MutableTenet;
 import com.objects.culture.tenet.types.Tenet;
 import com.utilities.id.UUIDIdentifiable;
 import com.utilities.serialization.SuperclassSerializable;
-
-import java.util.UUID;
 
 public abstract class TenetReference extends StateReference implements UUIDIdentifiable {
     public static final String TENET_SR_TYPE = "TenetReference";
