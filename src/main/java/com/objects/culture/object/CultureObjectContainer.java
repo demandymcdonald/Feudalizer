@@ -4,14 +4,12 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.multi.TimelineMap;
 import com.base.utilities.TLSyncedCache;
-import com.objects.culture.Culture;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.object.instance.TenetInstance;
-import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.instance.TOReference;
-import com.objects.culture.tenet.types.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.concurrent.TimeUnit;

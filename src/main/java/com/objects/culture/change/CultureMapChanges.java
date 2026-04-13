@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.instance.CultureTenetInstance;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.MutableTenet;
 import com.objects.culture.tenet.TenetManager;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -24,18 +24,18 @@ public class CultureMapChanges {
 
 
 
-    public static class TenetMapChange extends TimelineMapChange<TenetMapChange,Tenet, CultureTenetInstance, Culture> {
+    public static class TenetMapChange extends TimelineMapChange<TenetMapChange, MutableTenet, CultureTenetInstance, Culture> {
 
         public TenetMapChange(DMEReference<Culture> owner, LocalDate date) {
             super(owner, date);
         }
 
-        public TenetMapChange(DMEReference<Culture> owner, LocalDate date, Pair<Tenet, CultureTenetInstance>... changes) {
+        public TenetMapChange(DMEReference<Culture> owner, LocalDate date, Pair<MutableTenet, CultureTenetInstance>... changes) {
             super(owner, date, changes);
         }
 
         @Override
-        protected Map<Tenet, CultureTenetInstance> getMapFromObject(DMEReference<? extends Culture> object) {
+        protected Map<MutableTenet, CultureTenetInstance> getMapFromObject(DMEReference<? extends Culture> object) {
             return object.get().getTenets();
         }
 
@@ -43,7 +43,7 @@ public class CultureMapChanges {
         public CultureTenetInstance getFromFuture(ChangeID current, CultureTenetInstance currentInstance){
             Timeline<? extends Culture> timeline = getOwner().get().getTimeline();
             TimelineMapChange<?,?, ?,?> c = (TimelineMapChange<?,?, ?,?>) timeline.followBreadcrumb(current);
-            Map<Tenet, CultureTenetInstance> m = TimelineMapChange.getFirstFromFuture(timeline, c, currentInstance.getTenet(), null);
+            Map<MutableTenet, CultureTenetInstance> m = TimelineMapChange.getFirstFromFuture(timeline, c, currentInstance.getTenet(), null);
             return m.get(currentInstance.getTenet());
         }
 
@@ -81,7 +81,7 @@ public class CultureMapChanges {
 
         }
         @Override
-        protected JsonElement kSerialize(Tenet tenet) {
+        protected JsonElement kSerialize(MutableTenet tenet) {
             return new JsonPrimitive(tenet.getDisplayID());
         }
 
@@ -91,7 +91,7 @@ public class CultureMapChanges {
         }
 
         @Override
-        protected Tenet kDeserialize(JsonElement m) {
+        protected MutableTenet kDeserialize(JsonElement m) {
             return TenetManager.getTenet(m.getAsString());
         }
 

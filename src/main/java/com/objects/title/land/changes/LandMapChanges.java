@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.instance.LandTenetInstance;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.MutableTenet;
 import com.objects.title.land.habitable.HabitableLand;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -20,18 +20,18 @@ import java.util.Map;
 
 public class LandMapChanges {
 
-    public static class LandCultureInstanceChange<T extends HabitableLand<T>> extends TimelineMapChange<LandCultureInstanceChange<T>, Tenet, LandTenetInstance<T>, T> {
+    public static class LandCultureInstanceChange<T extends HabitableLand<T>> extends TimelineMapChange<LandCultureInstanceChange<T>, MutableTenet, LandTenetInstance<T>, T> {
 
         protected LandCultureInstanceChange(DMEReference<T> owner, LocalDate date) {
             super(owner, date);
         }
 
-        protected LandCultureInstanceChange(DMEReference<T> owner, LocalDate date, Pair<Tenet, LandTenetInstance<T>>... changes) {
+        protected LandCultureInstanceChange(DMEReference<T> owner, LocalDate date, Pair<MutableTenet, LandTenetInstance<T>>... changes) {
             super(owner, date, changes);
         }
 
         @Override
-        protected Map<Tenet, LandTenetInstance<T>> getMapFromObject(DMEReference<? extends T> object) {
+        protected Map<MutableTenet, LandTenetInstance<T>> getMapFromObject(DMEReference<? extends T> object) {
             return object.get().getOpinions();
         }
 
@@ -41,12 +41,12 @@ public class LandMapChanges {
         }
 
         @Override
-        protected JsonElement kSerialize(Tenet tenet) {
+        protected JsonElement kSerialize(MutableTenet tenet) {
             return new JsonPrimitive(tenet.getDisplayID());
         }
 
         @Override
-        protected Tenet kDeserialize(JsonElement m) {
+        protected MutableTenet kDeserialize(JsonElement m) {
             return TenetManager.getTenet(m.getAsString());
         }
 

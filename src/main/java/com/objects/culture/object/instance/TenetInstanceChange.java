@@ -1,7 +1,6 @@
 package com.objects.culture.object.instance;
 
 import com.Global;
-import com.Global.*;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineObject;
@@ -15,7 +14,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.reference.TenetReference;
 
 import java.time.LocalDate;
 import java.util.List;

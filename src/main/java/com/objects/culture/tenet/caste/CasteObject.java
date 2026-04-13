@@ -1,13 +1,11 @@
 package com.objects.culture.tenet.caste;
 
-import com.Global.*;
 import com.objects.culture.object.CultureMutatedObject;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.object.PassiveCultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.MutableTenet;
 import com.utilities.Displayable;
 import com.utilities.id.StringIdentifiable;
 
@@ -40,7 +38,7 @@ public record CasteObject(TenetGroup group,String id, String name, String descri
     }
 
     @Override
-    public Acceptance getAcceptance(Tenet t, CultureObject<?, ?, ?> c) {
+    public Acceptance getAcceptance(MutableTenet t, CultureObject<?, ?, ?> c) {
 
     }
 }

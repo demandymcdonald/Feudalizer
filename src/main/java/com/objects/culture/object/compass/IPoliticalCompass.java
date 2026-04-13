@@ -163,7 +163,7 @@ public interface IPoliticalCompass extends JsonSerializable {
             }
             incompatability +=  diff * multiplier;
         }
-        double gap = 1 - (incompatability / Math.max(6,incompatability));
+        double gap = 1 - (incompatability / Math.max(2 * TOTAL_AXIS,incompatability));
         return  (gap * (MAX_VALUE * 2)) - MAX_VALUE;
     }
     @Override

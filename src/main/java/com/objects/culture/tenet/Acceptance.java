@@ -70,4 +70,7 @@ public enum Acceptance implements Displayable {
     public String description() {
         return description;
     }
+    public int getValue() {
+        return floor;
+    }
 }

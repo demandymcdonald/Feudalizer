@@ -70,6 +70,14 @@ public interface SuperclassSerializable<T extends SuperclassSerializable<T>> {
         if (!isSuperSerialized(data)) throw new IllegalArgumentException("Not a super serialized object: "+ data.toString());
         return data.get("metadata").getAsJsonObject();
     }
+    static JsonObject getMainData(JsonObject data){
+        if (!isSuperSerialized(data)) throw new IllegalArgumentException("Not a super serialized object: "+ data.toString());
+        return data.get("main").getAsJsonObject();
+    }
+    static JsonObject getAdditional(JsonObject data){
+        if (!isSuperSerialized(data)) throw new IllegalArgumentException("Not a super serialized object: "+ data.toString());
+        return data.get("additiona").getAsJsonObject();
+    }
     void mainSave(JsonObject object);
     void mainLoad(JsonObject object);
     void additionalSave(JsonObject data);

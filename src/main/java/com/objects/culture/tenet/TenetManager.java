@@ -2,29 +2,39 @@ package com.objects.culture.tenet;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.Ideology;
+import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.MutableTenet;
 import com.objects.culture.tenet.tenets.ReligionTenets;
+import com.objects.culture.tenet.types.Tenet;
+import com.utilities.serialization.SuperclassSerializable;
 
 import java.util.*;
 
 import static com.objects.culture.tenet.group.TenetGroup.builder;
 
 public class TenetManager {
-    private static final Map<String, Tenet> tenets = new HashMap<>();
+    private static final Map<String, MutableTenet> tenets = new HashMap<>();
     private static final Map<String, TenetGroup> groups = new HashMap<>();
-    private static final Multimap<TenetGroup,Tenet> tenetsByGroup = HashMultimap.create();
+    private static final Multimap<TenetGroup, MutableTenet> tenetsByGroup = HashMultimap.create();
     private static final Multimap<TenetGroup,TenetGroup> groupRelations = HashMultimap.create();
     private static final Multimap<TenetGroup,TenetGroup> parentRelations = HashMultimap.create();
-    private static final Map<String, Ideology> ideologies = new HashMap<>();
+
+    private static final Map<Class<? extends MutableTenet>, TenetFactory<? extends MutableTenet>> tenetsByClass = new HashMap<>();
+
+
+
+
+
     public static final TenetGroup CULTURE = builder(TGType.SORT_ONLY,"culture", "All_Culture", "Every Tenet");
     public static final TenetGroup HARD_CULTURE = builder(TGType.SORT_ONLY,"hard", "Hard Culture", "");
     public static final TenetGroup SOFT_CULTURE = builder(TGType.SORT_ONLY,"soft", "Soft Culture", "");
 
-    public static void registerTenet(Tenet tenet) {
+    public static void registerTenet(MutableTenet tenet) {
         tenets.put(tenet.getDisplayID(), tenet);
         tenetsByGroup.put(tenet.getGroup(), tenet);
     }
@@ -44,16 +54,7 @@ public class TenetManager {
             parentRelations.put(parent, group);
         }
     }
-    public static void registerIdeology(Ideology ideology){
-        if (ideologies.containsKey(ideology.getDisplayID())) {
-            if (ideologies.get(ideology.getDisplayID()).equals(ideology)) {
-                return;
-            } else {
-                throw new RuntimeException("Duplicate ideology ID: " + ideology.getDisplayID());
-            }
-        }
-        ideologies.put(ideology.getDisplayID(), ideology);
-    }
+
     private static void handleGroupRelations(TenetGroup group, List<TenetGroup> linkedGroups){
         for (TenetGroup linkedGroup : linkedGroups) {
             groupRelations.put(group, linkedGroup);
@@ -73,13 +74,8 @@ public class TenetManager {
         return false;
     }
 
-    public static Ideology getIdeology(String id){
-        return ideologies.get(id);
-    }
-    public static List<Ideology> getIdeologies(){
-        return new ArrayList<>(ideologies.values());
-    }
-    public static Tenet getTenet(String id) {
+
+    public static MutableTenet getTenet(String id) {
         return tenets.get(id);
     }
     public static TenetGroup getGroup(String id) {
@@ -97,6 +93,24 @@ public class TenetManager {
         GovernmentGroups.init();
 
         ReligionTenets.init();
+    }
+
+    public static abstract class TenetFactory<T extends MutableTenet> {
+        public final T rebuild(JsonObject object) {
+            JsonObject main = SuperclassSerializable.getMainData(object);
+            UUID id = UUID.fromString(main.get("id").getAsString());
+            TenetGroup g = TenetManager.getGroup(main.get("group").getAsString());
+            String displayID = main.get("displayID").getAsString();
+            String displayName = main.get("name").getAsString();
+            String description = main.get("description").getAsString();
+            PoliticalCompass compass = PoliticalCompass.build(main.get("compass").getAsJsonObject());
+            T t = onRebuild(id,g,compass,displayID,displayName,description);
+            t.additionalLoad(SuperclassSerializable.getAdditional(object));
+            return t;
+        }
+        protected abstract T onRebuild(UUID id, TenetGroup tenetGroup, PoliticalCompass compass, String displayID, String displayName, String description);
+
+
     }
 }
 

@@ -10,18 +10,17 @@ import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.object.compass.IPoliticalCompass;
-import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.instance.TOReference;
 import com.objects.culture.object.instance.TenetInstance;
 import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.MutableTenet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
-import static com.objects.culture.tenet.Acceptance.get;
 
 public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>> extends ICultureObject{
     static final double b = .23; //apathy peak as percent from start
@@ -44,13 +43,13 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         // will work becuase TOReferences are just janky wrappers for DMEReferences.
         return new TOReference<>(getReference());
     }
-    default Acceptance getAcceptance(Tenet tenet, boolean includeInfluencers){
+    default Acceptance getAcceptance(MutableTenet tenet, boolean includeInfluencers){
         return Acceptance.get((int) Math.round(getAcceptanceValue(tenet, includeInfluencers)));
     }
-    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers){
+    default double getAcceptanceValue(MutableTenet tenet, boolean includeInfluencers){
         return getAcceptanceValue(tenet, includeInfluencers, new TOReference[0]);
     }
-    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, TOReference<?>... bls){
+    default double getAcceptanceValue(MutableTenet tenet, boolean includeInfluencers, TOReference<?>... bls){
         TenetReference ref = new TenetReference(tenet);
         Map<TenetReference,TenetInstance<T>> opinions = getOpinions();
         double acceptance = 0;
@@ -185,7 +184,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         }
     }
 
-    default List<InfluencerOpinion> getListForTenet(Tenet tenet, boolean includeParentInfluencers, TOReference<?>... bl){
+    default List<InfluencerOpinion> getListForTenet(MutableTenet tenet, boolean includeParentInfluencers, TOReference<?>... bl){
         List<InfluencerOpinion> toReturn = new ArrayList<>();
         List<TOReference<?>> blacklist = new ArrayList<>(Arrays.stream(bl).toList());
         //the blacklist is here to prevent mutually influencing relationships (think US <-> USSR) from infinitely looping.
@@ -207,7 +206,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         return toReturn;
     }
     static <T extends DateMutableEntity<T> & CultureObject<T>>
-    double AdjustForInfluence(T tenetOpinionated, Tenet t, boolean includeInfluencer, double acceptance, TOReference<?>... blacklist){
+    double AdjustForInfluence(T tenetOpinionated, MutableTenet t, boolean includeInfluencer, double acceptance, TOReference<?>... blacklist){
         double resistance = tenetOpinionated.calcResistance(acceptance);
         double toReturn = acceptance * resistance;
         List<Double> d = CalculateInfluencerFactor(tenetOpinionated.getListForTenet(t,includeInfluencer,blacklist), resistance);
@@ -286,7 +285,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         getInfluencedCache().invalidateAll();
     }
     record InfluencerOpinion(double opinion, int influence){
-        public InfluencerOpinion(Tenet t, boolean includeInfluence, TOReference<?> ref, InfluencerInstance inst, double extra, TOReference<?>... blacklist){
+        public InfluencerOpinion(MutableTenet t, boolean includeInfluence, TOReference<?> ref, InfluencerInstance inst, double extra, TOReference<?>... blacklist){
             this(ref.get().getAcceptanceValue(t,includeInfluence,blacklist),(int) Math.round(inst.weight().get(t.getGroup()) * Math.clamp(extra,-1,1)));
         }
     }
