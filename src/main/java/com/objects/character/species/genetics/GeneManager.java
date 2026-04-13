@@ -1,17 +1,17 @@
-package com.objects.character.genetics;
+package com.objects.character.species.genetics;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.objects.character.sentient.SentientSpecies;
-import org.apache.commons.lang3.tuple.Pair;
+import com.objects.character.species.race.Race;
+import com.objects.character.species.race.RacesEast;
+import com.objects.character.species.race.RacesWest;
 
 import java.util.*;
 
 public class GeneManager {
-    private static final Map<String, GeneticTrait<?>> traits = new HashMap<>();
+    private static final Map<String, Gene<?>> traits = new HashMap<>();
     private static final Map<SpectrumTrait.Type, TreeMap<Integer, SpectrumTrait>> Spectrums = new HashMap<>();
     private static final Map<String, Race<?>> races = new HashMap<>();
-    public static void registerGene(String id, GeneticTrait<?> t){
+    public static void registerGene(String id, Gene<?> t){
         if (t instanceof SpectrumTrait st) {
             registerSpectrum(st);
         }
@@ -24,10 +24,10 @@ public class GeneManager {
     public static void registerRace(Race<?> race){
         races.put(race.getDisplayID(), race);
     }
-    public static <T extends SentientSpecies> GeneticTrait<T> getGeneSpectrum(SpectrumTrait.Type type, int value){
+    public static <T extends SentientSpecies> Gene<T> getGeneSpectrum(SpectrumTrait.Type type, int value){
         return Spectrums.get(type).floorEntry(value).getValue();
     }
-    public static <T extends SentientSpecies> GeneticTrait<T> getGene(String id){
+    public static <T extends SentientSpecies> Gene<T> getGene(String id){
         return traits.get(id);
     }
     public static <T extends SentientSpecies> Race<T> getRace(String id){

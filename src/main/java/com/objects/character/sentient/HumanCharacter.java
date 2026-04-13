@@ -3,12 +3,11 @@ package com.objects.character.sentient;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
-import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.CharacterSingleChange;
-import com.objects.character.LivingCreature;
 import com.objects.character.opinion.Opinion;
+import com.objects.character.species.MainSpecies;
 import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
@@ -19,7 +18,7 @@ import com.objects.title.succession.rules.SuccessionEntry;
 import java.time.LocalDate;
 import java.util.*;
 
-public class HumanCharacter extends SentientCharacter<HumanCharacter, Species.Human> implements CulturalObject<HumanCharacter> {
+public class HumanCharacter extends SentientCharacter<HumanCharacter, MainSpecies.Human> implements CulturalObject<HumanCharacter> {
 
 
 

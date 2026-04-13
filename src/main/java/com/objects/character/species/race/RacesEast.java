@@ -1,5 +1,8 @@
-package com.objects.character.genetics;
+package com.objects.character.species.race;
 
+import com.objects.character.species.genetics.GeneManager;
+import com.objects.character.species.genetics.Genes;
+import com.objects.character.species.genetics.SpectrumTrait;
 import org.apache.commons.lang3.tuple.Pair;
 @SuppressWarnings("unchecked")
 public class RacesEast {

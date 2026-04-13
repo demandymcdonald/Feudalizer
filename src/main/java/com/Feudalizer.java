@@ -3,9 +3,8 @@ package com;
 
 import com.display.MainWindow;
 import com.display.geography.GeographyLoader;
-import com.objects.character.genetics.GeneManager;
+import com.objects.character.species.genetics.GeneManager;
 import com.sql.SQLManager;
-import com.utilities.ThreadManager;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;

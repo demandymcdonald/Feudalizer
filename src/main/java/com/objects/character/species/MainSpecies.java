@@ -1,8 +1,10 @@
-package com.objects.character.sentient;
+package com.objects.character.species;
+
+import com.objects.character.sentient.SentientSpecies;
 
 import java.util.List;
 
-public class Species {
+public class MainSpecies {
     public static class Human extends SentientSpecies {
         public Human() {
             super("human", "Homo-Sapien-Sapien", "A normal human", List.of());

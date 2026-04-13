@@ -1,8 +1,9 @@
-package com.objects.character.genetics;
+package com.objects.character.species.race;
 
 import com.google.gson.JsonObject;
-import com.objects.character.sentient.SentientCharacter;
 import com.objects.character.sentient.SentientSpecies;
+import com.objects.character.species.genetics.GeneManager;
+import com.objects.character.species.genetics.Gene;
 import com.utilities.Displayable;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,9 +13,9 @@ public class Race<T extends SentientSpecies> implements Displayable{
     private final String id;
     private final String name;
     private final String description;
-    private final Map<GeneticTrait<T>,Float> baseTraits;
+    private final Map<Gene<T>,Float> baseTraits;
 
-    public Race(String id, String name, String description, Map<GeneticTrait<T>,Float> base)  {
+    public Race(String id, String name, String description, Map<Gene<T>,Float> base)  {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -27,7 +28,7 @@ public class Race<T extends SentientSpecies> implements Displayable{
         return id;
     }
 
-    public Map<GeneticTrait<T>, Float> getBaseTraits() {
+    public Map<Gene<T>, Float> getBaseTraits() {
         return baseTraits;
     }
 
@@ -50,8 +51,8 @@ public class Race<T extends SentientSpecies> implements Displayable{
         return GeneManager.getRace(json.get("id").getAsString());
     }
     @SuppressWarnings("unchecked")
-    public static <T extends SentientSpecies> Race<T> build(String id, String name, String description, Pair<GeneticTrait<T>,Float>... baseTraits){
-        Map<GeneticTrait<T>,Float> commonTraitsMap = Map.ofEntries(baseTraits);
+    public static <T extends SentientSpecies> Race<T> build(String id, String name, String description, Pair<Gene<T>,Float>... baseTraits){
+        Map<Gene<T>,Float> commonTraitsMap = Map.ofEntries(baseTraits);
         return new Race<T>(id, name, description, commonTraitsMap);
     }
 

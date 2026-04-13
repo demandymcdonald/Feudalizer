@@ -1,6 +1,6 @@
 package com.objects.character.sentient;
 
-import com.objects.character.genetics.GeneticContainer;
+import com.objects.character.species.genetics.GeneticContainer;
 
 import java.util.List;
 import java.util.Optional;

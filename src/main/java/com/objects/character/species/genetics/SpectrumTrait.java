@@ -1,8 +1,8 @@
-package com.objects.character.genetics;
+package com.objects.character.species.genetics;
 
 import com.google.gson.JsonObject;
 
-public class SpectrumTrait extends GeneticTrait {
+public class SpectrumTrait extends Gene {
     //TODO: write once I have the shape in;
 
     public enum Type {
