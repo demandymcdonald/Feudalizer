@@ -13,7 +13,6 @@ import com.utilities.id.UUIDIdentifiable;
 import java.util.Map;
 
 public interface Tenet extends Displayable, ICultureObject, UUIDIdentifiable {
-    TenetReference getTenetReference();
     TenetGroup getGroup();
     Multimap<Class<? extends TimelineChange<?>>, TenetCondition<?,?,?>> getConditions();
     Map<TenetReference, Acceptance> getRelated();
@@ -22,7 +21,9 @@ public interface Tenet extends Displayable, ICultureObject, UUIDIdentifiable {
     default Acceptance getAcceptance(TenetReference tenet, boolean includeInfluencers) {
         return Acceptance.get((int) Math.round(getAcceptanceValue(tenet,includeInfluencers)));
     }
-
+    default TenetReference getTenetReference() {
+        return TenetReference.of(this);
+    }
     @Override
     default double getAcceptanceValue(TenetReference tenet, boolean includeInfluencers) {
         if (tenet.equals(getTenetReference())) {

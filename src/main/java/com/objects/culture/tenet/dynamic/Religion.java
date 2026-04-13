@@ -4,6 +4,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.Multimap;
+import com.objects.CauseOfEnd;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetCondition;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -26,6 +27,31 @@ public class Religion extends DynamicTenet<Religion>{
         super(ReligionGroups.RELIGION, dme);
     }
 
+    @Override
+    protected void onLink() {
+
+    }
+
+    @Override
+    public void doDateChange() {
+
+    }
+
+    @Override
+    public TimelineChange<Religion> getBirthChange(DMEReference<Religion> dme, LocalDate date) {
+        return null;
+    }
+
+    @Override
+    public TimelineChange<Religion> getDeathChange(DMEReference<Religion> dme, LocalDate date, CauseOfEnd<? super Religion> cOd) {
+        return null;
+    }
+
+    @Override
+    public CauseOfEnd<? super Religion> defaultDeathCause() {
+        return null;
+    }
+
     public Religion(String name, UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Religion, ?>> initialState) {
         super(ReligionGroups.RELIGION, name, id, created, ended, initialState);
     }
@@ -40,10 +66,6 @@ public class Religion extends DynamicTenet<Religion>{
         return 0;
     }
 
-    @Override
-    public TenetReference getTenetReference() {
-        return null;
-    }
 
     @Override
     public Multimap<Class<? extends TimelineChange<?>>, TenetCondition<?, ?, ?>> getConditions() {
