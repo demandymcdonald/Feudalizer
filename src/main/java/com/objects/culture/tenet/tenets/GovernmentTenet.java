@@ -3,7 +3,6 @@ package com.objects.culture.tenet.tenets;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.TenetPillar;
 
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 

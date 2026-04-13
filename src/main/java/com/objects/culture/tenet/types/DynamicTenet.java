@@ -7,7 +7,10 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.AbstractCulture;
+import com.objects.culture.object.CultureObject;
+import com.objects.culture.object.CultureObjectContainer;
 import com.objects.culture.object.compass.IPoliticalCompass;
+import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetCondition;
 import com.objects.culture.tenet.reference.TenetReference;
@@ -16,20 +19,34 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet {
-    public DynamicTenet(LocalDate created, LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
+public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T> {
+    private final TenetGroup tenetGroup;
+    private final CultureObjectContainer<T> container;
+    String displayID;
+    String displayName;
+    String description;
+    public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
+        this.tenetGroup = group;
+        displayID = buildID(group,name);
+        container = new CultureObjectContainer<>(this.getReference());
     }
 
-    public DynamicTenet(DMEReference<T> dme) {
+    public DynamicTenet(TenetGroup group, DMEReference<T> dme) {
         super(dme);
+        this.tenetGroup = group;
+        container = new CultureObjectContainer<>(this.getReference());
     }
 
-    public DynamicTenet(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
+    public DynamicTenet(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
+        this.tenetGroup = group;
+        displayID = buildID(group,name);
+        container = new CultureObjectContainer<>(this.getReference());
     }
 
     @Override
@@ -43,6 +60,10 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
+    public final CultureObjectContainer<T> getContainer() {
+        return container;
+    }
+    @Override
     public TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date) {
         return null;
     }
@@ -51,7 +72,6 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date, CauseOfEnd<? super T> cOd) {
         return null;
     }
-
     @Override
     public CauseOfEnd<? super T> defaultDeathCause() {
         return null;
@@ -59,22 +79,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
 
     @Override
     public TenetGroup getGroup() {
-        return null;
-    }
-
-    @Override
-    public Multimap<Class<? extends TimelineChange<?>>, TenetCondition<?, ?, ?>> getConditions() {
-        return null;
-    }
-
-    @Override
-    public Map<TenetReference, Acceptance> getRelated() {
-        return Map.of();
-    }
-
-    @Override
-    public IPoliticalCompass getCompass() {
-        return null;
+        return tenetGroup;
     }
 
     @Override
@@ -95,5 +100,8 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     @Override
     public void additionalLoad(JsonObject data) {
 
+    }
+    private static String buildID(TenetGroup tenetGroup, String name) {
+        return tenetGroup.getDisplayID() + "/" + name.toLowerCase(Locale.ROOT);
     }
 }
