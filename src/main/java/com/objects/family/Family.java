@@ -51,7 +51,6 @@ public class Family extends DateMutableEntity<Family> {
         public MemberType getType() {
             return type;
         }
-        piub
     }
 
     //######

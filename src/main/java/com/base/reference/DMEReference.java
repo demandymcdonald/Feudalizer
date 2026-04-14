@@ -10,12 +10,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.gson.JsonObject;
+import com.utilities.id.UUIDIdentifiable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class DMEReference<T extends DateMutableEntity<?>> extends StateReference {
+public class DMEReference<T extends DateMutableEntity<?>> extends StateReference implements UUIDIdentifiable {
     public static final String DME_SR_TYPE = "DMEReference";
     private final Class<T> type;
     private final UUID uuid;
