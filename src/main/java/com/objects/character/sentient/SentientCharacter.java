@@ -11,6 +11,7 @@ import com.objects.character.opinion.Opinion;
 import com.objects.character.opinion.OpinionReason;
 import com.objects.character.sentient.change.CharacterChanges;
 import com.objects.character.sentient.change.SentientMapChange;
+import com.objects.culture.object.CultureObject;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
 import com.objects.government.GoverningEntity;
@@ -22,8 +23,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 
-public abstract class SentientCharacter<T extends SentientCharacter<T,S>,S extends SentientSpecies> extends LivingCreature<T> implements CulturalObject<T> {
-    private GeneticContainer<S> geneticContainer;
+public abstract class SentientCharacter<T extends SentientCharacter<T>> extends LivingCreature<T> implements CultureObject<T> {
+    private GeneticContainer<?> geneticContainer;
     private String firstName;
     private String lastName;
     private Gender gender;
@@ -150,6 +151,9 @@ public abstract class SentientCharacter<T extends SentientCharacter<T,S>,S exten
     }
     public final String getSurname(){
         return lastName;
+    }
+    public final String getFullName(){
+        return firstName + " " + lastName;
     }
     public final Gender getGender(){
         return gender;

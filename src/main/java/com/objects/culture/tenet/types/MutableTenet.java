@@ -1,13 +1,7 @@
 package com.objects.culture.tenet.types;
 
-import com.base.timeline.change.TimelineChange;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.IPoliticalCompass;
-import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.tenet.TenetCondition;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
@@ -15,7 +9,6 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.serialization.SuperclassSerializable;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 public abstract class MutableTenet implements Tenet, SuperclassSerializable<MutableTenet> {
     private final UUID id;

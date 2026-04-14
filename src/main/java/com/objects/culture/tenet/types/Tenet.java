@@ -4,7 +4,7 @@ import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.Multimap;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.tenet.TenetCondition;
+import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.Displayable;

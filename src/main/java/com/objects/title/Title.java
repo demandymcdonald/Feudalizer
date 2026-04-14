@@ -9,6 +9,8 @@ import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.LivingCreature;
+import com.objects.character.sentient.SentientCharacter;
+import com.objects.culture.object.ICultureObject;
 import com.objects.government.GoverningEntity;
 import com.objects.title.change.TitleSingleChange;
 import com.objects.title.condition.CanHoldCondition;
@@ -19,9 +21,9 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Supplier;
 
-public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
+public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> implements ICultureObject {
     private DMEReference<? extends GoverningEntity<?>> governing_entity;
-    private DMEReference<HumanCharacter> holder;
+    private DMEReference<? extends SentientCharacter<?>> holder;
     private DMEReference<? extends Title<?>> parent;
     private SuccessionEntry<?> succession;
 
@@ -54,9 +56,9 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     protected void onLink() {
         Title<?> parent = this.parent.get();
         parent.linkChild(getReference());
-        DMEReference<HumanCharacter> holder = this.holder;
+        DMEReference<? extends SentientCharacter<?>> holder = this.holder;
         if (holder != null) {
-            HumanCharacter character = holder.get();
+            SentientCharacter<?> character = holder.get();
             character.linkTitle(getReference());
             if (governing_entity != null) {
 
@@ -84,7 +86,7 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     public final int getPrestige(){
         return basePrestige() * levelsBelow.get();
     }
-    public Optional<DMEReference<HumanCharacter>> getHolder() {
+    public Optional<DMEReference<? extends SentientCharacter<?>>> getHolder() {
         if(holder == null){
             return Optional.empty();
         }
@@ -157,8 +159,8 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public void internalHolder(DMEReference<? extends HumanCharacter> character) {
-        holder = (DMEReference<HumanCharacter>) character;
+    public void internalHolder(DMEReference<? extends SentientCharacter<?>> character) {
+        holder = (DMEReference<? extends SentientCharacter<?>>) character;
     }
     public void internalParent(DMEReference<? extends Title<?>> parent) {
         this.parent = parent;

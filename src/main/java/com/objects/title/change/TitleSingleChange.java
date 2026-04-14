@@ -3,6 +3,7 @@ package com.objects.title.change;
 import com.Global;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.CultureAware;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
@@ -13,6 +14,7 @@ import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
+import com.objects.character.sentient.SentientCharacter;
 import com.objects.government.GoverningEntity;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
@@ -48,18 +50,14 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
             entity.get().internalParent(newParent);
         }
 
-        @Override
-        public List<Class<TimelineChange<? super T>>> oppositeChanges() {
-            return List.of();
-        }
+
+
         public DMEReference<? extends Title<?>> getNewParent() {
             return newParent;
         }
 
-        @Override
-        public boolean isPositive() {
-            return true;
-        }
+
+
 
         @Override
         protected String getText() {
@@ -84,9 +82,9 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
             newParent = DMEReference.deserialize(data.get("new_parent").getAsJsonObject());
         }
     }
-    protected static class setHolder<T extends Title<T>> extends TitleSingleChange<T> {
-        DMEReference<? extends HumanCharacter> newHolder;
-        DMEReference<? extends HumanCharacter> oldHolder;
+    protected static class setHolder<T extends Title<T>> extends TitleSingleChange<T> implements CultureAware<setHolder<T>, SentientCharacter<?>,T> {
+        DMEReference<? extends SentientCharacter<?>> newHolder;
+        DMEReference<? extends SentientCharacter<?>> oldHolder;
         protected setHolder(DMEReference<? extends T> owner, LocalDate date, DMEReference<? extends HumanCharacter> newHolder) {
             super(owner, date);
             this.newHolder = newHolder;
@@ -101,23 +99,13 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
         }
 
         @Override
-        public List<Class<TimelineChange<? super T>>> oppositeChanges() {
-            return List.of();
-        }
-
-        @Override
-        public boolean isPositive() {
-            return false;
-        }
-
-        @Override
         protected String getText() {
             if(oldHolder != null){
                 return "Changed title holder from " + oldHolder.get().getFullName() + " to " + newHolder.get().getFullName();
             }
             return "Changed title holder to " + newHolder.get().getFullName();
         }
-        public DMEReference<? extends HumanCharacter> getNewHolder() {
+        public DMEReference<? extends SentientCharacter<?>> getNewHolder() {
             return newHolder;
         }
         @Override
@@ -137,6 +125,16 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
         public void additionalLoad(JsonObject data) {
             newHolder = DMEReference.deserialize(data.get("new_holder").getAsJsonObject());
             oldHolder = DMEReference.deserialize(data.get("old_holder").getAsJsonObject());
+        }
+
+        @Override
+        public DMEReference<? extends SentientCharacter<?>> getSubject() {
+            return newHolder;
+        }
+
+        @Override
+        public DMEReference<? extends T> getDecider() {
+            return getOwner();
         }
     }
     public static class setHolderInherit<T extends Title<T>> extends setHolder<T> {
