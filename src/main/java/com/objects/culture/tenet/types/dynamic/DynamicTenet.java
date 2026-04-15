@@ -64,6 +64,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
         this.tenetGroup = group;
         displayID = buildID(group,name);
         container = new CultureObjectContainer<>(this.getReference());
+        container.getOpinions().setListener(listener);
     }
 
     public DynamicTenet(TenetGroup group, DMEReference<T> dme) {
