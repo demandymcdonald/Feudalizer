@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.tenets.general;
+package com.objects.culture.tenet.types.mutable.tenets.general;
 
 import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.PoliticalCompass;

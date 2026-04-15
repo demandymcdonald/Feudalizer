@@ -3,7 +3,7 @@ package com.objects.culture.tenet.reference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.mutable.dynamic.DynamicTenet;
+import com.objects.culture.tenet.types.dynamic.DynamicTenet;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 import com.objects.culture.tenet.types.mutable.Tenet;
 import com.utilities.id.UUIDIdentifiable;

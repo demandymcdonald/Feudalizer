@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.mutable.dynamic.DynamicTenet;
+import com.objects.culture.tenet.types.dynamic.DynamicTenet;
 
 import java.util.UUID;
 

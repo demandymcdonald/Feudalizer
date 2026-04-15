@@ -1,6 +1,5 @@
-package com.objects.culture.tenet.tenets.social;
+package com.objects.culture.tenet.types.mutable.tenets.social;
 
-import com.Global.*;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.reference.TenetReference;

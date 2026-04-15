@@ -21,15 +21,15 @@ public class GovernmentGroups {
 
 
 
-    public static final TenetGroup GOVERNMENT = new TenetGroup.Builder(TGType.SORT_ONLY, Level.PILLAR, "government", "GovernmentTenet", "")
+    public static final TenetGroup GOVERNMENT = new TenetGroup.Builder(TGType.SORT_ONLY, Level.PILLAR, "government", "Government", "")
             .setParent(HARD_CULTURE)
             .build();
 
     // Pillar
-    public static final TenetGroup GOVERNMENT_SYSTEM = new TenetGroup.Builder(TGType.PILLAR_SYSTEM, Level.CATEGORY, "system", "GovernmentTenet System", "")
+    public static final TenetGroup GOVERNMENT_SYSTEM = new TenetGroup.Builder(TGType.PILLAR_SYSTEM, Level.CATEGORY, "system", "Government System", "")
             .setParent(GOVERNMENT)
             .build();
-    public static final TenetGroup GOVERNMENT_IDEOLOGY = new TenetGroup.Builder(TGType.PILLAR_IDEOLOGY, Level.CATEGORY, "ideology", "GovernmentTenet Ideology", "")
+    public static final TenetGroup GOVERNMENT_IDEOLOGY = new TenetGroup.Builder(TGType.PILLAR_IDEOLOGY, Level.CATEGORY, "ideology", "Government Ideology", "")
             .setParent(GOVERNMENT)
             .addDependent(GOVERNMENT_SYSTEM)
             .build();

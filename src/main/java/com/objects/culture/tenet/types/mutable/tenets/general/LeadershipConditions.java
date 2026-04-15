@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.tenets.general;
+package com.objects.culture.tenet.types.mutable.tenets.general;
 
 import com.Global;
 import com.base.condition.Condition;
@@ -13,7 +13,6 @@ import com.objects.title.change.TitleSingleChange;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Optional;
 

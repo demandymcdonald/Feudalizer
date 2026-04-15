@@ -294,6 +294,9 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void internalSetInfluencers(TimelineMap<TOReference<?>, InfluencerInstance,T>  influencers){
         getContainer().setInfluencers(influencers);
     };
+    default boolean isInMajority(TenetGroup group){
+
+    }
     default void internalSetCompass(InterpolatedPoliticalCompass<?> compass){
         getContainer().setCompass((InterpolatedPoliticalCompass<T>) compass);
     };

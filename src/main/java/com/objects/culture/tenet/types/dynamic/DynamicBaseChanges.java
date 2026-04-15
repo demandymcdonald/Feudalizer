@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.mutable.dynamic;
+package com.objects.culture.tenet.types.dynamic;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
