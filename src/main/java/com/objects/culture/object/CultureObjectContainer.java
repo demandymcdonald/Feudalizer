@@ -8,10 +8,14 @@ import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.object.instance.TenetInstance;
+import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.instance.TOReference;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObject<T>>{
@@ -21,6 +25,39 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
     TimelineMap<TenetReference, TenetInstance<T>, T> opinions;
     InterpolatedPoliticalCompass<T> compass;
     TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
+
+
+    public TenetInstance<T> getOpinion(TenetReference tenet){
+        return opinions.get(tenet);
+    }
+
+
+    public List<TenetReference> getByGroup(TenetGroup group){
+        List<TenetReference> result = new ArrayList<>();
+        for(TenetReference t : opinions.keySet()){
+            if (t.getGroup() == group){
+                result.add(t);
+            }
+        }
+        return result;
+    }
+    public List<TenetReference> getByPillar(TenetManager.Group.Pillar tenet){
+        return getByGroup(tenet.getGroup());
+    }
+    public List<TenetReference> getByGroupTree(TenetGroup group){
+        List<TenetReference> result = new ArrayList<>();
+        for(TenetReference t : opinions.keySet()){
+            if (t.getGroup().isDescendantOf(group)){
+                result.add(t);
+            }
+        }
+        return result;
+    }
+    public List<TenetReference> getPillarTree(TenetManager.Group.Pillar tenet){
+        return getByGroupTree(tenet.getGroup());
+    }
+
+
 
     public CultureObjectContainer(DMEReference<T> reference){
         this.reference = reference;

@@ -5,12 +5,14 @@ import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.id.Identifiable;
 
 import java.util.UUID;
 
 public class TOReference<T extends DateMutableEntity<T> & CultureObject<T>> extends StateReference implements Identifiable<UUID> {
     DMEReference<T> holder;
+
     public static final String TO_SR_TYPE = "TOReference";
     public TOReference(T e) {
         holder = e.getReference();

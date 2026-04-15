@@ -2,6 +2,7 @@ package com.objects.culture.tenet.reference;
 
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
+import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.types.mutable.dynamic.DynamicTenet;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 import com.objects.culture.tenet.types.mutable.Tenet;
@@ -18,6 +19,7 @@ public abstract class TenetReference extends StateReference implements UUIDIdent
         return get().getFull();
     }
     public abstract Tenet get();
+    public abstract TenetGroup getGroup();
     @Override
     public JsonObject serialize() {
         JsonObject object = new JsonObject();

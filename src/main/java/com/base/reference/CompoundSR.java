@@ -26,11 +26,11 @@
 //        return Cached == null ? buildString(super.parse()) : Cached;
 //    }
 //    private String buildString (String superString){
-//        StringBuilder builder = new StringBuilder();
-//        if (prefix != null) builder.append(prefix);
-//        if (superString != null) builder.append(" ").append(superString);
-//        if (suffix != null) builder.append(" ").append(suffix);
-//        Cached = builder.toString();
+//        StringBuilder Builder = new StringBuilder();
+//        if (prefix != null) Builder.append(prefix);
+//        if (superString != null) Builder.append(" ").append(superString);
+//        if (suffix != null) Builder.append(" ").append(suffix);
+//        Cached = Builder.toString();
 //        return Cached;
 //    }
 //    @Override

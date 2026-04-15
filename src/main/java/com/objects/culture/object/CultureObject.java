@@ -11,6 +11,7 @@ import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
+import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.instance.TOReference;
 import com.objects.culture.object.instance.TenetInstance;
@@ -166,7 +167,23 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         getInfluencers().remove(influencer);
         invalidateCache();
     }
-
+    default Map<TenetReference,TenetInstance<T>> getOpinionByGroup(TenetManager.Group.Pillar group, boolean includeDescendants){
+        return getOpinionByGroup(group.getGroup(),includeDescendants);
+    }
+    default Map<TenetReference,TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants){
+        List<TenetReference> groups;
+        final CultureObjectContainer<T> con = getContainer();
+        if(includeDescendants){
+            groups =con.getByGroupTree(group);
+        } else {
+            groups = con.getByGroup(group);
+        }
+        Map<TenetReference,TenetInstance<T>> result = new HashMap<>();
+        for(TenetReference ref : groups){
+            result.put(ref,con.getOpinion(ref));
+        }
+        return result;
+    }
 
 
 

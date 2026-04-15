@@ -40,32 +40,8 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
 
 
 
-    public enum Pronouns {
-        Masculine,
-        Feminine,
-        Neutral,
-    }
-    public enum Gender {
-        Male("Male", HumanCharacter.Pronouns.Masculine),
-        Female("Female", HumanCharacter.Pronouns.Feminine),
-        Trans_Male("Trans-Male", HumanCharacter.Pronouns.Masculine),
-        Trans_Female("Trans-Female", HumanCharacter.Pronouns.Feminine),
-        Non_Binary("Non-Binary", HumanCharacter.Pronouns.Neutral);
-//        Other("Other");
 
-        private final String display;
-        private final HumanCharacter.Pronouns pronouns;
-        Gender(String d, HumanCharacter.Pronouns pronouns){
-            display = d;
-            this.pronouns = pronouns;
-        }
-        public String getFlavor(){
-            return display;
-        }
-        public HumanCharacter.Pronouns getPronouns(){
-            return pronouns;
-        }
-    }
+
     public enum Orientation {
         Heterosexual("Heterosexual"),
         Homosexual("Homosexual"),
@@ -142,10 +118,6 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void internalSetPreferredSuccession(SuccessionEntry<?> succession){
         this.preferredSuccession = succession;
     }
-    public final void internalSetOpinions(TimelineMap<SimpleUUID, Opinion,T> opinions){
-        this.opinions.clear();
-        this.opinions = opinions;
-    }
     public final String getForename(){
         return firstName;
     }
@@ -160,9 +132,6 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     }
     public final Orientation getOrientation(){
         return orientation;
-    }
-    public final TimelineMap<SimpleUUID,Opinion,T> getOpinions(){
-        return opinions;
     }
     public final SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;

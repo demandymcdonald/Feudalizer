@@ -15,6 +15,7 @@ import java.util.*;
 
 public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture> {
     CultureObjectContainer<Culture> container;
+
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
         super(created, ended, initialState);
         container = new CultureObjectContainer<>(getReference());

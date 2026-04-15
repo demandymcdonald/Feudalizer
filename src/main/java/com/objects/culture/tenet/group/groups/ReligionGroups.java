@@ -5,64 +5,110 @@ import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 
 import static com.objects.culture.tenet.TenetManager.SOFT_CULTURE;
-import static com.objects.culture.tenet.group.TenetGroup.builder;
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.groups.SocietyGroups.*;
-
+import static com.objects.culture.tenet.group.TenetGroup.*;
 public class ReligionGroups {
-//    public static final TenetGroup RELIGION = builder(SOFT_CULTURE, "religion", "Religion", "", SORT_ONLY);
-//
-//    public static final TenetGroup RELIGIOUS_DOCTRINE = builder(RELIGION, "doctrine", "Religious Doctrine", "", SORT_ONLY);
-//    public static final TenetGroup COSMOLOGY = builder(RELIGIOUS_DOCTRINE, "cosmology", "Cosmology", "", SYSTEM_LARGE);
-//    public static final TenetGroup AFTERLIFE_ENDTIMES = builder(RELIGIOUS_DOCTRINE, "afterlife", "Afterlife & Endtimes", "", SYSTEM_LARGE);
-//    public static final TenetGroup VIRTUE_AND_VICE = builder(RELIGIOUS_DOCTRINE, "virtue_and_vice", "Virtue and Vice", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_SOFT_CULTURE_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(SOFT_CULTURE_INTERVENTION), "soft_culture_intervention", "Religious Soft Culture Intervention", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_GOVERNMENT_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(SECULARISM), "government_intervention", "Religious GovernmentTenet Intervention", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGION_FAMILY_INTERVENTION = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(FAMILY_INTERVENTION), "family_intervention", "Religious FamilyGroups Intervention", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGION_LEADERSHIP = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(CLASS_AND_CASTE), "leadership", "Religious Leadership", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGION_LEADER_SELECTION = builder(RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "selection", "Religious Leader Selection", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGION_LEADER_AUTHORITY = builder(RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "authority", "Religious Leader Authority", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGION_LEADER_REMOVAL = builder(RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "removal", "Religious Leader Removal", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGION_PERMEABILITY = builder(RELIGIOUS_DOCTRINE, ImmutableList.of(CLASS_AND_CASTE), "religion_permanence", "Religion Permeability", "", SYSTEM_LARGE);
-//
-//    public static final TenetGroup PRACTICES = builder(RELIGION, ImmutableList.of(SECULARISM, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY), "practices", "Religious Practices", "", SORT_ONLY);
-//    public static final TenetGroup LITURGICAL_LANGUAGE = builder(PRACTICES, "liturgical_language", "Liturgical Language", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_TRADITION_RITUAL = builder(PRACTICES, ImmutableList.of(TRADITION_RITUAL), "tradition_ritual", "Religious Tradition/Ritual", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_HOLIDAY_GATHERING = builder(PRACTICES, ImmutableList.of(HOLIDAY_AND_GATHERING, TRADITION_RITUAL, RELIGIOUS_TRADITION_RITUAL), "gathering", "Religious Holidays and Gatherings", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_ART_AND_MEDIA = builder(PRACTICES, ImmutableList.of(ART_AND_MEDIA), "art_and_media", "Religious Art and Media", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_ARCHITECTURE = builder(PRACTICES, ImmutableList.of(ARCHITECTURE), "architecture", "Religious Architecture", "", SYSTEM_LARGE);
-//    public static final TenetGroup RELIGIOUS_FASHION = builder(PRACTICES, ImmutableList.of(FASHION), "fashion", "Religious Fashion", "", SYSTEM_LARGE);
 
     // RELIGION
-    public static final TenetGroup RELIGION = builder(TGType.SORT_ONLY, SOFT_CULTURE, "religion", "Religion", "");
+    public static final TenetGroup RELIGION = new TenetGroup.Builder(TGType.SORT_ONLY, Level.PILLAR, "religion", "Religion", "")
+            .setParent(SOFT_CULTURE)
+            .build();
 
-    // Pillars
-    public static final TenetGroup RELIGIOUS_DOCTRINE = builder(TGType.PILLAR_SYSTEM, RELIGION, "doctrine", "Religious Doctrine", "");
-    public static final TenetGroup PRACTICES = builder(TGType.PILLAR_IDEOLOGY, RELIGION, ImmutableList.of(SECULARISM, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY), "practices", "Religious Practices", "");
+    // Pillar
+    public static final TenetGroup RELIGIOUS_DOCTRINE = new TenetGroup.Builder(TGType.PILLAR_SYSTEM, Level.CATEGORY, "doctrine", "Religious Doctrine", "")
+            .setParent(RELIGION)
+            .build();
+    public static final TenetGroup PRACTICES = new TenetGroup.Builder(TGType.PILLAR_IDEOLOGY, Level.CATEGORY, "practices", "Religious Practices", "")
+            .setParent(RELIGION)
+            .addConnected(SECULARISM, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+            .build();
 
     // Religious Doctrine
-    public static final TenetGroup COSMOLOGY = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, "cosmology", "Cosmology", "");
-    public static final TenetGroup AFTERLIFE_ENDTIMES = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, "afterlife", "Afterlife & Endtimes", "");
-    public static final TenetGroup VIRTUE_AND_VICE = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, "virtue_and_vice", "Virtue and Vice", "");
-    public static final TenetGroup RELIGIOUS_SOFT_CULTURE_INTERVENTION = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, ImmutableList.of(SOFT_CULTURE_INTERVENTION), "soft_culture_intervention", "Religious Soft Culture Intervention", "");
-    public static final TenetGroup RELIGIOUS_GOVERNMENT_INTERVENTION = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, ImmutableList.of(SECULARISM), "government_intervention", "Religious GovernmentTenet Intervention", "");
-    public static final TenetGroup RELIGION_FAMILY_INTERVENTION = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, ImmutableList.of(FAMILY_INTERVENTION), "family_intervention", "Religious FamilyGroups Intervention", "");
-    public static final TenetGroup RELIGIOUS_CONFORMITY = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, ImmutableList.of(SOCIETY_ENFORCED_CONFORMITY,GOVERNMENT_ENFORCED_CONFORMITY), "religion_permanence", "Religion Permanence", "");
-    public static final TenetGroup RELIGION_PERMEABILITY = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, ImmutableList.of(CLASS_AND_CASTE,RELIGIOUS_CONFORMITY), "religion_permanence", "Religion Permeability", "");
-    public static final TenetGroup RELIGIOUS_TOLERANCE = builder(TGType.SYSTEM_LARGE, RELIGIOUS_DOCTRINE, ImmutableList.of(COSMOLOGY, RELIGIOUS_CONFORMITY), "religion_tolerance", "Religion Tolerance for Other Religions", "");
+    public static final TenetGroup COSMOLOGY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "cosmology", "Cosmology", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .build();
+    public static final TenetGroup AFTERLIFE_ENDTIMES = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "afterlife", "Afterlife & Endtimes", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .build();
+    public static final TenetGroup VIRTUE_AND_VICE = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "virtue_and_vice", "Virtue and Vice", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .build();
+    public static final TenetGroup RELIGIOUS_SOFT_CULTURE_INTERVENTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "soft_culture_intervention", "Religious Soft Culture Intervention", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(SOFT_CULTURE_INTERVENTION)
+            .build();
+    public static final TenetGroup RELIGIOUS_GOVERNMENT_INTERVENTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "government_intervention", "Religious GovernmentTenet Intervention", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(SECULARISM)
+            .build();
+    public static final TenetGroup RELIGION_FAMILY_INTERVENTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "family_intervention", "Religious FamilyGroups Intervention", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(FAMILY_INTERVENTION)
+            .build();
+    public static final TenetGroup RELIGIOUS_CONFORMITY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "religion_permanence", "Religion Permanence", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(SOCIETY_ENFORCED_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY)
+            .build();
+    public static final TenetGroup RELIGION_PERMEABILITY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "religion_permanence", "Religion Permeability", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(CLASS_AND_CASTE, RELIGIOUS_CONFORMITY)
+            .build();
+    public static final TenetGroup RELIGIOUS_TOLERANCE = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "religion_tolerance", "Religion Tolerance for Other Religions", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(COSMOLOGY, RELIGIOUS_CONFORMITY)
+            .build();
+
     // Religious Leadership
-    public static final TenetGroup RELIGION_LEADERSHIP = builder(TGType.SYSTEM_SORT, RELIGIOUS_DOCTRINE, ImmutableList.of(CLASS_AND_CASTE), "leadership", "Religious Leadership", "");
-    public static final TenetGroup RELIGION_LEADER_SELECTION = builder(TGType.SYSTEM_LARGE, RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "selection", "Religious Leader Selection", "");
-    public static final TenetGroup RELIGION_LEADER_AUTHORITY = builder(TGType.SYSTEM_LARGE, RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "authority", "Religious Leader Authority", "");
-    public static final TenetGroup RELIGION_LEADER_REMOVAL = builder(TGType.SYSTEM_LARGE, RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "removal", "Religious Leader Removal", "");
-    public static final TenetGroup RELIGION_LEADER_CORRUPTION = builder(TGType.SYSTEM_LARGE,RELIGION_LEADERSHIP,ImmutableList.of(RELIGION_LEADER_AUTHORITY),"corruption","Religious Leader Corruption","");
+    public static final TenetGroup RELIGION_LEADERSHIP = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "leadership", "Religious Leadership", "")
+            .setParent(RELIGIOUS_DOCTRINE)
+            .addConnected(CLASS_AND_CASTE)
+            .build();
+    public static final TenetGroup PRIEST_TYPES = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "types", "Priest Types", "")
+    public static final TenetGroup RELIGION_LEADER_SELECTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "selection", "Religious Leader Selection", "")
+            .setParent(RELIGION_LEADERSHIP)
+            .addConnected(CLASS_AND_CASTE)
+            .build();
+    public static final TenetGroup RELIGION_LEADER_AUTHORITY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "authority", "Religious Leader Authority", "")
+            .setParent(RELIGION_LEADERSHIP)
+            .addConnected(CLASS_AND_CASTE)
+            .build();
+    public static final TenetGroup RELIGION_LEADER_REMOVAL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "removal", "Religious Leader Removal", "")
+            .setParent(RELIGION_LEADERSHIP)
+            .addConnected(CLASS_AND_CASTE)
+            .build();
+    public static final TenetGroup RELIGION_LEADER_CORRUPTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "corruption", "Religious Leader Corruption", "")
+            .setParent(RELIGION_LEADERSHIP)
+            .addConnected(RELIGION_LEADER_AUTHORITY)
+            .build();
+
     // Religious Practices
-    public static final TenetGroup LITURGICAL_LANGUAGE = builder(TGType.LANGUAGE, PRACTICES, "liturgical_language", "Liturgical Language", "");
-    public static final TenetGroup RELIGIOUS_TRADITION_RITUAL = builder(TGType.TRADITION, PRACTICES, ImmutableList.of(TRADITION_RITUAL), "tradition_ritual", "Religious Tradition/Ritual", ""); // TODO: update to TRADITION type when added
-    public static final TenetGroup RELIGIOUS_HOLIDAY_GATHERING = builder(TGType.TRADITION, PRACTICES, ImmutableList.of(HOLIDAY_AND_GATHERING, TRADITION_RITUAL, RELIGIOUS_TRADITION_RITUAL), "gathering", "Religious Holidays and Gatherings", ""); // TODO: update to TRADITION type when added
-    public static final TenetGroup RELIGIOUS_ART_AND_MEDIA = builder(TGType.AESTHETIC, PRACTICES, ImmutableList.of(ART_AND_MEDIA), "art_and_media", "Religious Art and Media", "");
-    public static final TenetGroup RELIGIOUS_ARCHITECTURE = builder(TGType.AESTHETIC, PRACTICES, ImmutableList.of(ARCHITECTURE), "architecture", "Religious Architecture", "");
-    public static final TenetGroup RELIGIOUS_FASHION = builder(TGType.AESTHETIC, PRACTICES, ImmutableList.of(FASHION), "fashion", "Religious Fashion", "");
+    public static final TenetGroup LITURGICAL_LANGUAGE = new TenetGroup.Builder(TGType.LANGUAGE, Level.NORMAL, "liturgical_language", "Liturgical Language", "")
+            .setParent(PRACTICES)
+            .build();
+    public static final TenetGroup RELIGIOUS_TRADITION_RITUAL = new TenetGroup.Builder(TGType.TRADITION, Level.NORMAL, "tradition_ritual", "Religious Tradition/Ritual", "")
+            .setParent(PRACTICES)
+            .addConnected(TRADITION_RITUAL)
+            .build();
+    public static final TenetGroup RELIGIOUS_HOLIDAY_GATHERING = new TenetGroup.Builder(TGType.TRADITION, Level.NORMAL, "gathering", "Religious Holidays and Gatherings", "")
+            .setParent(PRACTICES)
+            .addConnected(HOLIDAY_AND_GATHERING, TRADITION_RITUAL, RELIGIOUS_TRADITION_RITUAL)
+            .build();
+    public static final TenetGroup RELIGIOUS_ART_AND_MEDIA = new TenetGroup.Builder(TGType.AESTHETIC, Level.LORE_ONLY, "art_and_media", "Religious Art and Media", "")
+            .setParent(PRACTICES)
+            .addConnected(ART_AND_MEDIA)
+            .build();
+    public static final TenetGroup RELIGIOUS_ARCHITECTURE = new TenetGroup.Builder(TGType.AESTHETIC, Level.LORE_ONLY, "architecture", "Religious Architecture", "")
+            .setParent(PRACTICES)
+            .addConnected(ARCHITECTURE)
+            .build();
+    public static final TenetGroup RELIGIOUS_FASHION = new TenetGroup.Builder(TGType.AESTHETIC, Level.LORE_ONLY, "fashion", "Religious Fashion", "")
+            .setParent(PRACTICES)
+            .addConnected(FASHION)
+            .build();
+
+
+
     public static void init() {
 
     }

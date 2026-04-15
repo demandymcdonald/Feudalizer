@@ -1,27 +1,22 @@
 package com.objects.culture.tenet.tenets.general;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.tenet.AcceptanceContainer;
+import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
-import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.group.groups.EconomicGroups;
 import com.objects.culture.tenet.group.groups.EducationGroups;
-import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
+import static com.objects.culture.tenet.group.groups.MilitaryGroups.*;
 
 public abstract class Leadership extends MutableTenet {
 
@@ -34,6 +29,7 @@ public abstract class Leadership extends MutableTenet {
     }
     protected enum Type{
         SELECTION,
+        TYPES,
         REMOVAL,
         TREATMENT,
         AUTHORITY,
@@ -44,23 +40,28 @@ public abstract class Leadership extends MutableTenet {
     @Override
     public List<TenetGroup> compatibleParents() {
         return List.of(
-                GOVERNMENT,
-                GOVERNMENT_LEADERSHIP,
-                GOVERNMENT_OFFICIAL,
-                GOVERNMENT_OFFICE,
-                MILITARY,
-                MILITARY_LEADERSHIP,
-                ReligionGroups.RELIGION,
-                ReligionGroups.RELIGION_LEADERSHIP,
-                EducationGroups.EDUCATION,
-                EducationGroups.EDUCATION_LEADERSHIP
-                );
+            GOVERNMENT,
+            GOVERNMENT_LEADERSHIP,
+            GOVERNMENT_OFFICIAL,
+            GOVERNMENT_OFFICE,
+            MILITARY,
+            MILITARY_LEADERSHIP,
+            ReligionGroups.RELIGION,
+            ReligionGroups.RELIGION_LEADERSHIP,
+            EducationGroups.EDUCATION,
+            EducationGroups.EDUCATION_LEADERSHIP,
+            EconomicGroups.BUSINESS,
+            EconomicGroups.BUSINESS_LEADERSHIP,
+            EconomicGroups.LABOR_UNION,
+            EconomicGroups.UNION_LEADERSHIP
+            );
     }
     private static TenetGroup findGroup(TenetReference reference, Type type) {
         //Not sure if the thows will ever be supported, but they need to throw to tell me if I need to add them. Tags are bloated as is.
-        TenetGroup group = reference.get().getGroup();
+        TenetGroup group = TenetManager.Group.getCategory(reference.get().getGroup());
         if (group == GOVERNMENT || group == GOVERNMENT_LEADERSHIP) {
             return switch (type) {
+                case TYPES -> LEADER_TYPES;
                 case SELECTION -> LEADER_SELECTION;
                 case REMOVAL -> LEADER_REMOVAL;
                 case TREATMENT -> OFFICIAL_TREATMENT_PEOPLE; //throw new UnsupportedOperationException("TREATMENT of GOVERNMENT_LEADERSHIP");
@@ -71,6 +72,7 @@ public abstract class Leadership extends MutableTenet {
             };
         } else if (group == GOVERNMENT_OFFICIAL || group == GOVERNMENT_OFFICE) {
             return switch (type) {
+                case TYPES -> OFFICIAL_TYPES;
                 case SELECTION -> OFFICIAL_SELECTION;
                 case REMOVAL -> OFFICIAL_REMOVAL;
                 case TREATMENT -> OFFICIAL_TREATMENT_GOVERNMENT;
@@ -81,9 +83,10 @@ public abstract class Leadership extends MutableTenet {
             };
         }else if (group == MILITARY ||  group == MILITARY_LEADERSHIP) {
             return switch (type) {
+                case TYPES -> OFFICER_TYPES;
                 case SELECTION -> OFFICER_APPOINTMENT;
                 case REMOVAL -> OFFICER_REMOVAL;
-                case TREATMENT -> OFFICER_TRAINING;
+                case TREATMENT -> OFFICER_TREATMENT;
                 case AUTHORITY -> CENTRALIZATION;
                 case CORRUPTION -> MILITARY_CORRUPTION;
                 case TRAINING -> OFFICER_TRAINING;
@@ -91,6 +94,7 @@ public abstract class Leadership extends MutableTenet {
             };
         } else if (group == ReligionGroups.RELIGION || group == ReligionGroups.RELIGION_LEADERSHIP) {
             return switch (type) {
+                case TYPES -> ReligionGroups.PRIEST_TYPES;
                 case SELECTION -> ReligionGroups.RELIGION_LEADER_SELECTION;
                 case REMOVAL -> ReligionGroups.RELIGION_LEADER_REMOVAL;
                 case TREATMENT -> throw new UnsupportedOperationException("Treatment is not supported in Religious Leadership");
@@ -101,6 +105,7 @@ public abstract class Leadership extends MutableTenet {
             };
         } else if (group == EducationGroups.EDUCATION || group == EducationGroups.EDUCATION_LEADERSHIP) {
             return switch (type) {
+                case TYPES -> EducationGroups.TEACHER_TYPES;
                 case SELECTION -> EducationGroups.TEACHER_SELECTION;
                 case REMOVAL -> EducationGroups.TEACHER_REMOVAL;
                 case TREATMENT -> EducationGroups.TEACHER_TREATMENT;
@@ -108,6 +113,28 @@ public abstract class Leadership extends MutableTenet {
                 case CORRUPTION -> EducationGroups.TEACHER_CORRUPTION;
                 case TRAINING -> EducationGroups.TEACHER_TRAINING;
                 case OTHER -> throw new UnsupportedOperationException("Other is not supported in Teacher Leadership");
+            };
+        } else if (group == EconomicGroups.BUSINESS || group == EconomicGroups.BUSINESS_LEADERSHIP) {
+            return switch (type) {
+                case TYPES -> EconomicGroups.BUSINESS_LEADER_TYPES;
+                case SELECTION -> EconomicGroups.BUSINESS_LEADER_SELECTION;
+                case REMOVAL -> EconomicGroups.BUSINESS_LEADER_REMOVAL;
+                case TREATMENT -> EconomicGroups.BUSINESS_LEADER_TREATMENT;
+                case AUTHORITY -> EconomicGroups.BUSINESS_LEADER_AUTHORITY;
+                case CORRUPTION -> EconomicGroups.BUSINESS_LEADER_CORRUPTION;
+                case TRAINING -> throw new UnsupportedOperationException("Training is not supported in Business Leadership");
+                case OTHER -> EconomicGroups.BUSINESS_LEADER_GENERAL;
+            };
+        } else if (group == EconomicGroups.LABOR_UNION || group == EconomicGroups.UNION_LEADERSHIP) {
+            return switch (type) {
+                case TYPES -> EconomicGroups.UNION_LEADER_TYPES;
+                case SELECTION -> EconomicGroups.UNION_LEADER_SELECTION;
+                case REMOVAL -> EconomicGroups.UNION_LEADER_REMOVAL;
+                case TREATMENT -> EconomicGroups.UNION_LEADER_TREATMENT;
+                case AUTHORITY -> EconomicGroups.UNION_LEADER_AUTHORITY;
+                case CORRUPTION -> EconomicGroups.UNION_LEADER_CORRUPTION;
+                case TRAINING -> throw new UnsupportedOperationException("Training is not supported in Business Leadership");
+                case OTHER -> EconomicGroups.UNION_LEADER_GENERAL;
             };
         }
         throw new RuntimeException("No leader group found for parent: "+ group.id());
