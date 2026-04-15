@@ -61,8 +61,10 @@ public class EducationGroups {
     public static final TenetGroup EDUCATION_LEADERSHIP = builder(TGType.SYSTEM_SORT, SCHOOL_SYSTEM, ImmutableList.of(SOCIETY_ENFORCED_CONFORMITY, CLASS_AND_CASTE, EDUCATION_IDEOLOGY, EDUCATION_INTERVENTION, RELIGIOUS_SOFT_CULTURE_INTERVENTION), "leadership", "Education Leadership", "");
     public static final TenetGroup TEACHER_SELECTION = builder(TGType.SYSTEM_LARGE, EDUCATION_LEADERSHIP, "selection", "Teacher Selection", "");
     public static final TenetGroup TEACHER_TRAINING = builder(TGType.SYSTEM_LARGE, EDUCATION_LEADERSHIP, "training", "Teacher Training", "");
+    public static final TenetGroup TEACHER_AUTHORITY = builder(TGType.SYSTEM_LARGE,EDUCATION_LEADERSHIP, "authority", "Teacher Authority", "");
     public static final TenetGroup TEACHER_TREATMENT = builder(TGType.SYSTEM_LARGE, EDUCATION_LEADERSHIP, "treatment", "Teacher Treatment", "");
-    public static final TenetGroup LEADER_SELECTION = builder(TGType.SYSTEM_LARGE, EDUCATION_LEADERSHIP, "leader_selection", "Leader Selection", "");
+    public static final TenetGroup TEACHER_REMOVAL = builder(TGType.SYSTEM_LARGE, EDUCATION_LEADERSHIP, "removal", "Teacher Removal", "");
+    public static final TenetGroup TEACHER_CORRUPTION = builder(TGType.SYSTEM_LARGE,EDUCATION_LEADERSHIP,"corruption","Teacher Corruption","");
     public static void init() {
 
     }

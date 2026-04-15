@@ -2,7 +2,7 @@ package com.objects.culture.tenet.reference;
 
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.dynamic.DynamicTenet;
+import com.objects.culture.tenet.types.mutable.dynamic.DynamicTenet;
 
 import java.util.UUID;
 

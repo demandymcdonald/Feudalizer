@@ -10,12 +10,13 @@ import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.object.compass.IPoliticalCompass;
+import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.tenet.instance.TOReference;
 import com.objects.culture.object.instance.TenetInstance;
 import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.mutable.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -33,6 +34,10 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     static final int oc = MAX_VALUE; // upper and lower bound for opinion values
 
 
+    @Override
+    default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
+        return new AcceptanceContainer(getAcceptanceValue(tenet,includeInfluencers));
+    };
 
     void updateProceduralInfluencers(); //Idea here is that the code can automatically add and remove procedural influencers (like dead people, or new lieges)
     double influencerResistance(TOReference<?> influencer); // clamped between -1 and 1. Used to model things like personal opinion of an influencer for people -> people influencer,
@@ -272,8 +277,8 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void internalSetInfluencers(TimelineMap<TOReference<?>, InfluencerInstance,T>  influencers){
         getContainer().setInfluencers(influencers);
     };
-    default void internalSetCompass(InterpolatedPoliticalCompass<T> compass){
-        getContainer().setCompass(compass);
+    default void internalSetCompass(InterpolatedPoliticalCompass<?> compass){
+        getContainer().setCompass((InterpolatedPoliticalCompass<T>) compass);
     };
     default InterpolatedPoliticalCompass<T> getCompass(){
         return getContainer().getCompass();

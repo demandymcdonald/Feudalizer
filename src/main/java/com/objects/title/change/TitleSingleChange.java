@@ -82,15 +82,15 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
             newParent = DMEReference.deserialize(data.get("new_parent").getAsJsonObject());
         }
     }
-    protected static class setHolder<T extends Title<T>> extends TitleSingleChange<T> implements CultureAware<setHolder<T>, SentientCharacter<?>,T> {
+    public static class SetHolder<T extends Title<T>> extends TitleSingleChange<T> implements CultureAware<SetHolder<T>,SentientCharacter<?>,T> {
         DMEReference<? extends SentientCharacter<?>> newHolder;
         DMEReference<? extends SentientCharacter<?>> oldHolder;
-        protected setHolder(DMEReference<? extends T> owner, LocalDate date, DMEReference<? extends HumanCharacter> newHolder) {
+        protected SetHolder(DMEReference<? extends T> owner, LocalDate date, DMEReference<? extends HumanCharacter> newHolder) {
             super(owner, date);
             this.newHolder = newHolder;
             this.oldHolder = owner.get().getHolder().orElse(null);
         }
-        protected setHolder(DMEReference<? extends T> owner, LocalDate date) {
+        protected SetHolder(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
         @Override
@@ -110,7 +110,7 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
         }
         @Override
         protected void applyConditions(List<ApplyCondition<? super T>> list) {
-            list.add(new HasVariableClass(setHolder.class));
+            list.add(new HasVariableClass(SetHolder.class));
             list.add(new HolderDead());
             list.add(new CanHold());
         }
@@ -137,7 +137,7 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
             return getOwner();
         }
     }
-    public static class setHolderInherit<T extends Title<T>> extends setHolder<T> {
+    public static class setHolderInherit<T extends Title<T>> extends SetHolder<T> {
         public setHolderInherit(DMEReference<? extends T> owner, LocalDate date, DMEReference<? extends HumanCharacter> newHolder) {
             super(owner, date,newHolder);
         }
@@ -149,7 +149,7 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
             super.applyConditions(list);
         }
     }
-    public static class setHolderGrant<T extends Title<T>> extends setHolder<T> {
+    public static class setHolderGrant<T extends Title<T>> extends SetHolder<T> {
         public setHolderGrant(DMEReference<T> owner, LocalDate date, DMEReference<? extends HumanCharacter> newHolder) {
             super(owner, date, newHolder);
         }
@@ -174,16 +174,6 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
         @Override
         protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
             entity.get().internalSuccession(entry);
-        }
-
-        @Override
-        public List<Class<TimelineChange<? super T>>> oppositeChanges() {
-            return List.of();
-        }
-
-        @Override
-        public boolean isPositive() {
-            return false;
         }
 
         @Override
@@ -295,8 +285,8 @@ public abstract class TitleSingleChange<T extends Title<T>> extends TimelineSing
         }
         @Override
         protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
-            if (thisChange instanceof setHolder<?> ch && !(ch.getNewHolder().get().isAlive())){
-                setHolder<T> holderChange = (setHolder<T>) thisChange;
+            if (thisChange instanceof TitleSingleChange.SetHolder<?> ch && !(ch.getNewHolder().get().isAlive())){
+                SetHolder<T> holderChange = (SetHolder<T>) thisChange;
                 DMEReference<? extends T> o = holderChange.getOwner();
                 return Optional.of(new StateError("title_holder_dead", ComplexReference.of("{} is now dead.", entity),checkAgainst)
                         .addEndSave().addEndCancel().addOption(new ErrorResolution.SuccessionPlanning_Title(holderChange.getNewHolder())));

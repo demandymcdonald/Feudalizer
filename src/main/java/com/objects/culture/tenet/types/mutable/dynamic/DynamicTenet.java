@@ -1,17 +1,15 @@
-package com.objects.culture.tenet.dynamic;
+package com.objects.culture.tenet.types.mutable.dynamic;
 
 import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
-import com.objects.CauseOfEnd;
 import com.objects.culture.AbstractCulture;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.CultureObjectContainer;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.reference.TenetReference;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.mutable.Tenet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;

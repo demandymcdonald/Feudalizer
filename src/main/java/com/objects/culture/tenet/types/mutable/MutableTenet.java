@@ -1,8 +1,14 @@
-package com.objects.culture.tenet.types;
+package com.objects.culture.tenet.types.mutable;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
+import com.objects.culture.Culture;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.tenet.factory.CultureCondition;
+import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.reference.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -11,6 +17,7 @@ import com.utilities.serialization.SuperclassSerializable;
 import java.util.*;
 
 public abstract class MutableTenet implements Tenet, SuperclassSerializable<MutableTenet> {
+
     private final UUID id;
     private final TenetReference reference;
     private final TenetGroup group;
@@ -18,8 +25,8 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     private final String displayID;
     private final String name;
     private final String description;
-
-    public MutableTenet(TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+    private final TenetReference parent;
+    public MutableTenet(TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
         this.id = UUID.randomUUID();
         this.group = group;
         this.displayID = buildID(group, id);
@@ -27,9 +34,10 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         this.name = name;
         this.description = description;
         reference = TenetReference.of(this);
+        this.parent = parent;
         TenetManager.registerTenet(this);
     }
-    public MutableTenet(UUID uuid,TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+    public MutableTenet(TenetReference parent, UUID uuid,TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
         this.id = uuid;
         this.group = group;
         this.politicalCompass = entry;
@@ -37,6 +45,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         this.name = name;
         this.description = description;
         reference = TenetReference.of(this);
+        this.parent = parent;
         TenetManager.registerTenet(this);
     }
 //    public <T extends DateMutableEntity<T>, C extends TimelineChange<T>> List<TenetCondition<? super C,? extends T,?>>  getConditions(TimelineChange<T> change){
@@ -46,11 +55,22 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
 //        };
 //        return conditions;
 //    }
-
+    @Override
+    public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
+        Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> result = HashMultimap.create();
+        List<CultureCondition<?, ?, ?>> conditions = new ArrayList<>();
+        for (CultureCondition<?, ?, ?> condition : getConditions().values()) {
+            for (CultureCondition.Key key : condition.getKeys()) {
+                result.put(key,condition);
+            }
+        }
+        return result;
+    }
+    public abstract List<CultureCondition<?,?,?>> getConditionList();
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }
-
+    public abstract List<TenetGroup> compatibleParents();
     @Override
     public TenetReference getTenetReference() {
         return reference;
@@ -91,7 +111,13 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         object.addProperty("name", name);
         object.addProperty("description", description);
         object.addProperty("group", group.getDisplayID());
+        object.add("parent",parent.serialize());
         object.add("compass", politicalCompass.toJson());
+    }
+
+    @Override
+    public Culture getCulture() {
+        return parent.get().getCulture();
     }
 
     @Override

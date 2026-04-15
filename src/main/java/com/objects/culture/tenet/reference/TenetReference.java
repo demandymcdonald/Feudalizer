@@ -2,9 +2,9 @@ package com.objects.culture.tenet.reference;
 
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.dynamic.DynamicTenet;
-import com.objects.culture.tenet.types.MutableTenet;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.mutable.dynamic.DynamicTenet;
+import com.objects.culture.tenet.types.mutable.MutableTenet;
+import com.objects.culture.tenet.types.mutable.Tenet;
 import com.utilities.id.UUIDIdentifiable;
 import com.utilities.serialization.SuperclassSerializable;
 

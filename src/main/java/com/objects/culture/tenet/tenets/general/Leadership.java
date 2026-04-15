@@ -1,13 +1,148 @@
 package com.objects.culture.tenet.tenets.general;
 
-import com.objects.culture.tenet.types.MutableTenet;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.gson.JsonObject;
+import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.tenet.Acceptance;
+import com.objects.culture.tenet.AcceptanceContainer;
+import com.objects.culture.tenet.factory.CultureCondition;
+import com.objects.culture.tenet.factory.TenetCondition;
+import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.group.groups.EducationGroups;
+import com.objects.culture.tenet.group.groups.GovernmentGroups;
+import com.objects.culture.tenet.group.groups.ReligionGroups;
+import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.mutable.MutableTenet;
 
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.TimeUnit;
+import java.time.temporal.TemporalUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-public class Leadership {
+import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 
-    public static MutableTenet termLimitFactory(long time, ChronoUnit timeUnit) {
+public abstract class Leadership extends MutableTenet {
 
+    public Leadership(TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+        super(parent, group, entry, id, name, description);
+    }
+
+    public Leadership(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+        super(parent, uuid, group, entry, id, name, description);
+    }
+    protected enum Type{
+        SELECTION,
+        REMOVAL,
+        TREATMENT,
+        AUTHORITY,
+        CORRUPTION,
+        TRAINING,
+        OTHER
+    }
+    @Override
+    public List<TenetGroup> compatibleParents() {
+        return List.of(
+                GOVERNMENT,
+                GOVERNMENT_LEADERSHIP,
+                GOVERNMENT_OFFICIAL,
+                GOVERNMENT_OFFICE,
+                MILITARY,
+                MILITARY_LEADERSHIP,
+                ReligionGroups.RELIGION,
+                ReligionGroups.RELIGION_LEADERSHIP,
+                EducationGroups.EDUCATION,
+                EducationGroups.EDUCATION_LEADERSHIP
+                );
+    }
+    private static TenetGroup findGroup(TenetReference reference, Type type) {
+        //Not sure if the thows will ever be supported, but they need to throw to tell me if I need to add them. Tags are bloated as is.
+        TenetGroup group = reference.get().getGroup();
+        if (group == GOVERNMENT || group == GOVERNMENT_LEADERSHIP) {
+            return switch (type) {
+                case SELECTION -> LEADER_SELECTION;
+                case REMOVAL -> LEADER_REMOVAL;
+                case TREATMENT -> OFFICIAL_TREATMENT_PEOPLE; //throw new UnsupportedOperationException("TREATMENT of GOVERNMENT_LEADERSHIP");
+                case AUTHORITY -> LEADER_AUTHORITY;
+                case CORRUPTION -> LEADER_CORRUPTION;
+                case TRAINING -> throw new UnsupportedOperationException("Training not yet supported for Government Leaders");
+                case OTHER -> LEADER_GENERAL;
+            };
+        } else if (group == GOVERNMENT_OFFICIAL || group == GOVERNMENT_OFFICE) {
+            return switch (type) {
+                case SELECTION -> OFFICIAL_SELECTION;
+                case REMOVAL -> OFFICIAL_REMOVAL;
+                case TREATMENT -> OFFICIAL_TREATMENT_GOVERNMENT;
+                case AUTHORITY -> OFFICIAL_AUTHORITY;
+                case CORRUPTION -> OFFICIAL_CORRUPTION;
+                case TRAINING -> throw new UnsupportedOperationException("Training Not supported yet by Government Official.");
+                case OTHER -> OFFICIAL_GENERAL;
+            };
+        }else if (group == MILITARY ||  group == MILITARY_LEADERSHIP) {
+            return switch (type) {
+                case SELECTION -> OFFICER_APPOINTMENT;
+                case REMOVAL -> OFFICER_REMOVAL;
+                case TREATMENT -> OFFICER_TRAINING;
+                case AUTHORITY -> CENTRALIZATION;
+                case CORRUPTION -> MILITARY_CORRUPTION;
+                case TRAINING -> OFFICER_TRAINING;
+                case OTHER -> throw new UnsupportedOperationException("Other is not supported in Military Leadership");
+            };
+        } else if (group == ReligionGroups.RELIGION || group == ReligionGroups.RELIGION_LEADERSHIP) {
+            return switch (type) {
+                case SELECTION -> ReligionGroups.RELIGION_LEADER_SELECTION;
+                case REMOVAL -> ReligionGroups.RELIGION_LEADER_REMOVAL;
+                case TREATMENT -> throw new UnsupportedOperationException("Treatment is not supported in Religious Leadership");
+                case AUTHORITY -> ReligionGroups.RELIGION_LEADER_AUTHORITY;
+                case CORRUPTION ->  ReligionGroups.RELIGION_LEADER_CORRUPTION;
+                case TRAINING -> throw new UnsupportedOperationException("Training is not supported in Religious Leadership");
+                case OTHER -> throw new UnsupportedOperationException("Other is not supported in Religious Leadership");
+            };
+        } else if (group == EducationGroups.EDUCATION || group == EducationGroups.EDUCATION_LEADERSHIP) {
+            return switch (type) {
+                case SELECTION -> EducationGroups.TEACHER_SELECTION;
+                case REMOVAL -> EducationGroups.TEACHER_REMOVAL;
+                case TREATMENT -> EducationGroups.TEACHER_TREATMENT;
+                case AUTHORITY -> EducationGroups.TEACHER_AUTHORITY;
+                case CORRUPTION -> EducationGroups.TEACHER_CORRUPTION;
+                case TRAINING -> EducationGroups.TEACHER_TRAINING;
+                case OTHER -> throw new UnsupportedOperationException("Other is not supported in Teacher Leadership");
+            };
+        }
+        throw new RuntimeException("No leader group found for parent: "+ group.id());
+    }
+    public static class TermLimit extends Leadership {
+        private int duration;
+        private ChronoUnit durationUnit;
+        public TermLimit(TenetReference parent, PoliticalCompass entry, int duration, ChronoUnit durationUnit) {
+            super(parent, findGroup(parent,Type.REMOVAL), entry, "term_limit", "Term Limit", "The term limit for this office");
+            this.duration = duration;
+            this.durationUnit = durationUnit;
+        }
+
+        public TermLimit(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
+
+        @Override
+        public List<CultureCondition<?, ?, ?>> getConditionList() {
+            return List.of(
+                    LeadershipConditions.buildTermLimit(this,duration,durationUnit)
+            );
+        }
+
+
+        @Override
+        public void additionalSave(JsonObject data) {
+            data.addProperty("duration", duration);
+            data.addProperty("unit", durationUnit.name());
+        }
+
+        @Override
+        public void additionalLoad(JsonObject data) {
+            duration = Integer.parseInt(data.get("duration").getAsString());
+            durationUnit = ChronoUnit.valueOf(data.get("unit").getAsString());
+        }
     }
 }

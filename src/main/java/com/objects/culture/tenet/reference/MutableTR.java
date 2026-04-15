@@ -1,7 +1,7 @@
 package com.objects.culture.tenet.reference;
 
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.mutable.Tenet;
 
 import java.util.UUID;
 

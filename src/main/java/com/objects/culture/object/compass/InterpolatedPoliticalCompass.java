@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 import com.utilities.id.Identifiable;
 import com.utilities.id.SimpleID;
-import com.utilities.number.BoundedInteger;
+import com.utilities.id.StringIdentifiable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
@@ -16,26 +16,36 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class InterpolatedPoliticalCompass<T extends DateMutableEntity<T> & CultureObject<T>> implements IPoliticalCompass, EasingVariable<InterpolatedPoliticalCompass<T>,CompassChange<T>,T> {
-    private final BoundedInteger axisAMain = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
-    private final BoundedInteger axisAInt = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
+    private static final StringIdentifiable tolerance = new StringIdentifiable() {
+        @Override
+        public String getID() {
+            return "tolerance";
+        }
+    };
+
+    private final Value axisAMain = new Value(0);
+    private final Value axisAInt = new Value(0);
     private static final SimpleID axisAID = new SimpleID("ica");
     // Who matters morally and politically. Low values are Universalist: Advocating for everyone to join the ideology. High values are Particularists: Advocating for their group alone.
     // Examples of Low values: Communists, NeoLiberals,
     // Examples of High values: Nazis, Fascists
-    private final BoundedInteger axisBMain = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
-    private final BoundedInteger axisBInt = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
+    private final Value axisBMain = new Value(0);
+    private final Value axisBInt = new Value(0);
     private static final SimpleID axisBID = new SimpleID("upa");
     // How trusting a person or ideology is in large entities that are opaque in concept and operation. Low values are Low Trust, meaning they do not trust entities they do not control. High values are High Trust, meaning they implicitly trust entities they do not understand
     // Examples of Low values: Populists
     // Examples of High values: Technocrats, Traditional Authoritarians
-    private final BoundedInteger axisCMain = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
-    private final BoundedInteger axisCInt = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
+    private final Value axisCMain = new Value(0);
+    private final Value axisCInt = new Value(0);
     private static final SimpleID axisCID = new SimpleID("top");
     //How much a person or ideology values vertical power structures. High values value strict hierarchy, while low values are more egalitarian.
     //Examples of low values: Libertarian Socialists, Anarchists
     //Examples of high values: Stalinists,Randian Capitalists
-    private final BoundedInteger axisDMain = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
-    private final BoundedInteger axisDInt = BoundedInteger.of(-COMPASS_MAX,COMPASS_MAX);
+    private final Value axisDMain = new Value(0);
+    private final Value axisDInt = new Value(0);
+
+    private final Value toleranceMain = new Value(0);
+    private final Value toleranceInt = new Value(0);
     private static final SimpleID axisDID = new SimpleID("ehi");
     private DMEReference<T> owner;
     public InterpolatedPoliticalCompass(DMEReference<T> owner, int universalParticularAxis, int individualCollectiveAxis, int trustInOpacityAxis, int egalitarianHierarchyAxis) {
@@ -48,27 +58,32 @@ public class InterpolatedPoliticalCompass<T extends DateMutableEntity<T> & Cultu
     public InterpolatedPoliticalCompass() {}
 
     @Override
-    public BoundedInteger getAxisA() {
+    public Value getAxisA() {
         return axisAInt;
     }
 
     @Override
-    public BoundedInteger getAxisB() {
+    public Value getAxisB() {
         return axisBInt;
     }
 
     @Override
-    public BoundedInteger getAxisC() {
+    public Value getAxisC() {
         return axisCInt;
     }
 
     @Override
-    public BoundedInteger getAxisD() {
+    public Value getAxisD() {
         return axisDInt;
     }
 
     @Override
-    public ImmutableMap<Axis, BoundedInteger> getAxisMap() {
+    public Value getTolerance() {
+        return toleranceInt;
+    }
+
+    @Override
+    public ImmutableMap<Axis, Value> getAxisMap() {
         return ImmutableMap.of(
             Axis.INDIVIDUAL_COLLECTIVE, axisAInt,
             Axis.UNIVERSAL_PARTICULAR, axisBInt,
@@ -111,7 +126,9 @@ public class InterpolatedPoliticalCompass<T extends DateMutableEntity<T> & Cultu
             axisCID,new VariableContainer(EasingType.QUAD,()->{
                     return Double.valueOf(axisCMain.get());},(d) -> axisCInt.set((int) Math.round(d))),
             axisDID,new VariableContainer(EasingType.QUAD,()->{
-                    return Double.valueOf(axisDMain.get());},(d) -> axisDInt.set((int) Math.round(d)))
+                    return Double.valueOf(axisDMain.get());},(d) -> axisDInt.set((int) Math.round(d))),
+            tolerance,new VariableContainer(EasingType.QUAD,()->{
+                    return Double.valueOf(toleranceMain.get());},(d) -> toleranceInt.set((int) Math.round(d)))
         );
     }
 

@@ -3,6 +3,7 @@ package com.objects.culture.tenet.group;
 import com.google.common.collect.ImmutableList;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.utilities.Displayable;
 import com.utilities.hierarchy.Parented;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -11,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connected, String id, String name, String description) implements Displayable, Parented<TenetGroup> {
+import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
+
+public class TenetGroup implements Displayable, Parented<TenetGroup> {
     public static final int SYSTEM_MAX = 10;
     public static final int BELIEF_MAX = 10;
     public static final int VALUE_MAX = 3;
@@ -19,6 +22,13 @@ public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connec
     public static final int AESTHETIC_MAX = 6;
     public static final int LANGUAGE_MAX = 3;
     //=============================================================
+
+    private final TGType type;
+    private final TenetGroup parent;
+    private final List<TenetGroup> connected;
+    private final String id;
+    private final String name;
+    private final String description;
 
     public TenetGroup(@NonNull TGType type, TenetGroup parent, List<TenetGroup> connected, String id, String name, String description) {
         if (type == null){
@@ -62,9 +72,7 @@ public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connec
     public String displayName() {
         return name;
     }
-    public List<TenetGroup> connected(){
-        return new ArrayList<>(TenetManager.getConnectedGroups(this));
-    }
+
     public boolean isParentOf(TenetGroup child){
         return TenetManager.isParentGroup(this,child);
     }
@@ -87,5 +95,55 @@ public record TenetGroup(TGType type, TenetGroup parent, List<TenetGroup> connec
     public static TenetGroup builder(TGType type, TenetGroup parent, ImmutableList<TenetGroup> connected, String id, String name, String description){
         return new TenetGroup(type,parent, connected, id, name, description);
     }
+    public enum LeadershipType {
+        TYPES,
+        SELECTION,
+        REMOVAL,
+        AUTHORITY_POWER,
+        CORRUPTION,
+        OTHER_MISC
+    }
 
+    public Optional<TenetGroup> getChildByID(String id){
+        List<TenetGroup> children = TenetManager.getChildren(this);
+        if (children.isEmpty()){
+            return Optional.empty();
+        }
+        for (TenetGroup child : children){
+            if (child.getDisplayID().contentEquals(id)){
+                return Optional.of(child);
+            }
+        }
+        for (TenetGroup child : children){
+            Optional<TenetGroup> result = child.getChildByID(id);
+            if (result.isPresent()){
+                return result;
+            }
+        }
+        return Optional.empty();
+    }
+
+    public TGType type() {
+        return type;
+    }
+
+    public TenetGroup parent() {
+        return parent;
+    }
+
+    public List<TenetGroup> connected() {
+        return connected;
+    }
+
+    public String id() {
+        return id;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public String description() {
+        return description;
+    }
 }

@@ -38,21 +38,12 @@ public class CompassChange<T extends DateMutableEntity<T> & CultureObject<T>> ex
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
         if (getOwner() instanceof CultureObject<?> to){
-            to.internalSetCompass(compass);
+            InterpolatedPoliticalCompass<?> com = (InterpolatedPoliticalCompass<?>) compass;
+            to.internalSetCompass(com);
         }
     }
     public InterpolatedPoliticalCompass<? extends T> getCompass() {
         return compass;
-    }
-
-    @Override
-    public List<Class<TimelineChange<? super T>>> oppositeChanges() {
-        return List.of();
-    }
-
-    @Override
-    public boolean isPositive() {
-        return true;
     }
 
     @Override

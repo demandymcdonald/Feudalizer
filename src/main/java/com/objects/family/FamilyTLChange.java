@@ -37,7 +37,7 @@ public abstract class FamilyTLChange {
 
         @Override
         public void setRuntimeMap(TimelineMap<DMEReference<? extends SentientCharacter<?>>, Family.Relationship, Family> map) {
-
+            getOwner().get().internal_SetMap(map);
         }
 
         @Override
@@ -118,19 +118,7 @@ public abstract class FamilyTLChange {
 
         @Override
         protected Optional<StateError> doCheck(DMEReference<? extends Family> entity, TimelineChange<? extends Family> thisChange, TimelineChange<?> checkAgainst) {
-            if(thisChange instanceof MemberChange mc){
-                Map<DMEReference<? extends SentientCharacter<?>>>, Family.Relationship> changeFragment = mc.getActiveChanges();
-                if(changeFragment.containsValue(CHILD_BORN) || changeFragment.containsValue(CHILD_BORN_DISOWNED)) {
-                    for (Map.Entry<DMEReference<? extends SentientCharacter<?>>>, Family.Relationship> entry : changeFragment.entrySet()) {
-                        if (entry.getValue() == CHILD_BORN || entry.getValue() == CHILD_BORN_DISOWNED) {
-                            ? extends SentientCharacter<?>> character = entry.getKey().get();
-                            if (character.getOriginFamily(false) != null || character.getOriginFamily(false) != entity.get()) {
-                                return Optional.of(new StateError("family_already_has_bio_parents",new ComplexReference("{} already has bio parents",entry.getKey()),checkAgainst).addEndCancel());
-                            }
-                        }
-                    }
-                }
-            }
+
             return Optional.empty();
         }
 

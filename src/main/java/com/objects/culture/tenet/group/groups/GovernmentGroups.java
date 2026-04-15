@@ -162,12 +162,11 @@ public static final TenetGroup GOVERNMENT = builder(TGType.SORT_ONLY, HARD_CULTU
 
     // Military Leadership
     public static final TenetGroup MILITARY_LEADERSHIP = builder(TGType.SYSTEM_SORT, MILITARY, "leadership", "Military Leadership", "");
-    public static final TenetGroup CENTRALIZATION = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(COMBAT_DOCTRINE, ORDER_OF_BATTLE, MILITARY_UPWARD_MOBILITY, RULES_OF_ENGAGEMENT), "command_centralization", "Command Centralization", "");
-    public static final TenetGroup OFFICER_APPOINTMENT = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(CENTRALIZATION, MILITARY_RECRUITMENT, MILITARY_UPWARD_MOBILITY), "officer_appointment", "Officer Appointment", "");
-    public static final TenetGroup OFFICER_REMOVAL = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(MILITARY_JUSTICE), "officer_removal", "Officer Removal", "");
-    public static final TenetGroup OFFICER_TREATMENT = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(MILITARY_FUNDING), "officer_treatment", "Officer Treatment", "");
-    public static final TenetGroup OFFICER_TRAINING = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(MILITARY_FUNDING, MILITARY_TRAINING), "officer_training", "Officer Training", "");
-
+    public static final TenetGroup CENTRALIZATION = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(COMBAT_DOCTRINE, ORDER_OF_BATTLE, MILITARY_UPWARD_MOBILITY, RULES_OF_ENGAGEMENT), "centralization", "Command Centralization", "");
+    public static final TenetGroup OFFICER_APPOINTMENT = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(CENTRALIZATION, MILITARY_RECRUITMENT, MILITARY_UPWARD_MOBILITY), "appointment", "Officer Appointment", "");
+    public static final TenetGroup OFFICER_REMOVAL = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(MILITARY_JUSTICE), "removal", "Officer Removal", "");
+    public static final TenetGroup OFFICER_TRAINING = builder(TGType.SYSTEM_LARGE, MILITARY_LEADERSHIP, ImmutableList.of(MILITARY_FUNDING, MILITARY_TRAINING), "training", "Officer Training", "");
+    public static final TenetGroup OFFICER_TREATMENT = builder(TGType.SYSTEM_LARGE,MILITARY_LEADERSHIP, "treatment", "Officer Treatment", "");
     // Military Ideology
     public static final TenetGroup MILITARY_IDEOLOGY = builder(TGType.SYSTEM_SORT, MILITARY, "ideology", "Military Ideology", "");
     public static final TenetGroup MILITARY_SELF_CONCEPT = builder(TGType.SYSTEM_LARGE, MILITARY_IDEOLOGY, "self_concept", "Military Self-Concept", "");
@@ -184,9 +183,10 @@ public static final TenetGroup GOVERNMENT = builder(TGType.SORT_ONLY, HARD_CULTU
     public static final TenetGroup GOVERNMENT_LEADERSHIP = builder(TGType.SYSTEM_SORT, GOVERNMENT_SYSTEM, ImmutableList.of(CLASS_AND_CASTE, MILITARY), "leadership", "Leadership", "");
     public static final TenetGroup LEADER_CORRUPTION = builder(TGType.SYSTEM_LARGE, GOVERNMENT_LEADERSHIP, ImmutableList.of(GOVERNMENT_CORRUPTION), "corruption", "Leader Corruption", "");
     public static final TenetGroup LEADER_TYPES = builder(TGType.SYSTEM_SORT, GOVERNMENT_LEADERSHIP, "types", "Leader Types", "");
-    public static final TenetGroup LEADERSHIP_SELECTION = builder(TGType.SYSTEM_LARGE, LEADER_TYPES, ImmutableList.of(DISENFRANCHISED), "selection", "Leadership Selection", "");
+    public static final TenetGroup LEADER_SELECTION = builder(TGType.SYSTEM_LARGE, LEADER_TYPES, ImmutableList.of(DISENFRANCHISED), "selection", "Leadership Selection", "");
     public static final TenetGroup LEADER_AUTHORITY = builder(TGType.SYSTEM_LARGE, LEADER_TYPES, "authority", "Leader Authority", "");
-    public static final TenetGroup LEADERSHIP_REMOVAL = builder(TGType.SYSTEM_LARGE, LEADER_TYPES, ImmutableList.of(GOVERNMENT_CORRUPTION,LEADER_CORRUPTION), "removal", "Leadership Removal", "");
+    public static final TenetGroup LEADER_REMOVAL = builder(TGType.SYSTEM_LARGE, LEADER_TYPES, ImmutableList.of(GOVERNMENT_CORRUPTION,LEADER_CORRUPTION), "removal", "Leadership Removal", "");
+    public static final TenetGroup LEADER_GENERAL = builder(TGType.SYSTEM_LARGE, LEADER_TYPES, "general", "Leader General", "");
     // Government Office
     public static final TenetGroup GOVERNMENT_OFFICE = builder(TGType.SYSTEM_LARGE, GOVERNMENT_SYSTEM, "office", "GovernmentTenet Office", "");
     public static final TenetGroup GOVERNMENT_OFFICE_AUTHORITY = builder(TGType.SYSTEM_LARGE, GOVERNMENT_OFFICE, "authority", "GovernmentTenet Office Authority", "");
@@ -200,7 +200,7 @@ public static final TenetGroup GOVERNMENT = builder(TGType.SORT_ONLY, HARD_CULTU
     public static final TenetGroup OFFICIAL_TREATMENT_PEOPLE = builder(TGType.SYSTEM_LARGE, GOVERNMENT_OFFICIAL, "treatment_people", "An Official's Treatment by the People", "");
     public static final TenetGroup OFFICIAL_CORRUPTION = builder(TGType.SYSTEM_LARGE, GOVERNMENT_OFFICIAL, ImmutableList.of(GOVERNMENT_CORRUPTION, OFFICIAL_TREATMENT_PEOPLE, OFFICIAL_TREATMENT_GOVERNMENT, OFFICIAL_TREATMENT_PEOPLE), "corruption", "Corruption among Officials", "");
     public static final TenetGroup OFFICIAL_REMOVAL = builder(TGType.SYSTEM_LARGE, GOVERNMENT_OFFICIAL, ImmutableList.of(OFFICIAL_AUTHORITY, LEADER_CORRUPTION, OFFICIAL_CORRUPTION, CLASS_AND_CASTE), "removal", "Removal of an Official", "");
-
+    public static final TenetGroup OFFICIAL_GENERAL = builder(TGType.SYSTEM_LARGE,GOVERNMENT_OFFICIAL, "general", "General Official", "");
     // Soft Culture Intervention
     public static final TenetGroup SOFT_CULTURE_INTERVENTION = builder(TGType.SYSTEM_SORT, GOVERNMENT_OFFICIAL, ImmutableList.of(SOFT_CULTURE), "soft_culture_interventionalism", "Soft Culture Intervention", "");
     public static final TenetGroup SECULARISM = builder(TGType.SYSTEM_LARGE, SOFT_CULTURE_INTERVENTION, ImmutableList.of(RELIGION, GOVERNMENT_LEADERSHIP), "secularism", "Secularism", "");

@@ -8,7 +8,7 @@ import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.StateError;
 import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
-import com.objects.culture.tenet.types.Tenet;
+import com.objects.culture.tenet.types.mutable.Tenet;
 
 import java.util.Optional;
 import java.util.Set;

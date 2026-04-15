@@ -55,7 +55,7 @@ public class ReligionGroups {
     public static final TenetGroup RELIGION_LEADER_SELECTION = builder(TGType.SYSTEM_LARGE, RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "selection", "Religious Leader Selection", "");
     public static final TenetGroup RELIGION_LEADER_AUTHORITY = builder(TGType.SYSTEM_LARGE, RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "authority", "Religious Leader Authority", "");
     public static final TenetGroup RELIGION_LEADER_REMOVAL = builder(TGType.SYSTEM_LARGE, RELIGION_LEADERSHIP, ImmutableList.of(CLASS_AND_CASTE), "removal", "Religious Leader Removal", "");
-
+    public static final TenetGroup RELIGION_LEADER_CORRUPTION = builder(TGType.SYSTEM_LARGE,RELIGION_LEADERSHIP,ImmutableList.of(RELIGION_LEADER_AUTHORITY),"corruption","Religious Leader Corruption","");
     // Religious Practices
     public static final TenetGroup LITURGICAL_LANGUAGE = builder(TGType.LANGUAGE, PRACTICES, "liturgical_language", "Liturgical Language", "");
     public static final TenetGroup RELIGIOUS_TRADITION_RITUAL = builder(TGType.TRADITION, PRACTICES, ImmutableList.of(TRADITION_RITUAL), "tradition_ritual", "Religious Tradition/Ritual", ""); // TODO: update to TRADITION type when added

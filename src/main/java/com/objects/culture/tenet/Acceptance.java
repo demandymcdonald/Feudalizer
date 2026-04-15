@@ -9,9 +9,9 @@ public enum Acceptance implements Displayable {
     CORE("tp_core", "Core", "This tenet is a core part of the culture", 320),
     INTEGRATED("tp_important", "Integrated", "This tenet is a part of the culture.", 192),
     ACCEPTED("tp_accepted", "Accepted", "This tenet is accepted by the culture.", 128),
-    NEUTRAL_POSITIVE("tp_lukewarm", "Lukewarm", "This tenet is lukewarm to the culture.", 64),
+    TOLERATED("tp_lukewarm", "Lukewarm", "This tenet is lukewarm to the culture.", 64),
     NEUTRAL("tp_neutral", "Neutral", "This tenet is neutral to the culture.", 0),
-    NEUTRAL_NEGATIVE("tp_tepid", "Tepid", "This tenet is tepid to the culture.", -64),
+    BARELY_TOLERATED("tp_tepid", "Tepid", "This tenet is tepid to the culture.", -64),
     REJECTED("tp_rejected", "Rejected", "This tenet is disliked by the culture.", -128),
     SHUNNED("tp_shunned", "Shunned", "This tenet is shunned by the culture.", -192),
     PERSECUTED("tp_persecuted", "Persecuted", "This tenet is persecuted or banned by the culture.", -320),
@@ -37,9 +37,9 @@ public enum Acceptance implements Displayable {
         floorMap.put(CORE.floor, CORE);
         floorMap.put(INTEGRATED.floor, INTEGRATED);
         floorMap.put(ACCEPTED.floor, ACCEPTED);
-        floorMap.put(NEUTRAL_POSITIVE.floor, NEUTRAL_POSITIVE);
+        floorMap.put(TOLERATED.floor, TOLERATED);
         floorMap.put(NEUTRAL.floor, NEUTRAL);
-        floorMap.put(NEUTRAL_NEGATIVE.floor, NEUTRAL_NEGATIVE);
+        floorMap.put(BARELY_TOLERATED.floor, BARELY_TOLERATED);
         floorMap.put(REJECTED.floor, REJECTED);
         floorMap.put(SHUNNED.floor, SHUNNED);
         floorMap.put(PERSECUTED.floor, PERSECUTED);

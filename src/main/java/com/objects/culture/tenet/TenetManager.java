@@ -3,14 +3,14 @@ package com.objects.culture.tenet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
-import com.objects.culture.object.compass.Ideology;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
-import com.objects.culture.tenet.types.MutableTenet;
+import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.tenets.general.Leadership;
+import com.objects.culture.tenet.types.mutable.MutableTenet;
 import com.objects.culture.tenet.tenets.ReligionTenets;
-import com.objects.culture.tenet.types.Tenet;
 import com.utilities.serialization.SuperclassSerializable;
 
 import java.util.*;
@@ -23,8 +23,7 @@ public class TenetManager {
     private static final Multimap<TenetGroup, MutableTenet> tenetsByGroup = HashMultimap.create();
     private static final Multimap<TenetGroup,TenetGroup> groupRelations = HashMultimap.create();
     private static final Multimap<TenetGroup,TenetGroup> parentRelations = HashMultimap.create();
-
-    private static final Map<Class<? extends MutableTenet>, TenetFactory<? extends MutableTenet>> tenetsByClass = new HashMap<>();
+    private static final Map<Class<? extends MutableTenet>, TenetFactory<? extends MutableTenet>> mutableTenetFactories = new HashMap<>();
 
 
 
@@ -54,7 +53,12 @@ public class TenetManager {
             parentRelations.put(parent, group);
         }
     }
-
+    public static List<TenetGroup> getChildren(TenetGroup group) {
+        return new ArrayList<>(parentRelations.get(group));
+    }
+    public static <T extends MutableTenet> void registerMutableFactory(Class<T> mutClass, TenetFactory<T> factory) {
+        mutableTenetFactories.put(mutClass, factory);
+    }
     private static void handleGroupRelations(TenetGroup group, List<TenetGroup> linkedGroups){
         for (TenetGroup linkedGroup : linkedGroups) {
             groupRelations.put(group, linkedGroup);
@@ -73,7 +77,10 @@ public class TenetManager {
         }
         return false;
     }
-
+    public static <T extends MutableTenet> T deserialize(JsonObject object) {
+        Class<T> tC = (Class<T>) SuperclassSerializable.getSSClass(object);
+        return (T) mutableTenetFactories.get(tC).rebuild(object);
+    }
 
     public static MutableTenet getTenet(String id) {
         return tenets.get(id);
@@ -99,18 +106,26 @@ public class TenetManager {
         public final T rebuild(JsonObject object) {
             JsonObject main = SuperclassSerializable.getMainData(object);
             UUID id = UUID.fromString(main.get("id").getAsString());
+            TenetReference reference = TenetReference.fromJson(main.get("parent").getAsJsonObject());
             TenetGroup g = TenetManager.getGroup(main.get("group").getAsString());
             String displayID = main.get("displayID").getAsString();
             String displayName = main.get("name").getAsString();
             String description = main.get("description").getAsString();
             PoliticalCompass compass = PoliticalCompass.build(main.get("compass").getAsJsonObject());
-            T t = onRebuild(id,g,compass,displayID,displayName,description);
+            T t = onRebuild(id,reference,g,compass,displayID,displayName,description);
             t.additionalLoad(SuperclassSerializable.getAdditional(object));
             return t;
         }
-        protected abstract T onRebuild(UUID id, TenetGroup tenetGroup, PoliticalCompass compass, String displayID, String displayName, String description);
+        protected abstract T onRebuild(UUID id, TenetReference parent, TenetGroup tenetGroup, PoliticalCompass compass, String displayID, String displayName, String description);
+    }
 
-
+    static {
+        registerMutableFactory(Leadership.TermLimit.class, new TenetFactory<Leadership.TermLimit>() {
+            @Override
+            protected Leadership.TermLimit onRebuild(UUID id, TenetReference parent, TenetGroup tenetGroup, PoliticalCompass compass, String displayID, String displayName, String description) {
+                return new Leadership.TermLimit(parent,id, tenetGroup, compass, displayID, displayName, description);
+            }
+        });
     }
 }
 
