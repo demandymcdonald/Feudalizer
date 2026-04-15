@@ -6,8 +6,11 @@ import com.utilities.id.Identifiable;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static com.base.timeline.change.multi.TimelineMap.Listener.EMPTY;
+
 public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity<T>> extends HashMap<K,V> {
     TimelineMultiChange<?,K,V,?,T> change;
+    private Listener<K,V> listener = (Listener<K, V>) EMPTY;
     public TimelineMap(TimelineMultiChange<?,K,V,?,T> change) {
         this.change = change;
     }
@@ -31,6 +34,7 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         } else {
             cascade( change, change.buildChangeTypes(Collections.singletonList(key), TimelineMultiChange.ChangeType.MODIFY_VALUE));
         }
+        listener.onMapPut(key, value);
         return v;
     }
 
@@ -44,6 +48,7 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
             } else {
                 toAdd.add(key);
             }
+            listener.onMapPut(key, m.get(key));
         }
         super.putAll(m);
         cascade( change, change.buildChangeTypes(toAmend, TimelineMultiChange.ChangeType.MODIFY_VALUE));
@@ -57,6 +62,7 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         if (contains) {
             cascade( change, change.buildChangeTypes(Collections.singletonList((K) key), TimelineMultiChange.ChangeType.REMOVE));
         }
+        listener.onMapRemove((K) key, v);
         return v;
     }
 
@@ -64,9 +70,12 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
     public boolean remove(Object key, Object value) {
         boolean contains = containsKey(key);
         boolean tr = super.remove(key, value);
-        if (contains) {
-            cascade( change, change.buildChangeTypes(Collections.singletonList((K) key), TimelineMultiChange.ChangeType.REMOVE));
-        }
+        try {
+            if (contains) {
+                cascade(change, change.buildChangeTypes(Collections.singletonList((K) key), TimelineMultiChange.ChangeType.REMOVE));
+            }
+            listener.onMapRemove((K) key, (V) value);
+        }catch (Exception e){}
         return tr;
     }
 
@@ -79,6 +88,7 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         } else {
             cascade( change, change.buildChangeTypes(Collections.singletonList((K) key), TimelineMultiChange.ChangeType.ADD));
         }
+        listener.onMapReplace(key, oldValue, newValue);
         return d;
     }
 
@@ -91,6 +101,7 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         } else {
             cascade( change, change.buildChangeTypes(Collections.singletonList((K) key), TimelineMultiChange.ChangeType.ADD));
         }
+        listener.onMapReplace(key, value, tr);
         return tr;
     }
 
@@ -110,8 +121,26 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         cascade( change, change.buildChangeTypes(toAdd, TimelineMultiChange.ChangeType.ADD));
     }
 
+    public void setListener(Listener<K,V> listener){
+        this.listener = listener;
+    }
 
+    @Override
+    public void clear() {
+        super.clear();
+        listener.onMapClear();
+    }
 
+    @Override
+    public V get(Object key) {
+        V v = super.get(key);
+        if(key instanceof Identifiable<?>){
+            try {
+                listener.onMapGet((K) key, v);
+            } catch (Exception e) {}
+        }
+        return v;
+    }
 
     public void setChanged(K... key){
         change.setChanged(key);
@@ -122,4 +151,26 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         Map<K, TimelineMultiChange.ChangeType> finalChanges = (Map<K, TimelineMultiChange.ChangeType>) changes;
         m.cascadeInvalidate(m,finalChanges);
     }
+
+    public static abstract class Listener<K extends Identifiable<?>,V>{
+        public abstract void onMapPut(K key, V value);
+        public abstract void onMapRemove(K key, V value);
+        public abstract void onMapReplace(K key, V oldValue, V newValue);
+        public abstract void onMapClear();
+        public abstract void onMapGet(K key, V value);
+
+        public static final Listener<?,?> EMPTY = new Listener<>() {
+            @Override
+            public void onMapPut(Identifiable<?> key, Object value) {}
+            @Override
+            public void onMapRemove(Identifiable<?> key, Object value) {}
+            @Override
+            public void onMapReplace(Identifiable<?> key, Object oldValue, Object newValue) {}
+            @Override
+            public void onMapClear() {}
+            @Override
+            public void onMapGet(Identifiable<?> key, Object value) {}
+        };
+    }
+
 }
