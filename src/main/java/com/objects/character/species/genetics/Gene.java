@@ -2,7 +2,6 @@ package com.objects.character.species.genetics;
 
 import com.Feudalizer;
 import com.objects.character.species.aspect.PhysicalAspect;
-import com.objects.culture.object.instance.TenetInstance;
 import com.utilities.Displayable;
 
 import java.util.ArrayList;

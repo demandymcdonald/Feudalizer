@@ -1,4 +1,4 @@
-package com.objects.culture.object.instance;
+package com.objects.culture.tenet.instance;
 
 import com.Global;
 import com.base.DateMutableEntity;
@@ -28,6 +28,7 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     private TenetReference tenet;
     private final BoundedDouble opinion = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private final BoundedDouble interpolated = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
+    private boolean isActive = false;
     private static final StringIdentifiable doubleID = new StringIdentifiable("opinion"){
         @Override
         public String getID() {

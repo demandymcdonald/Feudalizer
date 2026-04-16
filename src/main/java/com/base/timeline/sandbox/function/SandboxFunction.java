@@ -22,6 +22,9 @@ public abstract class SandboxFunction<T extends DateMutableEntity<T>>{
     private static final List<Condition.ShouldRun> DEFAULT_SHOULD_FIRST_STATE = ImmutableList.of(WHOLE_STATE_PER_ENTITY,ONCE_PER_CHANGE);
     private static final List<Condition.ShouldRun> DEFAULT_SHOULD_STATE = ImmutableList.of(ONCE_PER_STATE,ONCE_PER_CHANGE);
     private static final List<Condition.ShouldRun> DEFAULT_SHOULD_ENTITY = ImmutableList.of(ONCE_PER_CHANGE);
+    public SandboxCode onStartup(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange){
+        return SandboxCode.CONTINUE;
+    }
     protected abstract void onComplete(Sandbox<T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<T> entity, TimelineChange<? super T> newChange);
     public final SandboxCode cycle(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange){
         List<Condition.ShouldRun> shouldRun;

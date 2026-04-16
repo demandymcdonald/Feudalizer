@@ -249,4 +249,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     public DMEReference<T> getSubject(){
         return subject;
     }
+    public Global.TimeDirection getTimeDirection(){
+        return getObjective().start();
+    }
 }

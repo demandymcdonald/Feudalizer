@@ -1,4 +1,4 @@
-package com.objects.culture.object.instance;
+package com.objects.culture.tenet.instance;
 
 import com.Global;
 import com.base.DateMutableEntity;
@@ -19,11 +19,12 @@ import com.objects.culture.tenet.types.TenetReference;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 //public class TenetInstanceChange<M extends TenetInstanceChange<M,T,TI>,T extends DateMutableEntity<T> & CultureObject<T>,
 //        TI extends TenetInstance<TI,T,M>> extends TimelineMapChange<M, TenetReference,TI,String,T> implements EasingChange<TI,M,T> {
 public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<T>>
-        extends TimelineMapChange<TenetInstanceChange<T>,TenetReference,TenetInstance<T>,String,T>
+        extends TimelineMapChange<TenetInstanceChange<T>,TenetReference,TenetInstance<T>, UUID,T>
         implements EasingChange<TenetInstance<T>,TenetInstanceChange<T>,T> {
 
     protected TenetInstanceChange(DMEReference<? extends T> owner, LocalDate date) {
@@ -78,13 +79,13 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
     }
 
     @Override
-    protected JsonElement iSerialize(String s) {
-        return new JsonPrimitive(s);
+    protected JsonElement iSerialize(UUID s) {
+        return new JsonPrimitive(s.toString());
     }
 
     @Override
-    protected String iDeserialize(JsonElement o) {
-        return o.getAsString();
+    protected UUID iDeserialize(JsonElement o) {
+        return UUID.fromString(o.getAsString());
     }
 
     @Override

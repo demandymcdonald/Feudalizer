@@ -6,7 +6,7 @@ import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.object.CultureObjectContainer;
-import com.objects.culture.tenet.instance.CultObjReference;
+import com.objects.culture.object.COReference;
 import com.objects.culture.object.CultureObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -61,7 +61,7 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     }
 
     @Override
-    public double influencerResistance(CultObjReference<?> influencer) {
+    public double influencerResistance(COReference<?> influencer) {
         return 0;
     }
 
