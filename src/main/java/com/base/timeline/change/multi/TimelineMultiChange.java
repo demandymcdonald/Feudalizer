@@ -61,26 +61,19 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
 
     private final Set<I> endingChanges = new HashSet<>();
     private final Map<K,V> activeChanges;
+    private final List<Listener<K,V>> listeners = new ArrayList<>();
 
 
-
-    private final CachingSupplier<TimelineMap<K,V,T>,M> fullMap = new CachingSupplier<>(this::buildFull,null);
+    private final CachingSupplier<Map<K,V>,M> fullMap = new CachingSupplier<>(this::buildFull,null);
     protected final AtomicBoolean pauseCacheChecks = new AtomicBoolean(false);
 
     protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
-        activeChanges = buildChangeMap();
+        activeChanges = new HashMap<>();
     }
     protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date, Map<K,V> initial) {
         super(owner, date);
-        activeChanges = buildChangeMap(initial);
-    }
-    protected final Map<K,V> buildChangeMap(){
-        return buildChangeMap(new HashMap<>());
-    }
-
-    protected final Map<K,V> buildChangeMap(Map<K,V> initial){
-        return new TimelineMap<>(this,initial);
+        activeChanges = new HashMap<>(initial);
     }
     public int getActiveSize(){
         return  getActive().size();
@@ -91,7 +84,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             return false;
         } else if(endingChanges.contains(key.getID())) {
             return false;
-        } else return type != ChangeType.MODIFY_VALUE || !(initiator.getActive().get(key) == this.getFullMap().get(key));
+        } else return type != ChangeType.MODIFY_VALUE || !(initiator.getActive().get(key) == this.internalGetFull().get(key));
     };
     protected void onRemoveEntry(WipeType wipe, K... key){};
     protected void onBuildMap(){};
@@ -120,7 +113,9 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public final void continueSearch(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> oldChange) {
         super.continueSearch(entity, currentState, oldChange);
     }
-
+    public void addListener(Listener<K,V> listener){
+        listeners.add(listener);
+    }
 
     @Override
     public final void nullify(DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<?> changeToNullify) {
@@ -157,24 +152,37 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return true;
     }
     public final TimelineMap<K,V,T> getFullMap(){
+        return new TimelineMap<>(this);
+    }
+    public final Map<K,V> internalGetFull(){
         return fullMap.get();
     }
-    public final TimelineMap<K,V,T> getFullMap(M original){
-        if (fullMap.isMemoized()){
+    public final Map<K,V> internalGetFull(M original){
+        if(fullMap.isMemoized()){
             return fullMap.get();
         } else {
-            return buildMap((M) this,getFullMap(),original);
+            Map<K,V> map = buildMap((M)this,activeChanges,original);
+            fullMap.set(map);
+            return map;
         }
     }
     protected void internalInvalidate(){
         fullMap.clear((M) this);
     }
-    private TimelineMap<K,V,T> buildFull(){
+    private Map<K,V> buildFull(){
         return buildMap((M) this, this.getActive(),null);
     }
     protected void addChange(Pair<K,V>... changes){
         addChange(true,changes);
     }
+    protected void addChange(Map<? extends K,? extends V> changes){
+        List<Pair<K,V>> pairs = new ArrayList<>(changes.size());
+        for(Map.Entry<? extends K,? extends V> entry : changes.entrySet()){
+            pairs.add(Pair.of(entry.getKey(),entry.getValue()));
+        }
+        addChange(true,pairs.toArray(new Pair[pairs.size()]));
+    }
+
     protected void addChange(boolean sandbox, Pair<K,V>... changes){
         List<K> rollback = new ArrayList<>();
         Map<K,V> backup = new HashMap<>();
@@ -204,6 +212,12 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                         if (sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR) {
                             removeEntry(WipeType.NO_WIPE, (K[]) rollback.toArray(new Identifiable[0]));
                             activeChanges.putAll(backup);
+                        } else {
+                            for (Map.Entry<K, V> e : toAdd.entrySet()) {
+                                for (Listener<K, V> listener : listeners) {
+                                    listener.onMapPut(e.getKey(), e.getValue());
+                                }
+                            }
                         }
                     }
                 };
@@ -380,7 +394,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         if (desiredChange == null){
             return null;
         }
-        return desiredChange.getFullMap();
+        return desiredChange.internalGetFull();
     }
     protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasPastEntry(M change, K key, boolean includeCurrent){
         return hasEntry(Global.TimeDirection.BACKWARD,change,key,includeCurrent);
@@ -458,15 +472,15 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     }
 
 
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> TimelineMap<K,V,T> buildMap(M change,Map<K,V> starting, @Nullable M original){
+    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> buildMap(M change,Map<K,V> starting, @Nullable M original){
         change.onBuildMap();
         if(original == null){
             original = change;
         }
         final List<I> blacklist = new ArrayList<>(change.getEndingChanges());
         M leapfrogged = TimelineObject.getChangeStep(change,BACKWARD,false,0,null);
-        Map<K,V> lf = leapfrogged.getFullMap(original);
-        TimelineMap<K,V,T> toReturn = new TimelineMap<>(change);
+        Map<K,V> lf = leapfrogged.internalGetFull(original);
+        Map<K,V> toReturn = new HashMap<>();
         for (Map.Entry<K,V> entry : lf.entrySet()){
             K key = entry.getKey();
             if(!starting.containsKey(key) && !blacklist.contains(key.getID())){
@@ -579,7 +593,13 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public void merge(M other){
         this.activeChanges.putAll(other.getActive());
     };
-
+    public static abstract class Listener<K extends Identifiable<?>,V>{
+        public abstract void onMapPut(K key, V value);
+        public abstract void onMapRemove(K key, V value, WipeType type);
+        public abstract void onMapReplace(K key, V oldValue, V newValue);
+        public abstract void onMapClear();
+        public abstract void onMapGet(K key, V value);
+    }
 
     public class CanMerge extends ApplyCondition<T>{
 

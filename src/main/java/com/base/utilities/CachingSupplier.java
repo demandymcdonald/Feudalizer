@@ -35,6 +35,9 @@ public class CachingSupplier<T, C extends TimelineChange<?>> {
         }
         resetCache();
     }
+    public void set(T result){
+        usableSupplier = Suppliers.memoize(() -> result);
+    }
     public void setConsumer(Consumer<C> consumer){
         this.consumer = consumer;
     }
