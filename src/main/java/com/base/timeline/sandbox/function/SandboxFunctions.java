@@ -96,7 +96,6 @@ public class SandboxFunctions {
             } else if(changes == null){
                 throw new NullPointerException("Changes cannot be null on a MultiChange Sandbox Function.");
             }
-            Map<Pair<K,V>,TimelineMultiChange.ChangeType> cleaned = new HashMap<>();
             for(Map.Entry<Pair<K,V>,TimelineMultiChange.ChangeType> entry : changes.entrySet()){
                 final TimelineMultiChange.ChangeType type = entry.getValue();
                 K k = m.deepCopyK(entry.getKey().getLeft());
@@ -171,6 +170,9 @@ public class SandboxFunctions {
                     List<Pair<K, V>> currentEntries = buildCurrentList(mCurrent, entries);
                     List<MultiCondition<M, K, V, I, T>> conditions = this.conditions.get(type);
                     for (MultiCondition<M, K, V, I, T> condition : conditions) {
+                        if(!shouldRun.contains(condition.shouldRun())){
+                            continue;
+                        }
                         Optional<StateError> error = condition.check(mNew, entries, mCurrent, currentEntries);
                         if (error.isPresent()) {
                             errors.add(error.get());
