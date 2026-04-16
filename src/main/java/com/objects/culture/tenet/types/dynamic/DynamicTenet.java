@@ -4,6 +4,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.TimelineMultiChange;
 import com.base.utilities.TLSyncedCache;
 import com.google.gson.JsonObject;
 import com.objects.culture.AbstractCulture;
@@ -30,16 +31,17 @@ import java.util.*;
 public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T> {
     private final TenetGroup tenetGroup;
     private final CultureObjectContainer<T> container;
-    private final TimelineMap.Listener<TenetReference, TenetInstance<T>> listener = new TimelineMap.Listener<TenetReference, TenetInstance<T>>() {
+    private final TimelineMultiChange.Listener<TenetReference, TenetInstance<T>> listener = new TimelineMultiChange.Listener<TenetReference, TenetInstance<T>>() {
         @Override
         public void onMapPut(TenetReference key, TenetInstance<T> value) {
             DynamicTenet.this.onOpinionAdd(key,value);
         }
 
         @Override
-        public void onMapRemove(TenetReference key, TenetInstance<T> value) {
+        public void onMapRemove(TenetReference key, TenetInstance<T> value, TimelineMultiChange.WipeType type) {
             DynamicTenet.this.onOpinionRemove(key,value);
         }
+
 
         @Override
         public void onMapReplace(TenetReference key, TenetInstance<T> oldValue, TenetInstance<T> newValue) {
@@ -56,6 +58,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
             DynamicTenet.this.onOpinionGet(key,value);
         }
     };
+    private TimelineMap<TenetReference,TenetGroup,T> children;
     String displayID;
     String displayName;
     String description;
@@ -64,7 +67,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
         this.tenetGroup = group;
         displayID = buildID(group,name);
         container = new CultureObjectContainer<>(this.getReference());
-        container.getOpinions().setListener(listener);
+        container.getOpinions().addListener(listener);
     }
 
     public DynamicTenet(TenetGroup group, DMEReference<T> dme) {
@@ -109,7 +112,6 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public final void setDisplayName(String name){
         getTimeline().addChange(new DynamicBaseChanges.setDisplayName<>(getReference(), Global.getDate(), name));
     }
-
     @Override
     public final String description() {
         return description;
@@ -120,12 +122,19 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public final void setDescription(String name){
         getTimeline().addChange(new DynamicBaseChanges.setDescription<>(getReference(), Global.getDate(), name));
     }
+
     public void onOpinionAdd(TenetReference key, TenetInstance<T> value){};
     public void onOpinionRemove(TenetReference key, TenetInstance<T> value){};
     public void onOpinionReplace(TenetReference key, TenetInstance<T> oldValue, TenetInstance<T> newValue){};
     public void onOpinionClear(){};
     public void onOpinionGet(TenetReference key, TenetInstance<T> value){};
 
+    public void internalSetChildMap(TimelineMap<TenetReference,TenetGroup,T> map){
+        this.children = map;
+    }
+    public TimelineMap<TenetReference,TenetGroup,T> getChildren(){
+        return children;
+    }
     @Override
     public void additionalSave(JsonObject data) {
         data.addProperty("displayID", displayID);

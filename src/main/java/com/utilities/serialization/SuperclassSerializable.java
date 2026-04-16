@@ -76,7 +76,7 @@ public interface SuperclassSerializable<T extends SuperclassSerializable<T>> {
     }
     static JsonObject getAdditional(JsonObject data){
         if (!isSuperSerialized(data)) throw new IllegalArgumentException("Not a super serialized object: "+ data.toString());
-        return data.get("additiona").getAsJsonObject();
+        return data.get("additional").getAsJsonObject();
     }
     void mainSave(JsonObject object);
     void mainLoad(JsonObject object);

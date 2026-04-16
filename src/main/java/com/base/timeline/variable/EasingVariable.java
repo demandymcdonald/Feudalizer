@@ -21,7 +21,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends TimelineChange<? super T> & EasingChange<?,C,T>, T extends DateMutableEntity<T>> extends TimelineSynced, SuperclassSerializable<E> {
+public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends TimelineChange<? super T> & EasingChange<?,C,T>,
+        T extends DateMutableEntity<T>> extends TimelineSynced, SuperclassSerializable<E> {
     String getChangeClassName();
     DMEReference<? extends T> getOwner();
     Map<Identifiable<?>,VariableContainer> getEasingFunctions();

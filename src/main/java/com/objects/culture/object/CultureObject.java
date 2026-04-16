@@ -4,6 +4,7 @@ import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.TimelineMultiChange;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
@@ -57,12 +58,12 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     }
     default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, TOReference<?>... bls){
         TenetReference ref = TenetReference.of(tenet);
-        Map<TenetReference,TenetInstance<T>> opinions = getOpinions();
+        TimelineMap<TenetReference,TenetInstance<T>,T> opinions = getOpinions();
         double acceptance = 0;
         if (opinions.containsKey(ref)){
             acceptance = opinions.get(ref).get();
         } else {
-            acceptance =  tenet.getCompass().getCompatibilityValue(getCompass());
+            acceptance =  this.getCompass().getCompatibilityValue(tenet.getCompass(),false);
         }
         List<TOReference<?>> blacklist = new ArrayList<>(List.of(bls));
         blacklist.add(this.getTOReference()); //prevents recursion might rewrite the influencer code to settle instead of looping like this, but idk.
@@ -164,7 +165,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         if (influencer == null){
             return;
         }
-        getInfluencers().remove(influencer);
+        getInfluencers().remove(TimelineMultiChange.WipeType.FORWARD,influencer);
         invalidateCache();
     }
     default Map<TenetReference,TenetInstance<T>> getOpinionByGroup(TenetManager.Group.Pillar group, boolean includeDescendants){

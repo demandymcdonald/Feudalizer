@@ -58,15 +58,6 @@ public class Religion extends DynamicTenet<Religion> {
         return null;
     }
 
-    @Override
-    public void updateProceduralInfluencers() {
-
-    }
-
-    @Override
-    public double influencerResistance(TOReference<?> influencer) {
-        return 0;
-    }
 
     @Override
     public Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {

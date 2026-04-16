@@ -175,12 +175,12 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     protected void addChange(Pair<K,V>... changes){
         addChange(true,changes);
     }
-    protected void addChange(Map<? extends K,? extends V> changes){
+    protected void addChange(boolean doSandbox,Map<? extends K,? extends V> changes){
         List<Pair<K,V>> pairs = new ArrayList<>(changes.size());
         for(Map.Entry<? extends K,? extends V> entry : changes.entrySet()){
             pairs.add(Pair.of(entry.getKey(),entry.getValue()));
         }
-        addChange(true,pairs.toArray(new Pair[pairs.size()]));
+        addChange(doSandbox,pairs.toArray(new Pair[pairs.size()]));
     }
 
     protected void addChange(boolean sandbox, Pair<K,V>... changes){
@@ -193,11 +193,9 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                 K key = p.getKey();
                 I id = key.getID();
                 if (!this.activeChanges.containsKey(key)) {
-                    // this.activeChanges.put(key, p.getValue());
                     rollback.add(key);
                 } else {
                     backup.put(key, this.activeChanges.get(key));
-                    //this.activeChanges.put(key,p.getValue());
                 }
                 if (hasEndingChanges() && endingChanges.contains(id)) {
                     endingChanges.remove(key.getID());
@@ -220,6 +218,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                             }
                         }
                     }
+
                 };
                 Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new SandboxFunctions.MultiChange<>(code));
                 SandboxHandler.StartSandbox(t);

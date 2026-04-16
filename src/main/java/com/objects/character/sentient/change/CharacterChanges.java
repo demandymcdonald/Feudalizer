@@ -13,14 +13,14 @@ import java.time.LocalDate;
 public class CharacterChanges {
 
 
-    public static class Birth<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class Birth<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         public Birth(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
 
         @Override
         protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-
+            //Birth changes don't do anything, they're just for UI display stuff.
         }
         @Override
         protected String getText() {
@@ -37,7 +37,7 @@ public class CharacterChanges {
 
         }
     }
-    public static class Death<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class Death<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         CauseOfEnd<? super T> cause;
         public Death(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
@@ -49,7 +49,7 @@ public class CharacterChanges {
 
         @Override
         protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-
+            //Death changes don't do anything, they're just for UI display stuff.
         }
         @Override
         protected String getText() {
@@ -65,7 +65,7 @@ public class CharacterChanges {
             CauseOfEnd.get(data.get("cause").getAsString());
         }
     }
-    public static class SetForename<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class SetForename<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         private String newName;
         private String oldName;
         public SetForename(DMEReference<? extends T> owner, LocalDate date) {
@@ -103,7 +103,7 @@ public class CharacterChanges {
             }
         }
     }
-    public static class SetSurname<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class SetSurname<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         private String newName;
         private String oldName;
         public SetSurname(DMEReference<? extends T> owner, LocalDate date) {
@@ -112,7 +112,7 @@ public class CharacterChanges {
         public SetSurname(DMEReference<? extends T> owner, LocalDate date, String newName) {
             super(owner, date);
             this.newName = newName;
-            this.oldName = owner.get().getForename();
+            this.oldName = owner.get().getSurname();
         }
 
         @Override
@@ -141,7 +141,7 @@ public class CharacterChanges {
             }
         }
     }
-    public static class SetOrientation<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class SetOrientation<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         private SentientCharacter.Orientation newOrientation;
         private SentientCharacter.Orientation oldOrientation;
         public SetOrientation(DMEReference<? extends T> owner, LocalDate date) {
@@ -179,7 +179,7 @@ public class CharacterChanges {
             }
         }
     }
-    public static class SetGender<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class SetGender<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         private SentientCharacter.Gender newGender;
         private SentientCharacter.Gender oldGender;
         public SetGender(DMEReference<? extends T> owner, LocalDate date) {
@@ -217,7 +217,7 @@ public class CharacterChanges {
             }
         }
     }
-    public static class SetDefaultSuccession<T extends SentientCharacter<T,?>> extends TimelineSingleChange<T> {
+    public static class SetDefaultSuccession<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
         private SuccessionEntry<?> container;
 
         protected SetDefaultSuccession(DMEReference<? extends T> owner, LocalDate date) {

@@ -35,7 +35,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
     }
     private DMEReference(T e) {
         this.type = (Class<T>) e.getClass();
-        this.uuid = e.getDisplayID();
+        this.uuid = e.getID();
     }
 
 
@@ -104,7 +104,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
 //        return new DMEReference<>(tTitle,true);
 //    }
     public static <T extends DateMutableEntity<T>> DMEReference<T> of(T entity){
-        long h = doHash(entity.getDisplayID(),entity.getClass());
+        long h = doHash(entity.getID(),entity.getClass());
         DMEReference<T> cached = (DMEReference<T>) CACHE.getIfPresent(h);
         if (cached == null) {
             cached = new DMEReference<>(entity);
