@@ -1,26 +1,23 @@
-package com.objects.title.land.habitable;
+package com.objects.shared;
 
-import com.Global.*;
+import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.multi.TimelineMap;
 import com.base.timeline.variable.EasingVariable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.caste.CasteObject;
+import com.objects.title.land.habitable.HabitableLand;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundedDouble;
-import com.utilities.number.BoundedFloat;
 import com.utilities.number.BoundedInteger;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Predicate;
 
 import static com.objects.culture.tenet.caste.Castes.ALL_CASTES;
 
-public class PopulationContainer<T extends HabitableLand<T>> implements EasingVariable<PopulationContainer<T>,PopulationChange<T>,T> {
+public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDriven<T>> implements EasingVariable<PopulationContainer<T>,PopulationChange<T>,T> {
     private DMEReference<? extends T> owner;
     private PopulationChange<T> currentChange;
     private TimelineMap<CasteObject, BoundedInteger,T>  populationMap;

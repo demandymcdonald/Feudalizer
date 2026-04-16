@@ -15,7 +15,6 @@ import com.base.timeline.sandbox.core.Objective;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.sandbox.function.SandboxFunction;
-import com.base.timeline.sandbox.function.SandboxFunctions;
 import com.base.timeline.state.TimelineState;
 import com.base.utilities.CachingSupplier;
 import com.google.gson.JsonArray;
@@ -63,19 +62,36 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         }
     }
     public enum ChangeEntry {
-        KEY,
-        VALUE,
-        BOTH;
+        KEY(ChangeType.MODIFY_KEY,ChangeType.MODIFY_KEY_WIPE),
+        VALUE(ChangeType.MODIFY_VALUE,ChangeType.MODIFY_VALUE_WIPE),
+        BOTH(ChangeType.MODIFY_BOTH,ChangeType.MODIFY_BOTH_WIPE);
+
+        private final ChangeType type;
+        private final ChangeType typeWipe;
+        ChangeEntry(ChangeType type,ChangeType typeWipe){
+            this.type = type;
+            this.typeWipe = typeWipe;
+        }
+        public ChangeType getType(){
+            return type;
+        }
+        public ChangeType getTypeWipe(){
+            return typeWipe;
+        }
     }
     public enum ChangeType{
         ADD,
+        ADD_WIPE(WipeType.FORWARD),
         REMOVE,
         REMOVE_WIPE_FORWARD(WipeType.FORWARD),
         REMOVE_WIPE_BACKWARD(WipeType.BACKWARD),
         REMOVE_WIPE_BOTH(WipeType.BOTH),
         MODIFY_BOTH,
         MODIFY_KEY,
-        MODIFY_VALUE;
+        MODIFY_VALUE,
+        MODIFY_BOTH_WIPE(WipeType.FORWARD),
+        MODIFY_KEY_WIPE(WipeType.FORWARD),
+        MODIFY_VALUE_WIPE(WipeType.FORWARD);
 
         private final WipeType wipeType;
         public WipeType getWipeType(){
@@ -108,7 +124,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public int getActiveSize(){
         return  getActive().size();
     }
-    public abstract boolean hasEndingChanges();
+
     public boolean shouldInvalidate(M initiator, K key, ChangeType type){
         if (!fullMap.isMemoized()){
             return false;
@@ -125,14 +141,51 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     protected final void nullifyConditions(List<NullifyCondition<? super T>> list) {
 
     }
-
-
-    public abstract void addConditions(List<MultiCondition<M,K,V,I,T>> current);
-    public abstract void removeConditions(List<MultiCondition<M,K,V,I,T>> current);
+    public abstract M getEmptyChange(DMEReference<? extends T> owner, LocalDate date);
+    public abstract boolean hasEndingChanges();
+    private final MultiCondition<M,K,V,I,T> condition = new MultiCondition<>() {
+        @Override
+        protected Optional<StateError> doCheck(TimelineMultiChange.ChangeType change,M newChange, List<Pair<K, V>> newEntries, M curChange, List<Pair<K, V>> curEntries) {
+            switch (change) {
+                case ADD_WIPE, MODIFY_BOTH_WIPE, MODIFY_KEY_WIPE, MODIFY_VALUE_WIPE -> {
+                    return Optional.empty();
+                }
+                default -> {
+                    List<Pair<K, V>> newEntriesToRemove = new ArrayList<>();
+                    boolean canEnd = true;
+                    for (Pair<K, V> entry : newEntries) {
+                        for (Pair<K, V> curEntry : curEntries) {
+                            if (entry.getKey().getID().equals(curEntry.getKey().getID())) {
+                                newEntriesToRemove.add(entry);
+                            } else {
+                                canEnd = false;
+                            }
+                        }
+                    }
+                    newEntries.removeAll(newEntriesToRemove);
+                    if (canEnd) {
+                        return Optional.of(new StateError("tmc_add_complete", SimpleReference.of("Complete"), curChange).addEndSave());
+                    } else {
+                        return Optional.empty();
+                    }
+                }
+            }
+        }
+    };
+    public void addConditions(List<MultiCondition<M,K,V,I,T>> current){
+        current.add(condition);
+    };
+    public void removeConditions(List<MultiCondition<M,K,V,I,T>> current){
+        current.add(condition);
+    };
     public abstract void removeWipeFConditions(List<MultiCondition<M,K,V,I,T>> current);
     public abstract void removeWipeBConditions(List<MultiCondition<M,K,V,I,T>> current);
-    public abstract void modifyKeyConditions(List<MultiCondition<M,K,V,I,T>> current);
-    public abstract void modifyValueConditions(List<MultiCondition<M,K,V,I,T>> current);
+    public void modifyKeyConditions(List<MultiCondition<M,K,V,I,T>> current){
+        current.add(condition);
+    };
+    public void modifyValueConditions(List<MultiCondition<M,K,V,I,T>> current){
+        current.add(condition);
+    };
 
 
     protected void onAddEntry(ChangeType addType, K key, V value){}
@@ -223,29 +276,36 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public V get(K key){
         return getFullMap().get(key);
     }
-    protected void addChange(Pair<K,V>... changes){
-        addChange(true,changes);
+    protected void addChange(boolean sandbox, boolean wipeForward, K... changes){
+
+        addChange(sandbox,wipeForward,changes);
     }
-    protected void addChange(boolean doSandbox,Map<? extends K,? extends V> changes){
+    protected void addChange(boolean sandbox, boolean wipeForward, Map<? extends K,? extends V> changes){
         List<Pair<K,V>> pairs = new ArrayList<>(changes.size());
         for(Map.Entry<? extends K,? extends V> entry : changes.entrySet()){
             pairs.add(Pair.of(entry.getKey(),entry.getValue()));
         }
-        addChange(doSandbox,pairs.toArray(new Pair[pairs.size()]));
+        addChange(sandbox,wipeForward,pairs.toArray(new Pair[pairs.size()]));
     }
-    protected void addChange(boolean sandbox, Pair<K,V>... changes){
+    protected void addChange(boolean sandbox, boolean wipeForward, Pair<K,V>... changes){
         List<K> rollback = new ArrayList<>();
         Map<K,V> backup = new HashMap<>();
         Map<K,V> toAdd = new HashMap<>();
+        ChangeType addChange;
+        if(wipeForward){
+            addChange = ChangeType.ADD_WIPE;
+        } else {
+            addChange = ChangeType.ADD;
+        }
         Map<Pair<K,V>,ChangeType> sandboxChanges = new HashMap<>();
         for (Pair<K, V> p : changes) {
             K key = p.getKey();
             I id = key.getID();
             if (!this.activeChanges.containsKey(key)) {
                 rollback.add(key);
-                sandboxChanges.put(p, ChangeType.ADD);
+                sandboxChanges.put(p, addChange);
                 activeChanges.put(key, p.getValue());
-                onAddEntry(ChangeType.ADD,key,p.getValue());
+                onAddEntry(addChange,key,p.getValue());
             } else {
                 backup.put(key, this.activeChanges.get(key));
                 sandboxChanges.put(p, ChangeType.MODIFY_VALUE);
@@ -260,12 +320,13 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         Map<K,ChangeType> ct = new HashMap<>();
         for (K k : toAdd.keySet()) {
             if (rollback.contains(k)) {
-                ct.put(k, ChangeType.ADD);
+                ct.put(k, addChange);
             } else {
                 ct.put(k, ChangeType.MODIFY_VALUE);
             }
         }
-        cascadeInvalidate((M) this, ct);
+        M m = (M) this;
+        cascadeInvalidate(m, ct);
         Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
             @Override
             public void accept(SandboxCode sandboxCode) {
@@ -276,37 +337,43 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                     }
                     activeChanges.putAll(backup);
                 } else {
+                    List<K> wipe = new ArrayList<>();
                     for (Map.Entry<K, V> e : toAdd.entrySet()) {
                         for (Listener<K, V> listener : listeners) {
                             listener.onMapPut(e.getKey(), e.getValue());
                         }
+                        wipe.add(e.getKey());
+                    }
+                    if(wipeForward){
+                        removeEntry(m, Global.TimeDirection.FORWARD, true,false,wipe);
                     }
                 }
             }
         };
         if (sandbox) {
-            Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new SandboxFunctions.MultiChange<>(code, sandboxChanges));
+            Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(code, sandboxChanges));
             SandboxHandler.StartSandbox(t);
         } else {
             code.accept(SandboxCode.END_SAVE);
         }
     }
-    public final void setChanged(boolean sandbox, ChangeType value, K... key){
+    public final void setChanged(boolean sandbox, ChangeEntry value, K... key){
         Map<Pair<K,V>,ChangeType> changeMap = new HashMap<>();
         for(K k : key){
             if(activeChanges.containsKey(k)){
-                changeMap.put(Pair.of(k,activeChanges.get(k)),value);
-                onMapEntryChange(value,k,activeChanges.get(k));
+                changeMap.put(Pair.of(k,activeChanges.get(k)),value.getType());
+                onMapEntryChange(value.getType(),k,activeChanges.get(k));
             } else if (getFullMap().containsKey(k)) {
-                changeMap.put(Pair.of(k,getFullMap().get(k)),value);
-                onMapEntryChange(value,k,getFullMap().get(k));
+                changeMap.put(Pair.of(k,getFullMap().get(k)),value.getType());
+                onMapEntryChange(value.getType(),k,getFullMap().get(k));
             } else {
                 logger().warn("Attempted to mark a value changed that does not exist in the map. Key: {}.. Map Change: {}",k,this);
             }
         }
         if(!changeMap.isEmpty()){
+            M m = (M) this;
             List<K> toAdd = new ArrayList<>(Arrays.stream(key).toList());
-            cascadeInvalidate((M) this,buildChangeTypes(toAdd,value));
+            cascadeInvalidate(m,buildChangeTypes(toAdd,value.getType()));
             if (sandbox) {
                 Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
                     @Override
@@ -322,7 +389,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                         }
                     }
                 };
-                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new SandboxFunctions.MultiChange<>(code, changeMap));
+                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(code, changeMap));
                 SandboxHandler.StartSandbox(t);
             }
         }
@@ -402,15 +469,15 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                             firstContinue.set(false);
                             code.accept(sandboxCode);
                         } else {
-                            Objective<T> t = new Objective<>(getOwner(), BACKWARD, m, new SandboxFunctions.MultiChange<>(code, rbContainer.sandboxChanges()));
+                            Objective<T> t = new Objective<>(getOwner(), BACKWARD, m, new MultiChangeSandbox<>(code, rbContainer.sandboxChanges()));
                             SandboxHandler.StartSandbox(t);
                         }
                     }
                 };
-                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new SandboxFunctions.MultiChange<>(first, rbContainer.sandboxChanges()));
+                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(first, rbContainer.sandboxChanges()));
                 SandboxHandler.StartSandbox(t);
             } else {
-                Objective<T> t = new Objective<>(getOwner(), wipe.getDirection(), (M) this, new SandboxFunctions.MultiChange<>(code, rbContainer.sandboxChanges()));
+                Objective<T> t = new Objective<>(getOwner(), wipe.getDirection(), (M) this, new MultiChangeSandbox<>(code, rbContainer.sandboxChanges()));
                 SandboxHandler.StartSandbox(t);
             }
         }
@@ -473,7 +540,9 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return new HashMap<>(activeChanges);
     };
 
-
+    protected final List<Listener<K,V>> getListeners(){
+        return new ArrayList<>(listeners);
+    }
     protected final int getEndingSize(){
         return endingChanges.size();
     }
@@ -481,7 +550,10 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return new HashSet<>(endingChanges);
     }
 
-
+    protected void internalAddEntry(K k, V v){
+        activeChanges.put(k,v);
+        fullMap.clear();
+    }
 
     protected void internalRemoveEnding(K k){
         endingChanges.remove(k.getID());

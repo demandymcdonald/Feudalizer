@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.Optional;
 
 public abstract class MultiCondition<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> {
-    public final Optional<StateError> check(M newChange, List<Pair<K,V>> newEntries,
-                                      M curChange, List<Pair<K,V>> curEntries){
+    public final Optional<StateError> check(TimelineMultiChange.ChangeType change, M newChange, List<Pair<K,V>> newEntries,
+                                            M curChange, List<Pair<K,V>> curEntries){
         //TODO think about listener/subclass stuff here
-        return doCheck(newChange, newEntries, curChange, curEntries);
+        return doCheck(change,newChange, newEntries, curChange, curEntries);
     }
-    protected abstract Optional<StateError> doCheck(M newChange, List<Pair<K,V>> newEntries,
+    protected abstract Optional<StateError> doCheck(TimelineMultiChange.ChangeType change,M newChange, List<Pair<K,V>> newEntries,
                                       M curChange, List<Pair<K,V>> curEntries);
     public Condition.ShouldRun shouldRun(){
         return Condition.ShouldRun.ONCE_PER_CHANGE;

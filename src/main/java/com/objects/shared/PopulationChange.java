@@ -1,14 +1,13 @@
-package com.objects.title.land.habitable;
+package com.objects.shared;
 
 import com.Global;
-import com.Global.*;
+import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineContainer;
 import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
+import com.base.timeline.change.multi.MultiCondition;
 import com.base.timeline.change.multi.TimelineMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
@@ -17,7 +16,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.caste.CasteObject;
-import com.utilities.number.BoundedDouble;
+import com.objects.title.land.habitable.HabitableLand;
 import com.utilities.number.BoundedInteger;
 
 import java.time.LocalDate;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapChange<PopulationChange<T>, CasteObject, BoundedInteger,String,T> implements EasingChange<PopulationContainer<T>,PopulationChange<T>,T> {
+public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDriven<T>> extends TimelineMapChange<PopulationChange<T>, CasteObject, BoundedInteger,String,T> implements EasingChange<PopulationContainer<T>,PopulationChange<T>,T> {
     long population;
 
     public PopulationChange(DMEReference<? extends T> owner, LocalDate date, Map<CasteObject, BoundedInteger> initial) {
@@ -38,7 +37,7 @@ public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapCha
     }
 
     @Override
-    public void setRuntimeMap(Map<CasteObject, BoundedInteger> map) {
+    public void setRuntimeMap(TimelineMap<CasteObject, BoundedInteger, T> map) {
         getOwner().get().getPopulationContainer().internalSetMap(map);
     }
 
@@ -110,7 +109,32 @@ public class PopulationChange<T extends HabitableLand<T>> extends TimelineMapCha
     }
 
     @Override
-    protected void nullifyConditions(List<NullifyCondition<? super T>> list) {
+    public void addConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+
+    }
+
+    @Override
+    public void removeConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+
+    }
+
+    @Override
+    public void removeWipeFConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+
+    }
+
+    @Override
+    public void removeWipeBConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+
+    }
+
+    @Override
+    public void modifyKeyConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+
+    }
+
+    @Override
+    public void modifyValueConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
 
     }
 
