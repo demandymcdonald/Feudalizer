@@ -13,8 +13,8 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
-import com.objects.culture.tenet.reference.TenetReference;
-import com.objects.culture.tenet.instance.TOReference;
+import com.objects.culture.tenet.instance.CultObjReference;
+import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.object.instance.TenetInstance;
 import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -42,21 +42,21 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     };
 
     void updateProceduralInfluencers(); //Idea here is that the code can automatically add and remove procedural influencers (like dead people, or new lieges)
-    double influencerResistance(TOReference<?> influencer); // clamped between -1 and 1. Used to model things like personal opinion of an influencer for people -> people influencer,
+    double influencerResistance(CultObjReference<?> influencer); // clamped between -1 and 1. Used to model things like personal opinion of an influencer for people -> people influencer,
     // or situations where a person might have less influence than the relationship suggests (power imbalance, for example).
     DMEReference<T> getReference();
-    default TOReference<T> getTOReference(){
+    default CultObjReference<T> getTOReference(){
         //Weird, I know. All TenetOpinionated are DMEs, so if this class is running, it's on a DME, and the reference
         // will work becuase TOReferences are just janky wrappers for DMEReferences.
-        return new TOReference<>(getReference());
+        return new CultObjReference<>(getReference());
     }
     default Acceptance getAcceptance(Tenet tenet, boolean includeInfluencers){
         return Acceptance.get((int) Math.round(getAcceptanceValue(tenet, includeInfluencers)));
     }
     default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers){
-        return getAcceptanceValue(tenet, includeInfluencers, new TOReference[0]);
+        return getAcceptanceValue(tenet, includeInfluencers, new CultObjReference[0]);
     }
-    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, TOReference<?>... bls){
+    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, CultObjReference<?>... bls){
         TenetReference ref = TenetReference.of(tenet);
         TimelineMap<TenetReference,TenetInstance<T>,T> opinions = getOpinions();
         double acceptance = 0;
@@ -65,14 +65,14 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         } else {
             acceptance =  this.getCompass().getCompatibilityValue(tenet.getCompass(),false);
         }
-        List<TOReference<?>> blacklist = new ArrayList<>(List.of(bls));
+        List<CultObjReference<?>> blacklist = new ArrayList<>(List.of(bls));
         blacklist.add(this.getTOReference()); //prevents recursion might rewrite the influencer code to settle instead of looping like this, but idk.
         if (this.getParentObject().isPresent()){
-            Pair<TOReference<?>, InfluencerRelationship> parentPair = this.getParentObject().get();
-            TOReference<?> parent = parentPair.getLeft();
+            Pair<CultObjReference<?>, InfluencerRelationship> parentPair = this.getParentObject().get();
+            CultObjReference<?> parent = parentPair.getLeft();
             InfluencerRelationship parentRel = parentPair.getRight();
             if (parentRel.hasWeightFor(tenet.getGroup()) && parentRel.getWeight(tenet.getGroup()) == 1){ //Simulated hegamonic control, especially used on the systemic side of
-                return parent.get().getAcceptanceValue(tenet,includeInfluencers,blacklist.toArray(TOReference[]::new));
+                return parent.get().getAcceptanceValue(tenet,includeInfluencers,blacklist.toArray(CultObjReference[]::new));
             }
         }
         if (includeInfluencers){
@@ -80,7 +80,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
             if (val != null){
                 return val;
             }
-            val = AdjustForInfluence((T) this,tenet,true,acceptance,blacklist.toArray(TOReference[]::new));
+            val = AdjustForInfluence((T) this,tenet,true,acceptance,blacklist.toArray(CultObjReference[]::new));
             getInfluencedCache().put(ref,val);
             return val;
         }
@@ -123,14 +123,14 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
             opinions.put(tenet,new TenetInstance<>(tenet,this.getReference(),d));
         }
     }
-    default boolean isInfluencer(TOReference<?> ref){
+    default boolean isInfluencer(CultObjReference<?> ref){
         return getInfluencers().containsKey(ref);
     }
-    default void addInfluencer(TOReference<?> influencer, InfluencerRelationship relationship){
+    default void addInfluencer(CultObjReference<?> influencer, InfluencerRelationship relationship){
         getInfluencers().put(influencer,new InfluencerInstance(relationship));
         invalidateCache();
     }
-    default void setInfluence(TOReference<?> influencer, Pair<TenetGroup,Integer>... changes){
+    default void setInfluence(CultObjReference<?> influencer, Pair<TenetGroup,Integer>... changes){
         boolean changed = false;
         InfluencerInstance inst = getInfluencers().get(influencer);
         for (Pair<TenetGroup, Integer> change : changes) {
@@ -146,7 +146,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
             invalidateCache();
         }
     }
-    default void modifyInfluence(TOReference<?> influencer, Pair<TenetGroup,Integer>... changes){
+    default void modifyInfluence(CultObjReference<?> influencer, Pair<TenetGroup,Integer>... changes){
         boolean changed = false;
         for (Pair<TenetGroup, Integer> change : changes) {
             if (change.getLeft() == null || (change.getRight() == null || change.getRight() == 0)){
@@ -161,7 +161,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
             invalidateCache();
         }
     }
-    default void removeInfluencer(TOReference<?> influencer){
+    default void removeInfluencer(CultObjReference<?> influencer){
         if (influencer == null){
             return;
         }
@@ -207,20 +207,20 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         }
     }
 
-    default List<InfluencerOpinion> getListForTenet(Tenet tenet, boolean includeParentInfluencers, TOReference<?>... bl){
+    default List<InfluencerOpinion> getListForTenet(Tenet tenet, boolean includeParentInfluencers, CultObjReference<?>... bl){
         List<InfluencerOpinion> toReturn = new ArrayList<>();
-        List<TOReference<?>> blacklist = new ArrayList<>(Arrays.stream(bl).toList());
+        List<CultObjReference<?>> blacklist = new ArrayList<>(Arrays.stream(bl).toList());
         //the blacklist is here to prevent mutually influencing relationships (think US <-> USSR) from infinitely looping.
         // Instead, it just gives back the raw "where the culture wants to land naturally" value, which feels like it works on a pseudo realism level.
-        for(Map.Entry<TOReference<?>, InfluencerInstance> entry : getInfluencers().entrySet()){
-            TOReference<?> ref = entry.getKey();
+        for(Map.Entry<CultObjReference<?>, InfluencerInstance> entry : getInfluencers().entrySet()){
+            CultObjReference<?> ref = entry.getKey();
             double extra = influencerResistance(ref);
             if (blacklist.contains(ref)){
                 toReturn.add(new InfluencerOpinion(tenet,false,entry.getKey(),entry.getValue(),extra));
             } else if (ref.get().isInfluencer(this.getTOReference())){
                 blacklist.add(this.getTOReference());
                 toReturn.add(new InfluencerOpinion(tenet,includeParentInfluencers,entry.getKey(),entry.getValue(),
-                        extra,blacklist.stream().toArray(TOReference[]::new)));
+                        extra,blacklist.stream().toArray(CultObjReference[]::new)));
             } else {
                 toReturn.add(new InfluencerOpinion(tenet,includeParentInfluencers,entry.getKey(),entry.getValue(),extra));
             }
@@ -229,7 +229,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         return toReturn;
     }
     static <T extends DateMutableEntity<T> & CultureObject<T>>
-    double AdjustForInfluence(T tenetOpinionated, Tenet t, boolean includeInfluencer, double acceptance, TOReference<?>... blacklist){
+    double AdjustForInfluence(T tenetOpinionated, Tenet t, boolean includeInfluencer, double acceptance, CultObjReference<?>... blacklist){
         double resistance = tenetOpinionated.calcResistance(acceptance);
         double toReturn = acceptance * resistance;
         List<Double> d = CalculateInfluencerFactor(tenetOpinionated.getListForTenet(t,includeInfluencer,blacklist), resistance);
@@ -280,19 +280,19 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void internalSetOpinions(TimelineMap<TenetReference,TenetInstance<T>,T> opinions){
         getContainer().setOpinions(opinions);
     };
-    default Optional<Pair<TOReference<?>, InfluencerRelationship>> getParentObject(){
+    default Optional<Pair<CultObjReference<?>, InfluencerRelationship>> getParentObject(){
         return Optional.ofNullable(getContainer().getParent());
     }; //todo, implement opinion crushing for Hegamon.
-    default void setParentObject(TOReference<?> influencer, InfluencerRelationship relationship){
+    default void setParentObject(CultObjReference<?> influencer, InfluencerRelationship relationship){
 
     };
-    default void internalParentObject(TOReference<?> influencer, InfluencerRelationship relationship){
+    default void internalParentObject(CultObjReference<?> influencer, InfluencerRelationship relationship){
         getContainer().setParent(influencer, relationship);
     };
-    default TimelineMap<TOReference<?>, InfluencerInstance,T> getInfluencers(){
+    default TimelineMap<CultObjReference<?>, InfluencerInstance,T> getInfluencers(){
         return getContainer().getInfluencers();
     };
-    default void internalSetInfluencers(TimelineMap<TOReference<?>, InfluencerInstance,T>  influencers){
+    default void internalSetInfluencers(TimelineMap<CultObjReference<?>, InfluencerInstance,T>  influencers){
         getContainer().setInfluencers(influencers);
     };
     default boolean isInMajority(TenetGroup group){
@@ -311,7 +311,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         getInfluencedCache().invalidateAll();
     }
     record InfluencerOpinion(double opinion, int influence){
-        public InfluencerOpinion(Tenet t, boolean includeInfluence, TOReference<?> ref, InfluencerInstance inst, double extra, TOReference<?>... blacklist){
+        public InfluencerOpinion(Tenet t, boolean includeInfluence, CultObjReference<?> ref, InfluencerInstance inst, double extra, CultObjReference<?>... blacklist){
             this(ref.get().getAcceptanceValue(t,includeInfluence,blacklist),(int) Math.round(inst.weight().get(t.getGroup()) * Math.clamp(extra,-1,1)));
         }
     }

@@ -2,7 +2,7 @@ package com.base.reference;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.TenetReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import static com.base.reference.ComplexReference.COMPLEX_SR_TYPE;
 import static com.base.reference.CompoundSR.COMPOUND_SR_TYPE;
 import static com.base.reference.DMEReference.DME_SR_TYPE;
 import static com.base.reference.SimpleReference.SIMPLE_SR_TYPE;
-import static com.objects.culture.tenet.reference.TenetReference.TENET_SR_TYPE;
+import static com.objects.culture.tenet.types.TenetReference.TENET_SR_TYPE;
 
 public abstract class StateReference {
     public static final String TYPE_VARIABLE_NAME = "type";

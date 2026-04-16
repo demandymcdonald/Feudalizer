@@ -5,19 +5,18 @@ import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.id.Identifiable;
 
 import java.util.UUID;
 
-public class TOReference<T extends DateMutableEntity<T> & CultureObject<T>> extends StateReference implements Identifiable<UUID> {
+public class CultObjReference<T extends DateMutableEntity<T> & CultureObject<T>> extends StateReference implements Identifiable<UUID> {
     DMEReference<T> holder;
 
-    public static final String TO_SR_TYPE = "TOReference";
-    public TOReference(T e) {
+    public static final String TO_SR_TYPE = "CultObjReference";
+    public CultObjReference(T e) {
         holder = e.getReference();
     }
-    public TOReference(DMEReference<T> holder) {
+    public CultObjReference(DMEReference<T> holder) {
         if (holder.get() instanceof CultureObject<?>){
             this.holder = holder;
         } else {
@@ -45,9 +44,9 @@ public class TOReference<T extends DateMutableEntity<T> & CultureObject<T>> exte
         object.add("holder", holder.serialize());
         return object;
     }
-    public static <T extends DateMutableEntity<T> & CultureObject<T>> TOReference<T> deserialize(JsonObject json){
+    public static <T extends DateMutableEntity<T> & CultureObject<T>> CultObjReference<T> deserialize(JsonObject json){
         JsonObject o = json.getAsJsonObject("holder");
-        return new TOReference<T>(DMEReference.deserialize(o));
+        return new CultObjReference<T>(DMEReference.deserialize(o));
     }
 
     @Override

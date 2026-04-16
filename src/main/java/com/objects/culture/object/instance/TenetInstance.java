@@ -6,7 +6,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.variable.EasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.TenetReference;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundedDouble;

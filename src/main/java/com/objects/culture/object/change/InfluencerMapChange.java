@@ -2,7 +2,6 @@ package com.objects.culture.object.change;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.base.timeline.change.multi.TimelineMap;
@@ -13,18 +12,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.instance.TOReference;
+import com.objects.culture.tenet.instance.CultObjReference;
 import com.utilities.serialization.RegistrySerialManager;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class InfluencerMapChange<T extends DateMutableEntity<T> & CultureObject<T>> extends TimelineMapChange<InfluencerMapChange<T>, TOReference<?>, InfluencerInstance, UUID, T> {
+public class InfluencerMapChange<T extends DateMutableEntity<T> & CultureObject<T>> extends TimelineMapChange<InfluencerMapChange<T>, CultObjReference<?>, InfluencerInstance, UUID, T> {
 
-    public InfluencerMapChange(DMEReference<? extends T> owner, LocalDate date, Map<TOReference<?>, InfluencerInstance> initial) {
+    public InfluencerMapChange(DMEReference<? extends T> owner, LocalDate date, Map<CultObjReference<?>, InfluencerInstance> initial) {
         super(owner, date, initial);
     }
 
@@ -34,12 +32,12 @@ public class InfluencerMapChange<T extends DateMutableEntity<T> & CultureObject<
 
 
     @Override
-    public TimelineMap<TOReference<?>, InfluencerInstance, T> getRuntimeMap() {
+    public TimelineMap<CultObjReference<?>, InfluencerInstance, T> getRuntimeMap() {
         return getOwner().get().getInfluencers();
     }
 
     @Override
-    public void setRuntimeMap(TimelineMap<TOReference<?>, InfluencerInstance, T> map) {
+    public void setRuntimeMap(TimelineMap<CultObjReference<?>, InfluencerInstance, T> map) {
         getOwner().get().internalSetInfluencers(map);
     }
 
@@ -49,13 +47,13 @@ public class InfluencerMapChange<T extends DateMutableEntity<T> & CultureObject<
     }
 
     @Override
-    protected JsonElement kSerialize(TOReference<?> toReference) {
+    protected JsonElement kSerialize(CultObjReference<?> toReference) {
         return toReference.serialize();
     }
 
     @Override
-    protected TOReference<?> kDeserialize(JsonElement o) {
-        return TOReference.deserialize(o.getAsJsonObject());
+    protected CultObjReference<?> kDeserialize(JsonElement o) {
+        return CultObjReference.deserialize(o.getAsJsonObject());
     }
 
     @Override

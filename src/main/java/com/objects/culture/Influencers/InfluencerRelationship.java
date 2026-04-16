@@ -1,7 +1,7 @@
 package com.objects.culture.Influencers;
 
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.instance.TOReference;
+import com.objects.culture.tenet.instance.CultObjReference;
 
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
@@ -14,7 +14,7 @@ public enum InfluencerRelationship {
     ;
 
     private final InfluencerWeight defaultWeight;
-    InfluencerRelationship(boolean isProcedural, InfluencerWeight defaultWeight, @Nullable Predicate<TOReference<?>> shouldRemove){
+    InfluencerRelationship(boolean isProcedural, InfluencerWeight defaultWeight, @Nullable Predicate<CultObjReference<?>> shouldRemove){
         this.defaultWeight = defaultWeight;
     }
     public boolean hasWeightFor(TenetGroup group){

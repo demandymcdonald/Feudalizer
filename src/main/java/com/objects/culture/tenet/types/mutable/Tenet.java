@@ -5,13 +5,10 @@ import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.factory.CultureCondition;
-import com.objects.culture.tenet.factory.TenetCondition;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.Displayable;
 import com.utilities.id.UUIDIdentifiable;
-
-import java.util.Map;
 
 public interface Tenet extends Displayable, ICultureObject, UUIDIdentifiable {
     TenetGroup getGroup();

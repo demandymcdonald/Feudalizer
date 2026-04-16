@@ -8,7 +8,7 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.EconomicGroups;
 import com.objects.culture.tenet.group.groups.EducationGroups;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 
 import java.time.temporal.ChronoUnit;

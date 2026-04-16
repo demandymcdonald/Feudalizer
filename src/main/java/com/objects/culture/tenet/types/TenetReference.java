@@ -1,9 +1,11 @@
-package com.objects.culture.tenet.reference;
+package com.objects.culture.tenet.types;
 
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.types.dynamic.DynamicTR;
 import com.objects.culture.tenet.types.dynamic.DynamicTenet;
+import com.objects.culture.tenet.types.mutable.MutableTR;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 import com.objects.culture.tenet.types.mutable.Tenet;
 import com.utilities.id.UUIDIdentifiable;

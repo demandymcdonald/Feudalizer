@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implements SuperclassSerializable<DateMutableEntity<?>>, Identifiable<UUID> {
     private final UUID id;
     private final Timeline<T> timeline;
+    //TODO: Add the author notes interface and container once it's ready. Low prio though, limit complexity until I get the core loop running.
     private final DMEReference<T> reference;
     private final AtomicBoolean isLoaded = new AtomicBoolean(false);
     public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T,?>> initialState) {
@@ -101,6 +102,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     protected final void setCreated(LocalDate created){
         timeline.moveStart(created);
     }
+    //Validation is handled for setCreated and setEnded is handled in timeline, not here.
     protected final void setEnded(LocalDate ended){
         timeline.moveEnd(ended);
     }
@@ -118,7 +120,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
         return timeline;
     }
     public final TimelineState<T> getCurrentState(){
-
+        //Intentionally left with a compile error so I don't forget to wire this once I figure out the best way to handle it.
     }
     public final List<TimelineChange<? super T>> getCurrentChanges(){
         return getCurrentState().getAllCurrentChanges(false);

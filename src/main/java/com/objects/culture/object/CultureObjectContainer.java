@@ -10,8 +10,8 @@ import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.object.instance.TenetInstance;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.reference.TenetReference;
-import com.objects.culture.tenet.instance.TOReference;
+import com.objects.culture.tenet.instance.CultObjReference;
+import com.objects.culture.tenet.types.TenetReference;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObject<T>>{
     DMEReference<T> reference;
-    Pair<TOReference<?>, InfluencerRelationship> parent;
-    TimelineMap<TOReference<?>, InfluencerInstance, T> influencers;
+    Pair<CultObjReference<?>, InfluencerRelationship> parent;
+    TimelineMap<CultObjReference<?>, InfluencerInstance, T> influencers;
     TimelineMap<TenetReference, TenetInstance<T>, T> opinions;
     InterpolatedPoliticalCompass<T> compass;
     TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
@@ -79,11 +79,11 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         this.influencedCache = influencedCache;
     }
 
-    public TimelineMap<TOReference<?>, InfluencerInstance, T> getInfluencers() {
+    public TimelineMap<CultObjReference<?>, InfluencerInstance, T> getInfluencers() {
         return influencers;
     }
 
-    public void setInfluencers(TimelineMap<TOReference<?>, InfluencerInstance, T> influencers) {
+    public void setInfluencers(TimelineMap<CultObjReference<?>, InfluencerInstance, T> influencers) {
         this.influencers = influencers;
     }
 
@@ -95,13 +95,13 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         this.opinions = opinions;
     }
 
-    public Pair<TOReference<?>, InfluencerRelationship> getParent() {
+    public Pair<CultObjReference<?>, InfluencerRelationship> getParent() {
         return parent;
     }
-    public void setParent(TOReference<?> influencer, InfluencerRelationship relationship){
+    public void setParent(CultObjReference<?> influencer, InfluencerRelationship relationship){
         this.parent = Pair.of(influencer,relationship);
     }
-    public void setParent(Pair<TOReference<?>, InfluencerRelationship> parent) {
+    public void setParent(Pair<CultObjReference<?>, InfluencerRelationship> parent) {
         this.parent = parent;
     }
 

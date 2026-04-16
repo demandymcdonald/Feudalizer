@@ -86,6 +86,13 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             return false;
         } else return type != ChangeType.MODIFY_VALUE || !(initiator.getActive().get(key) == this.internalGetFull().get(key));
     };
+
+    protected boolean canAdd(K key, V value, @Nullable K currentKey,@Nullable V currentValue){
+        return true;
+    }
+
+
+
     protected void onRemoveEntry(WipeType wipe, K... key){};
     protected void onBuildMap(){};
     protected void onBuildMapStep(M stepChange, Map<K,V> map){};

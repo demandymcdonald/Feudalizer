@@ -3,8 +3,8 @@ package com.objects.culture.tenet.types.mutable.tenets;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.population.InterestGroup;
-import com.objects.culture.tenet.reference.DynamicTR;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.dynamic.DynamicTR;
+import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 
 import java.util.UUID;

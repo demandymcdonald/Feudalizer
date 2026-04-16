@@ -8,7 +8,7 @@ import com.objects.culture.tenet.group.ConnectionEdge;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.tenet.types.mutable.tenets.general.Leadership;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
 import com.objects.culture.tenet.types.mutable.tenets.ReligionTenets;

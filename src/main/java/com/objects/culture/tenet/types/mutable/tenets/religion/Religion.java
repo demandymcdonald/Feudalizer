@@ -9,8 +9,8 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.types.dynamic.DynamicTenet;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
-import com.objects.culture.tenet.instance.TOReference;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.instance.CultObjReference;
+import com.objects.culture.tenet.types.TenetReference;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -62,7 +62,7 @@ public class Religion extends DynamicTenet<Religion> {
     }
 
     @Override
-    public double influencerResistance(TOReference<?> influencer) {
+    public double influencerResistance(CultObjReference<?> influencer) {
         return 0;
     }
 

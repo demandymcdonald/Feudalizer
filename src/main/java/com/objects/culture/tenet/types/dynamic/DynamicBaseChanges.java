@@ -1,7 +1,6 @@
 package com.objects.culture.tenet.types.dynamic;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
@@ -13,7 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.types.TenetReference;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -34,26 +34,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,I,T>,K
     @Override
     public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
         super.apply(entity, currentState);
-        pauseCacheChecks.set(true);
-        try{
-            Map<K,V> existing = getRuntimeMap();
-            if(existing == null){
-                setRuntimeMap(getFullMap());
-            } else {
-                existing.clear();
-                existing.putAll(getFullMap());
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            pauseCacheChecks.set(false);
-        }
+        setRuntimeMap(getRuntimeMap());
     }
 
-    public Map<K,V> buildNewMap(){
-        return buildChangeMap();
-    }
-    public Map<K,V> buildNewMap(Map<K,V> initial){
-        return buildChangeMap(initial);
-    }
+
 }

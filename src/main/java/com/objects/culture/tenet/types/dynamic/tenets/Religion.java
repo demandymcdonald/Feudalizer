@@ -1,6 +1,5 @@
 package com.objects.culture.tenet.types.dynamic.tenets;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
@@ -10,7 +9,6 @@ import com.objects.CauseOfEnd;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.instance.TOReference;
 import com.objects.culture.tenet.types.dynamic.DynamicTenet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

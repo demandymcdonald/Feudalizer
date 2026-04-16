@@ -19,8 +19,8 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.instance.TOReference;
-import com.objects.culture.tenet.reference.TenetReference;
+import com.objects.culture.tenet.instance.CultObjReference;
+import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.tenet.types.mutable.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -157,7 +157,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
 
 
     @Override
-    public final void addInfluencer(TOReference<?> influencer, InfluencerRelationship relationship) {
+    public final void addInfluencer(CultObjReference<?> influencer, InfluencerRelationship relationship) {
         CultureObject.super.addInfluencer(influencer, relationship);
     }
 
@@ -187,7 +187,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, TOReference<?>... bls) {
+    public final double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, CultObjReference<?>... bls) {
         return CultureObject.super.getAcceptanceValue(tenet, includeInfluencers, bls);
     }
 
@@ -202,12 +202,12 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final TimelineMap<TOReference<?>, InfluencerInstance, T> getInfluencers() {
+    public final TimelineMap<CultObjReference<?>, InfluencerInstance, T> getInfluencers() {
         return CultureObject.super.getInfluencers();
     }
 
     @Override
-    public final List<InfluencerOpinion> getListForTenet(Tenet tenet, boolean includeParentInfluencers, TOReference<?>... bl) {
+    public final List<InfluencerOpinion> getListForTenet(Tenet tenet, boolean includeParentInfluencers, CultObjReference<?>... bl) {
         return CultureObject.super.getListForTenet(tenet, includeParentInfluencers, bl);
     }
 
@@ -227,22 +227,22 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final Optional<Pair<TOReference<?>, InfluencerRelationship>> getParentObject() {
+    public final Optional<Pair<CultObjReference<?>, InfluencerRelationship>> getParentObject() {
         return CultureObject.super.getParentObject();
     }
 
     @Override
-    public final TOReference<T> getTOReference() {
+    public final CultObjReference<T> getTOReference() {
         return CultureObject.super.getTOReference();
     }
 
     @Override
-    public final double influencerResistance(TOReference<?> influencer) {
+    public final double influencerResistance(CultObjReference<?> influencer) {
         return 0;
     }
 
     @Override
-    public final void internalParentObject(TOReference<?> influencer, InfluencerRelationship relationship) {
+    public final void internalParentObject(CultObjReference<?> influencer, InfluencerRelationship relationship) {
         CultureObject.super.internalParentObject(influencer, relationship);
     }
 
@@ -252,7 +252,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final void internalSetInfluencers(TimelineMap<TOReference<?>, InfluencerInstance, T> influencers) {
+    public final void internalSetInfluencers(TimelineMap<CultObjReference<?>, InfluencerInstance, T> influencers) {
         CultureObject.super.internalSetInfluencers(influencers);
     }
 
@@ -272,23 +272,23 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final boolean isInfluencer(TOReference<?> ref) {
+    public final boolean isInfluencer(CultObjReference<?> ref) {
         return CultureObject.super.isInfluencer(ref);
     }
 
 
     @Override
-    public final void modifyInfluence(TOReference<?> influencer, Pair<TenetGroup, Integer>... changes) {
+    public final void modifyInfluence(CultObjReference<?> influencer, Pair<TenetGroup, Integer>... changes) {
         CultureObject.super.modifyInfluence(influencer, changes);
     }
 
     @Override
-    public final void removeInfluencer(TOReference<?> influencer) {
+    public final void removeInfluencer(CultObjReference<?> influencer) {
         CultureObject.super.removeInfluencer(influencer);
     }
 
     @Override
-    public final void setInfluence(TOReference<?> influencer, Pair<TenetGroup, Integer>... changes) {
+    public final void setInfluence(CultObjReference<?> influencer, Pair<TenetGroup, Integer>... changes) {
         CultureObject.super.setInfluence(influencer, changes);
     }
 
@@ -298,7 +298,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final void setParentObject(TOReference<?> influencer, InfluencerRelationship relationship) {
+    public final void setParentObject(CultObjReference<?> influencer, InfluencerRelationship relationship) {
         CultureObject.super.setParentObject(influencer, relationship);
     }
 

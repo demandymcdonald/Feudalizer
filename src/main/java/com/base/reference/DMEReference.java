@@ -23,11 +23,11 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
     private transient ThreadLocal<T> cachedEntity = new ThreadLocal<>();
     private static final Cache<Long, DMEReference<?>> CACHE = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
-            .maximumSize(1000)
+            .maximumSize(4000)
             .build();
     private static final Cache<String, Class<? extends DateMutableEntity<?>>> CLASS_CACHE = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
-            .maximumSize(1000)
+            .maximumSize(4000)
             .build();
     private DMEReference(Class<T> type, UUID uuid) {
         this.type = type;

@@ -1,14 +1,13 @@
-package com.objects.culture.tenet.reference;
+package com.objects.culture.tenet.types.mutable;
 
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.mutable.MutableTenet;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.types.TenetReference;
 
 import java.util.UUID;
 
-public class MutableTR extends TenetReference{
+public class MutableTR extends TenetReference {
     private UUID id;
     private TenetGroup group;
     public MutableTR(MutableTenet tenet) {
