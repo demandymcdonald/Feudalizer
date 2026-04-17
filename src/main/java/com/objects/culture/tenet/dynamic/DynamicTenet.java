@@ -3,17 +3,22 @@ package com.objects.culture.tenet.dynamic;
 import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.multi.TimelineMap;
-import com.base.timeline.change.multi.TLMultiChange;
+import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.utilities.TLSyncedCache;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
+import com.objects.CauseOfEnd;
 import com.objects.culture.AbstractCulture;
+import com.objects.culture.Culture;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.CultureObjectContainer;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
+import com.objects.culture.tenet.dynamic.change.Boundary;
+import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
@@ -28,37 +33,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.objects.CauseOfEnd.DynamicTenets.NO_MEMBERS;
+
 public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T> {
     private final TenetGroup tenetGroup;
     private final CultureObjectContainer<T> container;
-    private final TLMultiChange.Listener<TenetReference, TenetInstance<T>> listener = new TLMultiChange.Listener<TenetReference, TenetInstance<T>>() {
-        @Override
-        public void onMapPut(TenetReference key, TenetInstance<T> value) {
-            DynamicTenet.this.onOpinionAdd(key,value);
-        }
-
-        @Override
-        public void onMapRemove(TenetReference key, TenetInstance<T> value, TLMultiChange.WipeType type) {
-            DynamicTenet.this.onOpinionRemove(key,value);
-        }
-
-
-        @Override
-        public void onMapReplace(TenetReference key, TenetInstance<T> oldValue, TenetInstance<T> newValue) {
-            DynamicTenet.this.onOpinionReplace(key,oldValue,newValue);
-        }
-
-        @Override
-        public void onMapClear() {
-            DynamicTenet.this.onOpinionClear();
-        }
-
-        @Override
-        public void onMapGet(TenetReference key, TenetInstance<T> value) {
-            DynamicTenet.this.onOpinionGet(key,value);
-        }
-    };
-    private TimelineMap<TenetReference,TenetGroup,T> children;
+    private DMEReference<Culture> foundingCulture;
+    private MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> children;
     String displayID;
     String displayName;
     String description;
@@ -67,18 +48,17 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
         this.tenetGroup = group;
         displayID = buildID(group,name);
         container = new CultureObjectContainer<>(this.getReference());
-        container.getOpinions().addListener(listener);
     }
-
     public DynamicTenet(TenetGroup group, DMEReference<T> dme) {
         super(dme);
         this.tenetGroup = group;
         container = new CultureObjectContainer<>(this.getReference());
     }
 
-    public DynamicTenet(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
+    public DynamicTenet(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
         this.tenetGroup = group;
+        this.foundingCulture = foundingCulture;
         displayID = buildID(group, name);
         container = new CultureObjectContainer<>(this.getReference());
     }
@@ -101,9 +81,11 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers) {
         return Tenet.super.getAcceptanceContainer(tenet, includeInfluencers);
     }
-
+    public final Culture getCulture() {
+        return foundingCulture.get();
+    }
     @Override
-    public final String displayName() {
+    public final String getDisplayName() {
         return displayName;
     }
     public final void internalDisplayName(String name){
@@ -113,7 +95,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
         getTimeline().addChange(new DynamicBaseChanges.setDisplayName<>(getReference(), Global.getDate(), name));
     }
     @Override
-    public final String description() {
+    public final String getDescription() {
         return description;
     }
     public final void internalDescription(String description){
@@ -129,15 +111,16 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public void onOpinionClear(){};
     public void onOpinionGet(TenetReference key, TenetInstance<T> value){};
 
-    public void internalSetChildMap(TimelineMap<TenetReference,TenetGroup,T> map){
+    public void internalSetChildMap(MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> map){
         this.children = map;
     }
-    public TimelineMap<TenetReference,TenetGroup,T> getChildren(){
+    public MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> getChildren(){
         return children;
     }
     @Override
     public void additionalSave(JsonObject data) {
         data.addProperty("displayID", displayID);
+        data.add("founding_culture",foundingCulture.serialize());
     }
     public final boolean isAllowedTenet(Tenet tenet){
         return getGroup().isParentOf(tenet.getGroup());
@@ -145,15 +128,28 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     @Override
     public void additionalLoad(JsonObject data) {
         displayID = data.get("displayID").getAsString();
+        foundingCulture = DMEReference.deserialize(data.get("founding_culture").getAsJsonObject());
     }
     private static String buildID(TenetGroup tenetGroup, String name) {
         return tenetGroup.getDisplayID() + "/" + name.toLowerCase(Locale.ROOT);
     }
 
+    @Override
+    public final TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date, CauseOfEnd<? super T> cOd) {
+        return new Boundary.Disbanding<>(dme, date, cOd);
+    }
+
+    @Override
+    public final TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date) {
+        return new Boundary.Founding<>(dme, date);
+    }
+    @Override
+    public final CauseOfEnd<T> defaultDeathCause() {
+        return (CauseOfEnd<T>) NO_MEMBERS;
+    }
 
 
-
-    //Literally just to clean up override menu
+//Literally just to clean up override menu
 
 
     @Override
@@ -202,7 +198,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final TimelineMap<COReference<?>, InfluencerInstance, T> getInfluencers() {
+    public final MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID,T> getInfluencers() {
         return CultureObject.super.getInfluencers();
     }
 
@@ -222,7 +218,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final TimelineMap<TenetReference, TenetInstance<T>, T> getOpinions() {
+    public final MiddlemanMap<?,TenetReference, TenetInstance<T>,UUID, T> getOpinions() {
         return CultureObject.super.getOpinions();
     }
 
@@ -230,7 +226,10 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public final Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject() {
         return CultureObject.super.getParentObject();
     }
-
+    @Override
+    public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
+        return null;
+    }
     @Override
     public final COReference<T> getTOReference() {
         return CultureObject.super.getTOReference();
@@ -252,12 +251,12 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final void internalSetInfluencers(TimelineMap<COReference<?>, InfluencerInstance, T> influencers) {
+    public final void internalSetInfluencers(MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID,T> influencers) {
         CultureObject.super.internalSetInfluencers(influencers);
     }
 
     @Override
-    public final void internalSetOpinions(TimelineMap<TenetReference, TenetInstance<T>, T> opinions) {
+    public final void internalSetOpinions(MiddlemanMap<?,TenetReference, TenetInstance<T>,UUID, T> opinions) {
         CultureObject.super.internalSetOpinions(opinions);
     }
 
@@ -277,20 +276,12 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
 
-    @Override
-    public final void modifyInfluence(COReference<?> influencer, Pair<TenetGroup, Integer>... changes) {
-        CultureObject.super.modifyInfluence(influencer, changes);
-    }
 
     @Override
     public final void removeInfluencer(COReference<?> influencer) {
         CultureObject.super.removeInfluencer(influencer);
     }
 
-    @Override
-    public final void setInfluence(COReference<?> influencer, Pair<TenetGroup, Integer>... changes) {
-        CultureObject.super.setInfluence(influencer, changes);
-    }
 
     @Override
     public final void setOpinion(TenetReference tenet, double d) {

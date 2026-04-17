@@ -1,8 +1,8 @@
 package com.objects.title.land.resources;
 
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
-public record ResourceType(String id, String name, String description) implements Displayable {
+public record ResourceType(String id, String name, String description) implements IDisplayable {
 
     @Override
     public String getDisplayID() {
@@ -10,12 +10,12 @@ public record ResourceType(String id, String name, String description) implement
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 

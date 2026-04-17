@@ -10,11 +10,11 @@ import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
 import com.objects.character.sentient.HumanCharacter;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
 import static com.base.timeline.error.SandboxCode.*;
 
-public abstract class ErrorResolution implements Displayable {
+public abstract class ErrorResolution implements IDisplayable {
     private final int priority;
     private final SandboxCode expectedCode;
     private final String id;
@@ -31,12 +31,12 @@ public abstract class ErrorResolution implements Displayable {
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return display;
     }
 

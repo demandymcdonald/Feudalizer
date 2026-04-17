@@ -1,12 +1,11 @@
 package com.objects.character.sentient;
 
 import com.google.common.collect.ImmutableList;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public abstract class SentientSpecies implements Displayable {
+public abstract class SentientSpecies implements IDisplayable {
     private final ImmutableList<SentientSpecies> compatibleMating;
     private final String name;
     private final String id;
@@ -24,12 +23,12 @@ public abstract class SentientSpecies implements Displayable {
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 

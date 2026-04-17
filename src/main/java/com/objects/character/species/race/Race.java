@@ -4,12 +4,12 @@ import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientSpecies;
 import com.objects.character.species.genetics.GeneManager;
 import com.objects.character.species.genetics.Gene;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 
-public class Race<T extends SentientSpecies> implements Displayable{
+public class Race<T extends SentientSpecies> implements IDisplayable {
     private final String id;
     private final String name;
     private final String description;
@@ -33,12 +33,12 @@ public class Race<T extends SentientSpecies> implements Displayable{
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
     public JsonObject serialize(){

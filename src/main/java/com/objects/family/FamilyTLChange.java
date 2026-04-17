@@ -1,9 +1,8 @@
 package com.objects.family;
 
-import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
@@ -15,13 +14,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import com.objects.character.sentient.SentientCharacter;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
-
-import static com.objects.family.Family.Relationship.CHILD_BORN;
-import static com.objects.family.Family.Relationship.CHILD_BORN_DISOWNED;
 
 public abstract class FamilyTLChange {
 
@@ -36,12 +31,12 @@ public abstract class FamilyTLChange {
         }
 
         @Override
-        public void setRuntimeMap(TimelineMap<DMEReference<? extends SentientCharacter<?>>, Family.Relationship, Family> map) {
+        public void setRuntimeMap(MiddlemanMap<DMEReference<? extends SentientCharacter<?>>, Family.Relationship, Family> map) {
             getOwner().get().internal_SetMap(map);
         }
 
         @Override
-        public TimelineMap<DMEReference<? extends SentientCharacter<?>>, Family.Relationship, Family> getRuntimeMap() {
+        public MiddlemanMap<DMEReference<? extends SentientCharacter<?>>, Family.Relationship, Family> getRuntimeMap() {
             return null;
         }
 

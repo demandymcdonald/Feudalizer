@@ -91,12 +91,12 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
     @Override

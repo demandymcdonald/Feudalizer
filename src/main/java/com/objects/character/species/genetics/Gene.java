@@ -2,12 +2,12 @@ package com.objects.character.species.genetics;
 
 import com.Feudalizer;
 import com.objects.character.species.aspect.PhysicalAspect;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Gene implements Displayable {
+public abstract class Gene implements IDisplayable {
     private final PhysicalAspect parent; // Parent physical aspect (human skin)
     private final GeneProperty geneProperty; //the thing on the PhysicalAspect that this Gene affects
     private final double chance; //Chance of spontaneous development (0-100 Double)
@@ -60,12 +60,12 @@ public abstract class Gene implements Displayable {
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 

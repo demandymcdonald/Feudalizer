@@ -3,7 +3,7 @@ package com.objects.character.sentient.change;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
@@ -30,12 +30,12 @@ public class SentientMapChange {
         }
 
         @Override
-        public void setRuntimeMap(TimelineMap<SimpleUUID, Opinion, T> map) {
+        public void setRuntimeMap(MiddlemanMap<SimpleUUID, Opinion, T> map) {
             getOwner().get().internalSetOpinions(map);
         }
 
         @Override
-        public TimelineMap<SimpleUUID, Opinion, T> getRuntimeMap() {
+        public MiddlemanMap<SimpleUUID, Opinion, T> getRuntimeMap() {
             return getOwner().get().getOpinions();
         }
 

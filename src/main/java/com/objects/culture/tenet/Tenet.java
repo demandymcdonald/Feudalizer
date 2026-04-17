@@ -4,10 +4,10 @@ import com.google.common.collect.Multimap;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import com.utilities.id.UUIDIdentifiable;
 
-public interface Tenet extends Displayable, ICultureObject, UUIDIdentifiable {
+public interface Tenet extends IDisplayable, ICultureObject, UUIDIdentifiable {
     TenetGroup getGroup();
     Multimap<CultureCondition.Key, CultureCondition<?,?,?>> getConditions();
     @Override

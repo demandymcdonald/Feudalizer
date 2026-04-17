@@ -2,7 +2,7 @@ package com.objects.culture.object;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObject<T>>{
     DMEReference<T> reference;
     Pair<COReference<?>, InfluencerRelationship> parent;
-    TimelineMap<COReference<?>, InfluencerInstance,UUID, T> influencers;
-    TimelineMap<TenetReference,TenetInstance<T>, UUID,T> opinions;
+    MiddlemanMap<?,COReference<?>, InfluencerInstance,UUID, T> influencers;
+    MiddlemanMap<?,TenetReference,TenetInstance<T>, UUID,T> opinions;
     InterpolatedPoliticalCompass<T> compass;
     TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
 
@@ -79,19 +79,19 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         this.influencedCache = influencedCache;
     }
 
-    public TimelineMap<COReference<?>, InfluencerInstance, UUID, T> getInfluencers() {
+    public MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID, T> getInfluencers() {
         return influencers;
     }
 
-    public void setInfluencers(TimelineMap<COReference<?>, InfluencerInstance, UUID, T> influencers) {
+    public void setInfluencers(MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID, T> influencers) {
         this.influencers = influencers;
     }
 
-    public TimelineMap<TenetReference,TenetInstance<T>,UUID,T> getOpinions() {
+    public MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> getOpinions() {
         return opinions;
     }
 
-    public void setOpinions(TimelineMap<TenetReference,TenetInstance<T>,UUID,T> opinions) {
+    public void setOpinions(MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> opinions) {
         this.opinions = opinions;
     }
 

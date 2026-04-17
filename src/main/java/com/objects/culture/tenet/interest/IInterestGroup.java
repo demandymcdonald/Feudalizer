@@ -1,6 +1,6 @@
 package com.objects.culture.tenet.interest;
 
-public interface IInterestGroup {
+public interface IInterestGroup extends IPlural{
 
     InterestGroup getInterestGroup();
 

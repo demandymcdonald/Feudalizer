@@ -2,13 +2,14 @@ package com.objects.culture.tenet.instance;
 
 import com.Global;
 import com.base.DateMutableEntity;
+import com.base.condition.Condition;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.multi.MultiCondition;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.error.ErrorListResolution;
 import com.base.timeline.error.SandboxCode;
@@ -130,13 +131,13 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
     }
 
     @Override
-    public void setRuntimeMap(TimelineMap<TenetReference, TenetInstance<T>,T> map) {
+    public void setRuntimeMap(MiddlemanMap<TenetInstanceChange<T>,TenetReference, TenetInstance<T>,UUID,T> map) {
         getOwner().get().internalSetOpinions(map);
     }
 
     @Override
-    public TimelineMap<TenetReference, TenetInstance<T>,T> getRuntimeMap() {
-        return getOwner().get().getOpinions();
+    public MiddlemanMap<TenetInstanceChange<T>,TenetReference, TenetInstance<T>,UUID,T> getRuntimeMap() {
+        return (MiddlemanMap<TenetInstanceChange<T>,TenetReference, TenetInstance<T>,UUID,T>) getOwner().get().getOpinions();
     }
     @Override
     public TenetInstanceChange<T> getNext(){
@@ -163,9 +164,26 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
         }
         return null;
     }
+    private final MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T> activeCondition = new MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T>() {
+        Condition.ShouldRun run = Condition.ShouldRun.ONCE_PER_STATE;
 
 
+        @Override
+        protected Optional<StateError> doCheck(Delta change, TenetInstanceChange<T> newChange, List<Pair<TenetReference, TenetInstance<T>>> newEntries, TenetInstanceChange<T> curChange, List<Pair<TenetReference, TenetInstance<T>>> curEntries) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Condition.ShouldRun shouldRun() {
+            return run;
+        }
+    }
     private final MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T> maxCondition = new MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T>() {
+        @Override
+        public Condition.ShouldRun shouldRun() {
+            return Condition.ShouldRun.ONCE_PER_STATE;
+        }
+
         @Override
         protected Optional<StateError> doCheck(Delta change, TenetInstanceChange<T> newChange, List<Pair<TenetReference, TenetInstance<T>>> newEntries, TenetInstanceChange<T> curChange, List<Pair<TenetReference, TenetInstance<T>>> curEntries) {
             Map<TenetGroup, Map<Acceptance, MutableInt>> capacityLeft = new HashMap<>();
@@ -188,7 +206,7 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
                     }
                 }
             }
-
+            return Optional.empty();
         }
 
 

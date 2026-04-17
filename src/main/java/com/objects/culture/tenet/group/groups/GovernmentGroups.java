@@ -11,7 +11,7 @@ import static com.objects.culture.tenet.group.groups.FamilyGroups.FAMILY;
 import static com.objects.culture.tenet.group.groups.MilitaryGroups.MILITARY;
 import static com.objects.culture.tenet.group.groups.MilitaryGroups.SPECIAL_OPERATIONS;
 import static com.objects.culture.tenet.group.groups.ReligionGroups.RELIGION;
-import static com.objects.culture.tenet.group.groups.SocietyGroups.RACE_AND_ETHNIC_ORIGIN;
+import static com.objects.culture.tenet.group.groups.ReligionGroups.RELIGIOUS_GOVERNMENT_INTERVENTION;
 import static com.objects.culture.tenet.group.groups.SocietyGroups.SOCIETY;
 import static com.objects.culture.tenet.group.TenetGroup.*;
 
@@ -65,189 +65,185 @@ public class GovernmentGroups {
     public static final TenetGroup GOVERNMENT_CORRUPTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "corruption", "Corruption", "")
             .setParent(JUSTICE_SYSTEM)
             .build();
-    public static final TenetGroup CLASS_AND_CASTE = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "class_and_caste", "Class and Caste", "")
+    public static final TenetGroup POPULATION_GROUP_RIGHTS = new TenetGroup.Builder(TGType.SORT_ONLY, Level.SUBCATEGORY,"rights","Population Rights","")
             .setParent(GOVERNMENT_SYSTEM)
-            .addConnected(WELFARE, TAXATION)
+            .build();
+    public static final TenetGroup CITIZENSHIP = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "citizenship", "Citizenship", "")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .build();
+    public static final TenetGroup MARRIAGE_RIGHTS = new TenetGroup.Builder(TGType.SYSTEM_LARGE,Level.NORMAL,"marriage","Marriage Rights","")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .build();
+    public static final TenetGroup GOVERNMENT_PARTICIPATION = new TenetGroup.Builder(TGType.SYSTEM_LARGE,Level.NORMAL,"participation","Government Participation Rights","")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .build();
+    public static final TenetGroup CIVIL_LIBERTIES = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "civil", "Civil Rights", "")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .addConnected(JUSTICE_SYSTEM)
+            .build();
+    public static final TenetGroup LABOR_RIGHTS = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "labor", "Labor Rights", "")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .addConnected(STATE_ENTERPRISE, PRIVATE_ENTERPRISE, LABOR_UNION)
+            .build();
+    public static final TenetGroup CLASS_AND_CASTE = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "class_and_caste", "Class and Caste", "")
+            .setParent(POPULATION_GROUP_RIGHTS)
             .build();
     public static final TenetGroup CASTE_PERMEABILITY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "caste_permeability", "Caste Permeability", "")
             .setParent(CLASS_AND_CASTE)
             .build();
-    public static final TenetGroup CIVIL_LIBERTIES = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "civil_rights", "Civil Rights", "")
-            .setParent(GOVERNMENT_SYSTEM)
-            .addConnected(JUSTICE_SYSTEM, CLASS_AND_CASTE)
-            .build();
-
-    public static final TenetGroup CITIZENSHIP = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "citizenship", "Citizenship", "")
-            .setParent(CLASS_AND_CASTE)
-            .build();
-    public static final TenetGroup MARRIAGE_RIGHTS = new TenetGroup.Builder(TGType.SYSTEM_LARGE,Level.NORMAL,"marriage_rights","Marriage Rights","")
-            .setParent(CLASS_AND_CASTE)
-            .build();
-    public static final TenetGroup POPULATION_GROUP_RIGHTS = new TenetGroup.Builder(TGType.SORT_ONLY, Level.SUBCATEGORY,"rights","Population Rights","")
-            .setParent(CLASS_AND_CASTE)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
-            .build();
-    public static final TenetGroup LABOR_RIGHTS = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "labor_rights", "Labor Rights", "")
-            .setParent(CLASS_AND_CASTE)
-            .addConnected(STATE_ENTERPRISE, PRIVATE_ENTERPRISE, CLASS_AND_CASTE, LABOR_UNION)
-            .build();
     public static final TenetGroup ELITE_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "elites", "Elite Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-
     public static final TenetGroup PROFESSIONAL_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "professional_class", "Professional Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup ACADEMIC_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "academic_class", "Academic Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup ARTIST_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "artist_class", "Artist Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup OFFICER_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "officer_class", "Officer Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup BUSINESS_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "poor_class", "Poor Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup MIDDLE_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "middle_class", "Middle Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup SOLDIER_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "soldiers", "Soldier Ckass", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup WORKING_CLASS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "working_class", "Working Class", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup DISENFRANCHISED = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "disenfranchised", "Disenfranchised", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup SLAVE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "slaves", "Slaves", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(DISENFRANCHISED, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup OUTSIDER = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "outsider", "Outsiders and Foreigners", "")
-            .setParent(POPULATION_GROUP_RIGHTS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
+            .setParent(CLASS_AND_CASTE)
+            .addConnected(CASTE_PERMEABILITY, CIVIL_LIBERTIES)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
 
     public static final TenetGroup SEX = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "sex", "Assigned Sex Rights", "")
             .setParent(POPULATION_GROUP_RIGHTS)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup SEX_MALE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "male", "Male", "")
             .setParent(SEX)
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup SEX_FEMALE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "female", "Female", "")
             .setParent(SEX)
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup GENDER = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "gender", "Gender Rights", "")
             .setParent(POPULATION_GROUP_RIGHTS)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup GENDER_MALE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "male", "Male", "")
+    public static final TenetGroup GENDER_MALE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "male", "Male Rights", "")
             .setParent(GENDER)
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup GENDER_FEMALE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "female", "Female", "")
+    public static final TenetGroup GENDER_FEMALE = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "female", "Female Rights", "")
             .setParent(GENDER)
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup GENDER_TRANS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "trans", "Transgender", "")
+    public static final TenetGroup GENDER_TRANS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "trans", "Transgender Rights", "")
             .setParent(GENDER)
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup GENDER_NB_OTHER = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "nb", "Non-Binary/Other", "")
+    public static final TenetGroup GENDER_NB_OTHER = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "nb", "Non-Binary/Other Rights", "")
             .setParent(GENDER)
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
     public static final TenetGroup ORIENTATION = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "orientation", "Sexual Orientation Rights", "")
             .setParent(POPULATION_GROUP_RIGHTS)
             .build();
-    public static final TenetGroup HETERO = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"hetero","Heterosexual","")
+    public static final TenetGroup HETERO = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"hetero","Heterosexual Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup HOMO = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"homo","Homosexual","")
+    public static final TenetGroup HOMO = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"homo","Homosexual Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup BI = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"bi","Bisexual","")
+    public static final TenetGroup BI = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"bi","Bisexual Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup AE = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"ae","Aesexual","")
+    public static final TenetGroup AE = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"ae","Asexual Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup PAN = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"pan","Pansexual","")
+    public static final TenetGroup PAN = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"pan","Pansexual Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup QUESTIONING = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"questioning","Questioning","")
+    public static final TenetGroup QUESTIONING = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"questioning","Questioning Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup OTHER = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"other","Other","")
+    public static final TenetGroup OTHER = new TenetGroup.Builder(TGType.CASTE_SYSTEM,Level.NORMAL,"other","Other Rights","")
             .setParent(ORIENTATION)
-            .addDependent(MARRIAGE_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup IDENTITY_GROUPS = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "identity_groups", "Identity Groups", "")
+    public static final TenetGroup IDENTITY_GROUPS = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "identity_groups", "Identity Group  Rights", "")
             .setParent(POPULATION_GROUP_RIGHTS)
             .build();
-    public static final TenetGroup RACIAL_ETHNIC_MAJORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "racial_majority", "Racial Majority", "")
+    public static final TenetGroup RACES_ETHNICITIES = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "racial_ethnicity", "Racial and Ethnic Rights", "")
             .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup RACIAL_ETHNIC_MINORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "racial_minority", "Racial Minority", "")
+    public static final TenetGroup RELIGIOUS = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "religious", "Religious Rights", "")
             .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN,DISENFRANCHISED)
+            .addConnected(RELIGIOUS_GOVERNMENT_INTERVENTION)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup RELIGIOUS_MAJORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "religious_majority", "Religious Majority", "")
+    public static final TenetGroup CULTURAL = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "cultural", "Cultural Rights", "")
             .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RELIGION)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup RELIGIOUS_MINORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "religious_minority", "Religious Minority", "")
+    public static final TenetGroup DISABILITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "disability", "Disability Rights", "")
             .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RELIGION,DISENFRANCHISED)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-    public static final TenetGroup CULTURAL_MAJORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "cultural_majority", "Cultural Majority", "")
+    public static final TenetGroup POLITICAL = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "political", "Political Rights", "")
             .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN)
-            .build();
-    public static final TenetGroup CULTURAL_MINORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "cultural_minority", "Cultural Minority", "")
-            .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN, DISENFRANCHISED)
-            .build();
-    public static final TenetGroup DISABILITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "disability", "Disabled Community", "")
-            .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED)
-            .build();
-    public static final TenetGroup POLITICAL_MAJORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "political_majority", "Political Majority", "")
-            .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES)
-            .build();
-    public static final TenetGroup POLITICAL_MINORITY = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "political_minority", "Political Minority", "")
-            .setParent(IDENTITY_GROUPS)
-            .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
 
     public static final TenetGroup FOREIGN_POLICY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "foreign_policy", "Foreign Policy", "")
@@ -257,7 +253,6 @@ public class GovernmentGroups {
     // Government Leadership
     public static final TenetGroup GOVERNMENT_LEADERSHIP = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "leadership", "Leadership", "")
             .setParent(GOVERNMENT_SYSTEM)
-            .addConnected(CLASS_AND_CASTE, MILITARY)
             .build();
     public static final TenetGroup LEADER_CORRUPTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "corruption", "Leader Corruption", "")
             .setParent(GOVERNMENT_LEADERSHIP)
@@ -268,7 +263,8 @@ public class GovernmentGroups {
             .build();
     public static final TenetGroup LEADER_SELECTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "selection", "Leadership Selection", "")
             .setParent(LEADER_TYPES)
-            .addConnected(DISENFRANCHISED,CIVIL_LIBERTIES)
+            .addConnected(DISENFRANCHISED,CIVIL_LIBERTIES,CASTE_PERMEABILITY)
+            .addDependent(GOVERNMENT_PARTICIPATION)
             .build();
     public static final TenetGroup LEADER_AUTHORITY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "authority", "Leader Authority", "")
             .setParent(LEADER_TYPES)

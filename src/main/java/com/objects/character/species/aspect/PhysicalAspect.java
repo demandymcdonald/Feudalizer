@@ -1,12 +1,10 @@
 package com.objects.character.species.aspect;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.objects.character.species.genetics.Gene;
 import com.objects.character.species.genetics.GeneProperty;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
-public record PhysicalAspect(BodyPart part, String id, String name, String description,ImmutableList<GeneProperty> validProperties) implements Displayable {
+public record PhysicalAspect(BodyPart part, String id, String name, String description,ImmutableList<GeneProperty> validProperties) implements IDisplayable {
     public PhysicalAspect {
         Aspects.registerAspect(this);
     }
@@ -16,12 +14,12 @@ public record PhysicalAspect(BodyPart part, String id, String name, String descr
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 }

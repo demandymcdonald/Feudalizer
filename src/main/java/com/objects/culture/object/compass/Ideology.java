@@ -1,9 +1,9 @@
 package com.objects.culture.object.compass;
 
 import com.objects.culture.tenet.TenetManager;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
-public class Ideology implements Displayable {
+public class Ideology implements IDisplayable {
     //Static object, mainly used for display, but also in factory methods.
         private final String id;
         private final String displayName;
@@ -26,12 +26,12 @@ public class Ideology implements Displayable {
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return displayName;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 

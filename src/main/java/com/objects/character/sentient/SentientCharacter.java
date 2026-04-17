@@ -4,7 +4,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.multi.TLMultiChange;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
 import com.objects.character.Sex;
@@ -14,6 +14,7 @@ import com.objects.character.opinion.OpinionReason;
 import com.objects.character.sentient.change.CharacterChanges;
 import com.objects.character.sentient.change.SentientMapChange;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.tenet.dynamic.tenets.Religion;
 import com.objects.family.Family;
 import com.objects.government.GoverningEntity;
 import com.objects.title.Title;
@@ -32,7 +33,7 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     private Gender gender;
     private Orientation orientation;
     private SuccessionEntry<?> preferredSuccession;
-    private TimelineMap<SimpleUUID, Opinion,UUID,T> opinions;
+    private MiddlemanMap<SimpleUUID, Opinion,UUID,T> opinions;
 
 
     private Optional<GoverningEntity<?>> linked_government;
@@ -61,7 +62,6 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
         super(created, ended, initialState);
         getTimeline().internalAddChange(new SentientMapChange.OpinionMapChange<>(getReference(),created));
     }
-
     public SentientCharacter(DMEReference<T> dme) {
         super(dme);
     }
@@ -69,6 +69,18 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public SentientCharacter(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
     }
+
+
+
+
+
+
+
+
+
+
+
+
     public final void setFirstName(String firstName) {
         getTimeline().addChange(new CharacterChanges.SetForename<>(getReference(), Global.getDate(),firstName));
     }
@@ -109,7 +121,7 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void internalSetOrientation(Orientation orientation){
         this.orientation = orientation;
     }
-    public final void internalSetOpinionMap(TimelineMap<SimpleUUID, Opinion,UUID,T> opinions){
+    public final void internalSetOpinionMap(MiddlemanMap<SimpleUUID, Opinion,UUID,T> opinions){
         this.opinions = opinions;
     }
     public final void internalSetPreferredSuccession(SuccessionEntry<?> succession){
@@ -130,6 +142,10 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final Orientation getOrientation(){
         return orientation;
     }
+    public final Religion getReligion(){
+
+    }
+
     public final SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;
     }

@@ -4,7 +4,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
@@ -92,12 +92,12 @@ public class DynamicBaseChanges {
         }
 
         @Override
-        public void setRuntimeMap(TimelineMap<TenetReference, TenetGroup, T> map) {
+        public void setRuntimeMap(MiddlemanMap<TenetReference, TenetGroup, T> map) {
             getOwner().get().internalSetChildMap(map);
         }
 
         @Override
-        public TimelineMap<TenetReference, TenetGroup, T> getRuntimeMap() {
+        public MiddlemanMap<TenetReference, TenetGroup, T> getRuntimeMap() {
             return getOwner().get().getChildren();
         }
 

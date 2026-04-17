@@ -280,8 +280,8 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     public boolean isPositive() {
         return true;
     }
-    public final TimelineMap<M,K,V,I,T> getFullMap(){
-        return new TimelineMap<>((M) this);
+    public final MiddlemanMap<M,K,V,I,T> getFullMap(){
+        return new MiddlemanMap<>((M) this);
     }
     public final Map<K,V> internalGetFull(){
         return fullMap.get();

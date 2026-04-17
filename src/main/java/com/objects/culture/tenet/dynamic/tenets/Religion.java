@@ -6,31 +6,32 @@ import com.base.timeline.change.TimelineChange;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
+import com.objects.culture.tenet.group.groups.GovernmentGroups;
+import com.objects.culture.tenet.group.groups.ReligionGroups;
+import com.objects.culture.tenet.group.groups.SocietyGroups;
+import com.objects.culture.tenet.interest.IInterestGroup;
+import com.objects.culture.tenet.interest.InterestGroup;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public class Religion extends DynamicTenet<Religion> {
-    private DMEReference<Culture> foundingCulture;
-    public Religion(TenetGroup group, DMEReference<Religion> dme) {
-        super(group, dme);
+public class Religion extends DynamicTenet<Religion> implements IInterestGroup {
+    private final InterestGroup interestGroup;
+    public Religion(DMEReference<Religion> dme) {
+        super(ReligionGroups.RELIGION, dme);
+        this.interestGroup = buildGroup();
     }
-
-    public Religion(TenetGroup group, String name, LocalDate created, LocalDate ended, Culture founding, List<ChangeSupplier<Religion, ?>> initialState) {
-        super(group, name, created, ended, initialState);
-        this.foundingCulture = founding.getReference();
+    public Religion(String name, LocalDate created, LocalDate ended, Culture founding, List<ChangeSupplier<Religion, ?>> initialState) {
+        super(ReligionGroups.RELIGION, name, created, ended, initialState);
+        this.interestGroup = buildGroup();
     }
-
-    public Religion(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Religion, ?>> initialState) {
-        super(group, name, id, created, ended, initialState);
-    }
-
     @Override
     protected void onLink() {
 
@@ -41,40 +42,48 @@ public class Religion extends DynamicTenet<Religion> {
 
     }
 
-    @Override
-    public TimelineChange<Religion> getBirthChange(DMEReference<Religion> dme, LocalDate date) {
-        return null;
-    }
-
-    @Override
-    public TimelineChange<Religion> getDeathChange(DMEReference<Religion> dme, LocalDate date, CauseOfEnd<? super Religion> cOd) {
-        return null;
-    }
-
-    @Override
-    public CauseOfEnd<? super Religion> defaultDeathCause() {
-        return null;
-    }
 
 
-    @Override
-    public Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
-        return null;
-    }
+
 
     @Override
     public void additionalSave(JsonObject data) {
         super.additionalSave(data);
-        data.add("founding_culture",foundingCulture.serialize());
+
     }
 
     @Override
     public void additionalLoad(JsonObject data) {
         super.additionalLoad(data);
-        foundingCulture = DMEReference.deserialize(data.get("founding_culture").getAsJsonObject());
+
     }
 
-    public Culture getCulture() {
-        return foundingCulture.get();
+
+    @Override
+    public InterestGroup getInterestGroup() {
+        return interestGroup;
+    }
+    public InterestGroup buildGroup(){
+        return new InterestGroup(getDisplayID(),getPlural(),getDescription()) {
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return character.getReligion().equals(Religion.this);
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.RELIGIOUS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.RELIGIOUS;
+            }
+
+            @Override
+            public Dimension getDimension() {
+                return Dimension.Religion;
+            }
+        }
     }
 }

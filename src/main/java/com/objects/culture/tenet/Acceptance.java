@@ -1,10 +1,10 @@
 package com.objects.culture.tenet;
 
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
 import java.util.TreeMap;
 
-public enum Acceptance implements Displayable {
+public enum Acceptance implements IDisplayable {
     CORE_FANATIC("tp_extreme_core", "Core Fanatic", "This tenet is a core part of the culture and is fervently followed.", 448),
     CORE("tp_core", "Core", "This tenet is a core part of the culture", 320),
     INTEGRATED("tp_important", "Integrated", "This tenet is a part of the culture.", 192),
@@ -87,12 +87,12 @@ public enum Acceptance implements Displayable {
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
     public int getValue() {

@@ -4,10 +4,10 @@ import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import com.utilities.id.StringIdentifiable;
 
-public abstract class InterestGroup implements Displayable, StringIdentifiable {
+public abstract class InterestGroup implements IDisplayable, StringIdentifiable {
 
     private final String id;
     private final String displayName;
@@ -49,12 +49,12 @@ public abstract class InterestGroup implements Displayable, StringIdentifiable {
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return displayName;
     }
 

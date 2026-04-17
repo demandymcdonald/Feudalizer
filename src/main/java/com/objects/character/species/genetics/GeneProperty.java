@@ -1,8 +1,8 @@
 package com.objects.character.species.genetics;
 
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
-public record GeneProperty(String id, String name, String description) implements Displayable {
+public record GeneProperty(String id, String name, String description) implements IDisplayable {
 
     @Override
     public String getDisplayID() {
@@ -10,12 +10,12 @@ public record GeneProperty(String id, String name, String description) implement
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return "";
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return "";
     }
 }

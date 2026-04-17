@@ -1,10 +1,10 @@
 package com.objects.character.species;
 
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
 
-public abstract class Species implements Displayable {
+public abstract class Species implements IDisplayable {
     private final String id;
     private String name;
     private String description;
@@ -27,11 +27,11 @@ public abstract class Species implements Displayable {
         return id;
     }
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
     @Override
-    public String description() {
+    public String getDescription() {
         return description;
     }
 }

@@ -11,6 +11,7 @@ import com.objects.culture.tenet.TenetReference;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundedDouble;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -30,7 +31,7 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     private TenetReference tenet;
     private final BoundedDouble opinion = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private final BoundedDouble interpolated = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
-    private boolean isActive = false;
+    private MutableBoolean isActive = new MutableBoolean(false);
     private static final StringIdentifiable doubleID = new StringIdentifiable("opinion"){
         @Override
         public String getID() {
@@ -72,6 +73,18 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
             value.calculateVariables();
         };
         owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+    }
+    public void setActive(){
+        BiConsumer<TenetReference,TenetInstance<T>> consumer = (tenet, value) -> {
+            value.isActive.setValue(true);
+        };
+        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+    }
+    public boolean isActive(){
+        return isActive.booleanValue();
+    }
+    public MutableBoolean getActive(){
+        return isActive;
     }
     @Override
     public void mainSave(JsonObject object) {

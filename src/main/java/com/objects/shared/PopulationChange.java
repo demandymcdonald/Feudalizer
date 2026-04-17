@@ -7,7 +7,7 @@ import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.multi.MultiCondition;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.variable.EasingChange;
@@ -46,12 +46,12 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
     }
 
     @Override
-    public void setRuntimeMap(TimelineMap<InterestGroup, BoundInt, T> map) {
+    public void setRuntimeMap(MiddlemanMap<InterestGroup, BoundInt, T> map) {
         getOwner().get().getPopulationContainer().internalSetMap(map);
     }
 
     @Override
-    public TimelineMap<InterestGroup, BoundInt,T> getRuntimeMap() {
+    public MiddlemanMap<InterestGroup, BoundInt,T> getRuntimeMap() {
         return getOwner().get().getPopulationContainer().internalGetPopulationMap();
     }
     public void setPopulation(long population){

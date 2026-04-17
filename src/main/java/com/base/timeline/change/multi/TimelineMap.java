@@ -1,8 +1,6 @@
 package com.base.timeline.change.multi;
 
-import com.Global;
-import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
+import com.Global.*;
 import com.google.common.collect.Maps;
 import com.utilities.ThreadManager;
 import com.utilities.id.Identifiable;
@@ -14,35 +12,14 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-
-public class TimelineMap<M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> {
-    private class ChangeContainer {
-        private final M loadedChange;
-
-        private ChangeContainer(M loadedChange){
-            this.loadedChange = loadedChange;
-        }
-        public M read(){
-            return loadedChange;
-        }
-        public M write(){
-            if(Global.getDate() != loadedChange.getStart()){
-                DMEReference<? extends T> t = loadedChange.getOwner();
-                M newChange = loadedChange.getEmptyChange(t,Global.getDate());
-                t.get().getTimeline().internalAddChange(newChange);
-                return newChange;
-            } else{
-                return loadedChange;
-            }
-        }
-    }
+public class TimelineMap<K extends Identifiable<?>,V> {
+    private final MiddlemanMap<?,K,V,?,?> middleman;
     private final boolean isMain = ThreadManager.isMainThread();
-    private final ChangeContainer change;
-    public TimelineMap(M change) {
-        this.change = new ChangeContainer(change);
+    public TimelineMap(MiddlemanMap<?, K, V, ?, ?> middleman) {
+        this.middleman = middleman;
     }
     public V get(K key) {
-        return change.read().get(key);
+        return middleman.get(key);
     }
     public V getOrCompute(K key, Supplier<V> defaultValue) {
         return getOrCompute(isMain,false,key,defaultValue);
@@ -51,81 +28,64 @@ public class TimelineMap<M extends TLMultiChange<M,K,V,I,T>,K extends Identifiab
         return getOrCompute(isMain,wipeForward,key,defaultValue);
     }
     public V getOrCompute(boolean doSandbox, boolean wipeForward, K key, Supplier<V> defaultValue) {
-        if(containsKey(key)){
-            return get(key);
-        } else {
-            V v = defaultValue.get();
-            put(doSandbox,wipeForward,key,v);
-            return v;
-        }
+        return middleman.getOrCompute(doSandbox,wipeForward,key,defaultValue);
     }
     public Set<K> getKeys() {
-        return new HashSet<>(change.read().internalGetFull().keySet());
+        return middleman.getKeys();
     }
     public Set<V> getValues() {
-        return new HashSet<>(change.read().internalGetFull().values());
+        return middleman.getValues();
     }
     public Set<Map.Entry<K, V>> entrySet() {
-        Set<Map.Entry<K,V>> entries = new HashSet<>();
-        for (Map.Entry<K,V> entry : change.read().internalGetFull().entrySet()) {
-            entries.add(Maps.immutableEntry(entry.getKey(), entry.getValue()));
-        }
-        return entries;
+        return middleman.entrySet();
     }
     public Map<K,V> getWhere(Predicate<K> predicate) {
-        return getWhere(((k, v) ->  predicate.test(k)));
+        return middleman.getWhere(predicate);
     }
     public Map<K,V> getWhere(BiPredicate<K,V> predicate) {
-        Map<K,V> map = change.read().internalGetFull();
-        Map<K,V> toReturn = new HashMap<>();
-        for (Map.Entry<K,V> entry : map.entrySet()) {
-            if (predicate.test(entry.getKey(), entry.getValue())) {
-                toReturn.put(entry.getKey(),entry.getValue());
-            }
-        }
-        return toReturn;
+        return middleman.getWhere(predicate);
     }
     public int getSizeWhere(BiPredicate<K,V> predicate) {
         return getWhere(predicate).size();
     }
     public void put(K key, V value) {
-        change.write().put(isMain,false,Pair.of(key,value));
+        middleman.put(key,value);
     }
     public void put(boolean wipeForward,K key, V value) {
-        change.write().put(isMain,wipeForward,Pair.of(key,value));
+        middleman.put(wipeForward,key,value);
     }
     public void put(boolean doSandbox,boolean wipeForward, K key, V value) {
-        change.write().put(doSandbox,wipeForward,Pair.of(key,value));
+        middleman.put(doSandbox,wipeForward,key,value);
     }
     public boolean containsKey(K key) {
-        return change.read().internalGetFull().containsKey(key);
+        return middleman.containsKey(key);
     }
     public boolean containsValue(V value) {
-        return change.read().internalGetFull().containsValue(value);
+        return middleman.containsValue(value);
     }
     public void putAll(boolean wipeForward, Pair<K,V>... pairs) {
-        change.write().put(isMain,wipeForward,pairs);
+        middleman.putAll(wipeForward,pairs);
     }
     public void putAll(boolean doSandbox, boolean wipeForward, Pair<K,V>... pairs) {
-        change.write().put(doSandbox,wipeForward,pairs);
+        middleman.putAll(doSandbox,wipeForward,pairs);
     }
     public void putAll(boolean wipeForward, Map<K,V> map) {
-        change.write().put(isMain,wipeForward,map);
+       middleman.putAll(wipeForward,map);
     }
     public void putAll(boolean doSandbox,boolean wipeForward, Map<K,V> map) {
-        change.write().put(doSandbox,wipeForward,map);
+        middleman.putAll(doSandbox,wipeForward,map);
     }
     public void remove(TLMultiChange.WipeType type, K... key) {
-        change.write().remove(isMain, type, key);
+        middleman.remove(type,key);
     }
     public void remove(boolean doSandbox, TLMultiChange.WipeType type, K... key) {
-        change.write().remove(doSandbox, type, key);
+        middleman.remove(doSandbox,type,key);
     }
     public int size(){
-        return change.read().internalGetFull().size();
+        return middleman.size();
     }
     public void addListener(TLMultiChange.Listener<K,V> listener) {
-        change.read().addListener(listener);
+        middleman.addListener(listener);
     }
     public void setChanged(TLMultiChange.ChangeType type, Map<K, BiConsumer<K,V>> changes){
         setChanged(isMain,false,type,changes);
@@ -135,11 +95,11 @@ public class TimelineMap<M extends TLMultiChange<M,K,V,I,T>,K extends Identifiab
     }
     @SuppressWarnings("unchecked")
     public void setChanged(boolean doSandbox, boolean doWipe, TLMultiChange.ChangeType type, Map<K, BiConsumer<K,V>> changes){
-        List<TLMultiChange.ChangeContainer<M,K,V,I,T>> containers = new ArrayList<>();
-        for(Map.Entry<K, BiConsumer<K,V>> entry : changes.entrySet()){
-            containers.add(TLMultiChange.ChangeContainer.of((M) change.read(), entry.getValue(),entry.getKey()));
-        }
-        change.write().changed(doSandbox,doWipe,type,containers);
+        middleman.setChanged(doSandbox,doWipe,type,changes);
     }
+
+
+
+
 
 }

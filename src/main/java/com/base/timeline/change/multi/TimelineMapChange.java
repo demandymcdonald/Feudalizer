@@ -18,8 +18,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,I,T>,K
         super(owner, date);
     }
 
-    public abstract void setRuntimeMap(TimelineMap<M,K,V,I,T> map);
-    public abstract TimelineMap<M,K,V,I,T> getRuntimeMap();
+    public abstract void setRuntimeMap(MiddlemanMap<M,K,V,I,T> map);
+    public abstract MiddlemanMap<M,K,V,I,T> getRuntimeMap();
 
     @Override
     public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
