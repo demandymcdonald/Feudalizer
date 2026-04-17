@@ -16,6 +16,8 @@ import java.util.*;
 public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture> {
     CultureObjectContainer<Culture> container;
 
+
+
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
         super(created, ended, initialState);
         container = new CultureObjectContainer<>(getReference());
@@ -51,10 +53,6 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
         return null;
     }
 
-    public Culture(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
-        super(id, created, ended, initialState);
-    }
-
     @Override
     public void updateProceduralInfluencers() {
 
@@ -67,7 +65,12 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
 
     @Override
     public CultureObjectContainer<Culture> getContainer() {
-        return container;
+        return null;
+    }
+
+    @Override
+    public Culture getCulture() {
+        return null;
     }
 
     @Override

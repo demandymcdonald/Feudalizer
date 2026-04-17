@@ -1,6 +1,6 @@
 package com.utilities.number;
 
-public abstract class BoundDbl {
+public abstract class BoundDbl implements Comparable<BoundDbl> {
     private double value;
     BoundDbl(double value){
         this.value = Math.clamp(value,getMin(),getMax());
@@ -17,5 +17,10 @@ public abstract class BoundDbl {
     }
     public final double get(){
         return value;
+    }
+
+    @Override
+    public int compareTo(BoundDbl o) {
+        return Double.compare(value,o.value);
     }
 }
