@@ -11,7 +11,6 @@ public abstract class SentientSpecies implements Displayable {
     private final String name;
     private final String id;
     private final String description;
-
     public SentientSpecies(String id, String name, String description, List<SentientSpecies> compatibleMating) {
         this.compatibleMating = ImmutableList.<SentientSpecies>builder().addAll(compatibleMating).build();
         this.name = name;

@@ -6,13 +6,13 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.multi.TimelineMap;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
+import com.objects.character.Sex;
 import com.objects.character.species.genetics.GeneticContainer;
 import com.objects.character.opinion.Opinion;
 import com.objects.character.opinion.OpinionReason;
 import com.objects.character.sentient.change.CharacterChanges;
 import com.objects.character.sentient.change.SentientMapChange;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
 import com.objects.government.GoverningEntity;
 import com.objects.title.Title;
@@ -38,15 +38,12 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
 
 
-
-
-
-
     public enum Orientation {
         Heterosexual("Heterosexual"),
         Homosexual("Homosexual"),
         Bisexual("Bisexual"),
         Asexual("Asexual"),
+        Pansexual("Pansexual"),
         Questioning("Questioning"),
         Other("Other");
 
@@ -135,5 +132,10 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     }
     public final SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;
+    }
+
+    @Override
+    public Sex getSex() {
+        return gender.getSexAtBirth();
     }
 }

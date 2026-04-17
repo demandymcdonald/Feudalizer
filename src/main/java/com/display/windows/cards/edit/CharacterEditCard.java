@@ -1,6 +1,7 @@
 package com.display.windows.cards.edit;
 
 import com.base.DMRegistry;
+import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.CharacterManager;
 import com.objects.government.House;
@@ -19,7 +20,7 @@ public class CharacterEditCard extends BaseEditCard<HumanCharacter> {
     private final Label titleLabel = new Label();
     private final TextField givenNameField = new TextField();
     private final TextField surnameField = new TextField();
-    private final ComboBox<HumanCharacter.Gender> genderCombo = new ComboBox<>();
+    private final ComboBox<Gender> genderCombo = new ComboBox<>();
     private final TextField dobField = new TextField();
     private final TextField dodField = new TextField();
     private final RadioButton commonerRadio = new RadioButton("Commoner");
@@ -70,8 +71,8 @@ public class CharacterEditCard extends BaseEditCard<HumanCharacter> {
         grid.add(new Label("Surname:"), 0, row);
         grid.add(surnameField, 1, row++);
 
-        genderCombo.getItems().addAll(HumanCharacter.Gender.values());
-        genderCombo.setValue(HumanCharacter.Gender.Male);
+        genderCombo.getItems().addAll(Gender.values());
+        genderCombo.setValue(Gender.Male);
         grid.add(new Label("Gender:"), 0, row);
         grid.add(genderCombo, 1, row++);
 
@@ -142,7 +143,7 @@ public class CharacterEditCard extends BaseEditCard<HumanCharacter> {
     protected HumanCharacter buildEntity() {
         String givenName = givenNameField.getText().trim();
         String surname = surnameField.getText().trim();
-        HumanCharacter.Gender gender = genderCombo.getValue();
+        Gender gender = genderCombo.getValue();
         LocalDate dob = parseDate(dobField.getText());
         LocalDate dod = parseDate(dodField.getText());
 

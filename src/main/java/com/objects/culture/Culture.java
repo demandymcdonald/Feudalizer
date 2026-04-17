@@ -8,12 +8,14 @@ import com.objects.CauseOfEnd;
 import com.objects.culture.object.CultureObjectContainer;
 import com.objects.culture.object.COReference;
 import com.objects.culture.object.CultureObject;
+import com.objects.shared.IDemographicDriven;
+import com.objects.shared.PopulationContainer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture> {
+public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture>, IDemographicDriven<Culture> {
     CultureObjectContainer<Culture> container;
 
 
@@ -81,5 +83,10 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     @Override
     public void additionalLoad(JsonObject data) {
 
+    }
+
+    @Override
+    public PopulationContainer<Culture> getPopulationContainer() {
+        return null;
     }
 }

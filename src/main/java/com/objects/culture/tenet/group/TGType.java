@@ -20,6 +20,7 @@ public enum TGType {
     BELIEF_MAJOR(IDEOLOGY_SORT,new TenetGroup.AcceptanceContainer(BELIEF_MAX/2, Acceptance.CORE, Acceptance.CORE_FANATIC, Acceptance.INTEGRATED),new TenetGroup.AcceptanceContainer(BELIEF_MAX/2, Acceptance.ACCEPTED)),
     BELIEF_MINOR(BELIEF_MAJOR,new TenetGroup.AcceptanceContainer(BELIEF_MAX, Acceptance.CORE, Acceptance.CORE_FANATIC, Acceptance.INTEGRATED),new TenetGroup.AcceptanceContainer(BELIEF_MAX * 2, Acceptance.ACCEPTED)),
     LANGUAGE(IDEOLOGY_SORT,new TenetGroup.AcceptanceContainer(LANGUAGE_MAX, Acceptance.CORE, Acceptance.CORE_FANATIC, Acceptance.INTEGRATED),new TenetGroup.AcceptanceContainer(LANGUAGE_MAX * 2, Acceptance.ACCEPTED)),
+    SOCIETY_ATTITUDE(IDEOLOGY_SORT,new TenetGroup.AcceptanceContainer(SYSTEM_MAX/2, Acceptance.INTEGRATED, Acceptance.CORE, Acceptance.CORE_FANATIC, Acceptance.INTEGRATED)),
     TRADITION(IDEOLOGY_SORT,new TenetGroup.AcceptanceContainer(TRADITION_MAX, Acceptance.CORE, Acceptance.CORE_FANATIC, Acceptance.INTEGRATED),new TenetGroup.AcceptanceContainer(TRADITION_MAX * 4, Acceptance.ACCEPTED)),
     VALUE(IDEOLOGY_SORT,new TenetGroup.AcceptanceContainer(VALUE_MAX, Acceptance.CORE, Acceptance.CORE_FANATIC, Acceptance.INTEGRATED),new TenetGroup.AcceptanceContainer(VALUE_MAX * 3, Acceptance.ACCEPTED)),
     AESTHETIC(IDEOLOGY_SORT,new TenetGroup.AcceptanceContainer(1,Acceptance.CORE, Acceptance.CORE_FANATIC),new TenetGroup.AcceptanceContainer(AESTHETIC_MAX, Acceptance.INTEGRATED),new TenetGroup.AcceptanceContainer(AESTHETIC_MAX * 10, Acceptance.ACCEPTED)),

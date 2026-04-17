@@ -4,6 +4,7 @@ import com.Feudalizer;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.family.Family;
 import com.utilities.number.OrdinalAndCardinal;
@@ -125,7 +126,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
         return false;
     }
 
-    private static Optional<Pair<ExtendedFamilyRelationship,ExtendedFamilyRelationship>> deriveRelationship(AncestorInfo mInfo, AncestorInfo nInfo, HumanCharacter.Gender mGender, HumanCharacter.Gender nGender) {
+    private static Optional<Pair<ExtendedFamilyRelationship,ExtendedFamilyRelationship>> deriveRelationship(AncestorInfo mInfo, AncestorInfo nInfo, Gender mGender, Gender nGender) {
         // TODO: the formula logic we discussed
         // m and n are distances from each person to the common ancestor
         // remember to handle the isInLaw flag here too
@@ -183,7 +184,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
     }
 
     record AncestorInfo(int distance, boolean isAdoptive, boolean isInLaw) {}
-    private static ExtendedRelationship getSibling(HumanCharacter.Gender gender){
+    private static ExtendedRelationship getSibling(Gender gender){
        switch (gender.getPronouns()){
            case Neutral -> {return ExtendedRelationship.Neutral_Sibling;}
            case Masculine -> {return ExtendedRelationship.Brother;}
@@ -191,7 +192,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
        }
         throw new IllegalStateException("Unhandled pronoun type: " + gender.getPronouns());
     }
-    private static ExtendedRelationship getParent(HumanCharacter.Gender gender){
+    private static ExtendedRelationship getParent(Gender gender){
         switch (gender.getPronouns()){
             case Neutral -> {return ExtendedRelationship.Neutral_Parent;}
             case Masculine -> {return ExtendedRelationship.Father;}
@@ -199,7 +200,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
         }
         throw new IllegalStateException("Unhandled pronoun type: " + gender.getPronouns());
     }
-    public static ExtendedRelationship getChild(HumanCharacter.Gender gender){
+    public static ExtendedRelationship getChild(Gender gender){
         switch (gender.getPronouns()){
             case Neutral -> {return ExtendedRelationship.Neutral_Child;}
             case Masculine -> {return ExtendedRelationship.Son;}
@@ -207,7 +208,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
         }
         throw new IllegalStateException("Unhandled pronoun type: " + gender.getPronouns());
     }
-    private static ExtendedRelationship getGrandParent(HumanCharacter.Gender gender){
+    private static ExtendedRelationship getGrandParent(Gender gender){
         switch (gender.getPronouns()){
             case Neutral -> {return ExtendedRelationship.Neutral_Grandparent;}
             case Masculine -> {return ExtendedRelationship.GrandFather;}
@@ -215,7 +216,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
         }
         throw new IllegalStateException("Unhandled pronoun type: " + gender.getPronouns());
     }
-    private static ExtendedRelationship getGrandChild(HumanCharacter.Gender gender){
+    private static ExtendedRelationship getGrandChild(Gender gender){
         switch (gender.getPronouns()){
             case Neutral -> {return ExtendedRelationship.Neutral_Grandchild;}
             case Masculine -> {return ExtendedRelationship.GrandSon;}
@@ -223,7 +224,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
         }
         throw new IllegalStateException("Unhandled pronoun type: " + gender.getPronouns());
     }
-    private static ExtendedRelationship getPibling(HumanCharacter.Gender gender){
+    private static ExtendedRelationship getPibling(Gender gender){
         switch (gender.getPronouns()){
             case Neutral -> {return ExtendedRelationship.Neutral_Pibling;}
             case Masculine -> {return ExtendedRelationship.Uncle;}
@@ -231,7 +232,7 @@ public record ExtendedFamilyRelationship(int position, ExtendedRelationship rela
         }
         throw new IllegalStateException("Unhandled pronoun type: " + gender.getPronouns());
     }
-    private static ExtendedRelationship getNibling(HumanCharacter.Gender gender){
+    private static ExtendedRelationship getNibling(Gender gender){
         switch (gender.getPronouns()){
             case Neutral -> {return ExtendedRelationship.Neutral_Nibling;}
             case Masculine -> {return ExtendedRelationship.Nephew;}

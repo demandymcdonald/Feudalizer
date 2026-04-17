@@ -3,6 +3,7 @@ package com.objects.character;
 import com.base.AbstractMutableManager;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
+import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.HumanCharacter;
 import com.utilities.Factory;
 
@@ -70,7 +71,7 @@ public class CharacterManager extends AbstractMutableManager<CharacterManager, L
 
 
     public record CharacterContainer(LocalDate created, LocalDate ended, String givenName, String surname, LocalDate dateOfBirth, LocalDate dateOfDeath,
-                                     HumanCharacter.Gender gender, HumanCharacter.Orientation orientation){
+                                     Gender gender, HumanCharacter.Orientation orientation){
         public JsonObject serialize(){
             JsonObject json = new JsonObject();
             json.addProperty("type","character");
@@ -90,7 +91,7 @@ public class CharacterManager extends AbstractMutableManager<CharacterManager, L
             }
             return new CharacterContainer(LocalDate.ofEpochDay(json.get("created").getAsLong()), LocalDate.ofEpochDay(json.get("ended").getAsLong()),
                     json.get("givenName").getAsString(), json.get("surname").getAsString(), LocalDate.ofEpochDay(json.get("dateOfBirth").getAsLong()),
-                    LocalDate.ofEpochDay(json.get("dateOfDeath").getAsLong()), HumanCharacter.Gender.valueOf(json.get("gender").getAsString()),
+                    LocalDate.ofEpochDay(json.get("dateOfDeath").getAsLong()), Gender.valueOf(json.get("gender").getAsString()),
                     HumanCharacter.Orientation.valueOf(json.get("orientation").getAsString()));
         }
     }

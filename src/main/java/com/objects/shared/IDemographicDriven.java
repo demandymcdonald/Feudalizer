@@ -10,4 +10,5 @@ public interface IDemographicDriven<T extends DateMutableEntity<T> & IDemographi
         return getPopulationContainer().isInMajority(group);
     }
 
+
 }

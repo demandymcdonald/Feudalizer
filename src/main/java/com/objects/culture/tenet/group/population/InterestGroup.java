@@ -21,14 +21,20 @@ public abstract class InterestGroup implements Displayable, StringIdentifiable {
     private final String displayName;
     private final String description;
     public enum Dimension{
-        Gender,
-        Race_Ethnicity,
-        Class_Caste,
-        Sexual_Orientation,
-
+        Sex_At_Birth("sex:"),
+        Gender_Identity("gender:"),
+        Race_Ethnicity("race:"),
+        Class_Caste("class:"),
+        Sexual_Orientation("orientation:"),
+        Religion("religion:"),
+        ;
+        private final String prefix;
+        Dimension(String prefix) {
+            this.prefix = prefix;
+        }
     }
     public InterestGroup(String id, String displayName, String description) {
-        this.id = "ig_" + id;
+        this.id = "ig_" + getDimension().prefix +id;
         this.displayName = displayName;
         this.description = description;
     }

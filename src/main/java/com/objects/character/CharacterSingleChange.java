@@ -9,6 +9,7 @@ import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.HumanCharacter;
 
 import java.time.LocalDate;
@@ -202,9 +203,9 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
     }
     public static class setGender extends CharacterSingleChange {
-        private HumanCharacter.Gender gender;
-        private Optional<HumanCharacter.Gender> old;
-        public setGender(DMEReference<HumanCharacter> primary, LocalDate date, HumanCharacter.Gender gender) {
+        private Gender gender;
+        private Optional<Gender> old;
+        public setGender(DMEReference<HumanCharacter> primary, LocalDate date, Gender gender) {
             super(primary,date);
             this.gender = gender;
             this.old = Optional.ofNullable(primary.get().getGender());
@@ -257,9 +258,9 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
         @Override
         public void additionalLoad(JsonObject data) {
-            gender = HumanCharacter.Gender.valueOf(data.get("gender").getAsString());
+            gender = Gender.valueOf(data.get("gender").getAsString());
             if(data.has("old")){
-                old = Optional.of(HumanCharacter.Gender.valueOf(data.get("old").getAsString()));
+                old = Optional.of(Gender.valueOf(data.get("old").getAsString()));
             } else {
                 old = Optional.empty();
             }

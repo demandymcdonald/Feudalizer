@@ -5,6 +5,7 @@ import com.base.timeline.change.TimelineSingleChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
+import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.title.succession.rules.SuccessionEntry;
 
@@ -180,12 +181,12 @@ public class CharacterChanges {
         }
     }
     public static class SetGender<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private SentientCharacter.Gender newGender;
-        private SentientCharacter.Gender oldGender;
+        private Gender newGender;
+        private Gender oldGender;
         public SetGender(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
-        public SetGender(DMEReference<? extends T> owner, LocalDate date, SentientCharacter.Gender newGender) {
+        public SetGender(DMEReference<? extends T> owner, LocalDate date, Gender newGender) {
             super(owner, date);
             this.newGender = newGender;
             this.oldGender = owner.get().getGender();
@@ -211,9 +212,9 @@ public class CharacterChanges {
 
         @Override
         public void additionalLoad(JsonObject data) {
-            newGender = SentientCharacter.Gender.valueOf(data.get("new_gender").getAsString());
+            newGender = Gender.valueOf(data.get("new_gender").getAsString());
             if(data.has("old_gender")) {
-                oldGender = SentientCharacter.Gender.valueOf(data.get("old_gender").getAsString());
+                oldGender = Gender.valueOf(data.get("old_gender").getAsString());
             }
         }
     }
