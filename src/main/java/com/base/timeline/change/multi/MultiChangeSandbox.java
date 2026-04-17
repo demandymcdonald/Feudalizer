@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
 import static com.base.timeline.change.multi.TimelineMultiChange.removeEntry;
 
@@ -28,11 +29,11 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
     private final Map<Pair<K, V>, TimelineMultiChange.ChangeType> changes;
     private final Map<TimelineMultiChange.ChangeType, List<MultiCondition<M, K, V, I, T>>> conditions = new HashMap<>();
     private final Multimap<TimelineMultiChange.ChangeType, Pair<K, V>> changeByType = HashMultimap.create();
-    private final Consumer<SandboxCode> onComplete;
+    private final List<TimelineMultiChange.Listener<K,V>>  listeners;
 
-    public MultiChangeSandbox(Consumer<SandboxCode> onComplete, Map<Pair<K, V>, TimelineMultiChange.ChangeType> changes) {
-        this.onComplete = onComplete;
+    public MultiChangeSandbox(Map<Pair<K, V>, TimelineMultiChange.ChangeType> changes, List<TimelineMultiChange.Listener<K,V>> listeners) {
         this.changes = new HashMap<>(changes);
+        this.listeners = new ArrayList<>(listeners);
     }
     @Override
     public SandboxCode onStartup(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange) {
@@ -129,11 +130,10 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
             case END_SAVE -> {
                 change.setEnd(endDate);
                 state.insertAndPropagateBreadcrumb(change);
-                doChange();
+                doChange((M) newChange);
                 break;
             }
         }
-        onComplete.accept(code);
     }
 
     private List<Pair<K, V>> buildCurrentList(M existingChange, List<Pair<K, V>> newEntries) {
@@ -193,41 +193,88 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
 
     private void doAdd(M change, List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
-            change.internalAddEntry(entry.getKey(), entry.getValue());
+            K key = entry.getKey();
+            change.internalAddEntry(key, entry.getValue());
+            I id = key.getID();
+            if (change.hasEndingChanges() && change.getEndingChanges().contains(id)) {
+                change.internalRemoveEnding(key);
+            }
         }
     }
 
     private void doAddWipe(M change,List<Pair<K, V>> entries) {
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
-            change.internalAddEntry(entry.getKey(), entry.getValue());
-            wipe.add(entry.getKey());
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
-                listener.onMapPut(entry.getKey(), entry.getValue());
+            K key = entry.getKey();
+            change.internalAddEntry(key, entry.getValue());
+            wipe.add(key);
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                listener.onMapPut(key, entry.getValue());
+            }
+            I id = key.getID();
+            if (change.hasEndingChanges() && change.getEndingChanges().contains(id)) {
+                change.internalRemoveEnding(key);
             }
         }
         removeEntry(change, FORWARD, true, false, wipe);
     }
 
     private void doRemove(M change,List<Pair<K, V>> entries) {
-
+        List<K> wipe = new ArrayList<>();
+        for (Pair<K, V> entry : entries) {
+            if(change.contains(entry.getKey())){
+                change.internalRemoveChange(entry.getKey());
+            } else {
+                wipe.add(entry.getKey());
+            }
+            change.onRemoveEntry(TimelineMultiChange.WipeType.NO_WIPE, entry.getKey());
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                listener.onMapRemove(entry.getKey(), entry.getValue(),TimelineMultiChange.WipeType.NO_WIPE);
+            }
+        }
+        removeEntry(change, BACKWARD, false, true, wipe);
     }
 
     private void doRemoveWipeForward(M change,List<Pair<K, V>> entries) {
-
+        List<K> wipe = new ArrayList<>();
+        for (Pair<K, V> entry : entries) {
+            wipe.add(entry.getKey());
+            change.onRemoveEntry(TimelineMultiChange.WipeType.FORWARD, entry.getKey());
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                listener.onMapRemove(entry.getKey(), entry.getValue(),TimelineMultiChange.WipeType.FORWARD);
+            }
+        }
+        removeEntry(change, FORWARD, true, true, wipe);
     }
 
     private void doRemoveWipeBackward(M change,List<Pair<K, V>> entries) {
-
+        List<K> wipe = new ArrayList<>();
+        for (Pair<K, V> entry : entries) {
+            wipe.add(entry.getKey());
+            change.onRemoveEntry(TimelineMultiChange.WipeType.BACKWARD, entry.getKey());
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                listener.onMapRemove(entry.getKey(), entry.getValue(),TimelineMultiChange.WipeType.BACKWARD);
+            }
+        }
+        removeEntry(change, BACKWARD, true, true, wipe);
     }
 
     private void doRemoveWipeBoth(M change,List<Pair<K, V>> entries) {
-
+        List<K> wipe = new ArrayList<>();
+        for (Pair<K, V> entry : entries) {
+            wipe.add(entry.getKey());
+            change.onRemoveEntry(TimelineMultiChange.WipeType.BOTH, entry.getKey());
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                listener.onMapRemove(entry.getKey(), entry.getValue(),TimelineMultiChange.WipeType.BOTH);
+            }
+        }
+        removeEntry(change, FORWARD, true, false, new ArrayList<>(wipe));
+        removeEntry(change, BACKWARD, true, true, new ArrayList<>(wipe));
     }
 
     private void doModifyBoth(M change,List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
                 listener.onMapChange(TimelineMultiChange.ChangeType.MODIFY_BOTH,entry.getKey(), entry.getValue());
             }
         }
@@ -235,7 +282,7 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
 
     private void doModifyKey(M change,List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
                 listener.onMapChange(TimelineMultiChange.ChangeType.MODIFY_KEY,entry.getKey(), entry.getValue());
             }
         }
@@ -243,7 +290,7 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
 
     private void doModifyValue(M change,List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
                 listener.onMapChange(TimelineMultiChange.ChangeType.MODIFY_VALUE,entry.getKey(), entry.getValue());
             }
         }
@@ -253,7 +300,7 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
             wipe.add(entry.getKey());
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
                 listener.onMapChange(TimelineMultiChange.ChangeType.MODIFY_BOTH_WIPE,entry.getKey(), entry.getValue());
             }
         }
@@ -264,7 +311,7 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
             wipe.add(entry.getKey());
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
                 listener.onMapChange(TimelineMultiChange.ChangeType.MODIFY_KEY_WIPE,entry.getKey(), entry.getValue());
             }
         }
@@ -274,7 +321,7 @@ public class MultiChangeSandbox<M extends TimelineMultiChange<M, K, V, I, T>, T 
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
             wipe.add(entry.getKey());
-            for(TimelineMultiChange.Listener<K,V> listener : change.getListeners()){
+            for(TimelineMultiChange.Listener<K,V> listener : listeners){
                 listener.onMapChange(TimelineMultiChange.ChangeType.MODIFY_VALUE_WIPE,entry.getKey(), entry.getValue());
             }
         }

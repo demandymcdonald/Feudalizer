@@ -82,14 +82,14 @@ public abstract class TimelineCollectionChange<M extends TimelineCollectionChang
         if (pauseCacheChecks.get()){
             return;
         }
-        removeEntry(type,key);
+        this.remove(type,key);
         buildContainer();
     }
     public final void removeAll(WipeType type, Collection<? extends K> key){
         if (pauseCacheChecks.get()){
             return;
         }
-        removeEntry(type,key.toArray((K[]) new Identifiable[key.size()]));
+        this.remove(type,key.toArray((K[]) new Identifiable[key.size()]));
         buildContainer();
     }
     private static <C extends Collection<K>, K extends Identifiable<I>,I> void populateOrdered(C orderedCollection, Map<K,Integer> full){

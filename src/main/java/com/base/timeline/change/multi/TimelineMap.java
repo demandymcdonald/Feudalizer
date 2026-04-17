@@ -112,10 +112,10 @@ public class TimelineMap<K extends Identifiable<?>,V,T extends DateMutableEntity
         change.write().addChange(doSandbox,wipeForward,map);
     }
     public void remove(TimelineMultiChange.WipeType type, K... key) {
-        change.write().removeEntry(isMain, type, key);
+        change.write().remove(isMain, type, key);
     }
     public void remove(boolean doSandbox, TimelineMultiChange.WipeType type, K... key) {
-        change.write().removeEntry(doSandbox, type, key);
+        change.write().remove(doSandbox, type, key);
     }
     public int size(){
         return change.read().internalGetFull().size();

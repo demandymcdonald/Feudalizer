@@ -17,6 +17,8 @@ import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.sandbox.function.SandboxFunction;
 import com.base.timeline.state.TimelineState;
 import com.base.utilities.CachingSupplier;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,12 +31,10 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
-import static com.base.timeline.error.SandboxCode.END_DISCARD;
 
 @SuppressWarnings("unchecked")
 public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineChange<T> {
@@ -189,6 +189,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
 
 
     protected void onAddEntry(ChangeType addType, K key, V value){}
+    protected void onReplaceEntry(ChangeType replaceType, K key, V oldValue, V value){}
     protected void onRemoveEntry(WipeType wipe, K... key){};
     protected void onBuildMap(){};
     protected void onBuildMapStep(M stepChange, Map<K,V> map){};
@@ -288,86 +289,62 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         addChange(sandbox,wipeForward,pairs.toArray(new Pair[pairs.size()]));
     }
     protected void addChange(boolean sandbox, boolean wipeForward, Pair<K,V>... changes){
-        List<K> rollback = new ArrayList<>();
-        Map<K,V> backup = new HashMap<>();
-        Map<K,V> toAdd = new HashMap<>();
         ChangeType addChange;
+        ChangeType modifyChange;
         if(wipeForward){
             addChange = ChangeType.ADD_WIPE;
+            modifyChange = ChangeType.MODIFY_BOTH_WIPE;
         } else {
             addChange = ChangeType.ADD;
+            modifyChange = ChangeType.MODIFY_BOTH;
         }
-        Map<Pair<K,V>,ChangeType> sandboxChanges = new HashMap<>();
-        for (Pair<K, V> p : changes) {
-            K key = p.getKey();
-            I id = key.getID();
-            if (!this.activeChanges.containsKey(key)) {
-                rollback.add(key);
-                sandboxChanges.put(p, addChange);
-                activeChanges.put(key, p.getValue());
-                onAddEntry(addChange,key,p.getValue());
-            } else {
-                backup.put(key, this.activeChanges.get(key));
-                sandboxChanges.put(p, ChangeType.MODIFY_VALUE);
-                activeChanges.put(key, p.getValue());
-                onAddEntry(ChangeType.MODIFY_VALUE,key,p.getValue());
-            }
-            if (hasEndingChanges() && endingChanges.contains(id)) {
-                endingChanges.remove(key.getID());
-            }
-            toAdd.put(key, p.getValue());
-        }
-        Map<K,ChangeType> ct = new HashMap<>();
-        for (K k : toAdd.keySet()) {
-            if (rollback.contains(k)) {
-                ct.put(k, addChange);
-            } else {
-                ct.put(k, ChangeType.MODIFY_VALUE);
-            }
-        }
-        M m = (M) this;
-        cascadeInvalidate(m, ct);
-        Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
-            @Override
-            public void accept(SandboxCode sandboxCode) {
-                if (sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR) {
-                    for(K k : rollback){
-                        //Fine to do because the changes were not accepted.
-                        activeChanges.remove(k);
+        if(!sandbox){
+            for(Pair<K,V> pair : changes){
+                final K key = pair.getKey();
+                final V value = pair.getValue();
+                if(!this.activeChanges.containsKey(key)){
+                    onAddEntry(addChange, key, value);
+                    for(Listener<K,V> listener : listeners){
+                        listener.onMapPut(key,value);
                     }
-                    activeChanges.putAll(backup);
                 } else {
-                    List<K> wipe = new ArrayList<>();
-                    for (Map.Entry<K, V> e : toAdd.entrySet()) {
-                        for (Listener<K, V> listener : listeners) {
-                            listener.onMapPut(e.getKey(), e.getValue());
-                        }
-                        wipe.add(e.getKey());
-                    }
-                    if(wipeForward){
-                        removeEntry(m, Global.TimeDirection.FORWARD, true,false,wipe);
+                    final V oldV = this.activeChanges.get(key);
+                    onReplaceEntry(addChange, key, oldV,value);
+                    for(Listener<K,V> listener : listeners){
+                        listener.onMapReplace(key,oldV,value);
                     }
                 }
+                this.activeChanges.put(key,value);
+                if (endingChanges.contains(key.getID())) {
+                    endingChanges.remove(key.getID());
+                }
             }
-        };
-        if (sandbox) {
-            Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(code, sandboxChanges));
+        }else {
+            Map<K, ChangeType> ct = new HashMap<>();
+            Map<Pair<K, V>, ChangeType> sandboxChanges = new HashMap<>();
+            for (Pair<K, V> p : changes) {
+                K key = p.getKey();
+                if (!this.activeChanges.containsKey(key)) {
+                    sandboxChanges.put(p, addChange);
+                    ct.put(key, addChange);
+                    onAddEntry(addChange, key, p.getValue());
+                } else {
+                    ct.put(key, modifyChange);
+                    sandboxChanges.put(p, modifyChange);
+                }
+            }
+            M m = (M) this;
+            cascadeInvalidate(m, ct);
+            Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(sandboxChanges, listeners));
             SandboxHandler.StartSandbox(t);
-        } else {
-            code.accept(SandboxCode.END_SAVE);
         }
     }
     public final void setChanged(boolean sandbox, ChangeEntry value, K... key){
         Map<Pair<K,V>,ChangeType> changeMap = new HashMap<>();
         for(K k : key){
-            if(activeChanges.containsKey(k)){
-                changeMap.put(Pair.of(k,activeChanges.get(k)),value.getType());
+            changeMap.put(Pair.of(k,activeChanges.get(k)),value.getType());
+            if(!sandbox){
                 onMapEntryChange(value.getType(),k,activeChanges.get(k));
-            } else if (getFullMap().containsKey(k)) {
-                changeMap.put(Pair.of(k,getFullMap().get(k)),value.getType());
-                onMapEntryChange(value.getType(),k,getFullMap().get(k));
-            } else {
-                logger().warn("Attempted to mark a value changed that does not exist in the map. Key: {}.. Map Change: {}",k,this);
             }
         }
         if(!changeMap.isEmpty()){
@@ -375,143 +352,75 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             List<K> toAdd = new ArrayList<>(Arrays.stream(key).toList());
             cascadeInvalidate(m,buildChangeTypes(toAdd,value.getType()));
             if (sandbox) {
-                Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
-                    @Override
-                    public void accept(SandboxCode sandboxCode) {
-                        if (sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR) {
-                            //TODO: Tell TimelineState to reload this change from disk/DB.. kind of sucks, but will have to do.
-                        } else {
-                            for (Map.Entry<Pair<K, V>, ChangeType> e : changeMap.entrySet()) {
-                                for (Listener<K, V> listener : listeners) {
-                                    listener.onMapChange(e.getValue(), e.getKey().getKey(), e.getKey().getValue());
-                                }
-                            }
-                        }
-                    }
-                };
-                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(code, changeMap));
+                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(changeMap,listeners));
                 SandboxHandler.StartSandbox(t);
             }
         }
     }
-    private record RemoveContainer<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>
-            (Map<K,V> rollback,
-             List<K> rollbackEnd,
-             Map<K,ChangeType> cacheChanges,
-             Map<Pair<K,V>,ChangeType> sandboxChanges
-            ){
-
-    }
-    protected final void removeEntry(boolean sandbox, WipeType wipe, K... key){
-        if(key.length == 0){
+    protected final void remove(boolean sandbox, WipeType wipe, K... key) {
+        if (key.length == 0) {
             return;
         }
-        final RemoveContainer<M,K,V,I,T> rbContainer;
-        if (wipe == WipeType.NO_WIPE) {
-            rbContainer = removeRegular(key);
-        } else {
-            rbContainer = removeWipe(wipe,key);
-        }
-        cascadeInvalidate((M) this, rbContainer.cacheChanges());
-        M m = (M) this;
-        List<K> toFind = new ArrayList<>(Arrays.stream(key).toList());
-        //Because remove entry is kind of weird, wipes actually only happen after the thing's been removed, but regular removals are processed immediately. Why?
-        //Because there's really no good way to roll back a wipe,and I can imagine situations where you'll need to see the unwiped state on sandboxing, but
-        //I can't think of any for just removing the change once in this change.. Does make the consumer narly though
-        final Consumer<SandboxCode> code = new Consumer<SandboxCode>() {
-            @Override
-            public void accept(SandboxCode sandboxCode) {
-                if (sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR) {
-                    for(K k : rbContainer.rollback().keySet()){
-                        //Fine to do because the changes were not accepted.
-                        activeChanges.put(k,rbContainer.rollback().get(k));
-                    }
-                    for(K k : rbContainer.rollbackEnd()){
-                        if (endingChanges.contains(k.getID())) {
-                            endingChanges.remove(k.getID());
-                        } else {
-                            endingChanges.add(k.getID());
-                        }
-                    }
-                } else {
-                    for (Map.Entry<Pair<K, V>,ChangeType> e : rbContainer.sandboxChanges().entrySet()) {
-                        for (Listener<K, V> listener : listeners) {
-                            onRemoveEntry(wipe,key);
-                            listener.onMapRemove(e.getKey().getKey(), e.getKey().getValue(),e.getValue().getWipeType());
-                        }
-                    }
-                    if(wipe != WipeType.NO_WIPE){
-                        switch (wipe) {
-                            case FORWARD:
-                                removeEntry(m, FORWARD, true, true, toFind);
-                                break;
-                            case BACKWARD:
-                                removeEntry(m, BACKWARD, true, true, toFind);
-                                break;
-                            case BOTH:
-                                //Same case as above. The remove entry going back will amend the total properly.
-                                removeEntry(m, FORWARD, true, false, new ArrayList<>(toFind));
-                                removeEntry(m, BACKWARD, true, false, new ArrayList<>(toFind));
-                                break;
-                        }
-                    }
-                }
-            }
-        };
-        if(sandbox){
-            if (wipe == WipeType.BOTH){
-                M m = (M) this;
-                AtomicBoolean firstContinue = new AtomicBoolean(true);
-                Consumer<SandboxCode> first = new Consumer<SandboxCode>() {
-                    @Override
-                    public void accept(SandboxCode sandboxCode) {
-                        if (sandboxCode == END_DISCARD || sandboxCode == SandboxCode.CRITICAL_ERROR) {
-                            firstContinue.set(false);
-                            code.accept(sandboxCode);
-                        } else {
-                            Objective<T> t = new Objective<>(getOwner(), BACKWARD, m, new MultiChangeSandbox<>(code, rbContainer.sandboxChanges()));
-                            SandboxHandler.StartSandbox(t);
-                        }
-                    }
-                };
-                Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(first, rbContainer.sandboxChanges()));
-                SandboxHandler.StartSandbox(t);
+        final Map<Pair<K,V>,ChangeType>  changes;
+            if (wipe == WipeType.NO_WIPE) {
+                changes = removeRegular(sandbox,key);
             } else {
-                Objective<T> t = new Objective<>(getOwner(), wipe.getDirection(), (M) this, new MultiChangeSandbox<>(code, rbContainer.sandboxChanges()));
-                SandboxHandler.StartSandbox(t);
+                changes = removeWipe(sandbox,wipe,key);
+            }
+        if (!sandbox){
+            Multimap<WipeType,Pair<K,V>> map = HashMultimap.create();
+            for(Pair<K,V> p : changes.keySet()){
+                WipeType type = changes.get(p).getWipeType();
+                map.put(type, p);
+            }
+            doRemove(map);
+        } else {
+            Objective<T> t = new Objective<>(getOwner(), wipe.getDirection(), (M) this, new MultiChangeSandbox<>(changes, listeners));
+            SandboxHandler.StartSandbox(t);
+        }
+    }
+    
+    private void doRemove(Multimap<WipeType,Pair<K,V>> map) {
+        for (WipeType wipe : map.keySet()) {
+            boolean isWipe = wipe != WipeType.NO_WIPE;
+            List<Pair<K,V>> toRemove = new ArrayList<>(map.get(wipe));
+            if(!toRemove.isEmpty()){
+                List<K> removeKey = new ArrayList<>(toRemove.size());
+                for (Pair<K,V> p : toRemove){
+                    this.onRemoveEntry(wipe, p.getKey());
+                    for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                        listener.onMapRemove(p.getKey(), p.getValue(),wipe);
+                    }
+                    removeKey.add(p.getKey());
+                }
+                removeEntry((M)this,wipe.getDirection(),isWipe,true,removeKey);
             }
         }
     }
-    private RemoveContainer<M,K,V,I,T> removeRegular(K... key){
-        Map<K,V> rollback = new HashMap<>();
-        List<K> rollbackEnd = new ArrayList<>();
+    
+    
+    
+    private Map<Pair<K,V>,ChangeType> removeRegular(boolean sandbox, K... key){
         Map<K,ChangeType> cacheChanges = new HashMap<>();
         Map<Pair<K,V>,ChangeType> sandboxChanges = new HashMap<>();
         List<K> toFind = new ArrayList<>();
         for (K k : key) {
-            I id = k.getID();
             if (activeChanges.containsKey(k)) {
                 V v = activeChanges.get(k);
                 sandboxChanges.put(Pair.of(k, v), ChangeType.REMOVE);
                 cacheChanges.put(k, ChangeType.REMOVE);
-                rollback.put(k, v);
-                activeChanges.remove(k);
-                if (hasEndingChanges()) {
-                    endingChanges.add(id);
-                    rollbackEnd.add(k);
-                }
             } else {
                 toFind.add(k);
             }
         }
         if (!toFind.isEmpty()) {
-            removeEntry((M) this, BACKWARD, false, true, toFind);
+            M m = (M) TimelineObject.getChangeStep(this, BACKWARD,false,0, null);
+            m.remove(sandbox,WipeType.NO_WIPE, (K[]) toFind.toArray(Identifiable[]::new));
         }
-        return new RemoveContainer<>(rollback, rollbackEnd, cacheChanges, sandboxChanges);
+        cascadeInvalidate((M) this, cacheChanges);
+        return sandboxChanges;
     }
-    private RemoveContainer<M,K,V,I,T> removeWipe(WipeType wipe, K... key){
-        Map<K,V> rollback = new HashMap<>();
-        List<K> rollbackEnd = new ArrayList<>();
+    private Map<Pair<K,V>,ChangeType> removeWipe(boolean sandbox, WipeType wipe, K... key){
         Map<K,ChangeType> cacheChanges = new HashMap<>();
         Map<Pair<K,V>,ChangeType> sandboxChanges = new HashMap<>();
         List<K> toFind = new ArrayList<>(Arrays.stream(key).toList());
@@ -521,19 +430,20 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             case BOTH -> ChangeType.REMOVE_WIPE_BOTH;
             default -> ChangeType.REMOVE;
         };
-        for (K k : toFind) {
+        for (K k : key) {
+            if (!activeChanges.containsKey(k)) {
+                toFind.add(k);
+                continue;
+            }
             V v = activeChanges.get(k);
-            rollback.put(k, v);
             sandboxChanges.put(Pair.of(k, v), ct);
             cacheChanges.put(k, ct);
-            activeChanges.remove(k);
-            if(endingChanges.contains(k.getID())){
-                endingChanges.remove(k.getID());
-                rollbackEnd.add(k);
-            }
         }
-
-        return new RemoveContainer<>(rollback, rollbackEnd, cacheChanges, sandboxChanges);
+        if (!toFind.isEmpty()) {
+            M m = (M) TimelineObject.getChangeStep(this, BACKWARD,false,0, null);
+            m.remove(sandbox,wipe, (K[]) toFind.toArray(Identifiable[]::new));
+        }
+        return sandboxChanges;
     }
 
     protected final Map<K,V> getActive(){
