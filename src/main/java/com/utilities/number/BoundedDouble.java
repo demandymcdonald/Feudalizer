@@ -3,7 +3,7 @@ package com.utilities.number;
 import com.Global.*;
 import com.google.gson.JsonElement;
 
-public class BoundedDouble extends BoundedNumber<Double>{
+public class BoundedDouble extends BoundedNumber<Double> implements Comparable<BoundedDouble>{
     public BoundedDouble(double min, double max) {
         super(min, max);
     }
@@ -23,5 +23,10 @@ public class BoundedDouble extends BoundedNumber<Double>{
         if(element.isJsonPrimitive()){
             set( element.getAsDouble());
         }
+    }
+
+    @Override
+    public int compareTo(BoundedDouble o) {
+        return Double.compare(get(), o.get());
     }
 }

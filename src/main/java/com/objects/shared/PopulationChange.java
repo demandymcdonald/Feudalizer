@@ -15,21 +15,33 @@ import com.base.timeline.variable.EasingChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.objects.culture.tenet.caste.CasteObject;
+import com.objects.culture.tenet.group.population.InterestGroup;
 import com.objects.title.land.habitable.HabitableLand;
-import com.utilities.number.BoundedInteger;
+import com.utilities.number.BoundInt;
+import com.utilities.number.BoundInts;
+import com.utilities.number.BoundInt;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDriven<T>> extends TimelineMapChange<PopulationChange<T>, CasteObject, BoundedInteger,String,T> implements EasingChange<PopulationContainer<T>,PopulationChange<T>,T> {
+public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDriven<T>> extends TimelineMapChange<PopulationChange<T>, InterestGroup, BoundInt,String,T> implements EasingChange<PopulationContainer<T>,PopulationChange<T>,T> {
     long population;
 
-    public PopulationChange(DMEReference<? extends T> owner, LocalDate date, Map<CasteObject, BoundedInteger> initial) {
+    public PopulationChange(DMEReference<? extends T> owner, LocalDate date, Map<InterestGroup, BoundInt> initial) {
         super(owner, date, initial);
         population = 0;
+    }
+
+    public PopulationChange(DMEReference<? extends T> owner, LocalDate date, long population) {
+        super(owner, date);
+        this.population = population;
+    }
+
+    @Override
+    public PopulationChange<T> getEmptyChange(DMEReference<? extends T> owner, LocalDate date) {
+        return new PopulationChange<>(owner, date, owner.get().getPopulationContainer().getPopulation());
     }
 
     protected PopulationChange(DMEReference<? extends T> owner, LocalDate date) {
@@ -37,12 +49,12 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
     }
 
     @Override
-    public void setRuntimeMap(TimelineMap<CasteObject, BoundedInteger, T> map) {
+    public void setRuntimeMap(TimelineMap<InterestGroup, BoundInt, T> map) {
         getOwner().get().getPopulationContainer().internalSetMap(map);
     }
 
     @Override
-    public TimelineMap<CasteObject, BoundedInteger,T> getRuntimeMap() {
+    public TimelineMap<InterestGroup, BoundInt,T> getRuntimeMap() {
         return getOwner().get().getPopulationContainer().internalGetPopulationMap();
     }
     public void setPopulation(long population){
@@ -51,7 +63,7 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
 
     @Override
     public boolean hasEndingChanges() {
-        return false;
+        return true;
     }
 
     @Override
@@ -68,24 +80,26 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
 
 
     @Override
-    protected JsonElement kSerialize(CasteObject casteObject) {
-        return null;
+    protected JsonElement kSerialize(InterestGroup InterestGroup) {
+        return ;
     }
 
     @Override
-    protected CasteObject kDeserialize(JsonElement o) {
+    protected InterestGroup kDeserialize(JsonElement o) {
         return null;
     }
 
 
     @Override
-    protected JsonElement vSerialize(BoundedInteger boundedDouble) {
+    protected JsonElement vSerialize(BoundInt boundedDouble) {
         return new JsonPrimitive(boundedDouble.get());
     }
 
     @Override
-    protected BoundedInteger vDeserialize(JsonElement o) {
-        return null;
+    protected BoundInt vDeserialize(JsonElement o) {
+        BoundInt tr =  BoundInts.Int256(false);
+        tr.set(o.getAsInt());
+        return tr;
     }
 
     @Override
@@ -109,32 +123,32 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
     }
 
     @Override
-    public void addConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+    public void addConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void removeConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+    public void removeConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void removeWipeFConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+    public void removeWipeFConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void removeWipeBConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+    public void removeWipeBConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void modifyKeyConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+    public void modifyKeyConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void modifyValueConditions(List<MultiCondition<PopulationChange<T>, CasteObject, BoundedInteger, String, T>> current) {
+    public void modifyValueConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
@@ -163,5 +177,32 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
     @Override
     public PopulationChange<T> getNext() {
         return TimelineObject.getChangeStep(this, Global.TimeDirection.FORWARD,false,1,null);
+    }
+    
+    public class InterestGroupPercentage extends BoundInt {
+        private final PopulationContainer<T> container;
+        public InterestGroupPercentage(PopulationContainer<T> parent, int number) {
+            super(number);
+            container = parent;
+        }
+        @Override
+        public int getMin() {
+            return 0;
+        }
+
+        @Override
+        public void add(int value) {
+            super.add(value);
+        }
+
+        @Override
+        public void set(int value) {
+            super.set(value);
+        }
+
+        @Override
+        public int getMax() {
+            return 100;
+        }
     }
 }

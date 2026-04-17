@@ -78,7 +78,7 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
             return easingFunction;
         }
     }
-    private void calculateVariables(){
+    default void calculateVariables(){
         final Map<Identifiable<?>,VariableContainer> ourEase = this.getEasingFunctions();
         final C future = getNextChange();
         if (future == null){
