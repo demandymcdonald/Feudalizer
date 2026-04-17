@@ -22,7 +22,7 @@ import com.google.gson.JsonPrimitive;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.TenetReference;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
 

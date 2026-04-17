@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.mutable.tenets.general;
+package com.objects.culture.tenet.mutable.tenets.general;
 
 import com.Global;
 import com.base.condition.Condition;

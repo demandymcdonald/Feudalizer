@@ -13,7 +13,7 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;

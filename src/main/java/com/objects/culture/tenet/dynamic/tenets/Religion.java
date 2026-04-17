@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.dynamic.tenets;
+package com.objects.culture.tenet.dynamic.tenets;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
@@ -9,7 +9,7 @@ import com.objects.CauseOfEnd;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.dynamic.DynamicTenet;
+import com.objects.culture.tenet.dynamic.DynamicTenet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;

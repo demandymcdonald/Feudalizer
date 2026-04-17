@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.dynamic;
+package com.objects.culture.tenet.dynamic;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.TenetReference;
 
 import java.time.LocalDate;
 import java.util.List;

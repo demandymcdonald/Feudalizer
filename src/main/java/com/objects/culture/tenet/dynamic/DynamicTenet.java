@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.dynamic;
+package com.objects.culture.tenet.dynamic;
 
 import com.Global;
 import com.base.reference.DMEReference;
@@ -20,7 +20,7 @@ import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.object.COReference;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;

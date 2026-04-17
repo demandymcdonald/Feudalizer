@@ -4,7 +4,7 @@ import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.mutable.MutableTenet;
+import com.objects.culture.tenet.mutable.MutableTenet;
 import com.utilities.Displayable;
 import com.utilities.id.StringIdentifiable;
 

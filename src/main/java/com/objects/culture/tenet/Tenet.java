@@ -3,7 +3,6 @@ package com.objects.culture.tenet;
 import com.google.common.collect.Multimap;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.factory.CultureCondition;
-import com.objects.culture.tenet.types.TenetReference;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.Displayable;
 import com.utilities.id.UUIDIdentifiable;

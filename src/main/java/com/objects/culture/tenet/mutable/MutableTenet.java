@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.mutable;
+package com.objects.culture.tenet.mutable;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -8,7 +8,7 @@ import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.serialization.SuperclassSerializable;

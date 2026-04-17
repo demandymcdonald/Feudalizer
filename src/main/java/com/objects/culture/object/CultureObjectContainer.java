@@ -10,7 +10,7 @@ import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.TenetReference;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;

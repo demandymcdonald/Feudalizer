@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.instance.LandTenetInstance;
-import com.objects.culture.tenet.types.mutable.MutableTenet;
+import com.objects.culture.tenet.mutable.MutableTenet;
 import com.objects.title.land.habitable.HabitableLand;
 import org.apache.commons.lang3.tuple.Pair;
 

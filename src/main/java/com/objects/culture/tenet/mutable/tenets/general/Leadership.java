@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.types.mutable.tenets.general;
+package com.objects.culture.tenet.mutable.tenets.general;
 
 import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.PoliticalCompass;
@@ -8,8 +8,8 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.EconomicGroups;
 import com.objects.culture.tenet.group.groups.EducationGroups;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
-import com.objects.culture.tenet.types.TenetReference;
-import com.objects.culture.tenet.types.mutable.MutableTenet;
+import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.mutable.MutableTenet;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;

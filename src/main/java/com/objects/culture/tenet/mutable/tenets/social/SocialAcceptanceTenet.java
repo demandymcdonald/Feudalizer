@@ -1,9 +1,9 @@
-package com.objects.culture.tenet.types.mutable.tenets.social;
+package com.objects.culture.tenet.mutable.tenets.social;
 
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.types.TenetReference;
-import com.objects.culture.tenet.types.mutable.MutableTenet;
+import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.mutable.MutableTenet;
 
 import java.util.UUID;
 

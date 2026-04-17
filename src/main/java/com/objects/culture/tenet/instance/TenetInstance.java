@@ -7,14 +7,12 @@ import com.base.timeline.variable.EasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.tenet.types.TenetReference;
-import com.utilities.ThreadManager;
+import com.objects.culture.tenet.TenetReference;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundedDouble;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
