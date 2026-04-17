@@ -7,7 +7,7 @@ import com.base.timeline.variable.EasingVariable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.group.population.InterestGroup;
+import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.*;

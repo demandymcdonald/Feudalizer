@@ -87,18 +87,24 @@ public class Sandbox<T extends DateMutableEntity<T>> {
     public SandboxCode getStatus() {
         return status;
     }
-
+    public void setCurrent(LocalDate current) {
+        this.current = current;
+    }
+    private LocalDate current;
     @SuppressWarnings("unchecked")
     private void runSimulation() {
         toSave.add(subject);
         final Timeline<T> timeline = subject.get().getTimeline();
-        LocalDate currentDate = objective.change().getStart().minusDays(1);
+        current = objective.change().getStart().minusDays(1);
         isActiveState.set(true);
+        for (SandboxFunction<T> check : objective.toCheck()) {
+            check.startup(this,subject,objective.change());
+        }
         SandboxCode currentCode = SandboxCode.CONTINUE;
-        while ((currentDate.isBefore(sandboxEndDate) || currentDate.isEqual(sandboxEndDate))) {
+        while ((current.isBefore(sandboxEndDate) || current.isEqual(sandboxEndDate))) {
             this.status = currentCode;
             currentCode = SandboxCode.CONTINUE;
-            TimelineState<T> currentState = timeline.getNextState(currentDate);
+            TimelineState<T> currentState = timeline.getNextState(current);
             if (currentState == null) {
                 break;
             }
@@ -121,13 +127,13 @@ public class Sandbox<T extends DateMutableEntity<T>> {
             } else if (currentCode == RESTART_FROM_STATE) {
                 continue;
             }
-            currentDate = currentState.getStart();
+            current = currentState.getStart();
             for (SandboxFunction<T> check : objective.toCheck()) {
-                check.onStep(this,subject, currentState, objective.change(),isActiveState.get());
+                check.step(this,subject, currentState, objective.change(),isActiveState.get());
             }
             isActiveState.set(false);
         }
-        endSimulation(timeline,currentDate.minusDays(1),currentCode);
+        endSimulation(timeline,current.minusDays(1),currentCode);
     }
 
     private boolean tryResolveError(TimelineChange<? super T> newChange, StateError error) {
@@ -185,7 +191,7 @@ public class Sandbox<T extends DateMutableEntity<T>> {
 
     protected void endSimulation(Timeline<T> t, LocalDate end, SandboxCode code){
         for (SandboxFunction<T> check : objective.toCheck()) {
-            check.onComplete(this,end,code,subject,objective.change());
+            check.complete(this,code,subject,objective.change());
         }
         buildDirtyMap();
         handleReturn();

@@ -7,7 +7,7 @@ import com.base.timeline.error.StateError;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.factory.CultureCondition;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.Tenet;
 import com.objects.title.Title;
 import com.objects.title.change.TitleSingleChange;
 

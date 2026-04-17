@@ -31,16 +31,17 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.*;
 
 import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
 
 @SuppressWarnings("unchecked")
-public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineChange<T> {
+public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineChange<T> {
     //Use of atomics here isn't an indication of thread safety per-say. I just needed a container for bools and ints. I know there are probably better ones. I don't really care
     //right now. I just want to get this working for the moment.
-    public static final Logger LOGGER = LoggerFactory.getLogger(TimelineMultiChange.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(TLMultiChange.class);
     public Logger logger(){
         return LOGGER;   
     }
@@ -61,47 +62,62 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             this.direction = Global.TimeDirection.FORWARD;
         }
     }
-    public enum ChangeEntry {
-        KEY(ChangeType.MODIFY_KEY,ChangeType.MODIFY_KEY_WIPE),
-        VALUE(ChangeType.MODIFY_VALUE,ChangeType.MODIFY_VALUE_WIPE),
-        BOTH(ChangeType.MODIFY_BOTH,ChangeType.MODIFY_BOTH_WIPE);
+    public enum ChangeType {
+        KEY(Delta.MODIFY_KEY, Delta.MODIFY_KEY_WIPE),
+        VALUE(Delta.MODIFY_VALUE, Delta.MODIFY_VALUE_WIPE),
+        BOTH(Delta.MODIFY_BOTH, Delta.MODIFY_BOTH_WIPE),
 
-        private final ChangeType type;
-        private final ChangeType typeWipe;
-        ChangeEntry(ChangeType type,ChangeType typeWipe){
+        NO_CHANGE(null,null);
+        private final Delta type;
+        private final Delta typeWipe;
+        ChangeType(Delta type, Delta typeWipe){
             this.type = type;
             this.typeWipe = typeWipe;
         }
-        public ChangeType getType(){
+        public Delta getDelta(){
             return type;
         }
-        public ChangeType getTypeWipe(){
+        public Delta getDeltaWipe(){
             return typeWipe;
         }
     }
-    public enum ChangeType{
+    public enum Delta {
         ADD,
         ADD_WIPE(WipeType.FORWARD),
         REMOVE,
         REMOVE_WIPE_FORWARD(WipeType.FORWARD),
         REMOVE_WIPE_BACKWARD(WipeType.BACKWARD),
         REMOVE_WIPE_BOTH(WipeType.BOTH),
-        MODIFY_BOTH,
-        MODIFY_KEY,
-        MODIFY_VALUE,
-        MODIFY_BOTH_WIPE(WipeType.FORWARD),
-        MODIFY_KEY_WIPE(WipeType.FORWARD),
-        MODIFY_VALUE_WIPE(WipeType.FORWARD);
+        MODIFY_BOTH(ChangeType.BOTH),
+        MODIFY_KEY(ChangeType.KEY),
+        MODIFY_VALUE(ChangeType.VALUE),
+        MODIFY_BOTH_WIPE(WipeType.FORWARD, ChangeType.BOTH),
+        MODIFY_KEY_WIPE(WipeType.FORWARD, ChangeType.KEY),
+        MODIFY_VALUE_WIPE(WipeType.FORWARD, ChangeType.VALUE),;
 
         private final WipeType wipeType;
+        private final ChangeType changeEntry;
         public WipeType getWipeType(){
             return wipeType;
         }
-        ChangeType(WipeType wipeType){
-            this.wipeType = wipeType;
+        public ChangeType getChangeType(){
+            return changeEntry;
         }
-        ChangeType(){
+        Delta(WipeType wipeType){
+            this.wipeType = wipeType;
+            this.changeEntry = ChangeType.NO_CHANGE;
+        }
+        Delta(WipeType wipeType, ChangeType changeEntry){
+            this.wipeType = wipeType;
+            this.changeEntry = changeEntry;
+        }
+        Delta(ChangeType changeEntry){
             this.wipeType = WipeType.NO_WIPE;
+            this.changeEntry = changeEntry;
+        }
+        Delta(){
+            this.wipeType = WipeType.NO_WIPE;
+            this.changeEntry = ChangeType.NO_CHANGE;
         }
     }
 
@@ -113,11 +129,11 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     private final CachingSupplier<Map<K,V>,M> fullMap = new CachingSupplier<>(this::buildFull,null);
     protected final AtomicBoolean pauseCacheChecks = new AtomicBoolean(false);
 
-    protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date) {
+    protected TLMultiChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
         activeChanges = new HashMap<>();
     }
-    protected TimelineMultiChange(DMEReference<? extends T> owner, LocalDate date, Map<K,V> initial) {
+    protected TLMultiChange(DMEReference<? extends T> owner, LocalDate date, Map<K,V> initial) {
         super(owner, date);
         activeChanges = new HashMap<>(initial);
     }
@@ -125,12 +141,12 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return  getActive().size();
     }
 
-    public boolean shouldInvalidate(M initiator, K key, ChangeType type){
+    public boolean shouldInvalidate(M initiator, K key, Delta type){
         if (!fullMap.isMemoized()){
             return false;
         } else if(endingChanges.contains(key.getID())) {
             return false;
-        } else return type != ChangeType.MODIFY_VALUE || !(initiator.getActive().get(key) == this.internalGetFull().get(key));
+        } else return type != Delta.MODIFY_VALUE || !(initiator.getActive().get(key) == this.internalGetFull().get(key));
     };
 
     protected boolean canAdd(K key, V value, @Nullable K currentKey,@Nullable V currentValue){
@@ -145,7 +161,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public abstract boolean hasEndingChanges();
     private final MultiCondition<M,K,V,I,T> condition = new MultiCondition<>() {
         @Override
-        protected Optional<StateError> doCheck(TimelineMultiChange.ChangeType change,M newChange, List<Pair<K, V>> newEntries, M curChange, List<Pair<K, V>> curEntries) {
+        protected Optional<StateError> doCheck(Delta change, M newChange, List<Pair<K, V>> newEntries, M curChange, List<Pair<K, V>> curEntries) {
             switch (change) {
                 case ADD_WIPE, MODIFY_BOTH_WIPE, MODIFY_KEY_WIPE, MODIFY_VALUE_WIPE -> {
                     return Optional.empty();
@@ -172,35 +188,46 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             }
         }
     };
-    public void addConditions(List<MultiCondition<M,K,V,I,T>> current){
+    public void conditionsAdd(List<MultiCondition<M,K,V,I,T>> current){
         current.add(condition);
     };
-    public void removeConditions(List<MultiCondition<M,K,V,I,T>> current){
+    public void conditionsRemove(List<MultiCondition<M,K,V,I,T>> current){
         current.add(condition);
     };
-    public abstract void removeWipeFConditions(List<MultiCondition<M,K,V,I,T>> current);
-    public abstract void removeWipeBConditions(List<MultiCondition<M,K,V,I,T>> current);
-    public void modifyKeyConditions(List<MultiCondition<M,K,V,I,T>> current){
+    public abstract void conditionsWipeForward(List<MultiCondition<M,K,V,I,T>> current);
+    public abstract void conditionsWipeBackward(List<MultiCondition<M,K,V,I,T>> current);
+    public void conditionsModifyKey(List<MultiCondition<M,K,V,I,T>> current){
         current.add(condition);
     };
-    public void modifyValueConditions(List<MultiCondition<M,K,V,I,T>> current){
+    public void conditionsModifyValue(List<MultiCondition<M,K,V,I,T>> current){
         current.add(condition);
     };
 
 
-    protected void onAddEntry(ChangeType addType, K key, V value){}
-    protected void onReplaceEntry(ChangeType replaceType, K key, V oldValue, V value){}
+    protected void onAddEntry(Delta addType, K key, V value){}
+    protected void onReplaceEntry(Delta replaceType, K key, V oldValue, V value){}
     protected void onRemoveEntry(WipeType wipe, K... key){};
     protected void onBuildMap(){};
     protected void onBuildMapStep(M stepChange, Map<K,V> map){};
     protected void onRemoveEntryStep(M stepChange, List<K> removed){};
     protected void onRemovedEntryStep(M stepChange, List<K> removed){};
-    protected void onCacheInvalidation(M initiator, Map<K,ChangeType> changes){}
-    protected void onMapEntryChange(ChangeType type, K key, V value){};
+    protected void onCacheInvalidation(M initiator, Map<K, Delta> changes){}
+    protected void onMapEntryChange(Delta type, K key, V value){};
     public final boolean contains(K k){
         return activeChanges.containsKey(k);
     }
-
+    public final K getYourCopy(K yourK){
+        AtomicReference<K> myK = new AtomicReference<>();
+        try {
+            activeChanges.forEach((k, v) -> {
+                if (k.getID().equals(yourK.getID())) {
+                    myK.set(k);
+                    throw new IllegalStateException("Duplicate key");
+                }
+            });
+        } catch (IllegalAccessError ignored){}
+        return myK.get();
+    }
     @Override
     public final void complete(Sandbox<? extends T> sandbox, SandboxFunction<? extends T> function, SandboxCode code) {
         super.complete(sandbox, function, code);
@@ -253,8 +280,8 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     public boolean isPositive() {
         return true;
     }
-    public final TimelineMap<K,V,T> getFullMap(){
-        return new TimelineMap<>(this);
+    public final TimelineMap<M,K,V,I,T> getFullMap(){
+        return new TimelineMap<>((M) this);
     }
     public final Map<K,V> internalGetFull(){
         return fullMap.get();
@@ -275,82 +302,90 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return buildMap((M) this, this.getActive(),null);
     }
     public V get(K key){
-        return getFullMap().get(key);
+        return internalGetFull().get(key);
     }
-    protected void addChange(boolean sandbox, boolean wipeForward, K... changes){
-
-        addChange(sandbox,wipeForward,changes);
-    }
-    protected void addChange(boolean sandbox, boolean wipeForward, Map<? extends K,? extends V> changes){
+    protected void put(boolean sandbox, boolean wipeForward, Map<? extends K,? extends V> changes){
         List<Pair<K,V>> pairs = new ArrayList<>(changes.size());
         for(Map.Entry<? extends K,? extends V> entry : changes.entrySet()){
             pairs.add(Pair.of(entry.getKey(),entry.getValue()));
         }
-        addChange(sandbox,wipeForward,pairs.toArray(new Pair[pairs.size()]));
+        put(sandbox,wipeForward,pairs.toArray(new Pair[pairs.size()]));
     }
-    protected void addChange(boolean sandbox, boolean wipeForward, Pair<K,V>... changes){
-        ChangeType addChange;
-        ChangeType modifyChange;
-        if(wipeForward){
-            addChange = ChangeType.ADD_WIPE;
-            modifyChange = ChangeType.MODIFY_BOTH_WIPE;
-        } else {
-            addChange = ChangeType.ADD;
-            modifyChange = ChangeType.MODIFY_BOTH;
-        }
+    protected void put(boolean sandbox, boolean wipeForward, Pair<K,V>... changes){
+        Delta addChange = wipeForward ? Delta.ADD_WIPE : Delta.ADD;
+        Delta modifyChange = wipeForward ? Delta.MODIFY_BOTH_WIPE : Delta.MODIFY_BOTH;
         if(!sandbox){
-            for(Pair<K,V> pair : changes){
-                final K key = pair.getKey();
-                final V value = pair.getValue();
-                if(!this.activeChanges.containsKey(key)){
-                    onAddEntry(addChange, key, value);
-                    for(Listener<K,V> listener : listeners){
-                        listener.onMapPut(key,value);
-                    }
-                } else {
-                    final V oldV = this.activeChanges.get(key);
-                    onReplaceEntry(addChange, key, oldV,value);
-                    for(Listener<K,V> listener : listeners){
-                        listener.onMapReplace(key,oldV,value);
-                    }
-                }
-                this.activeChanges.put(key,value);
-                if (endingChanges.contains(key.getID())) {
-                    endingChanges.remove(key.getID());
-                }
+            List<K> keys = new ArrayList<>(changes.length);
+            for(Pair<K,V> p : changes){
+                doAddChange(addChange,p);
+                keys.add(p.getKey());
             }
-        }else {
-            Map<K, ChangeType> ct = new HashMap<>();
-            Map<Pair<K, V>, ChangeType> sandboxChanges = new HashMap<>();
-            for (Pair<K, V> p : changes) {
-                K key = p.getKey();
-                if (!this.activeChanges.containsKey(key)) {
-                    sandboxChanges.put(p, addChange);
-                    ct.put(key, addChange);
-                    onAddEntry(addChange, key, p.getValue());
-                } else {
-                    ct.put(key, modifyChange);
-                    sandboxChanges.put(p, modifyChange);
-                }
+            if(wipeForward){
+                removeEntry((M) this, FORWARD, true, false, new ArrayList<>(Arrays.stream(changes).map(Pair::getKey).toList()));
             }
             M m = (M) this;
-            cascadeInvalidate(m, ct);
-            Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(sandboxChanges, listeners));
-            SandboxHandler.StartSandbox(t);
+            cascadeInvalidate(m, buildChangeTypes(keys,wipeForward ? Delta.ADD_WIPE : Delta.ADD));
+        }else {
+            doAddChangeSandbox(addChange,modifyChange,changes);
         }
+
     }
-    public final void setChanged(boolean sandbox, ChangeEntry value, K... key){
-        Map<Pair<K,V>,ChangeType> changeMap = new HashMap<>();
-        for(K k : key){
-            changeMap.put(Pair.of(k,activeChanges.get(k)),value.getType());
+    private void doAddChange(Delta addChange, Pair<K,V> pair){
+        final K key = pair.getKey();
+        final V value = pair.getValue();
+        if(!this.activeChanges.containsKey(key)){
+            onAddEntry(addChange, key, value);
+            for(Listener<K,V> listener : listeners){
+                listener.onMapPut(key,value);
+            }
+        } else {
+            final V oldV = this.activeChanges.get(key);
+            onReplaceEntry(addChange, key, oldV,value);
+            for(Listener<K,V> listener : listeners){
+                listener.onMapReplace(key,oldV,value);
+            }
+        }
+        this.activeChanges.put(key,value);
+        if (endingChanges.contains(key.getID())) {
+            endingChanges.remove(key.getID());
+        }
+
+    }
+    private void doAddChangeSandbox(Delta addChange, Delta modifyChange, Pair<K,V>... changes){
+        Map<K, Delta> ct = new HashMap<>();
+        Map<Pair<K, V>, Delta> sandboxChanges = new HashMap<>();
+        for (Pair<K, V> p : changes) {
+            K key = p.getKey();
+            if (!this.activeChanges.containsKey(key)) {
+                sandboxChanges.put(p, addChange);
+                ct.put(key, addChange);
+                onAddEntry(addChange, key, p.getValue());
+            } else {
+                ct.put(key, modifyChange);
+                sandboxChanges.put(p, modifyChange);
+            }
+        }
+        M m = (M) this;
+        cascadeInvalidate(m, ct);
+        Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(sandboxChanges, listeners));
+        SandboxHandler.StartSandbox(t);
+    }
+    protected final void changed(boolean sandbox, boolean wipe, ChangeType value, List<ChangeContainer<M,K,V,I,T>> containers){
+        Map<Pair<K,V>, Delta> changeMap = new HashMap<>();
+        List<K> toAdd = new ArrayList<>();
+        for(ChangeContainer<M,K,V,I,T> cont : containers){
+            K ke = cont.getCurrentKey((M)this);
+            V va = cont.getCurrentValue((M)this);
+            Delta de = wipe ? value.getDeltaWipe() : value.getDelta();
+            changeMap.put(Pair.of(ke,va),de);
             if(!sandbox){
-                onMapEntryChange(value.getType(),k,activeChanges.get(k));
+                onMapEntryChange(de,ke,va);
+                cont.apply(ke,va);
             }
         }
         if(!changeMap.isEmpty()){
             M m = (M) this;
-            List<K> toAdd = new ArrayList<>(Arrays.stream(key).toList());
-            cascadeInvalidate(m,buildChangeTypes(toAdd,value.getType()));
+            cascadeInvalidate(m,buildChangeTypes(toAdd,value.getDelta()));
             if (sandbox) {
                 Objective<T> t = new Objective<>(getOwner(), FORWARD, (M) this, new MultiChangeSandbox<>(changeMap,listeners));
                 SandboxHandler.StartSandbox(t);
@@ -361,7 +396,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         if (key.length == 0) {
             return;
         }
-        final Map<Pair<K,V>,ChangeType>  changes;
+        final Map<Pair<K,V>, Delta>  changes;
             if (wipe == WipeType.NO_WIPE) {
                 changes = removeRegular(sandbox,key);
             } else {
@@ -379,7 +414,6 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             SandboxHandler.StartSandbox(t);
         }
     }
-    
     private void doRemove(Multimap<WipeType,Pair<K,V>> map) {
         for (WipeType wipe : map.keySet()) {
             boolean isWipe = wipe != WipeType.NO_WIPE;
@@ -388,7 +422,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
                 List<K> removeKey = new ArrayList<>(toRemove.size());
                 for (Pair<K,V> p : toRemove){
                     this.onRemoveEntry(wipe, p.getKey());
-                    for(TimelineMultiChange.Listener<K,V> listener : listeners){
+                    for(TLMultiChange.Listener<K,V> listener : listeners){
                         listener.onMapRemove(p.getKey(), p.getValue(),wipe);
                     }
                     removeKey.add(p.getKey());
@@ -397,18 +431,15 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             }
         }
     }
-    
-    
-    
-    private Map<Pair<K,V>,ChangeType> removeRegular(boolean sandbox, K... key){
-        Map<K,ChangeType> cacheChanges = new HashMap<>();
-        Map<Pair<K,V>,ChangeType> sandboxChanges = new HashMap<>();
+    private Map<Pair<K,V>, Delta> removeRegular(boolean sandbox, K... key){
+        Map<K, Delta> cacheChanges = new HashMap<>();
+        Map<Pair<K,V>, Delta> sandboxChanges = new HashMap<>();
         List<K> toFind = new ArrayList<>();
         for (K k : key) {
             if (activeChanges.containsKey(k)) {
                 V v = activeChanges.get(k);
-                sandboxChanges.put(Pair.of(k, v), ChangeType.REMOVE);
-                cacheChanges.put(k, ChangeType.REMOVE);
+                sandboxChanges.put(Pair.of(k, v), Delta.REMOVE);
+                cacheChanges.put(k, Delta.REMOVE);
             } else {
                 toFind.add(k);
             }
@@ -420,15 +451,15 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         cascadeInvalidate((M) this, cacheChanges);
         return sandboxChanges;
     }
-    private Map<Pair<K,V>,ChangeType> removeWipe(boolean sandbox, WipeType wipe, K... key){
-        Map<K,ChangeType> cacheChanges = new HashMap<>();
-        Map<Pair<K,V>,ChangeType> sandboxChanges = new HashMap<>();
+    private Map<Pair<K,V>, Delta> removeWipe(boolean sandbox, WipeType wipe, K... key){
+        Map<K, Delta> cacheChanges = new HashMap<>();
+        Map<Pair<K,V>, Delta> sandboxChanges = new HashMap<>();
         List<K> toFind = new ArrayList<>(Arrays.stream(key).toList());
-        final ChangeType ct = switch (wipe) {
-            case FORWARD -> ChangeType.REMOVE_WIPE_FORWARD;
-            case BACKWARD -> ChangeType.REMOVE_WIPE_BACKWARD;
-            case BOTH -> ChangeType.REMOVE_WIPE_BOTH;
-            default -> ChangeType.REMOVE;
+        final Delta ct = switch (wipe) {
+            case FORWARD -> Delta.REMOVE_WIPE_FORWARD;
+            case BACKWARD -> Delta.REMOVE_WIPE_BACKWARD;
+            case BOTH -> Delta.REMOVE_WIPE_BOTH;
+            default -> Delta.REMOVE;
         };
         for (K k : key) {
             if (!activeChanges.containsKey(k)) {
@@ -477,19 +508,19 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         activeChanges.remove(k);
         fullMap.clear();
     }
-    protected Map<K,ChangeType> buildChangeTypes(List<K> keys){
+    protected Map<K, Delta> buildChangeTypes(List<K> keys){
         return buildChangeTypes(keys,null);
     }
-    protected Map<K,ChangeType> buildChangeTypes(List<K> keys, @Nullable ChangeType type){
-        Map<K,ChangeType> toReturn = new HashMap<>();
+    protected Map<K, Delta> buildChangeTypes(List<K> keys, @Nullable Delta type){
+        Map<K, Delta> toReturn = new HashMap<>();
         if (type == null){
             for(K k : keys){
                 if(hasEntry(BACKWARD,(M) this,k,false)){
-                    toReturn.put(k,ChangeType.MODIFY_VALUE);
+                    toReturn.put(k, Delta.MODIFY_VALUE);
                 }else if(getActive().containsKey(k)){
-                    toReturn.put(k,ChangeType.ADD);
+                    toReturn.put(k, Delta.ADD);
                 } else {
-                    toReturn.put(k,ChangeType.REMOVE);
+                    toReturn.put(k, Delta.REMOVE);
                 }
             }
         } else {
@@ -502,7 +533,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
 
 
 
-    protected static <M extends TimelineMultiChange<M, K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> void removeEntry(M change, final Global.TimeDirection direction, final boolean wipe, final boolean includeCurrent, List<K> toRemove){
+    protected static <M extends TLMultiChange<M, K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> void removeEntry(M change, final Global.TimeDirection direction, final boolean wipe, final boolean includeCurrent, List<K> toRemove){
         MapTask<M,K,V,I,T> consumer = new MapTask<>(change) {
             @Override
             protected void onStep(M main, M current, Map<K, V> finalMap, Set<I> endingChanges) {
@@ -533,23 +564,23 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         Timeline.iterateMap(change,direction,consumer,includeCurrent);
     }
 
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> getOtherMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
+    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> getOtherMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
         M desiredChange = TimelineObject.getChangeStep(change, direction, false, steps, additional);
         if (desiredChange == null){
             return null;
         }
         return desiredChange.internalGetFull();
     }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasPastEntry(M change, K key, boolean includeCurrent){
+    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasPastEntry(M change, K key, boolean includeCurrent){
         return hasEntry(Global.TimeDirection.BACKWARD,change,key,includeCurrent);
     }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasFutureEntry(M change, K key, boolean includeCurrent){
+    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasFutureEntry(M change, K key, boolean includeCurrent){
         return hasEntry(Global.TimeDirection.FORWARD,change,key,includeCurrent);
     }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(M change, K key, boolean includeCurrent){
+    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(M change, K key, boolean includeCurrent){
         return hasEntry(FORWARD,change,key,includeCurrent) || hasEntry(BACKWARD,change,key,includeCurrent);
     }
-    private static <M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(Global.TimeDirection direction, M change, final K key, boolean includeCurrent){
+    private static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(Global.TimeDirection direction, M change, final K key, boolean includeCurrent){
         AtomicBoolean toReturn = new AtomicBoolean(false);
         MapTask<M,K,V,I,T> step = new MapTask<>(change) {
             @Override
@@ -567,12 +598,12 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         return toReturn.get();
 
     }
-    protected void cascadeInvalidate(M change, @Nullable final Map<K,ChangeType> changes){
+    protected void cascadeInvalidate(M change, @Nullable final Map<K, Delta> changes){
         cascadeInvalidate(change,changes,pauseCacheChecks.get());
     }
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void cascadeInvalidate(M change, @Nullable final Map<K,ChangeType> changes, boolean isPaused){
+    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void cascadeInvalidate(M change, @Nullable final Map<K, Delta> changes, boolean isPaused){
         final boolean bypass = changes == null;
-        final Map<K,ChangeType> finalChanges;
+        final Map<K, Delta> finalChanges;
         if (bypass){
             finalChanges = new HashMap<>();
         } else if(changes.isEmpty() || isPaused){
@@ -588,8 +619,8 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
             protected void onStep(M main, M current, Map<K, V> finalMap, Set<I> endingChanges) {
                 boolean invalidate = false;
                 if (!bypass){
-                    for (Map.Entry<K, ChangeType> entry : new ArrayList<>(finalChanges.entrySet())) {
-                        ChangeType type = entry.getValue();
+                    for (Map.Entry<K, Delta> entry : new ArrayList<>(finalChanges.entrySet())) {
+                        Delta type = entry.getValue();
                         boolean should = current.shouldInvalidate(main, entry.getKey(), type);
                         if (!should){
                             finalChanges.remove(entry.getKey());
@@ -616,7 +647,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     }
 
 
-    protected static <M extends TimelineMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> buildMap(M change,Map<K,V> starting, @Nullable M original){
+    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> buildMap(M change, Map<K,V> starting, @Nullable M original){
         change.onBuildMap();
         if(original == null){
             original = change;
@@ -638,7 +669,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
 
 
 
-    public static abstract class MapTask<M extends TimelineMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
+    public static abstract class MapTask<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
         private final M main;
         private final Map<K,V> map;
         public MapTask(M main){
@@ -736,7 +767,7 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
     protected void applyConditions(List<ApplyCondition<? super T>> list) {
         list.add(new CanMerge());
     }
-    public void mergeSafe(TimelineMultiChange<?,?,?,?,?> other){
+    public void mergeSafe(TLMultiChange<?,?,?,?,?> other){
         merge((M) other);
     }
     public void merge(M other){
@@ -748,9 +779,33 @@ public abstract class TimelineMultiChange<M extends TimelineMultiChange<M,K,V,I,
         public abstract void onMapReplace(K key, V oldValue, V newValue);
         public abstract void onMapClear();
         public abstract void onMapGet(K key, V value);
-        public abstract void onMapChange(ChangeType type, K key, V value);
+        public abstract void onMapChange(Delta type, K key, V value);
     }
-
+    public static class ChangeContainer<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
+        private final BiConsumer<K,V> applyChange;
+        private final Function<M,K> currentKey;
+        private final Function<M,V> currentValue;
+        public ChangeContainer(BiConsumer<K,V> applyChange, Function<M,K> currentKey, Function<M,V> currentValue){
+            this.applyChange = applyChange;
+            this.currentKey = currentKey;
+            this.currentValue = currentValue;
+        }
+        public static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> ChangeContainer<M,K,V,I,T> of(M change, BiConsumer<K,V> applyChange, K currentKey){
+            return new ChangeContainer<>(applyChange, (m) ->{return currentKey;}, (m)-> {return change.get(currentKey);});
+        }
+        public static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> ChangeContainer<M,K,V,I,T> of(M change, BiConsumer<K,V> applyChange, K currentKey, V currentValue){
+            return new ChangeContainer<>(applyChange, (m) ->{return currentKey;}, (m)-> {return currentValue;});
+        }
+        public K getCurrentKey(M change){
+            return currentKey.apply(change);
+        }
+        public V getCurrentValue(M change){
+            return currentValue.apply(change);
+        }
+        public void apply(K k, V v){
+            applyChange.accept(k, v);
+        }
+    }
     public class CanMerge extends ApplyCondition<T>{
 
         public CanMerge() {

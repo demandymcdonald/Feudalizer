@@ -2,27 +2,33 @@ package com.objects.culture.tenet.instance;
 
 import com.Global;
 import com.base.DateMutableEntity;
+import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.base.timeline.TimelineObject;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.condition.nullify.NullifyCondition;
+import com.base.timeline.change.multi.MultiCondition;
 import com.base.timeline.change.multi.TimelineMap;
 import com.base.timeline.change.multi.TimelineMapChange;
+import com.base.timeline.error.ErrorListResolution;
+import com.base.timeline.error.SandboxCode;
+import com.base.timeline.error.StateError;
+import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.variable.EasingChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.tenet.Acceptance;
+import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.types.TenetReference;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
-//public class TenetInstanceChange<M extends TenetInstanceChange<M,T,TI>,T extends DateMutableEntity<T> & CultureObject<T>,
-//        TI extends TenetInstance<TI,T,M>> extends TimelineMapChange<M, TenetReference,TI,String,T> implements EasingChange<TI,M,T> {
 public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<T>>
         extends TimelineMapChange<TenetInstanceChange<T>,TenetReference,TenetInstance<T>, UUID,T>
         implements EasingChange<TenetInstance<T>,TenetInstanceChange<T>,T> {
@@ -36,14 +42,20 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
 
     }
 
-    @Override
-    protected String getText() {
-        return "tenet_instance_change";
+    public TenetInstanceChange(DMEReference<? extends T> owner, LocalDate date, Map<TenetReference, TenetInstance<T>> initial) {
+        super(owner, date, initial);
     }
 
     @Override
-    protected void nullifyConditions(List<NullifyCondition<? super T>> list) {
+    public TenetInstanceChange<T> getEmptyChange(DMEReference<? extends T> owner, LocalDate date) {
+        return new TenetInstanceChange<>(owner, date);
+    }
 
+
+
+    @Override
+    protected String getText() {
+        return "tenet_instance_change";
     }
 
     @Override
@@ -51,9 +63,38 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
 
     }
 
+
     @Override
     public boolean hasEndingChanges() {
         return true;
+    }
+    Predicate<Pair<TenetReference, TenetInstance<T>>> getMax = new Predicate<Pair<TenetReference, TenetInstance<T>>>() {
+
+        @Override
+        public boolean test(Pair<TenetReference, TenetInstance<T>> tenetReferenceTenetInstancePair) {
+            TenetReference reference = tenetReferenceTenetInstancePair.getKey();
+            TenetInstance<T> instance = tenetReferenceTenetInstancePair.getValue();
+
+
+
+
+
+        }
+    };
+    @Override
+    public void conditionsAdd(List<MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T>> current) {
+        super.conditionsAdd(current);
+        current.add()
+    }
+
+    @Override
+    public void conditionsWipeForward(List<MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T>> current) {
+
+    }
+
+    @Override
+    public void conditionsWipeBackward(List<MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T>> current) {
+
     }
 
     @Override
@@ -121,5 +162,76 @@ public class TenetInstanceChange<T extends DateMutableEntity<T> & CultureObject<
             }
         }
         return null;
+    }
+
+
+    private final MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T> maxCondition = new MultiCondition<TenetInstanceChange<T>, TenetReference, TenetInstance<T>, UUID, T>() {
+        @Override
+        protected Optional<StateError> doCheck(Delta change, TenetInstanceChange<T> newChange, List<Pair<TenetReference, TenetInstance<T>>> newEntries, TenetInstanceChange<T> curChange, List<Pair<TenetReference, TenetInstance<T>>> curEntries) {
+            Map<TenetGroup, Map<Acceptance, MutableInt>> capacityLeft = new HashMap<>();
+            for(Pair<TenetReference, TenetInstance<T>> entry : newEntries) {
+                TenetGroup group = entry.getKey().getGroup();
+                Map<Acceptance, MutableInt> map = capacityLeft.get(group);
+                if(map == null) {
+                    map = buildBase(group);
+                    Map<TenetReference,TenetInstance<T>> current = curChange.getFullMap().getWhere((tr) -> {
+                        return tr.getGroup().equals(group);
+                    });
+                    getCapacityLeft(group, map, current);
+                    capacityLeft.put(group, map);
+                }
+                Acceptance acceptance = entry.getValue().getAcceptance();
+                map.get(acceptance).add(-1);
+                for(MutableInt left : map.values()) {
+                    if(left.intValue() < 0) {
+                        return Optional.of(new StateError("tenet_map_over_cap",new ComplexReference("TenetGroup: {} is over it's maximum capacity of {} by {}",group, group.type().getMaxFor(acceptance), Math.abs(left.intValue())),curChange).addEndCancel())
+                    }
+                }
+            }
+
+        }
+
+
+        private void getCapacityLeft(TenetGroup group, Map<Acceptance, MutableInt> capacity, Map<TenetReference, TenetInstance<T>> entries) {
+            for (Map.Entry<TenetReference, TenetInstance<T>> entry : entries.entrySet()) {
+                TenetInstance<T> instance = entry.getValue();
+                Acceptance acceptance = instance.getAcceptance();
+                capacity.get(acceptance).add(- 1);
+            }
+        }
+        private static Map<Acceptance, MutableInt> buildBase(TenetGroup group){
+            Map<Acceptance, MutableInt> base = new HashMap<>();
+            for(Acceptance acceptance : Acceptance.values()) {
+                base.put(acceptance, new MutableInt(group.type().getMaxFor(acceptance)));
+            }
+            return base;
+        }
+    };
+    private static ErrorListResolution<TenetReference,UUID> buildResolution(List<TenetReference> tenets){
+
+
+
+    }
+    private static class  ReduceLevel extends ErrorListResolution<TenetReference,UUID>{
+
+        public ReduceLevel(String id, String display, String description, SandboxCode expectedCode, List<TenetReference> options) {
+            super(id, display, description, expectedCode, options);
+        }
+
+        @Override
+        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
+            return reduceLevel(oldChange);
+        }
+        @SuppressWarnings("unchecked")
+        private <T extends DateMutableEntity<T> & CultureObject<T>> SandboxCode reduceLevel(TimelineChange<?> oc) {
+            if(!(oc instanceof TenetInstanceChange)){
+                throw new IllegalArgumentException("Expected TenetInstanceChange instead of " + oc.getClass().getSimpleName() + "!");
+            }
+            TenetInstanceChange<T> oldChange = (TenetInstanceChange<T>) oc;
+            Acceptance acceptance = Acceptance.getLower(oldChange.get(getOption(getChosen())).getAcceptance());
+
+            oldChange.get(getOption(getChosen())).getRaw();
+            return SandboxCode.RESTART_FROM_STATE;
+        }
     }
 }

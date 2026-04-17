@@ -1,27 +1,19 @@
 package com.base.timeline.sandbox.function;
 
-import com.Global;
 import com.base.DateMutableEntity;
 import com.base.condition.Condition;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.MultiCondition;
-import com.base.timeline.change.multi.TimelineMultiChange;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.succession.SuccessionPlanner;
-import com.utilities.id.Identifiable;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class SandboxFunctions {
 
@@ -40,7 +32,7 @@ public class SandboxFunctions {
         }
 
         @Override
-        public void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
 
         }
     }
@@ -73,7 +65,7 @@ public class SandboxFunctions {
         }
 
         @Override
-        public void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
             if (isFirstCycle) {
                 sandbox.buildDirtyMap();
             }
@@ -97,7 +89,7 @@ public class SandboxFunctions {
         }
 
         @Override
-        public void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
 
         }
 
@@ -141,7 +133,7 @@ public class SandboxFunctions {
         }
 
         @Override
-        public void onStep(Sandbox<HumanCharacter> sandbox, DMEReference<HumanCharacter> entity, TimelineState<HumanCharacter> state, TimelineChange<? super HumanCharacter> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<HumanCharacter> sandbox, DMEReference<HumanCharacter> entity, TimelineState<HumanCharacter> state, TimelineChange<? super HumanCharacter> newChange, boolean isFirstCycle) {
 
         }
 

@@ -3,6 +3,7 @@ package com.objects.character.sentient;
 import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.multi.TLMultiChange;
 import com.base.timeline.change.multi.TimelineMap;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
@@ -22,6 +23,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public abstract class SentientCharacter<T extends SentientCharacter<T>> extends LivingCreature<T> implements CultureObject<T> {
     private GeneticContainer<?> geneticContainer;
@@ -30,7 +32,7 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     private Gender gender;
     private Orientation orientation;
     private SuccessionEntry<?> preferredSuccession;
-    private TimelineMap<SimpleUUID, Opinion,T> opinions;
+    private TimelineMap<SimpleUUID, Opinion,UUID,T> opinions;
 
 
     private Optional<GoverningEntity<?>> linked_government;
@@ -85,13 +87,12 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void addOpinion(Opinion opinion) {
         SimpleUUID simpleUUID = new SimpleUUID(opinion.getOther().getID());
         if (opinions.containsKey(simpleUUID)) {
-            Opinion o = opinions.get(simpleUUID);
-            for (OpinionReason r : opinion.getActiveReasons()){
-                o.addOpinions(r);
-            }
-            SentientMapChange.OpinionMapChange<T> change =
-                    getCurrentState().getChange(SentientMapChange.OpinionMapChange.class.getName(),false);
-            change.setChanged(simpleUUID);
+            BiConsumer<SimpleUUID,Opinion> consumer = (uuid,op) -> {
+                for (OpinionReason r : opinion.getActiveReasons()){
+                    op.addOpinions(r);
+                }
+            };
+            opinions.setChanged(true,TLMultiChange.ChangeType.VALUE,Map.of(simpleUUID,consumer));
         } else {
             opinions.put(simpleUUID,opinion);
         }
@@ -108,9 +109,8 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void internalSetOrientation(Orientation orientation){
         this.orientation = orientation;
     }
-    public final void internalSetOpinionMap(TimelineMap<SimpleUUID, Opinion,T> opinions){
-        this.opinions.clear();
-        this.opinions.putAll(opinions);
+    public final void internalSetOpinionMap(TimelineMap<SimpleUUID, Opinion,UUID,T> opinions){
+        this.opinions = opinions;
     }
     public final void internalSetPreferredSuccession(SuccessionEntry<?> succession){
         this.preferredSuccession = succession;

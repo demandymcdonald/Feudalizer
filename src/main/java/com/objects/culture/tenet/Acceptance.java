@@ -47,11 +47,36 @@ public enum Acceptance implements Displayable {
     }
 
     public static Acceptance get(int floor) {
-        if (floor < 0) {
+        if (floor > 0) {
             return floorMap.floorEntry(floor).getValue();
         } else {
             return floorMap.ceilingEntry(floor).getValue();
         }
+    }
+    public static Acceptance getLower(Acceptance a){
+        return getLower(a.floor);
+    }
+    public static Acceptance getLower(int floor){
+        if (floor >= 0){
+            return floorMap.lowerEntry(floor).getValue();
+        } else {
+            return floorMap.higherEntry(floor).getValue();
+        }
+    }
+    public static Acceptance getHigher(Acceptance a){
+        return getHigher(a.floor);
+    }
+    public static Acceptance getHigher(int floor){
+        if (floor >= 0){
+            return floorMap.higherEntry(floor).getValue();
+        } else {
+            return floorMap.lowerEntry(floor).getValue();
+        }
+    }
+    public static int getRange(Acceptance a){
+        int floor = Math.abs(a.floor);
+        int ceil = Math.abs(getHigher(floor).floor) -1;
+        return ceil - floor;
     }
     public static Acceptance[] getAll(){
         return floorMap.values().toArray(new Acceptance[0]);

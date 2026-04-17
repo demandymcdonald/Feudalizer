@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
 import com.objects.culture.object.compass.IPoliticalCompass;
+import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.types.TenetReference;

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class TimelineCollectionChange<M extends TimelineCollectionChange<M,T,C, K,I>,T extends DateMutableEntity<T>,C extends Collection<K>, K extends Identifiable<I>,I> extends TimelineMultiChange<M, K,Integer,I,T> {
+public abstract class TimelineCollectionChange<M extends TimelineCollectionChange<M,T,C, K,I>,T extends DateMutableEntity<T>,C extends Collection<K>, K extends Identifiable<I>,I> extends TLMultiChange<M, K,Integer,I,T> {
     private final boolean isOrdered;
     protected TimelineCollectionChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);

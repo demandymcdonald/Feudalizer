@@ -4,6 +4,7 @@ import com.objects.culture.tenet.Acceptance;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.objects.culture.tenet.group.TenetGroup.*;
@@ -27,7 +28,7 @@ public enum TGType {
     ;
     private final TGType parent;
     private final TenetGroup.AcceptanceContainer[] maxOfEach;
-
+    private static final int DEFAULT_MAX = 50;
     TGType(@Nullable TGType parent, TenetGroup.AcceptanceContainer... maxOfEach) {
         this.maxOfEach = maxOfEach;
         this.parent = parent;
@@ -36,7 +37,14 @@ public enum TGType {
     public AcceptanceContainer[] getMaxOfEach() {
         return maxOfEach;
     }
-
+    public int getMaxFor(Acceptance acceptance){
+        for(AcceptanceContainer container : maxOfEach){
+            if(Arrays.stream(container.accept()).anyMatch((a) -> {return a.equals(acceptance);})){
+                return container.maxNumber();
+            }
+        }
+        return DEFAULT_MAX;
+    }
     public TGType getParent() {
         return parent;
     }

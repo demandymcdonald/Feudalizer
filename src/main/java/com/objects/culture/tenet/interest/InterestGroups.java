@@ -1,6 +1,5 @@
-package com.objects.culture.tenet.group.population;
+package com.objects.culture.tenet.interest;
 
-import com.objects.character.Sex;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -8,8 +7,8 @@ import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 
 import static com.objects.character.sentient.Gender.*;
-import static com.objects.culture.tenet.group.population.InterestGroup.Dimension.Gender_Identity;
-import static com.objects.culture.tenet.group.population.InterestGroup.Dimension.Sex_At_Birth;
+import static com.objects.culture.tenet.interest.InterestGroup.Dimension.Gender_Identity;
+import static com.objects.culture.tenet.interest.InterestGroup.Dimension.Sex_At_Birth;
 
 public class InterestGroups {
 

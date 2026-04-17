@@ -4,7 +4,7 @@ import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.multi.TimelineMap;
-import com.base.timeline.change.multi.TimelineMultiChange;
+import com.base.timeline.change.multi.TLMultiChange;
 import com.base.utilities.TLSyncedCache;
 import com.google.gson.JsonObject;
 import com.objects.culture.AbstractCulture;
@@ -21,7 +21,7 @@ import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.object.COReference;
 import com.objects.culture.tenet.types.TenetReference;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -31,14 +31,14 @@ import java.util.*;
 public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T> {
     private final TenetGroup tenetGroup;
     private final CultureObjectContainer<T> container;
-    private final TimelineMultiChange.Listener<TenetReference, TenetInstance<T>> listener = new TimelineMultiChange.Listener<TenetReference, TenetInstance<T>>() {
+    private final TLMultiChange.Listener<TenetReference, TenetInstance<T>> listener = new TLMultiChange.Listener<TenetReference, TenetInstance<T>>() {
         @Override
         public void onMapPut(TenetReference key, TenetInstance<T> value) {
             DynamicTenet.this.onOpinionAdd(key,value);
         }
 
         @Override
-        public void onMapRemove(TenetReference key, TenetInstance<T> value, TimelineMultiChange.WipeType type) {
+        public void onMapRemove(TenetReference key, TenetInstance<T> value, TLMultiChange.WipeType type) {
             DynamicTenet.this.onOpinionRemove(key,value);
         }
 

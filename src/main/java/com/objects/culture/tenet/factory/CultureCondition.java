@@ -12,7 +12,7 @@ import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.Tenet;
 
 import java.util.List;
 import java.util.Optional;

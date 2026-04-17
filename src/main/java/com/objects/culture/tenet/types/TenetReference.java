@@ -7,7 +7,7 @@ import com.objects.culture.tenet.types.dynamic.DynamicTR;
 import com.objects.culture.tenet.types.dynamic.DynamicTenet;
 import com.objects.culture.tenet.types.mutable.MutableTR;
 import com.objects.culture.tenet.types.mutable.MutableTenet;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.Tenet;
 import com.utilities.id.UUIDIdentifiable;
 import com.utilities.serialization.SuperclassSerializable;
 
