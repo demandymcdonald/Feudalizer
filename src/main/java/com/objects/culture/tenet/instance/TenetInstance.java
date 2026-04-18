@@ -1,17 +1,20 @@
 package com.objects.culture.tenet.instance;
 
-import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.multi.TLMultiChange;
 import com.base.timeline.variable.EasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.types.TenetReference;
+import com.objects.culture.tenet.Acceptance;
+import com.objects.culture.tenet.TenetReference;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundedDouble;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
@@ -28,7 +31,8 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     private TenetReference tenet;
     private final BoundedDouble opinion = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private final BoundedDouble interpolated = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
-    private boolean isActive = false;
+    private MutableBoolean isActive = new MutableBoolean(false);
+
     private static final StringIdentifiable doubleID = new StringIdentifiable("opinion"){
         @Override
         public String getID() {
@@ -48,6 +52,9 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     public TenetInstance(){
         this.owner = null;
     }
+    public Acceptance getAcceptance(){
+        return Acceptance.get((int) Math.round(opinion.get()));
+    }
     public double get(){
         return interpolated.get();
     }
@@ -55,12 +62,30 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
         return opinion.get();
     }
     public void set(double opinion){
-        this.opinion.set(opinion);
-        onLoad(Global.getDate());
+        BiConsumer<TenetReference,TenetInstance<T>> consumer = (tenet, value) -> {
+            value.opinion.set(opinion);
+            value.calculateVariables();
+        };
+        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
     }
     public void add(double opinion){
-        this.opinion.add(opinion);
-        onLoad(Global.getDate());
+        BiConsumer<TenetReference,TenetInstance<T>> consumer = (tenet, value) -> {
+            value.opinion.add(opinion);
+            value.calculateVariables();
+        };
+        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+    }
+    public void setActive(){
+        BiConsumer<TenetReference,TenetInstance<T>> consumer = (tenet, value) -> {
+            value.isActive.setValue(true);
+        };
+        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+    }
+    public boolean isActive(){
+        return isActive.booleanValue();
+    }
+    public MutableBoolean getActive(){
+        return isActive;
     }
     @Override
     public void mainSave(JsonObject object) {

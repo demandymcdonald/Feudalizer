@@ -5,12 +5,10 @@ import com.Feudalizer;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
-import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.sentient.SentientCharacter;
 import com.utilities.number.DateUtilities;
 import org.apache.commons.lang3.tuple.Pair;
@@ -56,7 +54,7 @@ public class Family extends DateMutableEntity<Family> {
     }
 
     //######
-    private TimelineMap<DMEReference<? extends SentientCharacter<?>>, Relationship,Family> members;
+    private MiddlemanMap<DMEReference<? extends SentientCharacter<?>>, Relationship,Family> members;
     private StateReference customName;
     private Family(UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<? extends SentientCharacter<?>> head) {
         super(created, LocalDate.MAX, List.of(
@@ -82,7 +80,7 @@ public class Family extends DateMutableEntity<Family> {
         return members.entrySet().stream().filter(
                 e -> e.getValue() == rel).map(Map.Entry::getKey).toArray(DMEReference[]::new);
     };
-    public TimelineMap<DMEReference<? extends SentientCharacter<?>>,Relationship,Family> getFamilyMap(){
+    public MiddlemanMap<DMEReference<? extends SentientCharacter<?>>,Relationship,Family> getFamilyMap(){
         return members;
     }
     public int getNumberOf(MemberType type) {
@@ -104,7 +102,7 @@ public class Family extends DateMutableEntity<Family> {
             Feudalizer.LOGGER.error("FamilyGroups " + this.toString() + " is at it's limit for members of type {}!", rel.type);
         }
     }
-    public void internal_SetMap(TimelineMap<DMEReference<? extends SentientCharacter<?>>, Relationship,Family> map) {
+    public void internal_SetMap(MiddlemanMap<DMEReference<? extends SentientCharacter<?>>, Relationship,Family> map) {
         this.members = map;
     }
     @Override

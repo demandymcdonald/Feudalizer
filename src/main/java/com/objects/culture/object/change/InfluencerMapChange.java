@@ -4,7 +4,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
@@ -32,12 +32,12 @@ public class InfluencerMapChange<T extends DateMutableEntity<T> & CultureObject<
 
 
     @Override
-    public TimelineMap<COReference<?>, InfluencerInstance, T> getRuntimeMap() {
+    public MiddlemanMap<COReference<?>, InfluencerInstance, T> getRuntimeMap() {
         return getOwner().get().getInfluencers();
     }
 
     @Override
-    public void setRuntimeMap(TimelineMap<COReference<?>, InfluencerInstance, T> map) {
+    public void setRuntimeMap(MiddlemanMap<COReference<?>, InfluencerInstance, T> map) {
         getOwner().get().internalSetInfluencers(map);
     }
 

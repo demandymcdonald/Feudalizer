@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.utilities.number.BoundedInteger;
 
-import java.util.Arrays;
-
 public class PoliticalCompass implements IPoliticalCompass {
     private final Value individualCollectiveAxis = new Value(0);
     private final Value universalParticularAxis = new Value(0);

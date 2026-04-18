@@ -5,9 +5,8 @@ import com.google.gson.JsonObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import com.utilities.number.BoundInt;
-import com.utilities.number.BoundedInteger;
 import com.utilities.serialization.JsonSerializable;
 
 import java.util.Arrays;
@@ -22,7 +21,7 @@ public interface IPoliticalCompass extends JsonSerializable {
     // extreme on one axis, but extremely mild on another would be only 80% extreme.
     static final double MAX_EXTREME = TOTAL_AXIS * PERCENTAGE_TO_BE_EXTREME;
     static final int COMPASS_MAX = 512;
-    enum Axis implements Displayable {
+    enum Axis implements IDisplayable {
         INDIVIDUAL_COLLECTIVE(
                 "axis_a_col_ind",
                 "Individual vs. Collective",
@@ -85,12 +84,12 @@ public interface IPoliticalCompass extends JsonSerializable {
         }
 
         @Override
-        public String displayName() {
+        public String getDisplayName() {
             return "";
         }
 
         @Override
-        public String description() {
+        public String getDescription() {
             return "";
         }
     }

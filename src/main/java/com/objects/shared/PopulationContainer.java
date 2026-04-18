@@ -2,12 +2,12 @@ package com.objects.shared;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.variable.EasingVariable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.group.population.InterestGroup;
+import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.number.*;
@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDriven<T>> implements EasingVariable<PopulationContainer<T>,PopulationChange<T>,T> {
     private DMEReference<? extends T> owner;
     private PopulationChange<T> currentChange;
-    private TimelineMap<InterestGroup, BoundInt,T>  populationMap;
+    private MiddlemanMap<InterestGroup, BoundInt,T> populationMap;
     private Map<InterestGroup, BoundDbl> interpolatedPopulationMap = new HashMap<>();
     private static final StringIdentifiable popVar = new StringIdentifiable("totalPopulation") {
         @Override
@@ -179,10 +179,10 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     public void internalSetPopulation(long newPopulation){
         totalPopulation = newPopulation;
     }
-    public void internalSetMap(TimelineMap<InterestGroup, BoundInt,T>  newMap){
+    public void internalSetMap(MiddlemanMap<InterestGroup, BoundInt,T> newMap){
         populationMap = newMap;
     }
-    public TimelineMap<InterestGroup, BoundInt,T> internalGetPopulationMap(){
+    public MiddlemanMap<InterestGroup, BoundInt,T> internalGetPopulationMap(){
         return populationMap;
     }
     public void internalSetChange(PopulationChange<T> newChange){

@@ -10,7 +10,7 @@ import com.base.timeline.error.StateError;
 import com.base.timeline.state.TimelineState;
 import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.Tenet;
 import com.utilities.number.DateUtilities;
 
 import java.time.LocalDate;

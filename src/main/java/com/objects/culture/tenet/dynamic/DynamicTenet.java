@@ -1,0 +1,301 @@
+package com.objects.culture.tenet.dynamic;
+
+import com.Global;
+import com.base.reference.DMEReference;
+import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.TLMap;
+import com.base.utilities.TLSyncedCache;
+import com.google.common.collect.Multimap;
+import com.google.gson.JsonObject;
+import com.objects.CauseOfEnd;
+import com.objects.culture.AbstractCulture;
+import com.objects.culture.Culture;
+import com.objects.culture.Influencers.InfluencerInstance;
+import com.objects.culture.Influencers.InfluencerRelationship;
+import com.objects.culture.object.CultureObject;
+import com.objects.culture.object.CultureObjectContainer;
+import com.objects.culture.object.compass.IPoliticalCompass;
+import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
+import com.objects.culture.tenet.dynamic.change.Boundary;
+import com.objects.culture.tenet.factory.CultureCondition;
+import com.objects.culture.tenet.instance.TenetInstance;
+import com.objects.culture.tenet.Acceptance;
+import com.objects.culture.tenet.AcceptanceContainer;
+import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.object.COReference;
+import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.Tenet;
+import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.time.LocalDate;
+import java.util.*;
+
+import static com.objects.CauseOfEnd.DynamicTenets.NO_MEMBERS;
+
+public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T> {
+    private final TenetGroup tenetGroup;
+    private final CultureObjectContainer<T> container;
+    private DMEReference<Culture> foundingCulture;
+    private MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> children;
+    String displayID;
+    String displayName;
+    String description;
+    public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
+        super(created, ended, initialState);
+        this.tenetGroup = group;
+        displayID = buildID(group,name);
+        container = new CultureObjectContainer<>(this.getReference());
+        this.foundingCulture = foundingCulture;
+    }
+    public DynamicTenet(TenetGroup group, DMEReference<T> dme) {
+        super(dme);
+        this.tenetGroup = group;
+        container = new CultureObjectContainer<>(this.getReference());
+    }
+
+    public DynamicTenet(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
+        super(id, created, ended, initialState);
+        this.tenetGroup = group;
+        this.foundingCulture = foundingCulture;
+        displayID = buildID(group, name);
+        container = new CultureObjectContainer<>(this.getReference());
+    }
+    @Override
+    public final TenetReference getTenetReference() {
+        return TenetReference.of(this);
+    }
+
+    @Override
+    public final CultureObjectContainer<T> getContainer() {
+        return container;
+    }
+
+    @Override
+    public TenetGroup getGroup() {
+        return tenetGroup;
+    }
+
+    @Override
+    public AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers) {
+        return Tenet.super.getAcceptanceContainer(tenet, includeInfluencers);
+    }
+    public final Culture getCulture() {
+        return foundingCulture.get();
+    }
+    @Override
+    public final String getDisplayName() {
+        return displayName;
+    }
+    public final void internalDisplayName(String name){
+        this.displayName = name;
+    }
+    public final void setDisplayName(String name){
+        getTimeline().addChange(new DynamicBaseChanges.setDisplayName<>(getReference(), Global.getDate(), name));
+    }
+    @Override
+    public final String getDescription() {
+        return description;
+    }
+    public final void internalDescription(String description){
+        this.description = description;
+    }
+    public final void setDescription(String name){
+        getTimeline().addChange(new DynamicBaseChanges.setDescription<>(getReference(), Global.getDate(), name));
+    }
+
+    public void onOpinionAdd(TenetReference key, TenetInstance<T> value){};
+    public void onOpinionRemove(TenetReference key, TenetInstance<T> value){};
+    public void onOpinionReplace(TenetReference key, TenetInstance<T> oldValue, TenetInstance<T> newValue){};
+    public void onOpinionClear(){};
+    public void onOpinionGet(TenetReference key, TenetInstance<T> value){};
+
+    public void internalSetChildMap(MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> map){
+        this.children = map;
+    }
+    public MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> getChildren(){
+        return children;
+    }
+    @Override
+    public void additionalSave(JsonObject data) {
+        data.addProperty("displayID", displayID);
+        data.add("founding_culture",foundingCulture.serialize());
+    }
+    public final boolean isAllowedTenet(Tenet tenet){
+        return getGroup().isParentOf(tenet.getGroup());
+    }
+    @Override
+    public void additionalLoad(JsonObject data) {
+        displayID = data.get("displayID").getAsString();
+        foundingCulture = DMEReference.deserialize(data.get("founding_culture").getAsJsonObject());
+    }
+    private static String buildID(TenetGroup tenetGroup, String name) {
+        return tenetGroup.getDisplayID() + "/" + name.toLowerCase(Locale.ROOT);
+    }
+
+    @Override
+    public final TimelineChange<T> getDeathChange(DMEReference<T> dme, LocalDate date, CauseOfEnd<? super T> cOd) {
+        return new Boundary.Disbanding<>(dme, date, cOd);
+    }
+
+    @Override
+    public final TimelineChange<T> getBirthChange(DMEReference<T> dme, LocalDate date) {
+        return new Boundary.Founding<>(dme, date);
+    }
+    @Override
+    public final CauseOfEnd<T> defaultDeathCause() {
+        return (CauseOfEnd<T>) NO_MEMBERS;
+    }
+
+
+//Literally just to clean up override menu
+
+
+    @Override
+    public final void addInfluencer(COReference<?> influencer, InfluencerRelationship relationship) {
+        CultureObject.super.addInfluencer(influencer, relationship);
+    }
+
+    @Override
+    public final void addOpinion(TenetReference tenet, double d) {
+        CultureObject.super.addOpinion(tenet, d);
+    }
+
+    @Override
+    public final void amendCompass(Pair<IPoliticalCompass.Axis, Integer>... values) {
+        CultureObject.super.amendCompass(values);
+    }
+
+    @Override
+    public final double calcResistance(double opinion) {
+        return CultureObject.super.calcResistance(opinion);
+    }
+
+    @Override
+    public final Acceptance getAcceptance(Tenet tenet, boolean includeInfluencers) {
+        return CultureObject.super.getAcceptance(tenet, includeInfluencers);
+    }
+
+    @Override
+    public final double getAcceptanceValue(Tenet tenet, boolean includeInfluencers) {
+        return CultureObject.super.getAcceptanceValue(tenet, includeInfluencers);
+    }
+
+    @Override
+    public final double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, COReference<?>... bls) {
+        return CultureObject.super.getAcceptanceValue(tenet, includeInfluencers, bls);
+    }
+
+    @Override
+    public final InterpolatedPoliticalCompass<T> getCompass() {
+        return CultureObject.super.getCompass();
+    }
+
+    @Override
+    public final TLSyncedCache<TenetReference, Double> getInfluencedCache() {
+        return CultureObject.super.getInfluencedCache();
+    }
+
+    @Override
+    public final TLMap<COReference<?>, InfluencerInstance> getInfluencers() {
+        return CultureObject.super.getInfluencers();
+    }
+
+    @Override
+    public final List<InfluencerOpinion> getListForTenet(Tenet tenet, boolean includeParentInfluencers, COReference<?>... bl) {
+        return CultureObject.super.getListForTenet(tenet, includeParentInfluencers, bl);
+    }
+
+    @Override
+    public final Map<TenetReference, TenetInstance<T>> getOpinionByGroup(TenetManager.Group.Pillar group, boolean includeDescendants) {
+        return CultureObject.super.getOpinionByGroup(group, includeDescendants);
+    }
+
+    @Override
+    public final Map<TenetReference, TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants) {
+        return CultureObject.super.getOpinionByGroup(group, includeDescendants);
+    }
+
+    @Override
+    public final TLMap<TenetReference,TenetInstance<T>> getOpinions() {
+        return CultureObject.super.getOpinions();
+    }
+
+    @Override
+    public final Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject() {
+        return CultureObject.super.getParentObject();
+    }
+    @Override
+    public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
+        return null;
+    }
+    @Override
+    public final COReference<T> getTOReference() {
+        return CultureObject.super.getTOReference();
+    }
+
+    @Override
+    public final double influencerResistance(COReference<?> influencer) {
+        return 0;
+    }
+
+    @Override
+    public final void internalParentObject(COReference<?> influencer, InfluencerRelationship relationship) {
+        CultureObject.super.internalParentObject(influencer, relationship);
+    }
+    @Override
+    public final void internalSetCompass(InterpolatedPoliticalCompass<?> compass) {
+        CultureObject.super.internalSetCompass(compass);
+    }
+
+    @Override
+    public final void internalSetInfluencers(TLMap<COReference<?>, InfluencerInstance> influencers) {
+        CultureObject.super.internalSetInfluencers(influencers);
+    }
+
+    @Override
+    public final void internalSetOpinions(TLMap<TenetReference,TenetInstance<T>> opinions) {
+        CultureObject.super.internalSetOpinions(opinions);
+    }
+
+    @Override
+    public final void invalidateCache() {
+        CultureObject.super.invalidateCache();
+    }
+
+    @Override
+    public final void invalidateCache(TenetReference t) {
+        CultureObject.super.invalidateCache(t);
+    }
+
+    @Override
+    public final boolean isInfluencer(COReference<?> ref) {
+        return CultureObject.super.isInfluencer(ref);
+    }
+
+
+
+    @Override
+    public final void removeInfluencer(COReference<?> influencer) {
+        CultureObject.super.removeInfluencer(influencer);
+    }
+
+
+    @Override
+    public final void setOpinion(TenetReference tenet, double d) {
+        CultureObject.super.setOpinion(tenet, d);
+    }
+
+    @Override
+    public final void setParentObject(COReference<?> influencer, InfluencerRelationship relationship) {
+        CultureObject.super.setParentObject(influencer, relationship);
+    }
+
+    @Override
+    public final void updateProceduralInfluencers() {
+
+    }
+}

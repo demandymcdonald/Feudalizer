@@ -10,6 +10,7 @@ import com.base.timeline.change.TimelineChange;
 import com.base.utilities.TimelineSynced;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.utilities.ThreadManager;
 import com.utilities.id.Identifiable;
 import com.utilities.serialization.SuperclassSerializable;
 import org.apache.commons.lang3.tuple.Pair;
@@ -80,6 +81,13 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
     }
     default void calculateVariables(){
         final Map<Identifiable<?>,VariableContainer> ourEase = this.getEasingFunctions();
+        if (!ThreadManager.isMainThread()){
+            for(Identifiable<?> i : ourEase.keySet()){
+                VariableContainer our = ourEase.get(i);
+                our.consumer().accept(our.base().get());
+            }
+            return;
+        }
         final C future = getNextChange();
         if (future == null){
             for (VariableContainer v : ourEase.values()){

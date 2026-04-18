@@ -2,21 +2,21 @@ package com.objects.culture.term;
 
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 
-public class CultureTerm extends StateReference implements Displayable {
+public class CultureTerm extends StateReference implements IDisplayable {
     @Override
     public String getDisplayID() {
         return "";
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return "";
     }
 
     @Override
-    public String description() {
+    public String getDescription() {
         return "";
     }
 

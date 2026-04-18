@@ -57,7 +57,7 @@ public class DMRegistry {
 
 
 
-    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> void load(DMEReference<T> header, JsonObject data){
+    public static <T extends DateMutableEntity<T>,M extends AbstractMutableManager<M,T,?>> void load(DMEReference<?> header, JsonObject data){
         M manager = getManager(header.getType());
         manager.loadEntity(header,data);
     }

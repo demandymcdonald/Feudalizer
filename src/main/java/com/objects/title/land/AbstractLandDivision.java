@@ -6,15 +6,14 @@ import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;
 import com.objects.title.Title;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.locationtech.jts.geom.Geometry;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public abstract class AbstractLandDivision<T extends AbstractLandDivision<T>> extends Title<T> implements Displayable {
+public abstract class AbstractLandDivision<T extends AbstractLandDivision<T>> extends Title<T> implements IDisplayable {
     private String id;
     private String name;
     private String description;

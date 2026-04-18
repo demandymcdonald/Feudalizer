@@ -6,20 +6,17 @@ import com.base.reference.DMEReference;
 import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.condition.nullify.NullifyCondition;
 import com.base.timeline.change.multi.MultiCondition;
-import com.base.timeline.change.multi.TimelineMap;
+import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.base.timeline.variable.EasingChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.objects.culture.tenet.group.population.InterestGroup;
-import com.objects.title.land.habitable.HabitableLand;
+import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
-import com.utilities.number.BoundInt;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -49,12 +46,12 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
     }
 
     @Override
-    public void setRuntimeMap(TimelineMap<InterestGroup, BoundInt, T> map) {
+    public void setRuntimeMap(MiddlemanMap<InterestGroup, BoundInt, T> map) {
         getOwner().get().getPopulationContainer().internalSetMap(map);
     }
 
     @Override
-    public TimelineMap<InterestGroup, BoundInt,T> getRuntimeMap() {
+    public MiddlemanMap<InterestGroup, BoundInt,T> getRuntimeMap() {
         return getOwner().get().getPopulationContainer().internalGetPopulationMap();
     }
     public void setPopulation(long population){
@@ -123,32 +120,32 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
     }
 
     @Override
-    public void addConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
+    public void conditionsAdd(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void removeConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
+    public void conditionsRemove(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void removeWipeFConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
+    public void conditionsWipeForward(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void removeWipeBConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
+    public void conditionsWipeBackward(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void modifyKeyConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
+    public void conditionsModifyKey(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 
     @Override
-    public void modifyValueConditions(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
+    public void conditionsModifyValue(List<MultiCondition<PopulationChange<T>, InterestGroup, BoundInt, String, T>> current) {
 
     }
 

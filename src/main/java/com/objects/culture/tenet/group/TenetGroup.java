@@ -1,9 +1,8 @@
 package com.objects.culture.tenet.group;
 
-import com.google.common.collect.ImmutableList;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetManager;
-import com.utilities.Displayable;
+import com.utilities.IDisplayable;
 import com.utilities.hierarchy.Parented;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jgrapht.Graph;
@@ -11,7 +10,7 @@ import org.jgrapht.graph.DefaultEdge;
 
 import java.util.*;
 
-public class TenetGroup implements Displayable, Parented<TenetGroup> {
+public class TenetGroup implements IDisplayable, Parented<TenetGroup> {
     public static final int SYSTEM_MAX = 10;
     public static final int BELIEF_MAX = 10;
     public static final int VALUE_MAX = 3;
@@ -71,7 +70,7 @@ public class TenetGroup implements Displayable, Parented<TenetGroup> {
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return name;
     }
     public Level getLevel(){
@@ -239,7 +238,7 @@ public class TenetGroup implements Displayable, Parented<TenetGroup> {
         return name;
     }
 
-    public String description() {
+    public String getDescription() {
         return description;
     }
 }

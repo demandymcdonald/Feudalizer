@@ -8,10 +8,10 @@ import com.objects.culture.tenet.group.ConnectionEdge;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
-import com.objects.culture.tenet.types.TenetReference;
-import com.objects.culture.tenet.types.mutable.tenets.general.Leadership;
-import com.objects.culture.tenet.types.mutable.MutableTenet;
-import com.objects.culture.tenet.types.mutable.tenets.ReligionTenets;
+import com.objects.culture.tenet.interest.InterestGroup;
+import com.objects.culture.tenet.mutable.tenets.general.Leadership;
+import com.objects.culture.tenet.mutable.MutableTenet;
+import com.objects.culture.tenet.mutable.tenets.ReligionTenets;
 import com.utilities.serialization.SuperclassSerializable;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -224,6 +224,10 @@ public class TenetManager {
             }
             return null;
         }
+    }
+    public static class InterestGroups{
+        private Map<String, InterestGroup> groups = new HashMap<>();
+        Graph<InterestGroup, DefaultEdge> graph = new DirectedPseudograph<>(DefaultEdge.class);
     }
     public static abstract class TenetFactory<T extends MutableTenet> {
         public final T rebuild(JsonObject object) {

@@ -4,18 +4,21 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.object.COReference;
 
 import javax.annotation.Nullable;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-public enum InfluencerRelationship {
+public abstract class InfluencerRelationship {
+    final InfluencerWeight defaultWeight;
 
-
-
-
-    ;
-
-    private final InfluencerWeight defaultWeight;
-    InfluencerRelationship(boolean isProcedural, InfluencerWeight defaultWeight, @Nullable Predicate<COReference<?>> shouldRemove){
+    public InfluencerRelationship(InfluencerWeight defaultWeight){
         this.defaultWeight = defaultWeight;
+    }
+    public abstract boolean shouldRemove(COReference<?> influencer, COReference<?> influenced);
+
+
+
+    public BiPredicate<COReference<?>,COReference<?>> getPredicate(){
+        return this::shouldRemove;
     }
     public boolean hasWeightFor(TenetGroup group){
         return defaultWeight.map().containsKey(group);
@@ -25,5 +28,8 @@ public enum InfluencerRelationship {
     }
     public InfluencerWeight getDefaultWeight(){
         return defaultWeight.clone();
+    }
+    public InfluencerInstance makeInstance(boolean isProcedural){
+        return new InfluencerInstance(this,isProcedural);
     }
 }

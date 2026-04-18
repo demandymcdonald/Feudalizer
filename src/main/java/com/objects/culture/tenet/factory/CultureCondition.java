@@ -12,7 +12,7 @@ import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.types.mutable.Tenet;
+import com.objects.culture.tenet.Tenet;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +49,7 @@ public abstract class CultureCondition<TC extends TimelineChange<? super D> & Cu
     protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject,TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError>
     AcceptanceTooLow(Tenet tenet, TC change, S subject, D decider, boolean acceptedAllowed, boolean neutralAllowed){
         final Acceptance accept = decider.getAcceptanceContainer(subject,false).getAcceptance();
-        final StateReference sr = ComplexReference.of("{} (decider) and {} (subject) are too incompatible culturally. The decider sees the subject as {}",decider.getDisplayID(),subject.getDisplayID(),accept.displayName());
+        final StateReference sr = ComplexReference.of("{} (decider) and {} (subject) are too incompatible culturally. The decider sees the subject as {}",decider.getDisplayID(),subject.getDisplayID(),accept.getDisplayName());
         switch(accept){
             case CORE,CORE_FANATIC,INTEGRATED -> {
                 return Optional.empty();

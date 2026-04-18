@@ -5,7 +5,7 @@ import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeID;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.TimelineMultiChange;
+import com.base.timeline.change.multi.TLMultiChange;
 import com.base.timeline.state.TimelineState;
 import com.utilities.id.Identifiable;
 import org.slf4j.Logger;
@@ -227,10 +227,10 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
             return null;
         }
     }
-    public static <TC extends TimelineMultiChange<TC,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void iterateMap(
+    public static <TC extends TLMultiChange<TC,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void iterateMap(
         TC change,
         TimeDirection direction,
-        TimelineMultiChange.MapTask<TC,K,V,I,T> task,
+        TLMultiChange.MapTask<TC,K,V,I,T> task,
         boolean includeCurrent){
         final Timeline<? extends T> timeline = change.getTimeline();
         final Function<LocalDate,TimelineState<? extends T>> get = buildStateGetterChange(timeline,direction);
