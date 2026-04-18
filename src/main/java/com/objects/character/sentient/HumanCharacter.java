@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.CharacterSingleChange;
 import com.objects.character.opinion.Opinion;
-import com.objects.character.physical.species.MainSpecies;
+import com.objects.character.physical.species.SentientSpecies;
 import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
@@ -18,7 +18,7 @@ import com.objects.title.succession.rules.SuccessionEntry;
 import java.time.LocalDate;
 import java.util.*;
 
-public class HumanCharacter extends SentientCharacter<HumanCharacter, MainSpecies.Human> implements CulturalObject<HumanCharacter> {
+public class HumanCharacter extends SentientCharacter<HumanCharacter, SentientSpecies.Human> implements CulturalObject<HumanCharacter> {
 
 
 

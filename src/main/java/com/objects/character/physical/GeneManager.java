@@ -2,7 +2,7 @@ package com.objects.character.physical;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.objects.character.physical.aspect.AspectProperty;
+import com.objects.character.physical.aspect.GeneProperty;
 import com.objects.character.physical.aspect.BodyPart;
 import com.objects.character.physical.aspect.PhysicalAspect;
 import com.objects.character.physical.genetics.Gene;
@@ -66,8 +66,8 @@ public class GeneManager {
         }
     }
     public static class Aspect_Property{
-        private static final Map<String, AspectProperty> propertyMap = new HashMap<>();
-        public static void register(AspectProperty aspect){
+        private static final Map<String, GeneProperty> propertyMap = new HashMap<>();
+        public static void register(GeneProperty aspect){
             if(propertyMap.containsKey(aspect.getID()) &&  !(propertyMap.get(aspect.getID()).equals(aspect))){
                 throw new IllegalArgumentException("Aspect Property: "+aspect.getID()+" already registered");
             } else if (propertyMap.containsKey(aspect.getID())){
@@ -155,7 +155,7 @@ public class GeneManager {
         public static void link(PhysicalAspect aspect){
             BodyPart bp = aspect.part();
             GeneticEcosystem.addEdge(bp,aspect,new GeneNodeEdge(bp,aspect));
-            for(AspectProperty property : aspect.validProperties()){
+            for(GeneProperty property : aspect.validProperties()){
                 GeneticEcosystem.addEdge(aspect,property,new GeneNodeEdge(aspect,property));
             }
         }

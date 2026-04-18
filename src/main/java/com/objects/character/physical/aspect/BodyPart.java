@@ -3,6 +3,8 @@ package com.objects.character.physical.aspect;
 import com.objects.character.physical.GeneManager;
 import com.objects.character.physical.genetics.GeneNode;
 
+import java.util.Locale;
+
 public enum BodyPart implements GeneNode<BodyPart> {
     WHOLE_BODY,
     BODY_HAIR(WHOLE_BODY),
@@ -12,6 +14,7 @@ public enum BodyPart implements GeneNode<BodyPart> {
     HEAD(WHOLE_BODY),
     HEAD_HAIR(HEAD),
     FACE(HEAD),
+    FACIAL_HAIR(HEAD),
     EARS(HEAD),
     LEFT_EAR(EARS),
     RIGHT_EAR(EARS),
@@ -33,11 +36,13 @@ public enum BodyPart implements GeneNode<BodyPart> {
     LEGS(PELVIS),
     LEFT_LEG(LEGS),
     RIGHT_LEG(LEGS),
+    FEET(LEGS),
     LEFT_FOOT(LEFT_LEG),
     RIGHT_FOOT(RIGHT_LEG),
     ARMS(TORSO),
     LEFT_ARM(ARMS),
     RIGHT_ARM(ARMS),
+    HANDS(ARMS),
     LEFT_HAND(LEFT_ARM),
     RIGHT_HAND(RIGHT_ARM),
     VITAL_ORGAN(TORSO),
@@ -65,5 +70,10 @@ public enum BodyPart implements GeneNode<BodyPart> {
     }
     public BodyPart getParent() {
         return parent;
+    }
+
+    @Override
+    public String getID() {
+        return this.name().toLowerCase(Locale.ROOT);
     }
 }
