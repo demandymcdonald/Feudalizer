@@ -1,11 +1,15 @@
 package com.objects.character.physical.aspect;
 
 import com.objects.character.physical.GeneManager;
-import com.objects.character.physical.genetics.GeneNode;
+import com.objects.character.physical.IGeneNode;
+import com.objects.character.physical.species.Species;
+import com.utilities.caching.CachingSupplier;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
-public enum BodyPart implements GeneNode<BodyPart> {
+public enum BodyPart implements IGeneNode<BodyPart> {
     WHOLE_BODY,
     BODY_HAIR(WHOLE_BODY),
     BODY_FUR(WHOLE_BODY),
@@ -58,10 +62,26 @@ public enum BodyPart implements GeneNode<BodyPart> {
     GENITAL(PELVIS), //PROBABLY WON'T USE, BUT IT'S GOOD TO HAVE THE OPTION? MAY REUSE BODY PART FOR INJURY TRACKING
 
     ;
-
+    private final CachingSupplier<Set<Species>> validSpecies = new CachingSupplier<>(this::buildValidSpecies);
+    private final CachingSupplier<Set<PhysicalAspect>> validAspects = new CachingSupplier<>(this::buildValidAspects);
+    private final CachingSupplier<Set<BodyPart>> validChildren = new CachingSupplier<>(this::buildValidChildren);
+    private Set<Species> buildValidSpecies(){
+        return GeneManager.getConnectionsWhereTarget(this, Species.class);
+    }
+    private Set<PhysicalAspect> buildValidAspects(){
+        return GeneManager.getConnectionsWhereSource(this, PhysicalAspect.class);
+    }
+    private Set<BodyPart> buildValidChildren(){
+        Set<BodyPart> parts = new HashSet<>(GeneManager.getConnectionsWhereSource(this, BodyPart.class));
+        for(BodyPart part : parts.toArray(BodyPart[]::new)){
+            parts.addAll(part.getValidBodyParts());
+        }
+        return parts;
+    }
     private final BodyPart parent;
     BodyPart(BodyPart part) {
         this.parent = part;
+
         GeneManager.Body_Part.register(this);
     }
     BodyPart() {
@@ -74,6 +94,22 @@ public enum BodyPart implements GeneNode<BodyPart> {
 
     @Override
     public String getID() {
-        return this.name().toLowerCase(Locale.ROOT);
+        return "body_part:"+ this.name().toLowerCase(Locale.ROOT);
+    }
+
+
+    @Override
+    public Set<BodyPart> getValidBodyParts() {
+        return new HashSet<>(validChildren.get());
+    }
+
+    @Override
+    public Set<Species> getValidSpecies() {
+        return new HashSet<>(validSpecies.get());
+    }
+
+    @Override
+    public Set<PhysicalAspect> getValidAspects() {
+        return new HashSet<>(validAspects.get());
     }
 }

@@ -19,6 +19,10 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable 
         Class_Caste("class:"),
         Sexual_Orientation("orientation:"),
         Religion("religion:"),
+        Political_Ideology("ideology:"),
+        Lifestyle("lifestyle:"),
+        Culture("culture:"),
+        Disability("disability:"),
         ;
         private final String prefix;
         Dimension(String prefix) {

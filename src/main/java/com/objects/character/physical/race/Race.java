@@ -1,7 +1,7 @@
 package com.objects.character.physical.race;
 
 import com.google.gson.JsonObject;
-import com.objects.character.physical.genetics.GeneNode;
+import com.objects.character.physical.IGeneNode;
 import com.objects.character.physical.species.Species;
 import com.objects.character.sentient.SentientSpecies;
 import com.objects.character.physical.GeneManager;
@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 
-public class Race implements Displayable, GeneNode<Race> {
+public class Race implements Displayable, IGeneNode<Race> {
     private final String id;
     private final String name;
     private final String description;

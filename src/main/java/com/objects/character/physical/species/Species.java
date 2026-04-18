@@ -2,16 +2,20 @@ package com.objects.character.physical.species;
 
 import com.google.common.collect.ImmutableList;
 import com.objects.character.physical.GeneManager;
+import com.objects.character.physical.aspect.BodyPart;
 import com.objects.character.physical.aspect.PhysicalAspect;
-import com.objects.character.physical.genetics.GeneNode;
+import com.objects.character.physical.IGeneNode;
 import com.utilities.IDisplayable;
+import com.utilities.caching.CachingSupplier;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public class Species implements IDisplayable, GeneNode<Species> {
+public class Species implements IDisplayable, IGeneNode<Species> {
     private final String id;
     private String name;
     private String trinomialNomenclature;
@@ -28,6 +32,14 @@ public class Species implements IDisplayable, GeneNode<Species> {
         GeneManager.Species_Race.registerSpecies(this);
     }
 
+    private final CachingSupplier<Set<BodyPart>> validParts = new CachingSupplier<>(this::buildValidParts);
+    private Set<BodyPart> buildValidParts(){
+        Set<BodyPart> parts = new HashSet<>();
+        for(PhysicalAspect aspect : validProperties){
+            parts.addAll(aspect.getValidBodyParts());
+        }
+        return parts;
+    }
     public BoundInt getMagicCapacity() {
         return magic_capacity;
     }
@@ -62,6 +74,18 @@ public class Species implements IDisplayable, GeneNode<Species> {
     }
     public static Builder builder(String id, String trinomial, String name, String description) {
         return new Builder(id, trinomial, name, description);
+    }
+    @Override
+    public Set<BodyPart> getValidBodyParts() {
+        return validParts.get();
+    }
+    @Override
+    public Set<Species> getValidSpecies() {
+        return Set.of(this);
+    }
+    @Override
+    public Set<PhysicalAspect> getValidAspects() {
+        return new HashSet<>(validProperties);
     }
     public static class Builder {
         private final String id;

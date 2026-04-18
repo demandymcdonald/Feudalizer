@@ -1,24 +1,24 @@
 package com.objects.character.physical.species.human;
 
 import com.objects.character.physical.aspect.BodyPart;
-import com.objects.character.physical.augment.Augment;
+import com.objects.character.physical.augment.AugmentSlot;
 
 public class HumanAugments {
-    public static final Augment HUMAN_HAIRCUT = new Augment(BodyPart.HEAD_HAIR, "human_haircut", "Haircut", "");
-    public static final Augment HUMAN_BEARD = new Augment(BodyPart.FACIAL_HAIR, "human_beard", "Beard", "");
-    public static final Augment HUMAN_BODY_HAIR_GROOMING = new Augment(BodyPart.BODY_HAIR, "human_body_hair_grooming", "Body Hair Grooming", "");
-    public static final Augment BIONIC_ARM = new Augment(BodyPart.ARMS, "human_bionic_arm", "Bionic Arm", "");
-    public static final Augment PROSTHETIC_ARM = new Augment(BodyPart.ARMS, "human_prosthetic_arm", "Prosthetic Arm", "");
-    public static final Augment BIONIC_LEG = new Augment(BodyPart.LEGS, "human_bionic_leg", "Bionic Leg", "");
-    public static final Augment PROSTHETIC_LEG = new Augment(BodyPart.LEGS, "human_prosthetic_leg", "Prosthetic Leg", "");
-    public static final Augment FALSE_EYE = new Augment(BodyPart.EYES, "human_false_eye", "False Eye", "");
-    public static final Augment BIONIC_EYE = new Augment(BodyPart.EYES, "human_bionic_eye", "Bionic Eye", "");
-    public static final Augment GLASSES = new Augment(BodyPart.EYES, "human_glasses", "Glasses", "");
-    public static final Augment SKIN_TEXTURE = new Augment(BodyPart.SKIN, "skin_texture", "Skin Texture", "");
-    public static final Augment TEETH_CONDITION = new Augment(BodyPart.TEETH, "teeth_condition", "Teeth Condition", "");
-    public static final Augment TEETH_BRACES = new Augment(BodyPart.TEETH, "teeth_braces", "Braces", "");
-    public static final Augment TEETH_IMPLANTS = new Augment(BodyPart.TEETH, "teeth_implants", "Dental Implants", "");
-    public static final Augment TEETH_VENEERS = new Augment(BodyPart.TEETH, "teeth_veneers", "Veneers", "");
-    public static final Augment STERILIZATION = new Augment(BodyPart.GENITAL, "sterilization", "Sterilization", "");
-    public static final Augment CASTRATION = new Augment(BodyPart.GENITAL, "castration", "Mutilation/Castration", "");
+    public static final AugmentSlot HUMAN_HAIRCUT = new AugmentSlot("human_haircut", "Haircut", "");
+    public static final AugmentSlot HUMAN_BEARD = new AugmentSlot("human_beard", "Beard", "");
+    public static final AugmentSlot HUMAN_BODY_HAIR_GROOMING = new AugmentSlot("human_body_hair_grooming", "Body Hair Grooming", "");
+    public static final AugmentSlot BIONIC_ARM = new AugmentSlot("human_bionic_arm", "Bionic Arm", "");
+    public static final AugmentSlot PROSTHETIC_ARM = new AugmentSlot("human_prosthetic_arm", "Prosthetic Arm", "");
+    public static final AugmentSlot BIONIC_LEG = new AugmentSlot("human_bionic_leg", "Bionic Leg", "");
+    public static final AugmentSlot PROSTHETIC_LEG = new AugmentSlot("human_prosthetic_leg", "Prosthetic Leg", "");
+    public static final AugmentSlot FALSE_EYE = new AugmentSlot("human_false_eye", "False Eye", "");
+    public static final AugmentSlot BIONIC_EYE = new AugmentSlot("human_bionic_eye", "Bionic Eye", "");
+    public static final AugmentSlot GLASSES = new AugmentSlot("human_glasses", "Glasses", "");
+    public static final AugmentSlot SKIN_TEXTURE = new AugmentSlot("skin_texture", "Skin Texture", "");
+    public static final AugmentSlot TEETH_CONDITION = new AugmentSlot( "teeth_condition", "Teeth Condition", "");
+    public static final AugmentSlot TEETH_BRACES = new AugmentSlot("teeth_braces", "Braces", "");
+    public static final AugmentSlot TEETH_IMPLANTS = new AugmentSlot("teeth_implants", "Dental Implants", "");
+    public static final AugmentSlot TEETH_VENEERS = new AugmentSlot("teeth_veneers", "Veneers", "");
+    public static final AugmentSlot STERILIZATION = new AugmentSlot("sterilization", "Sterilization", "");
+    public static final AugmentSlot CASTRATION = new AugmentSlot("castration", "Mutilation/Castration", "");
 }

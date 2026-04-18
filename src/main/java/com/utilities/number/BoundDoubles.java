@@ -8,11 +8,11 @@ public class BoundDoubles {
             return new PercentPos(0);
         }
     }
-    public static BoundDbl percent(boolean neg, int integer){
+    public static BoundDbl percent(boolean neg, double initial){
         if(neg){
-            return new PercentBoth(integer);
+            return new PercentBoth(initial);
         } else {
-            return new PercentPos(integer);
+            return new PercentPos(initial);
         }
     }
     public static BoundDbl dbl256(boolean neg){
@@ -48,6 +48,20 @@ public class BoundDoubles {
             return new Dbl1024(0);
         } else {
             return new Dbl1024Pos(0);
+        }
+    }
+    public static BoundDbl dbl2048(boolean neg, double initial){
+        if(neg){
+            return new Dbl2048(initial);
+        } else {
+            return new Dbl2048Pos(initial);
+        }
+    }
+    public static BoundDbl dbl2048(boolean neg){
+        if(neg){
+            return new Dbl2048(0);
+        } else {
+            return new Dbl2048Pos(0);
         }
     }
     public static BoundDbl dbl1024(boolean neg, double initial){
@@ -174,6 +188,35 @@ public class BoundDoubles {
         @Override
         public double getMax() {
             return 1023;
+        }
+    }
+    private static class Dbl2048 extends BoundDbl{
+        Dbl2048(double value) {
+            super(value);
+        }
+
+        @Override
+        public double getMin() {
+            return -2048;
+        }
+
+        @Override
+        public double getMax() {
+            return 2047;
+        }
+    }
+    private static class Dbl2048Pos extends BoundDbl{
+        Dbl2048Pos(double value) {
+            super(value);
+        }
+        @Override
+        public double getMin() {
+            return 0;
+        }
+
+        @Override
+        public double getMax() {
+            return 2048;
         }
     }
 }

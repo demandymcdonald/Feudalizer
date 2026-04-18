@@ -1,60 +1,81 @@
 package com.objects.character.physical.genetics;
 
+import com.objects.character.physical.GeneManager;
+import com.objects.character.physical.IGeneNode;
+import com.objects.character.physical.aspect.BodyPart;
 import com.objects.character.physical.aspect.GeneProperty;
 import com.objects.character.physical.aspect.PhysicalAspect;
-import com.utilities.Displayable;
+import com.objects.character.physical.species.Species;
+import com.utilities.IDisplayable;
 import com.utilities.number.BoundDbl;
+import com.utilities.number.BoundDoubles;
 
-public abstract class Gene implements Displayable, GeneNode<Gene> {
-    private final PhysicalAspect parent; // Parent physical aspect (human skin)
+import java.util.HashSet;
+import java.util.Set;
+
+public abstract class Gene implements IDisplayable, IGeneNode<Gene> {
     private final GeneProperty geneProperty; //the thing on the PhysicalAspect that this Gene affects
     private final BoundDbl chance; //Chance of spontaneous development (0-100 Double)
     private final GeneStrength strength;// Dominant, Recessive, or Strong. Determines the strength of the gene.
+    private final String fullID;
     private final String id;
     private final String name;
     private final String description;
-    private final boolean canBeLatent;
-    public Gene(PhysicalAspect parent, GeneProperty property, String id, String name, String description, double chance, GeneStrength strength, boolean canBeLatent) {
-        this.parent = parent;
+    public Gene(GeneProperty property, String id, String name, String description, double chance, double value, GeneStrength strength) {
         this.geneProperty = property;
-        this.id = parent.getDisplayID() + id;
+        this.fullID = property.getID() + "gene:" + id;
+        this.id = "gene:" + id;
         this.name = name;
         this.description = description;
-        this.chance = Math.clamp(chance, 0, 100);
+        this.chance = BoundDoubles.percent(false,chance);
         this.strength = strength;
-        this.canBeLatent = canBeLatent;
+        GeneManager.Genetics.register(this);
     }
-
     public double getChance() {
-        return chance;
+        return chance.get();
     }
-
     public GeneStrength getStrength() {
         return strength;
     }
 
     @Override
-    public String getDisplayID() {
+    public final String getID() {
         return id;
     }
 
     @Override
-    public String displayName() {
-        return name;
+    public final String getDisplayID() {
+        return fullID;
     }
 
     @Override
-    public String description() {
+    public final String getDescription() {
         return description;
     }
 
-    public boolean isCanBeLatent() {
-        return canBeLatent;
+    @Override
+    public final String getDisplayName() {
+        return name;
     }
-    public PhysicalAspect getAspect() {
-        return parent;
+    public final boolean isCanBeLatent() {
+        return strength.canBeLatent();
     }
-    public GeneProperty getProperty() {
+    public final GeneProperty getProperty() {
         return geneProperty;
+    }
+    public GeneInstance getDefaultInstance(){
+        return new GeneInstance(this);
+    }
+    @Override
+    public final Set<PhysicalAspect> getValidAspects() {
+        return new HashSet<>(geneProperty.getValidAspects());
+    }
+    @Override
+    public final Set<Species> getValidSpecies() {
+        return new HashSet<>(geneProperty.getValidSpecies());
+    }
+    @Override
+    public Set<BodyPart> getValidBodyParts() {
+        return new HashSet<>(geneProperty.getValidBodyParts());
     }
 }

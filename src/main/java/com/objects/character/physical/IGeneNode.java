@@ -1,13 +1,15 @@
-package com.objects.character.physical.genetics;
+package com.objects.character.physical;
 
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import com.objects.character.physical.GeneManager;
+import com.objects.character.physical.aspect.BodyPart;
+import com.objects.character.physical.species.Species;
 import com.utilities.id.StringIdentifiable;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
-public interface GeneNode<G extends GeneNode<G>> extends StringIdentifiable {
+public interface IGeneNode<G extends IGeneNode<G>> extends StringIdentifiable,IPhysicalObject {
 
     default G getNode(){
         return (G) this;

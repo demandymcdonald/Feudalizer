@@ -1,4 +1,4 @@
-package com.base.utilities;
+package com.utilities.caching;
 
 import com.base.timeline.change.TimelineChange;
 import com.google.common.base.Suppliers;
@@ -7,14 +7,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class CachingSupplier<T, C extends TimelineChange<?>> {
+public class CachingSupplier<T> {
     private final Supplier<T> supplier;
     private Supplier<T> usableSupplier;
-    private Consumer<C> consumer;
     private boolean isMemoized = false;
-    public CachingSupplier(Supplier<T> supplier, @Nullable Consumer<C> consumer) {
+    public CachingSupplier(Supplier<T> supplier) {
         this.supplier = supplier;
-        this.consumer = consumer;
         resetCache();
     }
     private void resetCache(){
@@ -29,18 +27,10 @@ public class CachingSupplier<T, C extends TimelineChange<?>> {
     public void clear(){
         resetCache();
     }
-    public void clear(C change){
-        if(consumer != null) {
-            consumer.accept(change);
-        }
-        resetCache();
-    }
     public void set(T result){
         usableSupplier = Suppliers.memoize(() -> result);
     }
-    public void setConsumer(Consumer<C> consumer){
-        this.consumer = consumer;
-    }
+
 
     public boolean isMemoized(){
         return isMemoized;

@@ -215,7 +215,7 @@ public class SocietyGroups {
                 .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RELIGION,RELIGIOUS_SOFT_CULTURE_INTERVENTION)
                 .addDependent(GovernmentGroups.RELIGIOUS, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
                 .build();
-        public static final TenetGroup CULTURAL_MAJORITY = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "cultural", "Cultural Norms", "")
+        public static final TenetGroup CULTURE = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "cultural", "Cultural Norms", "")
                 .setParent(IDENTITY_GROUPS)
                 .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
                 .addDependent(GovernmentGroups.CULTURAL, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)

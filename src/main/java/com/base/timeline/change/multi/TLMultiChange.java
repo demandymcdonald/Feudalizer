@@ -16,7 +16,7 @@ import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.sandbox.function.SandboxFunction;
 import com.base.timeline.state.TimelineState;
-import com.base.utilities.CachingSupplier;
+import com.utilities.caching.CachingSupplier;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
@@ -126,7 +126,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     private final List<Listener<K,V>> listeners = new ArrayList<>();
 
 
-    private final CachingSupplier<Map<K,V>,M> fullMap = new CachingSupplier<>(this::buildFull,null);
+    private final CachingSupplier<Map<K,V>> fullMap = new CachingSupplier<>(this::buildFull);
     protected final AtomicBoolean pauseCacheChecks = new AtomicBoolean(false);
 
     protected TLMultiChange(DMEReference<? extends T> owner, LocalDate date) {
@@ -296,7 +296,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
         }
     }
     protected void internalInvalidate(){
-        fullMap.clear((M) this);
+        fullMap.clear();
     }
     private Map<K,V> buildFull(){
         return buildMap((M) this, this.getActive(),null);
