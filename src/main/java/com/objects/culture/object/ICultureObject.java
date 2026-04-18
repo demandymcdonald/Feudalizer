@@ -8,7 +8,10 @@ import com.objects.culture.tenet.TenetReference;
 
 public interface ICultureObject {
     Culture getCulture();
-    AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers);
+    IPoliticalCompass getCompass();
+    default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
+        return new AcceptanceContainer(getAcceptanceValue(tenet,includeInfluencers));
+    };
     default Acceptance getAcceptance(TenetReference tenet, boolean includeInfluencers){
         return getAcceptanceContainer(tenet,includeInfluencers).getAcceptance();
     };
@@ -18,5 +21,5 @@ public interface ICultureObject {
     default AcceptanceContainer getAcceptanceContainer(ICultureObject other, boolean factorOtherTolerance){
         return new AcceptanceContainer(getCompass().getCompatibilityValue(other.getCompass(),factorOtherTolerance));
     }
-    IPoliticalCompass getCompass();
+;
 }

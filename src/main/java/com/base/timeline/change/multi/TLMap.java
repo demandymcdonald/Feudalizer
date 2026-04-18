@@ -1,7 +1,5 @@
 package com.base.timeline.change.multi;
 
-import com.Global.*;
-import com.google.common.collect.Maps;
 import com.utilities.ThreadManager;
 import com.utilities.id.Identifiable;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,10 +10,10 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class TimelineMap<K extends Identifiable<?>,V> {
+public class TLMap<K extends Identifiable<?>,V> {
     private final MiddlemanMap<?,K,V,?,?> middleman;
     private final boolean isMain = ThreadManager.isMainThread();
-    public TimelineMap(MiddlemanMap<?, K, V, ?, ?> middleman) {
+    public TLMap(MiddlemanMap<?, K, V, ?, ?> middleman) {
         this.middleman = middleman;
     }
     public V get(K key) {

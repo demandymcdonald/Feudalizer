@@ -3,6 +3,7 @@ package com.objects.culture.object;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.TLMap;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
@@ -21,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObject<T>>{
     DMEReference<T> reference;
     Pair<COReference<?>, InfluencerRelationship> parent;
-    MiddlemanMap<?,COReference<?>, InfluencerInstance,UUID, T> influencers;
-    MiddlemanMap<?,TenetReference,TenetInstance<T>, UUID,T> opinions;
+    TLMap<COReference<?>,InfluencerInstance> influencers;
+    TLMap<TenetReference,TenetInstance<T>> opinions;
     InterpolatedPoliticalCompass<T> compass;
     TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
 
@@ -79,19 +80,19 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         this.influencedCache = influencedCache;
     }
 
-    public MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID, T> getInfluencers() {
+    public TLMap<COReference<?>,InfluencerInstance> getInfluencers() {
         return influencers;
     }
 
-    public void setInfluencers(MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID, T> influencers) {
+    public void setInfluencers(TLMap<COReference<?>,InfluencerInstance> influencers) {
         this.influencers = influencers;
     }
 
-    public MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> getOpinions() {
+    public TLMap<TenetReference,TenetInstance<T>> getOpinions() {
         return opinions;
     }
 
-    public void setOpinions(MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> opinions) {
+    public void setOpinions(TLMap<TenetReference,TenetInstance<T>> opinions) {
         this.opinions = opinions;
     }
 

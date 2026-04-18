@@ -22,7 +22,7 @@ public class SocietyGroups {
             .build();
     public static final TenetGroup TRADITION_RITUAL = new TenetGroup.Builder(TGType.TRADITION, Level.NORMAL, "tradition_ritual", "Tradition/Ritual", "")
             .setParent(SOCIETY)
-            .addConnected(RELIGIOUS_CONFORMITY GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+            .addConnected(RELIGIOUS_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
             .build();
     public static final TenetGroup VALUES = new TenetGroup.Builder(TGType.VALUE, Level.NORMAL, "values", "Values", "")
             .setParent(SOCIETY)
@@ -34,26 +34,29 @@ public class SocietyGroups {
             .build();
     public static final TenetGroup LANGUAGE = new TenetGroup.Builder(TGType.LANGUAGE, Level.NORMAL, "language", "Language", "")
             .setParent(SOCIETY)
-            .addConnected(RELIGIOUS_CONFORMITY GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+            .addConnected(RELIGIOUS_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
             .build();
     public static final TenetGroup HOLIDAY_AND_GATHERING = new TenetGroup.Builder(TGType.TRADITION, Level.NORMAL, "holiday_and_gathering", "Holidays and Gatherings", "")
             .setParent(SOCIETY)
-            .addConnected(RELIGIOUS_CONFORMITY GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+            .addConnected(RELIGIOUS_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
             .build();
 
     // Aesthetics and Visual
     public static final TenetGroup AESTHETICS_AND_VISUAL = new TenetGroup.Builder(TGType.IDEOLOGY_SORT, Level.CATEGORY, "aesthetics_and_visual", "Aesthetics and Visual", "")
             .setParent(SOCIETY)
-            .addConnected(CIVIL_LIBERTIES, CLASS_AND_CASTE, SOCIETY_ENFORCED_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+
             .build();
     public static final TenetGroup ART_AND_MEDIA = new TenetGroup.Builder(TGType.AESTHETIC, Level.LORE_ONLY, "art_and_media", "Art and Media", "")
             .setParent(AESTHETICS_AND_VISUAL)
+            .addConnected(CIVIL_LIBERTIES, CLASS_AND_CASTE, SOCIETY_ENFORCED_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
             .build();
     public static final TenetGroup ARCHITECTURE = new TenetGroup.Builder(TGType.AESTHETIC, Level.LORE_ONLY, "architecture", "Architecture", "")
             .setParent(AESTHETICS_AND_VISUAL)
+            .addConnected(CIVIL_LIBERTIES, CLASS_AND_CASTE, SOCIETY_ENFORCED_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
             .build();
     public static final TenetGroup FASHION = new TenetGroup.Builder(TGType.AESTHETIC, Level.LORE_ONLY, "fashion", "Fashion", "")
             .setParent(AESTHETICS_AND_VISUAL)
+            .addConnected(CIVIL_LIBERTIES, CLASS_AND_CASTE, SOCIETY_ENFORCED_CONFORMITY, GOVERNMENT_ENFORCED_CONFORMITY, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
             .build();
 
 

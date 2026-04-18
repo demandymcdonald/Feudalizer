@@ -11,11 +11,13 @@ public abstract class BoundInt {
     public abstract int getMin();
     public abstract int getMax();
 
-    public void add(int value) {
+    public BoundInt add(int value) {
         number = Math.clamp(number + value, getMin(), getMax());
+        return this;
     }
-    public void set(int value) {
+    public BoundInt set(int value) {
         number = Math.clamp(value, getMin(), getMax());
+        return this;
     }
     public int get() {
         return number;

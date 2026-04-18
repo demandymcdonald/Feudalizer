@@ -28,8 +28,8 @@ public class Religion extends DynamicTenet<Religion> implements IInterestGroup {
         super(ReligionGroups.RELIGION, dme);
         this.interestGroup = buildGroup();
     }
-    public Religion(String name, LocalDate created, LocalDate ended, Culture founding, List<ChangeSupplier<Religion, ?>> initialState) {
-        super(ReligionGroups.RELIGION, name, created, ended, initialState);
+    public Religion(String name, LocalDate created, LocalDate ended, DMEReference<Culture> founding, List<ChangeSupplier<Religion, ?>> initialState) {
+        super(ReligionGroups.RELIGION, name, created, ended, founding,initialState);
         this.interestGroup = buildGroup();
     }
     @Override

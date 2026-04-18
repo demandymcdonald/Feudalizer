@@ -32,6 +32,7 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     private final BoundedDouble opinion = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private final BoundedDouble interpolated = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private MutableBoolean isActive = new MutableBoolean(false);
+
     private static final StringIdentifiable doubleID = new StringIdentifiable("opinion"){
         @Override
         public String getID() {

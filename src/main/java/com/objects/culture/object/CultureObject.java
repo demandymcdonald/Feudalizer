@@ -3,7 +3,7 @@ package com.objects.culture.object;
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.TLMap;
 import com.base.timeline.change.multi.TLMultiChange;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
@@ -58,7 +58,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     }
     default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers, COReference<?>... bls){
         TenetReference ref = TenetReference.of(tenet);
-        MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> opinions = getOpinions();
+        TLMap<TenetReference,TenetInstance<T>> opinions = getOpinions();
         double acceptance = 0;
         if (opinions.containsKey(ref)){
             acceptance = opinions.get(ref).get();
@@ -107,7 +107,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         addOpinion(tenet,false,d);
     }
     default void addOpinion(TenetReference tenet, boolean wipe, double d){
-        MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> opinions = getOpinions();
+        TLMap<TenetReference,TenetInstance<T>> opinions = getOpinions();
         if (opinions.containsKey(tenet)){
             BiConsumer<TenetReference,TenetInstance<T>> consumer = (t,i) -> i.add(d);
             opinions.setChanged(wipe,TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
@@ -120,7 +120,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         setOpinion(tenet,false,d);
     }
     default void setOpinion(TenetReference tenet,boolean wipe, double d){
-        MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> opinions = getOpinions();
+        TLMap<TenetReference,TenetInstance<T>> opinions = getOpinions();
         if (opinions.containsKey(tenet)){
             BiConsumer<TenetReference,TenetInstance<T>> consumer = (t,i) -> i.set(d);
             opinions.setChanged(wipe,TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
@@ -149,6 +149,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         }
         pushInfluenceChange(influencer, doWipe, changed, list);
     }
+
     default void modifyInfluence(COReference<?> influencer,boolean doWipe, Pair<TenetGroup,Integer>... changes){
         boolean changed = false;
         List<BiConsumer<COReference<?>,InfluencerInstance>> list = new ArrayList<>();
@@ -195,10 +196,12 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         }
         return result;
     }
-
-
-
-
+    default boolean isMainstream(Tenet tenet, boolean includeInfluencers){
+        return isMainstream(TenetReference.of(tenet),includeInfluencers);
+    }
+    default boolean isMainstream(TenetReference tenet, boolean includeInfluencers){
+        return getTenetsByThreshold(Acceptance.INTEGRATED,includeInfluencers).containsKey(tenet);
+    }
     default double calcResistance(double opinion) {
         double abs = Math.abs(opinion);
         double peak = (1 - z) * oc; // zealotry peak in absolute terms
@@ -284,15 +287,22 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default TLSyncedCache<TenetReference,Double> getInfluencedCache(){
         return getContainer().getInfluencedCache();
     };
-    default MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> getOpinions(){
+    default TLMap<TenetReference,TenetInstance<T>> getOpinions(){
         return getContainer().getOpinions();
     };
     default Map<TenetReference,TenetInstance<T>> getActiveTenets(){
         return getOpinions().getWhere((tr, ti) -> {
-            return ti.
-        })
+            return ti.isActive();
+        });
     }
-    default void internalSetOpinions(MiddlemanMap<?,TenetReference,TenetInstance<T>,UUID,T> opinions){
+    default Map<TenetReference,TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers){
+        int floor = acceptance.getValue();
+        return getOpinions().getWhere((tr, ti) -> {
+            return getAcceptanceValue(tr,includeInfluencers) >= floor;
+        });
+    }
+
+    default void internalSetOpinions(TLMap<TenetReference,TenetInstance<T>> opinions){
         getContainer().setOpinions(opinions);
     };
     default Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject(){
@@ -304,15 +314,13 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void internalParentObject(COReference<?> influencer, InfluencerRelationship relationship){
         getContainer().setParent(influencer, relationship);
     };
-    default MiddlemanMap<?,COReference<?>, InfluencerInstance,UUID,T> getInfluencers(){
+    default TLMap<COReference<?>,InfluencerInstance> getInfluencers(){
         return getContainer().getInfluencers();
     };
-    default void internalSetInfluencers(MiddlemanMap<?,COReference<?>, InfluencerInstance,UUID,T> influencers){
+    default void internalSetInfluencers(TLMap<COReference<?>,InfluencerInstance> influencers){
         getContainer().setInfluencers(influencers);
     };
-    default boolean isInMajority(TenetGroup group){
 
-    }
     default void internalSetCompass(InterpolatedPoliticalCompass<?> compass){
         getContainer().setCompass((InterpolatedPoliticalCompass<T>) compass);
     };

@@ -5,6 +5,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.TLMap;
 import com.base.utilities.TLSyncedCache;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
@@ -43,11 +44,12 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     String displayID;
     String displayName;
     String description;
-    public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
+    public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
         this.tenetGroup = group;
         displayID = buildID(group,name);
         container = new CultureObjectContainer<>(this.getReference());
+        this.foundingCulture = foundingCulture;
     }
     public DynamicTenet(TenetGroup group, DMEReference<T> dme) {
         super(dme);
@@ -198,7 +200,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID,T> getInfluencers() {
+    public final TLMap<COReference<?>, InfluencerInstance> getInfluencers() {
         return CultureObject.super.getInfluencers();
     }
 
@@ -218,7 +220,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public final MiddlemanMap<?,TenetReference, TenetInstance<T>,UUID, T> getOpinions() {
+    public final TLMap<TenetReference,TenetInstance<T>> getOpinions() {
         return CultureObject.super.getOpinions();
     }
 
@@ -244,19 +246,18 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public final void internalParentObject(COReference<?> influencer, InfluencerRelationship relationship) {
         CultureObject.super.internalParentObject(influencer, relationship);
     }
-
     @Override
     public final void internalSetCompass(InterpolatedPoliticalCompass<?> compass) {
         CultureObject.super.internalSetCompass(compass);
     }
 
     @Override
-    public final void internalSetInfluencers(MiddlemanMap<?,COReference<?>, InfluencerInstance, UUID,T> influencers) {
+    public final void internalSetInfluencers(TLMap<COReference<?>, InfluencerInstance> influencers) {
         CultureObject.super.internalSetInfluencers(influencers);
     }
 
     @Override
-    public final void internalSetOpinions(MiddlemanMap<?,TenetReference, TenetInstance<T>,UUID, T> opinions) {
+    public final void internalSetOpinions(TLMap<TenetReference,TenetInstance<T>> opinions) {
         CultureObject.super.internalSetOpinions(opinions);
     }
 
