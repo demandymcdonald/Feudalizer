@@ -1,12 +1,11 @@
-package com.objects.character.species.aspect;
+package com.objects.character.physical.aspect;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.objects.character.species.genetics.Gene;
-import com.objects.character.species.genetics.GeneProperty;
+import com.objects.character.physical.genetics.GeneNode;
+import com.objects.character.physical.species.Species;
 import com.utilities.Displayable;
 
-public record PhysicalAspect(BodyPart part, String id, String name, String description,ImmutableList<GeneProperty> validProperties) implements Displayable {
+public record PhysicalAspect(BodyPart part, String id, String name, String description, ImmutableList<AspectProperty> validProperties) implements Displayable, GeneNode<PhysicalAspect> {
     public PhysicalAspect {
         Aspects.registerAspect(this);
     }

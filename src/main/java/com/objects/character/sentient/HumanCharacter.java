@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.CharacterSingleChange;
 import com.objects.character.opinion.Opinion;
-import com.objects.character.species.MainSpecies;
+import com.objects.character.physical.species.MainSpecies;
 import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;

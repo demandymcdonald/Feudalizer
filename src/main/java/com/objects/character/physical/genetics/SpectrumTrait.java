@@ -1,4 +1,4 @@
-package com.objects.character.species.genetics;
+package com.objects.character.physical.genetics;
 
 import com.google.gson.JsonObject;
 

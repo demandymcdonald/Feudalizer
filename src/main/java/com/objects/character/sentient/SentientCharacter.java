@@ -7,7 +7,7 @@ import com.base.timeline.change.multi.TimelineMap;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
 import com.objects.character.Sex;
-import com.objects.character.species.genetics.GeneticContainer;
+import com.objects.character.physical.genetics.GeneticContainer;
 import com.objects.character.opinion.Opinion;
 import com.objects.character.opinion.OpinionReason;
 import com.objects.character.sentient.change.CharacterChanges;

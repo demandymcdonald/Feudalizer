@@ -1,7 +1,7 @@
-package com.objects.character.species.genetics;
+package com.objects.character.physical.genetics;
 
 import com.objects.character.sentient.SentientSpecies;
-import com.objects.character.species.race.Race;
+import com.objects.character.physical.race.Race;
 
 import java.util.Map;
 

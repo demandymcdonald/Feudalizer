@@ -1,6 +1,9 @@
-package com.objects.character.species.aspect;
+package com.objects.character.physical.aspect;
 
-public enum BodyPart {
+import com.objects.character.physical.GeneManager;
+import com.objects.character.physical.genetics.GeneNode;
+
+public enum BodyPart implements GeneNode<BodyPart> {
     WHOLE_BODY,
     BODY_HAIR(WHOLE_BODY),
     BODY_FUR(WHOLE_BODY),
@@ -54,9 +57,11 @@ public enum BodyPart {
     private final BodyPart parent;
     BodyPart(BodyPart part) {
         this.parent = part;
+        GeneManager.Body_Part.register(this);
     }
     BodyPart() {
         this.parent = null;
+        GeneManager.Body_Part.register(this);
     }
     public BodyPart getParent() {
         return parent;

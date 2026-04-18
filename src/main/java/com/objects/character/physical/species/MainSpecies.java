@@ -1,4 +1,4 @@
-package com.objects.character.species;
+package com.objects.character.physical.species;
 
 import com.objects.character.sentient.SentientSpecies;
 

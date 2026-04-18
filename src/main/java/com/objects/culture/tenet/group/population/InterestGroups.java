@@ -20,7 +20,6 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getSex().equals(com.objects.character.Sex.MALE);
             }
-
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.SEX_MALE;

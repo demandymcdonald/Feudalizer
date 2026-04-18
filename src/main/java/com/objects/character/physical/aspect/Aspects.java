@@ -1,4 +1,4 @@
-package com.objects.character.species.aspect;
+package com.objects.character.physical.aspect;
 
 import java.util.HashMap;
 import java.util.Map;

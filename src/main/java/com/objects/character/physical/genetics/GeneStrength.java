@@ -1,4 +1,4 @@
-package com.objects.character.species.genetics;
+package com.objects.character.physical.genetics;
 //Base strength of the gene in genetics calculation. Affected by randomness, if the gene is currently active, and what other gene's it's being measured against.
 public enum GeneStrength {
     RECESSIVE(51),
