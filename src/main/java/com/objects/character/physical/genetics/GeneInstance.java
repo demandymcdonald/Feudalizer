@@ -1,19 +1,26 @@
 package com.objects.character.physical.genetics;
 
+import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.objects.character.LivingCreature;
 import com.objects.character.physical.GeneManager;
 import com.utilities.number.BoundDbl;
 import com.utilities.number.BoundDoubles;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.geotools.util.DateRange;
+
+import java.time.LocalDate;
 
 import static com.objects.character.physical.genetics.SpectrumTrait.SPECTRUM_SIZE;
 
-public record GeneInstance(Gene trait, MutableBoolean active, boolean spectrum, BoundDbl chance, BoundDbl value) {
+public record GeneInstance(Gene trait, MutableBoolean active, boolean spectrum,BoundDbl chance, BoundDbl value) {
     private static final int decimalPlacesChance = 10; // about 1 in 10 billion if 100 = 100%
     private static final int decimalPlacesValue = 2;
     public GeneInstance(Gene trait){
-        this(trait, new MutableBoolean(true), trait instanceof SpectrumTrait || trait instanceof SpectrumTrait.SpectrumEntry, getNew(trait.getChance()),getValue(trait,null));
+        this(trait, new MutableBoolean(true), trait instanceof SpectrumTrait || trait instanceof SpectrumTrait.SpectrumEntry
+                ,getNew(trait.getChance()),getValue(trait,null));
     }
     public void toJson(JsonObject object) {
         StringBuilder sb = new StringBuilder();
@@ -21,6 +28,7 @@ public record GeneInstance(Gene trait, MutableBoolean active, boolean spectrum, 
         .append(spectrum ? 1:0).append(":")
         .append(Math.round(chance.get() * Math.pow(10, decimalPlacesChance))).append(":")
         .append(Math.round(value.get() * Math.pow(10, decimalPlacesValue)));
+
         object.addProperty(trait.getDisplayID(), sb.toString());
     }
     public static GeneInstance fromJson(String key, JsonElement object) {

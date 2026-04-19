@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AugmentChange<T extends LivingCreature<T>> extends TimelineMapChange<AugmentChange<T>, AugmentSlot, AugmentInstance,String,T> {
-    protected AugmentChange(DMEReference<? extends T> owner, LocalDate date) {
+    public AugmentChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
     }
 

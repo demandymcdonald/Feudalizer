@@ -1,5 +1,7 @@
 package com.objects.character.physical.genetics;
 
+import com.base.reference.DMEReference;
+import com.objects.character.LivingCreature;
 import com.objects.character.physical.GeneManager;
 import com.objects.character.physical.IGeneNode;
 import com.objects.character.physical.aspect.BodyPart;
@@ -10,6 +12,7 @@ import com.utilities.IDisplayable;
 import com.utilities.number.BoundDbl;
 import com.utilities.number.BoundDoubles;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,8 +66,11 @@ public abstract class Gene implements IDisplayable, IGeneNode<Gene> {
     public final GeneProperty getProperty() {
         return geneProperty;
     }
-    public GeneInstance getDefaultInstance(){
-        return new GeneInstance(this);
+    public GeneInstance getDefaultInstance(DMEReference<? extends LivingCreature<?>> owner){
+        return new GeneInstance(this,owner);
+    }
+    public GeneInstance getDefaultInstance(LocalDate start, LocalDate end){
+        return new GeneInstance(this,start,end);
     }
     @Override
     public final Set<PhysicalAspect> getValidAspects() {

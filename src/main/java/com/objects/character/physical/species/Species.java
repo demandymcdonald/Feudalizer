@@ -1,55 +1,52 @@
 package com.objects.character.physical.species;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.objects.character.physical.GeneManager;
 import com.objects.character.physical.aspect.BodyPart;
+import com.objects.character.physical.aspect.GeneProperty;
 import com.objects.character.physical.aspect.PhysicalAspect;
 import com.objects.character.physical.IGeneNode;
+import com.objects.character.physical.species.nomenclature.NameContainer;
 import com.utilities.IDisplayable;
 import com.utilities.caching.CachingSupplier;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Species implements IDisplayable, IGeneNode<Species> {
     private final String id;
     private String name;
-    private String trinomialNomenclature;
     private String description;
-    private final ImmutableList<PhysicalAspect> validProperties;
-    private final BoundInt sentience = BoundInts.Percent(false);
-    private final BoundInt magic_capacity = BoundInts.Percent(false);
-    private Species(String id, String trinominal, String name, String description, ImmutableList<PhysicalAspect> parts) {
+    private final NameContainer nameContainer;
+    private final SpeciesProperties properties;
+    private Species(String id, String name, String description, NameContainer container, SpeciesProperties properties) {
         this.id = id;
         this.name = name;
-        this.trinomialNomenclature = trinominal;
         this.description = description;
-        this.validProperties = parts;
+        this.properties = properties;
+        this.nameContainer = container;
         GeneManager.Species_Race.registerSpecies(this);
     }
 
     private final CachingSupplier<Set<BodyPart>> validParts = new CachingSupplier<>(this::buildValidParts);
     private Set<BodyPart> buildValidParts(){
         Set<BodyPart> parts = new HashSet<>();
-        for(PhysicalAspect aspect : validProperties){
+        for(PhysicalAspect aspect : properties.parts()){
             parts.addAll(aspect.getValidBodyParts());
         }
         return parts;
     }
-    public BoundInt getMagicCapacity() {
-        return magic_capacity;
+    public int getMagicCapacity() {
+        return properties.magicCapacity();
     }
-
-    public BoundInt getSentience() {
-        return sentience;
+    public int getSentience() {
+        return properties.sentience();
     }
 
     public ImmutableList<PhysicalAspect> getValidProperties() {
-        return validProperties;
+        return properties.parts();
     }
     @Override
     public String getDisplayID() {
@@ -60,20 +57,25 @@ public class Species implements IDisplayable, IGeneNode<Species> {
     public String getDisplayName() {
         return name;
     }
-    public String getTrinomialNomenclature() {
-        return trinomialNomenclature;
-    }
     @Override
     public String getDescription() {
         return description;
     }
-
+    public String getTrinomial(){
+        return nameContainer.getTrinomial();
+    }
+    public String getBinomial(){
+        return nameContainer.getBinomial();
+    }
+    public String getSpeciesName(){
+        return nameContainer.getSpeciesName();
+    }
     @Override
     public String getID() {
         return id;
     }
-    public static Builder builder(String id, String trinomial, String name, String description) {
-        return new Builder(id, trinomial, name, description);
+    public static Builder builder(String id, String name, String description) {
+        return new Builder(id, name, description);
     }
     @Override
     public Set<BodyPart> getValidBodyParts() {
@@ -85,19 +87,25 @@ public class Species implements IDisplayable, IGeneNode<Species> {
     }
     @Override
     public Set<PhysicalAspect> getValidAspects() {
-        return new HashSet<>(validProperties);
+        return new HashSet<>(properties.parts());
     }
     public static class Builder {
         private final String id;
         private final String name;
-        private final String trinomialNomenclature;
         private final String description;
         private final List<PhysicalAspect> validProperties = new ArrayList<>();
+        private final Map<GeneProperty,Float> maleToFemaleRatio = new HashMap<>();
         private final BoundInt sentience = BoundInts.Percent(false);
         private final BoundInt magic_capacity = BoundInts.Percent(false);
-        public Builder(String id,String trinomial, String name, String description) {
+        private NameContainer nameContainer;
+        private int lifeExpectancy = 10;
+        private float maleToFemaleLERatio = 1;
+        private int ageOfMaturity = 5;
+        private int ageOfElderly = 8;
+        private int ageOfInfertilityMale = 9;
+        private int ageOfInfertilityFemale = 8;
+        public Builder(String id,String name, String description) {
             this.id = id;
-            this.trinomialNomenclature = trinomial;
             this.name = name;
             this.description = description;
         }
@@ -111,14 +119,46 @@ public class Species implements IDisplayable, IGeneNode<Species> {
         }
         public Builder setMagicCapacity(int magicCapacity) {
             this.magic_capacity.set(magicCapacity);
+
             return this;
         }
+        public Builder setLifeExpectancy(int lifeExpectancy) {
+            this.lifeExpectancy = lifeExpectancy;
+            return this;
+        }
+        public Builder setGenderLifeExpectancyRatio(float maleToFemaleLERatio) {
+            this.maleToFemaleLERatio = maleToFemaleLERatio;
+            return this;
+        }
+        public Builder setAgeOfMaturity(int ageOfMaturity) {
+            this.ageOfMaturity = ageOfMaturity;
+            return this;
+        }
+        public Builder setAgeOfElderly(int ageOfElderly) {
+            this.ageOfElderly = ageOfElderly;
+            return this;
+        }
+        public Builder setAgeOfInfertilityMale(int ageOfInfertilityMale) {
+            this.ageOfInfertilityMale = ageOfInfertilityMale;
+            return this;
+        }
+        public Builder setAgeOfInfertilityFemale(int ageOfInfertilityFemale) {
+            this.ageOfInfertilityFemale = ageOfInfertilityFemale;
+            return this;
+        }
+        public Builder setNomenclature(NameContainer name){
+            this.nameContainer = name;
+            return this;
+        }
+        public SpeciesProperties buildProperties(){
+            return new SpeciesProperties(sentience.get(),magic_capacity.get(),lifeExpectancy,maleToFemaleLERatio,ageOfMaturity,ageOfElderly,ageOfInfertilityMale,ageOfInfertilityFemale,ImmutableList.copyOf(validProperties),ImmutableMap.copyOf(maleToFemaleRatio));
+        }
         public Species build() {
-            Species species = new Species(id,name,trinomialNomenclature,description, ImmutableList.copyOf(validProperties));
-            species.getSentience().set(sentience.get());
-            species.getMagicCapacity().set(magic_capacity.get());
-            return species;
+            return new Species(id,name,description,nameContainer,buildProperties());
         }
 
+    }
+    public record SpeciesProperties(int sentience, int magicCapacity, int lifeExpectancy, float maleToFemaleLERatio, int ageOfMaturity, int ageOfElderly,
+                                    int ageOfInfertilityMale, int ageOfInfertilityFemale, ImmutableList<PhysicalAspect> parts, ImmutableMap<GeneProperty,Float> maleToFemaleRatio) {
     }
 }

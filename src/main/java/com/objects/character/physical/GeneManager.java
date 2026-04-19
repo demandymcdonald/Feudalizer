@@ -12,11 +12,13 @@ import com.objects.character.physical.augment.AugmentSlot;
 import com.objects.character.physical.genetics.Gene;
 import com.objects.character.physical.race.Race;
 import com.objects.character.physical.species.Species;
+import com.objects.character.physical.species.nomenclature.NomenEntry;
 import com.utilities.id.StringIdentifiable;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DirectedPseudograph;
 
 import java.util.*;
@@ -119,6 +121,8 @@ public class GeneManager {
     public static class Species_Race {
         private static final Map<String,Species> speciesMap = new HashMap<>();
         private static final Map<String,Race> raceMap = new HashMap<>();
+        private static final Map<String,NomenEntry> nomenclatureMap = new HashMap<>();
+        private static final Graph<NomenEntry,DefaultEdge> nomenclatureGraph = new DefaultUndirectedGraph<>(DefaultEdge.class);
         private static final Multimap<Species,Race> speciesRaceMap = HashMultimap.create();
         public static void registerSpecies(Species species){
             registerGeneObject(Species.class.getSimpleName(),species,speciesMap);
@@ -131,6 +135,21 @@ public class GeneManager {
             if(isLoaded.booleanValue()){
                 link(race);
             }
+        }
+        public static NomenEntry getNomenEntry(String id){
+            return nomenclatureMap.get(id);
+        }
+        public static void registerNomenclature(NomenEntry entry){
+            nomenclatureMap.put(entry.getID(),entry);
+            nomenclatureGraph.addVertex(entry);
+            NomenEntry parent = entry.parent() ;
+            if (parent== null){
+                return;
+            }
+            if (!nomenclatureMap.containsKey(parent.getID())){
+                registerNomenclature(parent);
+            }
+            nomenclatureGraph.addEdge(parent,entry);
         }
         public static void init(){
             //TODO wire once defaults are in place.
