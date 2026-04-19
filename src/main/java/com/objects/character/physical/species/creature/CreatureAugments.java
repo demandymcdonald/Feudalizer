@@ -18,4 +18,6 @@ public class CreatureAugments {
     public static final AugmentSlot DOMESTICATION = new AugmentSlot( "domestication", "Domestication", "");
     public static final AugmentSlot TRAINING = new AugmentSlot( "training", "Training", "");
     public static final AugmentSlot TAMING = new AugmentSlot( "taming", "Taming", "");
+    public static final AugmentSlot COLLAR = new AugmentSlot("creature_collar", "Collar", "");
+    public static final AugmentSlot GROOMING = new AugmentSlot("creature_grooming", "Grooming", "");
 }

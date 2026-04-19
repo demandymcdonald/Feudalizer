@@ -1,7 +1,6 @@
-package com.objects.character.physical.species.human;
+package com.objects.character.physical.species.primates;
 
 import com.objects.character.physical.aspect.GeneProperty;
-import com.objects.character.physical.genetics.Gene;
 
 public class HumanGeneProperties {
     public static final GeneProperty HUMAN_EYE_COLOR = new GeneProperty("human_eye_color","Eye Color","");

@@ -150,6 +150,10 @@ public class Species implements IDisplayable, IGeneNode<Species> {
             this.nameContainer = name;
             return this;
         }
+        public Builder addGenderRatio(GeneProperty property, float ratio){
+            maleToFemaleRatio.put(property,ratio);
+            return this;
+        }
         public SpeciesProperties buildProperties(){
             return new SpeciesProperties(sentience.get(),magic_capacity.get(),lifeExpectancy,maleToFemaleLERatio,ageOfMaturity,ageOfElderly,ageOfInfertilityMale,ageOfInfertilityFemale,ImmutableList.copyOf(validProperties),ImmutableMap.copyOf(maleToFemaleRatio));
         }

@@ -1,6 +1,5 @@
-package com.objects.character.physical.species.human;
+package com.objects.character.physical.species.primates;
 
-import com.objects.character.physical.aspect.BodyPart;
 import com.objects.character.physical.augment.AugmentSlot;
 
 public class HumanAugments {
