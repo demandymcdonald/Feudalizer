@@ -28,7 +28,7 @@ public class TLSyncedSupplier<T> implements TimelineSynced {
     }
 
     @Override
-    public void afterLoad(LocalDate date) {
+    public void onLink(LocalDate date) {
 
     }
 }

@@ -8,8 +8,6 @@ import com.utilities.ThreadMutable;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -31,11 +29,17 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
     private static ThreadLocal<SandboxHandler<?>> SANDBOX_HANDLER = new ThreadLocal<>();
 
     public static void setCurrentDate(LocalDate newDate) {
+        if (newDate == null || newDate.equals(CurrentDate.get().get())){return;}
         CurrentDate.get().set(newDate);
-        alertListeners(newDate,true);
+        alertListenersPre(newDate);
         DMRegistry.onDateChange();
-        alertListeners(newDate,false);
-        //TODO use this as a trigger for Updating EVERY registered state to the proper date?
+        alertListenersPost(newDate);
+    }
+    private static void alertListenersPre(LocalDate date){
+        listeners.get().keySet().forEach((ts) -> {ts.onLoad(date);});
+    }
+    private static void alertListenersPost(LocalDate date){
+        listeners.get().keySet().forEach((ts) -> {ts.onLink(date);});
     }
     @Deprecated(forRemoval = true)
     public static LocalDate CURRENT_DATE() {
@@ -48,12 +52,6 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
         return LOADING_MANAGER;
     }
 
-    private static void alertListeners(LocalDate date, boolean pre){
-        listeners.get().forEach(listener -> {
-            if(pre) listener.onLoad(date);
-            else listener.afterLoad(date);
-        });
-    }
     @Override
     public String uniqueKey() {
         return "global_controls";

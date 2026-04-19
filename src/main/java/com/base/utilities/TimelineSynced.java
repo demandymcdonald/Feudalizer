@@ -9,5 +9,5 @@ public interface TimelineSynced {
         Global.addListener(this);
     }
     void onLoad(LocalDate date);
-    void afterLoad(LocalDate date);
+    void onLink(LocalDate date);
 }

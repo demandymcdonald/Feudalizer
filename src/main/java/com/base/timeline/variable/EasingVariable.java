@@ -108,7 +108,7 @@ public interface EasingVariable<E extends EasingVariable<E,C,T>,C extends Timeli
     @Override
     default void onLoad(LocalDate date){};
     @Override
-    default void afterLoad(LocalDate date){
+    default void onLink(LocalDate date){
         calculateVariables();
     };
     record VariableContainer(EasingType type, Supplier<Double> base, Consumer<Double> consumer){

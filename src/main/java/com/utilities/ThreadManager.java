@@ -13,7 +13,7 @@ public class ThreadManager {
     private static final Map<String,ThreadMutable<?,?>> thread_mutables = Collections.synchronizedMap(new HashMap<>());
 
 
-    public static Thread BuildThread(String name, Runnable task, @Nullable Thread parent){
+    public static Thread BuildThread(ThreadGroup group, String name, Runnable task, @Nullable Thread parent){
         Runnable wrapper;
         String full_name;
         if (parent != null){
@@ -47,7 +47,7 @@ public class ThreadManager {
             };
             full_name = "tm_isolated_"+ name;
         }
-        Thread thread_to_return = new Thread(wrapper,full_name);
+        Thread thread_to_return = new Thread(group,wrapper,full_name);
         thread_to_return.setDaemon(true);
         return thread_to_return;
     }
@@ -79,6 +79,9 @@ public class ThreadManager {
     public static boolean isMainThread(){
         //That global variable is pulled at startup, so it should ALWAYS be the JavaFX thread name
         return Thread.currentThread().equals(Feudalizer.MAIN_THREAD);
+    }
+    public static Thread getMainThread(){
+        return Feudalizer.MAIN_THREAD;
     }
 
 }
