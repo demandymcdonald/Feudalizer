@@ -3,9 +3,11 @@ package com.objects.character;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.multi.TLMap;
 import com.google.gson.JsonObject;
 import com.objects.character.physical.PhysicalAppearance;
-import com.objects.character.sentient.HumanCharacter;
+import com.objects.character.physical.augment.AugmentInstance;
+import com.objects.character.physical.augment.AugmentSlot;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -16,6 +18,7 @@ public abstract class LivingCreature<T extends LivingCreature<T>> extends DateMu
     PhysicalAppearance appearance;
     public LivingCreature(LocalDate created, @Nullable LocalDate ended, PhysicalAppearance appearance, List<ChangeSupplier<T,?>> initialState) {
         super(created, ended, initialState);
+        this.appearance = appearance;
     }
 
     public LivingCreature(DMEReference<T> dme) {
@@ -24,18 +27,29 @@ public abstract class LivingCreature<T extends LivingCreature<T>> extends DateMu
 
     public LivingCreature(UUID id, LocalDate created, @Nullable LocalDate ended, PhysicalAppearance appearance, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
+        this.appearance = appearance;
     }
     public abstract Sex getSex();
-
+    public final TLMap<AugmentSlot, AugmentInstance> internalGetAugments(){
+        return appearance.internalAugments();
+    }
+    public final PhysicalAppearance getAppearance(){
+        return appearance;
+    }
+    public final void setAugments(TLMap<AugmentSlot, AugmentInstance> augmentations){
+        appearance.setAugments(augmentations);
+    }
 
 
     @Override
     public void additionalLoad(JsonObject data) {
-        appearance = PhysicalAppearance.fromJson()
+        appearance = PhysicalAppearance.fromJson(data.get("appearance").getAsJsonObject());
     }
 
     @Override
     public void additionalSave(JsonObject data) {
-
+        JsonObject o = new JsonObject();
+        appearance.toJson(o);
+        data.add("appearance",o);
     }
 }
