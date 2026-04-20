@@ -1,6 +1,5 @@
-package com.base.timeline.change.multi;
+package com.base.timeline.change.multi.condition;
 
-import com.Global.*;
 import com.utilities.id.Identifiable;
 
 public class ListPos implements Identifiable<Integer> {

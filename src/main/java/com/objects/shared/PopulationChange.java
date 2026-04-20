@@ -6,7 +6,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.multi.MultiCondition;
+import com.base.timeline.change.multi.condition.MultiCondition;
 import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;

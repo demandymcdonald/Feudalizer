@@ -1,5 +1,9 @@
-package com.base.timeline.change.multi;
+package com.base.timeline.change.multi.wrapper;
 
+import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.TLMultiChange;
+import com.base.timeline.change.multi.type.ChangeType;
+import com.base.timeline.change.multi.type.WipeType;
 import com.utilities.ThreadManager;
 import com.utilities.id.Identifiable;
 import org.apache.commons.lang3.tuple.Pair;
@@ -73,10 +77,10 @@ public class TLMap<K extends Identifiable<?>,V> {
     public void putAll(boolean doSandbox,boolean wipeForward, Map<K,V> map) {
         middleman.putAll(doSandbox,wipeForward,map);
     }
-    public void remove(TLMultiChange.WipeType type, K... key) {
+    public void remove(WipeType type, K... key) {
         middleman.remove(type,key);
     }
-    public void remove(boolean doSandbox, TLMultiChange.WipeType type, K... key) {
+    public void remove(boolean doSandbox, WipeType type, K... key) {
         middleman.remove(doSandbox,type,key);
     }
     public int size(){
@@ -85,18 +89,20 @@ public class TLMap<K extends Identifiable<?>,V> {
     public void addListener(TLMultiChange.Listener<K,V> listener) {
         middleman.addListener(listener);
     }
-    public void setChanged(TLMultiChange.ChangeType type, Map<K, BiConsumer<K,V>> changes){
+    public void setChanged(ChangeType type, Map<K, BiConsumer<K,V>> changes){
         setChanged(isMain,false,type,changes);
     }
-    public void setChanged(boolean doPropagate, TLMultiChange.ChangeType type, Map<K, BiConsumer<K,V>> changes){
+    public void setChanged(boolean doPropagate, ChangeType type, Map<K, BiConsumer<K,V>> changes){
         setChanged(isMain,doPropagate,type,changes);
     }
     @SuppressWarnings("unchecked")
-    public void setChanged(boolean doSandbox, boolean doWipe, TLMultiChange.ChangeType type, Map<K, BiConsumer<K,V>> changes){
+    public void setChanged(boolean doSandbox, boolean doWipe, ChangeType type, Map<K, BiConsumer<K,V>> changes){
         middleman.setChanged(doSandbox,doWipe,type,changes);
     }
 
-
+    public void setChanged(boolean doPropagate, ChangeType type, K key, BiConsumer<K,V> consumer){
+        setChanged(isMain,doPropagate,type,Map.of(key,consumer));
+    }
 
 
 

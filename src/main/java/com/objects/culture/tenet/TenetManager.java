@@ -94,7 +94,7 @@ public class TenetManager {
                 if (groups.get(id).equals(group)) {
                     return;
                 } else {
-                    throw new RuntimeException("Duplicate group ID: " + id);
+                    throw new RuntimeException("Duplicate group Name: " + id);
                 }
             }
             groupLevels.put(group.getLevel(), group);

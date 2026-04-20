@@ -9,6 +9,10 @@ import com.base.timeline.TimelineObject;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.condition.apply.ApplyCondition;
 import com.base.timeline.change.condition.nullify.NullifyCondition;
+import com.base.timeline.change.multi.condition.MultiCondition;
+import com.base.timeline.change.multi.type.ChangeType;
+import com.base.timeline.change.multi.type.Delta;
+import com.base.timeline.change.multi.type.WipeType;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.timeline.sandbox.core.Objective;
@@ -44,81 +48,6 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     public static final Logger LOGGER = LoggerFactory.getLogger(TLMultiChange.class);
     public Logger logger(){
         return LOGGER;   
-    }
-    public enum WipeType {
-        FORWARD(Global.TimeDirection.FORWARD),
-        BACKWARD(Global.TimeDirection.BACKWARD),
-        BOTH,
-        NO_WIPE;
-
-        private final Global.TimeDirection direction;
-        public Global.TimeDirection getDirection(){
-            return direction;
-        }
-        WipeType(Global.TimeDirection direction){
-            this.direction = direction;
-        }
-        WipeType(){
-            this.direction = Global.TimeDirection.FORWARD;
-        }
-    }
-    public enum ChangeType {
-        KEY(Delta.MODIFY_KEY, Delta.MODIFY_KEY_WIPE),
-        VALUE(Delta.MODIFY_VALUE, Delta.MODIFY_VALUE_WIPE),
-        BOTH(Delta.MODIFY_BOTH, Delta.MODIFY_BOTH_WIPE),
-
-        NO_CHANGE(null,null);
-        private final Delta type;
-        private final Delta typeWipe;
-        ChangeType(Delta type, Delta typeWipe){
-            this.type = type;
-            this.typeWipe = typeWipe;
-        }
-        public Delta getDelta(){
-            return type;
-        }
-        public Delta getDeltaWipe(){
-            return typeWipe;
-        }
-    }
-    public enum Delta {
-        ADD,
-        ADD_WIPE(WipeType.FORWARD),
-        REMOVE,
-        REMOVE_WIPE_FORWARD(WipeType.FORWARD),
-        REMOVE_WIPE_BACKWARD(WipeType.BACKWARD),
-        REMOVE_WIPE_BOTH(WipeType.BOTH),
-        MODIFY_BOTH(ChangeType.BOTH),
-        MODIFY_KEY(ChangeType.KEY),
-        MODIFY_VALUE(ChangeType.VALUE),
-        MODIFY_BOTH_WIPE(WipeType.FORWARD, ChangeType.BOTH),
-        MODIFY_KEY_WIPE(WipeType.FORWARD, ChangeType.KEY),
-        MODIFY_VALUE_WIPE(WipeType.FORWARD, ChangeType.VALUE),;
-
-        private final WipeType wipeType;
-        private final ChangeType changeEntry;
-        public WipeType getWipeType(){
-            return wipeType;
-        }
-        public ChangeType getChangeType(){
-            return changeEntry;
-        }
-        Delta(WipeType wipeType){
-            this.wipeType = wipeType;
-            this.changeEntry = ChangeType.NO_CHANGE;
-        }
-        Delta(WipeType wipeType, ChangeType changeEntry){
-            this.wipeType = wipeType;
-            this.changeEntry = changeEntry;
-        }
-        Delta(ChangeType changeEntry){
-            this.wipeType = WipeType.NO_WIPE;
-            this.changeEntry = changeEntry;
-        }
-        Delta(){
-            this.wipeType = WipeType.NO_WIPE;
-            this.changeEntry = ChangeType.NO_CHANGE;
-        }
     }
 
     private final Set<I> endingChanges = new HashSet<>();

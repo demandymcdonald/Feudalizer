@@ -3,8 +3,9 @@ package com.objects.culture.object;
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.TLMap;
-import com.base.timeline.change.multi.TLMultiChange;
+import com.base.timeline.change.multi.type.ChangeType;
+import com.base.timeline.change.multi.type.WipeType;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
@@ -110,7 +111,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         TLMap<TenetReference,TenetInstance<T>> opinions = getOpinions();
         if (opinions.containsKey(tenet)){
             BiConsumer<TenetReference,TenetInstance<T>> consumer = (t,i) -> i.add(d);
-            opinions.setChanged(wipe,TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+            opinions.setChanged(wipe, ChangeType.VALUE,Map.of(tenet,consumer));
             invalidateCache(tenet);
         }else {
             opinions.put(tenet,new TenetInstance<>(tenet,this.getReference(),d));
@@ -123,7 +124,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         TLMap<TenetReference,TenetInstance<T>> opinions = getOpinions();
         if (opinions.containsKey(tenet)){
             BiConsumer<TenetReference,TenetInstance<T>> consumer = (t,i) -> i.set(d);
-            opinions.setChanged(wipe,TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+            opinions.setChanged(wipe, ChangeType.VALUE,Map.of(tenet,consumer));
             invalidateCache(tenet);
         }else {
             opinions.put(tenet,new TenetInstance<>(tenet,this.getReference(),d));
@@ -167,7 +168,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     private void pushInfluenceChange(COReference<?> influencer, boolean doWipe, boolean changed, List<BiConsumer<COReference<?>, InfluencerInstance>> list) {
         if (changed){
             BiConsumer<COReference<?>,InfluencerInstance> consumer = (t,i) -> list.forEach(c -> c.accept(t,i));
-            getInfluencers().setChanged(doWipe, TLMultiChange.ChangeType.BOTH, Map.of(influencer,consumer));
+            getInfluencers().setChanged(doWipe, ChangeType.BOTH, Map.of(influencer,consumer));
             invalidateCache();
         }
     }
@@ -176,7 +177,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         if (influencer == null){
             return;
         }
-        getInfluencers().remove(TLMultiChange.WipeType.FORWARD,influencer);
+        getInfluencers().remove(WipeType.FORWARD,influencer);
         invalidateCache();
     }
     default Map<TenetReference,TenetInstance<T>> getOpinionByGroup(TenetManager.Group.Pillar group, boolean includeDescendants){

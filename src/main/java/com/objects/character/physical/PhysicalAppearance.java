@@ -1,7 +1,7 @@
 package com.objects.character.physical;
 
 import com.Global;
-import com.base.timeline.change.multi.TLMap;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.google.gson.JsonObject;
 import com.objects.character.physical.augment.AugmentInstance;
 import com.objects.character.physical.augment.AugmentSlot;

@@ -3,8 +3,8 @@ package com.objects.character.sentient;
 import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.multi.TLMultiChange;
 import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.type.ChangeType;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
 import com.objects.character.Sex;
@@ -104,7 +104,7 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
                     op.addOpinions(r);
                 }
             };
-            opinions.setChanged(true,TLMultiChange.ChangeType.VALUE,Map.of(simpleUUID,consumer));
+            opinions.setChanged(true, ChangeType.VALUE,Map.of(simpleUUID,consumer));
         } else {
             opinions.put(simpleUUID,opinion);
         }

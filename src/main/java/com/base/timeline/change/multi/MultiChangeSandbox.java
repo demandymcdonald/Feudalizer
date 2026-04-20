@@ -1,11 +1,14 @@
 package com.base.timeline.change.multi;
 
-import com.Global.*;
 import com.base.DateMutableEntity;
 import com.base.condition.Condition;
 import com.base.reference.DMEReference;
 import com.base.timeline.Timeline;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.multi.condition.MultiCondition;
+import com.base.timeline.change.multi.type.ChangeType;
+import com.base.timeline.change.multi.type.Delta;
+import com.base.timeline.change.multi.type.WipeType;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
 import com.base.timeline.sandbox.core.Sandbox;
@@ -21,26 +24,25 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static com.Global.TimeDirection.BACKWARD;
-import static com.Global.TimeDirection.FORWARD;
 import static com.base.timeline.change.multi.TLMultiChange.removeEntry;
 
 public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extends DateMutableEntity<T>, K extends Identifiable<I>, V, I> extends SandboxFunction<T> {
-    private final Map<Pair<K, V>, TLMultiChange.Delta> changes;
-    private final Map<TLMultiChange.Delta, List<MultiCondition<M, K, V, I, T>>> conditions = new HashMap<>();
-    private final Multimap<TLMultiChange.Delta, Pair<K, V>> changeByType = HashMultimap.create();
+    private final Map<Pair<K, V>, Delta> changes;
+    private final Map<Delta, List<MultiCondition<M, K, V, I, T>>> conditions = new HashMap<>();
+    private final Multimap<Delta, Pair<K, V>> changeByType = HashMultimap.create();
     private final List<TLMultiChange.Listener<K,V>>  listeners;
     private final Map<K, TLMultiChange.ChangeContainer<M,K,V,I,T>> changeContainers;
     private boolean propagateFlag = false;
     private boolean wipeFlag = false;
     private boolean addWipeFlag = false;
-    public MultiChangeSandbox(Map<Pair<K, V>, TLMultiChange.Delta> changes, List<TLMultiChange.Listener<K,V>> listeners, Map<K, TLMultiChange.ChangeContainer<M,K,V,I,T>> changeContainers) {
+    public MultiChangeSandbox(Map<Pair<K, V>, Delta> changes, List<TLMultiChange.Listener<K,V>> listeners, Map<K, TLMultiChange.ChangeContainer<M,K,V,I,T>> changeContainers) {
         this.changes = new HashMap<>(changes);
         this.listeners = new ArrayList<>(listeners);
         this.changeContainers = new HashMap<>(changeContainers);
     }
-    public MultiChangeSandbox(Map<Pair<K, V>, TLMultiChange.Delta> changes, List<TLMultiChange.Listener<K,V>> listeners) {
-        for(TLMultiChange.Delta ct : changes.values()){
-            if(ct.getChangeType() != TLMultiChange.ChangeType.NO_CHANGE){
+    public MultiChangeSandbox(Map<Pair<K, V>, Delta> changes, List<TLMultiChange.Listener<K,V>> listeners) {
+        for(Delta ct : changes.values()){
+            if(ct.getChangeType() != ChangeType.NO_CHANGE){
                 throw new IllegalArgumentException("Change Modifications cannot be handled without a ChangeContainer!");
             }
         }
@@ -60,22 +62,22 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         return SandboxCode.CONTINUE;
     }
     private void doEntries(Sandbox<T> sandbox, DMEReference<T> entity, M m){
-        for (Map.Entry<Pair<K, V>, TLMultiChange.Delta> entry : changes.entrySet()) {
-            final TLMultiChange.Delta type = entry.getValue();
+        for (Map.Entry<Pair<K, V>, Delta> entry : changes.entrySet()) {
+            final Delta type = entry.getValue();
             K k = m.deepCopyK(entry.getKey().getLeft());
             V v = m.deepCopyV(entry.getKey().getRight());
-            if (type.getChangeType() != TLMultiChange.ChangeType.NO_CHANGE) {
+            if (type.getChangeType() != ChangeType.NO_CHANGE) {
                 TLMultiChange.ChangeContainer<M,K,V,I,T> container = changeContainers.get(k);
                 if (container == null) {
                     throw new NullPointerException("ChangeContainer for " + k + " is null!");
                 }
                 container.apply(k, v);
-                if(type.getWipeType() != TLMultiChange.WipeType.NO_WIPE){
+                if(type.getWipeType() != WipeType.NO_WIPE){
                     propagateFlag = true;
                 }
             }
             if (!conditions.containsKey(type)) {
-                if (type.getWipeType() == TLMultiChange.WipeType.BOTH){
+                if (type.getWipeType() == WipeType.BOTH){
                     sandbox.setCurrent(entity.get().getTimeline().getStart());
                 }
                 conditions.put(type, buildConditions(sandbox, m, type));
@@ -84,7 +86,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         }
         changes.clear();
     }
-    private List<MultiCondition<M, K, V, I, T>> buildConditions(Sandbox<T> sandbox, M m, TLMultiChange.Delta type){
+    private List<MultiCondition<M, K, V, I, T>> buildConditions(Sandbox<T> sandbox, M m, Delta type){
         List<MultiCondition<M, K, V, I, T>> list = new ArrayList<>();
         switch (type) {
             case ADD -> {m.conditionsAdd(list);}
@@ -131,7 +133,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         List<StateError> errors = new ArrayList<>();
         M mNew = (M) newChange;
         M mCurrent = (M) existingChange;
-        for (TLMultiChange.Delta type : changeByType.keySet()) {
+        for (Delta type : changeByType.keySet()) {
             List<Pair<K, V>> entries = new ArrayList<>(changeByType.get(type));
             int preEntries = entries.size();
             List<Pair<K, V>> currentEntries = buildCurrentList(mCurrent, entries);
@@ -166,8 +168,8 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         }
     }
     private void wipe(TimelineState<T> state, TimelineChange<? super T> newChange){
-        for(TLMultiChange.Delta type : changeByType.keySet()){
-            if(type.getWipeType().equals(TLMultiChange.WipeType.NO_WIPE) || !type.getChangeType().equals(TLMultiChange.ChangeType.NO_CHANGE)){
+        for(Delta type : changeByType.keySet()){
+            if(type.getWipeType().equals(WipeType.NO_WIPE) || !type.getChangeType().equals(ChangeType.NO_CHANGE)){
                 continue;
             }
             M m = (M) state.getChange(newChange.getClassID(),false);
@@ -182,8 +184,8 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         }
     }
     private void propagate(TimelineState<T> state, TimelineChange<? super T> newChange){
-        for(TLMultiChange.Delta type : changeByType.keySet()){
-            if(type.getWipeType().equals(TLMultiChange.WipeType.NO_WIPE) || type.getChangeType().equals(TLMultiChange.ChangeType.NO_CHANGE)){
+        for(Delta type : changeByType.keySet()){
+            if(type.getWipeType().equals(WipeType.NO_WIPE) || type.getChangeType().equals(ChangeType.NO_CHANGE)){
                 continue;
             }
             M m = (M) state.getChange(newChange.getClassID(),false);
@@ -232,7 +234,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
     }
 
     private void doChange(M m) {
-        for (TLMultiChange.Delta type : changeByType.keySet()) {
+        for (Delta type : changeByType.keySet()) {
             List<Pair<K, V>> entries = new ArrayList<>(changeByType.get(type));
             switch (type) {
                 case ADD -> {doAdd(m,entries);}
@@ -297,9 +299,9 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
             } else {
                 wipe.add(entry.getKey());
             }
-            change.onRemoveEntry(TLMultiChange.WipeType.NO_WIPE, entry.getKey());
+            change.onRemoveEntry(WipeType.NO_WIPE, entry.getKey());
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapRemove(entry.getKey(), entry.getValue(), TLMultiChange.WipeType.NO_WIPE);
+                listener.onMapRemove(entry.getKey(), entry.getValue(), WipeType.NO_WIPE);
             }
         }
         removeEntry(change, BACKWARD, false, true, wipe);
@@ -309,9 +311,9 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
             wipe.add(entry.getKey());
-            change.onRemoveEntry(TLMultiChange.WipeType.FORWARD, entry.getKey());
+            change.onRemoveEntry(WipeType.FORWARD, entry.getKey());
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapRemove(entry.getKey(), entry.getValue(), TLMultiChange.WipeType.FORWARD);
+                listener.onMapRemove(entry.getKey(), entry.getValue(), WipeType.FORWARD);
             }
         }
         //removeEntry(change, FORWARD, true, true, wipe);
@@ -321,9 +323,9 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
             wipe.add(entry.getKey());
-            change.onRemoveEntry(TLMultiChange.WipeType.BACKWARD, entry.getKey());
+            change.onRemoveEntry(WipeType.BACKWARD, entry.getKey());
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapRemove(entry.getKey(), entry.getValue(), TLMultiChange.WipeType.BACKWARD);
+                listener.onMapRemove(entry.getKey(), entry.getValue(), WipeType.BACKWARD);
             }
         }
         //removeEntry(change, BACKWARD, true, true, wipe);
@@ -333,9 +335,9 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         List<K> wipe = new ArrayList<>();
         for (Pair<K, V> entry : entries) {
             wipe.add(entry.getKey());
-            change.onRemoveEntry(TLMultiChange.WipeType.BOTH, entry.getKey());
+            change.onRemoveEntry(WipeType.BOTH, entry.getKey());
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapRemove(entry.getKey(), entry.getValue(), TLMultiChange.WipeType.BOTH);
+                listener.onMapRemove(entry.getKey(), entry.getValue(), WipeType.BOTH);
             }
         }
         //removeEntry(change, FORWARD, true, false, new ArrayList<>(wipe));
@@ -345,7 +347,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
     private void doModifyBoth(M change,List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapChange(TLMultiChange.Delta.MODIFY_BOTH,entry.getKey(), entry.getValue());
+                listener.onMapChange(Delta.MODIFY_BOTH,entry.getKey(), entry.getValue());
             }
         }
     }
@@ -353,7 +355,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
     private void doModifyKey(M change,List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapChange(TLMultiChange.Delta.MODIFY_KEY,entry.getKey(), entry.getValue());
+                listener.onMapChange(Delta.MODIFY_KEY,entry.getKey(), entry.getValue());
             }
         }
     }
@@ -361,7 +363,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
     private void doModifyValue(M change,List<Pair<K, V>> entries) {
         for (Pair<K, V> entry : entries) {
             for(TLMultiChange.Listener<K,V> listener : listeners){
-                listener.onMapChange(TLMultiChange.Delta.MODIFY_VALUE,entry.getKey(), entry.getValue());
+                listener.onMapChange(Delta.MODIFY_VALUE,entry.getKey(), entry.getValue());
             }
         }
     }

@@ -2,8 +2,8 @@ package com.objects.character.physical.augment;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.multi.MultiCondition;
-import com.base.timeline.change.multi.TLMap;
+import com.base.timeline.change.multi.condition.MultiCondition;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonElement;

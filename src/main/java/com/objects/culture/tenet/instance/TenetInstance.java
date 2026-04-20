@@ -2,7 +2,7 @@ package com.objects.culture.tenet.instance;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.TLMultiChange;
+import com.base.timeline.change.multi.type.ChangeType;
 import com.base.timeline.variable.EasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
@@ -66,20 +66,20 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
             value.opinion.set(opinion);
             value.calculateVariables();
         };
-        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+        owner.get().getContainer().getOpinions().setChanged(ChangeType.VALUE,Map.of(tenet,consumer));
     }
     public void add(double opinion){
         BiConsumer<TenetReference,TenetInstance<T>> consumer = (tenet, value) -> {
             value.opinion.add(opinion);
             value.calculateVariables();
         };
-        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+        owner.get().getContainer().getOpinions().setChanged(ChangeType.VALUE,Map.of(tenet,consumer));
     }
     public void setActive(){
         BiConsumer<TenetReference,TenetInstance<T>> consumer = (tenet, value) -> {
             value.isActive.setValue(true);
         };
-        owner.get().getContainer().getOpinions().setChanged(TLMultiChange.ChangeType.VALUE,Map.of(tenet,consumer));
+        owner.get().getContainer().getOpinions().setChanged(ChangeType.VALUE,Map.of(tenet,consumer));
     }
     public boolean isActive(){
         return isActive.booleanValue();

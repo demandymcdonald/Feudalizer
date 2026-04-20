@@ -2,7 +2,7 @@ package com.objects.shared;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.timeline.variable.EasingVariable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDriven<T>> implements EasingVariable<PopulationContainer<T>,PopulationChange<T>,T> {
     private DMEReference<? extends T> owner;
     private PopulationChange<T> currentChange;
-    private MiddlemanMap<InterestGroup, BoundInt,T> populationMap;
+    private TLMap<InterestGroup, BoundInt> populationMap;
     private Map<InterestGroup, BoundDbl> interpolatedPopulationMap = new HashMap<>();
     private static final StringIdentifiable popVar = new StringIdentifiable("totalPopulation") {
         @Override
@@ -179,10 +179,10 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     public void internalSetPopulation(long newPopulation){
         totalPopulation = newPopulation;
     }
-    public void internalSetMap(MiddlemanMap<InterestGroup, BoundInt,T> newMap){
+    public void internalSetMap(TLMap<InterestGroup,BoundInt> newMap){
         populationMap = newMap;
     }
-    public MiddlemanMap<InterestGroup, BoundInt,T> internalGetPopulationMap(){
+    public TLMap<InterestGroup,BoundInt> internalGetPopulationMap(){
         return populationMap;
     }
     public void internalSetChange(PopulationChange<T> newChange){

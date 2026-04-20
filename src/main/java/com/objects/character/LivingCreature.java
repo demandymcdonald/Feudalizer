@@ -3,7 +3,7 @@ package com.objects.character;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.multi.TLMap;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.google.gson.JsonObject;
 import com.objects.character.physical.PhysicalAppearance;
 import com.objects.character.physical.augment.AugmentChange;

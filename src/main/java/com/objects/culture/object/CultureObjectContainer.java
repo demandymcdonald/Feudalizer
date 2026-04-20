@@ -2,8 +2,7 @@ package com.objects.culture.object;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.MiddlemanMap;
-import com.base.timeline.change.multi.TLMap;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
@@ -16,7 +15,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObject<T>>{
