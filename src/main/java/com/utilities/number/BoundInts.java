@@ -16,6 +16,19 @@ public class BoundInts {
             return new Pos256(0);
         }
     }
+    public static BoundInt Custom(int min, int starting, int max){
+        return new BoundInt(starting) {
+            @Override
+            public int getMin() {
+                return min;
+            }
+
+            @Override
+            public int getMax() {
+                return max;
+            }
+        };
+    }
     private static class BothPercent extends BoundInt {
         public BothPercent(int number) {
             super(number);
