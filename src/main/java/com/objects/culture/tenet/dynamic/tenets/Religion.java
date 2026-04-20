@@ -69,21 +69,20 @@ public class Religion extends DynamicTenet<Religion> implements IInterestGroup {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getReligion().equals(Religion.this);
             }
-
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.RELIGIOUS;
             }
-
             @Override
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.RELIGIOUS;
             }
-
             @Override
             public Dimension getDimension() {
                 return Dimension.Religion;
             }
-        }
+        };
     }
+
+
 }

@@ -73,9 +73,20 @@ public enum Acceptance implements IDisplayable {
             return floorMap.lowerEntry(floor).getValue();
         }
     }
+    public static int getMid(Acceptance a){
+        int flip = a.floor < 0 ? -1 : 1;
+        return a.floor + ((getRange(a) / 2) * flip);
+    }
     public static int getRange(Acceptance a){
         int floor = Math.abs(a.floor);
-        int ceil = Math.abs(getHigher(floor).floor) -1;
+        Acceptance acc = getHigher(floor);
+        int next;
+        if (acc == null){
+            next = floor + 128;
+        } else {
+            next = acc.floor;
+        }
+        int ceil = Math.abs(next) -1;
         return ceil - floor;
     }
     public static Acceptance[] getAll(){

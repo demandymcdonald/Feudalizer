@@ -1,9 +1,12 @@
 package com.objects.culture.tenet.dynamic;
 
 import com.Global;
+import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
+import com.base.timeline.change.display.DisplayContainer;
+import com.base.timeline.change.display.ITLDisplayable;
 import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
@@ -36,18 +39,15 @@ import java.util.*;
 
 import static com.objects.CauseOfEnd.DynamicTenets.NO_MEMBERS;
 
-public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T> {
+public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T>, ITLDisplayable<T> {
     private final TenetGroup tenetGroup;
     private final CultureObjectContainer<T> container;
     private DMEReference<Culture> foundingCulture;
-    private MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> children;
-    String displayID;
-    String displayName;
-    String description;
+    private final DisplayContainer<T> displayContainer;
     public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
         this.tenetGroup = group;
-        displayID = buildID(group,name);
+        displayContainer = new DisplayContainer<>(getReference(),buildID(group,name),name,"");
         container = new CultureObjectContainer<>(this.getReference());
         this.foundingCulture = foundingCulture;
     }
@@ -55,14 +55,20 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
         super(dme);
         this.tenetGroup = group;
         container = new CultureObjectContainer<>(this.getReference());
+        displayContainer = new DisplayContainer<>(this.getReference(),null,null,null);
+    }
+
+    @Override
+    public final DMEReference<T> getOwner() {
+        return getReference();
     }
 
     public DynamicTenet(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, initialState);
         this.tenetGroup = group;
         this.foundingCulture = foundingCulture;
-        displayID = buildID(group, name);
         container = new CultureObjectContainer<>(this.getReference());
+        displayContainer = new DisplayContainer<>(this.getReference(),null,null,null);
     }
     @Override
     public final TenetReference getTenetReference() {
@@ -75,8 +81,13 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
-    public TenetGroup getGroup() {
+    public final TenetGroup getGroup() {
         return tenetGroup;
+    }
+
+    @Override
+    public final DisplayContainer<T> getDisplayable() {
+        return displayContainer;
     }
 
     @Override
@@ -86,42 +97,9 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public final Culture getCulture() {
         return foundingCulture.get();
     }
-    @Override
-    public final String getDisplayName() {
-        return displayName;
-    }
-    public final void internalDisplayName(String name){
-        this.displayName = name;
-    }
-    public final void setDisplayName(String name){
-        getTimeline().addChange(new DynamicBaseChanges.setDisplayName<>(getReference(), Global.getDate(), name));
-    }
-    @Override
-    public final String getDescription() {
-        return description;
-    }
-    public final void internalDescription(String description){
-        this.description = description;
-    }
-    public final void setDescription(String name){
-        getTimeline().addChange(new DynamicBaseChanges.setDescription<>(getReference(), Global.getDate(), name));
-    }
 
-    public void onOpinionAdd(TenetReference key, TenetInstance<T> value){};
-    public void onOpinionRemove(TenetReference key, TenetInstance<T> value){};
-    public void onOpinionReplace(TenetReference key, TenetInstance<T> oldValue, TenetInstance<T> newValue){};
-    public void onOpinionClear(){};
-    public void onOpinionGet(TenetReference key, TenetInstance<T> value){};
-
-    public void internalSetChildMap(MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> map){
-        this.children = map;
-    }
-    public MiddlemanMap<?,TenetReference,TenetGroup,UUID,T> getChildren(){
-        return children;
-    }
     @Override
     public void additionalSave(JsonObject data) {
-        data.addProperty("displayID", displayID);
         data.add("founding_culture",foundingCulture.serialize());
     }
     public final boolean isAllowedTenet(Tenet tenet){
@@ -129,7 +107,6 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
     @Override
     public void additionalLoad(JsonObject data) {
-        displayID = data.get("displayID").getAsString();
         foundingCulture = DMEReference.deserialize(data.get("founding_culture").getAsJsonObject());
     }
     private static String buildID(TenetGroup tenetGroup, String name) {
@@ -150,6 +127,15 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
         return (CauseOfEnd<T>) NO_MEMBERS;
     }
 
+    public final void addActiveTenet(Tenet tenet){
+        TenetInstance<T> ti = getOpinions().get(tenet.getTenetReference());
+        if(ti == null){
+
+        } else if(!ti.isActive()){
+            getOpinions().get(tenet.getTenetReference()).setActive();
+            
+        }
+    }
 
 //Literally just to clean up override menu
 
@@ -260,7 +246,6 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public final void internalSetOpinions(TLMap<TenetReference,TenetInstance<T>> opinions) {
         CultureObject.super.internalSetOpinions(opinions);
     }
-
     @Override
     public final void invalidateCache() {
         CultureObject.super.invalidateCache();

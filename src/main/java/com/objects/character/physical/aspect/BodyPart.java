@@ -33,6 +33,7 @@ public enum BodyPart implements IGeneNode<BodyPart> {
     NOSE(FACE),
     NECK(HEAD),
     TORSO(WHOLE_BODY),
+    SHELL(TORSO),
     BACK(TORSO),
     CHEST(TORSO),
     SHOULDERS(TORSO),

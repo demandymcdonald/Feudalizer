@@ -41,7 +41,7 @@ public abstract class HabitableLandEditCard<R extends HabitableLand<R>> extends 
         Label resourcesTitle = new Label("Resources");
         resourcesTitle.getStyleClass().add("section-title");
 
-        Button addResourceBtn = new Button("+ Add Resource");
+        Button addResourceBtn = new Button("+ Add PRODUCT");
         addResourceBtn.setOnAction(e -> addResourceRow(null));
 
         extra.getChildren().addAll(resourcesTitle, resourceRows, addResourceBtn);

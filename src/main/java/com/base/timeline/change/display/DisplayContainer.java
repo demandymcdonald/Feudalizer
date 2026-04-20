@@ -16,6 +16,7 @@ public class DisplayContainer<T extends DateMutableEntity<T> & ITLDisplayable<T>
             this.name = name == null || name.isEmpty() ? "loading_name" : name;
             this.description = description == null || description.isEmpty() ? "loading_desc" : description;
         }
+
         public String getDisplayId() {
             return displayId;
         }

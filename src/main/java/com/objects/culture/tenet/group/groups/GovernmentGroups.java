@@ -35,7 +35,7 @@ public class GovernmentGroups {
             .build();
 
     // Government System
-    public static final TenetGroup RESOURCE_ALLOCATION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.SUBCATEGORY, "resource_allocation", "Resource Allocation", "")
+    public static final TenetGroup RESOURCE_ALLOCATION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.SUBCATEGORY, "resource_allocation", "PRODUCT Allocation", "")
             .setParent(GOVERNMENT_SYSTEM)
             .addDependent(ECONOMIC_SYSTEM)
             .build();

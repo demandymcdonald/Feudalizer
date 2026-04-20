@@ -133,8 +133,8 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default boolean isInfluencer(COReference<?> ref){
         return getInfluencers().containsKey(ref);
     }
-    default void addInfluencer(COReference<?> influencer, InfluencerRelationship relationship){
-        getInfluencers().put(influencer,new InfluencerInstance(relationship));
+    default void addInfluencer(COReference<?> influencer, InfluencerRelationship relationship, boolean isProcedural){
+        getInfluencers().put(influencer,new InfluencerInstance(relationship,isProcedural));
         invalidateCache();
     }
     default void setInfluence(COReference<?> influencer, boolean doWipe, Pair<TenetGroup,Integer>... changes){

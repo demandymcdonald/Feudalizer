@@ -38,7 +38,7 @@ public class EconomicGroups {
             .setParent(ECONOMIC_SYSTEM)
             .addConnected(STATE_ENTERPRISE, PRIVATE_ENTERPRISE)
             .build();
-    public static final TenetGroup RESOURCE_RIGHTS = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "resource_rights", "Resource Rights", "")
+    public static final TenetGroup RESOURCE_RIGHTS = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "resource_rights", "PRODUCT Rights", "")
             .setParent(ECONOMIC_SYSTEM)
             .addConnected(STATE_ENTERPRISE, PRIVATE_ENTERPRISE)
             .build();

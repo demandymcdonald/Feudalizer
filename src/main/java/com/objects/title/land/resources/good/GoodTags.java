@@ -56,10 +56,10 @@ public class GoodTags {
     public static final GoodTag JEWELRY = new GoodTag("jewelry", "Jewelry & Ornaments", "Decorative personal accessories including rings, necklaces, and brooches.");
     public static final GoodTag COSMETICS = new GoodTag("cosmetics", "Cosmetics & Perfume", "Personal care and beauty products including soaps, perfumes, and makeup.");
     public static final GoodTag TOYS = new GoodTag("toys", "Toys & Games", "Recreational goods and playthings for children and adults.");
-    public static final GoodTag SPORTING_GOODS = new GoodTag("sporting_goods", "Sporting Goods", "Equipment and gear used in sports and outdoor recreation.");
+    public static final GoodTag SPORTING_GOODS = new GoodTag("sporting_goods", "Sporting GoodType", "Equipment and gear used in sports and outdoor recreation.");
     public static final GoodTag COOKWARE = new GoodTag("cookware", "Cookware & Utensils", "Pots, pans, cutlery, and kitchen implements used in food preparation.");
     public static final GoodTag MUSICAL_INSTRUMENTS = new GoodTag("musical_instruments", "Musical Instruments", "Instruments used to produce music including strings, winds, and percussion.");
-    public static final GoodTag OPTICAL_GOODS = new GoodTag("optical_goods", "Optical Goods", "Lenses and optical instruments including eyeglasses, telescopes, and microscopes.");
+    public static final GoodTag OPTICAL_GOODS = new GoodTag("optical_goods", "Optical GoodType", "Lenses and optical instruments including eyeglasses, telescopes, and microscopes.");
 
     // Food & Beverage
     public static final GoodTag FOOD_STAPLE = new GoodTag("food_staple", "Staple Food", "Basic everyday foodstuffs that form the foundation of a diet.");
@@ -70,11 +70,17 @@ public class GoodTags {
     public static final GoodTag BEVERAGE_ALCOHOLIC = new GoodTag("beverage_alcoholic", "Alcoholic Beverage", "Fermented and distilled drinks including wine, beer, and spirits.");
 
     // Market Scope
-    public static final GoodTag MARKET_MILITARY = new GoodTag("market_military", "Military Good", "Goods intended primarily for military procurement and use.");
-    public static final GoodTag MARKET_CIVILIAN = new GoodTag("market_civilian", "Civilian Good", "Goods intended for general civilian consumption and use.");
-    public static final GoodTag MARKET_COMMERCIAL = new GoodTag("market_commercial", "Commercial Good", "Goods intended for business and industrial procurement.");
+    public static final GoodTag MARKET_MILITARY = new GoodTag("market_military", "Military Good", "GoodType intended primarily for military procurement and use.");
+    public static final GoodTag MARKET_CIVILIAN = new GoodTag("market_civilian", "Civilian Good", "GoodType intended for general civilian consumption and use.");
+    public static final GoodTag MARKET_COMMERCIAL = new GoodTag("market_commercial", "Commercial Good", "GoodType intended for business and industrial procurement.");
     public static final GoodTag MARKET_LUXURY = new GoodTag("market_luxury", "Luxury Good", "High-value goods targeted at wealthy or elite consumers.");
     public static final GoodTag MARKET_INDUSTRIAL = new GoodTag("market_industrial", "Industrial Good", "Raw and intermediate goods used as inputs in manufacturing and production.");
-    public static final GoodTag MARKET_AGRICULTURAL = new GoodTag("market_agricultural", "Agricultural Good", "Goods related to farming, including inputs like seeds and outputs like crops.");
-    public static final GoodTag MARKET_MEDICAL = new GoodTag("market_medical", "Medical Good", "Goods intended for healthcare, treatment, and medical supply chains.");
+    public static final GoodTag MARKET_AGRICULTURAL = new GoodTag("market_agricultural", "Agricultural Good", "GoodType related to farming, including inputs like seeds and outputs like crops.");
+    public static final GoodTag MARKET_MEDICAL = new GoodTag("market_medical", "Medical Good", "GoodType intended for healthcare, treatment, and medical supply chains.");
+
+    public static final GoodTag TYPE_RAW_RESOURCE = new GoodTag("type_raw_resource", "Raw PRODUCT", "Raw materials that are not yet processed or refined.");
+    public static final GoodTag TYPE_REFINED_RESOURCE = new GoodTag("type_refined_resource", "Refined PRODUCT", "Processed or refined materials that are ready for use.");
+    public static final GoodTag TYPE_INTERMEDIATE = new GoodTag("type_intermediate_item", "Intermediate Item", "Materials that have been built and are ready for use in another good.");
+    public static final GoodTag TYPE_PRODUCT = new GoodTag("type_refined_product", "Refined Product", "Products that are ready for consumption.");
+    public static final GoodTag TYPE_ANIMAL_PRODUCT = new GoodTag("type_animal_product", "Animal Product", "Products derived from animals, including meat, dairy, and leather.");
 }
