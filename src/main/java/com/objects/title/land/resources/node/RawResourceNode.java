@@ -13,7 +13,7 @@ public abstract class RawResourceNode extends Node{
     private final Map<IGood,Integer> production;
     private BoundInt level = BoundInts.Custom(1,1,99);
     public RawResourceNode(DMEReference<? extends HabitableLand<?>> host, String id, String name, String description, Map<IGood,Integer> producers) {
-        super(host);
+        super(host, id, name, description);
         this.production = producers;
     }
 
