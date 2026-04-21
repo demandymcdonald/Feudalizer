@@ -1,4 +1,4 @@
-package com.objects.government;
+package com.objects.culture.government;
 
 import com.base.timeline.TimelineContainer;
 import com.google.common.collect.HashMultimap;

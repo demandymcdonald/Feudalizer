@@ -6,7 +6,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.family.Family;
-import com.objects.government.House;
+import com.objects.culture.government.House;
 import com.objects.title.Title;
 
 import java.util.HashSet;

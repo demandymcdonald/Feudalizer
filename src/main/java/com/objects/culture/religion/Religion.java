@@ -1,14 +1,10 @@
-package com.objects.culture.tenet.dynamic.tenets;
+package com.objects.culture.religion;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
-import com.objects.CauseOfEnd;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
-import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
@@ -16,11 +12,9 @@ import com.objects.culture.tenet.group.groups.ReligionGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IInterestGroup;
 import com.objects.culture.tenet.interest.InterestGroup;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 public class Religion extends DynamicTenet<Religion> implements IInterestGroup {
     private final InterestGroup interestGroup;
@@ -85,4 +79,8 @@ public class Religion extends DynamicTenet<Religion> implements IInterestGroup {
     }
 
 
+    @Override
+    public void internalSetCulture(DMEReference<Culture> culture) {
+
+    }
 }

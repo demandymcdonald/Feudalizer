@@ -1,6 +1,5 @@
-package com.objects.government;
+package com.objects.culture.government;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
@@ -9,27 +8,22 @@ import com.objects.CauseOfEnd;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public class Office extends Government<Office>{
-    DMEReference<GoverningEntity<?>> parent;
+public class House extends GoverningEntity<House> {
 
-    public Office(LocalDate created, LocalDate ended, List<ChangeSupplier<Office, ?>> initialState) {
+
+    public House(LocalDate created, LocalDate ended, List<ChangeSupplier<House, ?>> initialState) {
         super(created, ended, initialState);
     }
 
-    public Office(DMEReference<Office> dme) {
+    public House(DMEReference<House> dme) {
         super(dme);
     }
 
-    public Office(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Office, ?>> initialState) {
+    public House(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<House, ?>> initialState) {
         super(id, created, ended, initialState);
     }
-
-
-
-
 
     @Override
     protected void onLink() {
@@ -42,17 +36,18 @@ public class Office extends Government<Office>{
     }
 
     @Override
-    public TimelineChange<Office> getBirthChange(DMEReference<Office> dme, LocalDate date) {
+    public TimelineChange<House> getBirthChange(DMEReference<House> dme, LocalDate date) {
         return null;
     }
 
     @Override
-    public TimelineChange<Office> getDeathChange(DMEReference<Office> dme, LocalDate date, CauseOfEnd<? super Office> cOd) {
+    public TimelineChange<House> getDeathChange(DMEReference<House> dme, LocalDate date, CauseOfEnd<? super House> cOd) {
         return null;
     }
 
+
     @Override
-    public CauseOfEnd<? super Office> defaultDeathCause() {
+    public CauseOfEnd<House> defaultDeathCause() {
         return null;
     }
 

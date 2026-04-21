@@ -7,6 +7,7 @@ import com.base.timeline.variable.EasingVariable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.gson.JsonObject;
+import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
@@ -19,8 +20,9 @@ import java.util.function.Predicate;
 public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDriven<T>> implements EasingVariable<PopulationContainer<T>,PopulationChange<T>,T> {
     private DMEReference<? extends T> owner;
     private PopulationChange<T> currentChange;
-    private TLMap<InterestGroup, BoundInt> populationMap;
-    private Map<InterestGroup, BoundDbl> interpolatedPopulationMap = new HashMap<>();
+    private TLMap<InterestGroup, BoundInt> popMap;
+    private Map<InterestGroup, BoundDbl> intPopMap = new HashMap<>();
+    //private final CachingSupplier<Double> totalIG = new CachingSupplier<>(this::getTotalDouble);
     private static final StringIdentifiable popVar = new StringIdentifiable("totalPopulation") {
         @Override
         public String getID() {
@@ -40,7 +42,12 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     }
 
     public PopulationContainer() {}
-
+    public Map<IPoliticalCompass,Double> getCompasses() {
+        Map<IPoliticalCompass,Double> map = new HashMap<>();
+        for(InterestGroup interpolatedGroup : intPopMap.keySet()) {
+            map.put(interpolatedGroup.get)
+        }
+    }
     public void setPopulation(long population){
         if(population < 0){
             return;
@@ -50,6 +57,18 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
             currentChange.setPopulation(population);
             this.calculateVariables();
         }
+    }
+    public long getPopulationByDemo(InterestGroup interpolatedGroup){
+        double fraction = intPopMap.containsKey(interpolatedGroup) ?
+                intPopMap.get(interpolatedGroup).get() : 0;
+        return Math.round(totalPopulation * (fraction));
+    }
+    public double getTotalDouble() {
+        double l = 0;
+        for(InterestGroup interpolatedGroup : intPopMap.keySet()) {
+            l += intPopMap.get(interpolatedGroup).get();
+        }
+        return l;
     }
     public void addPopulation(long population){
         if (population == 0){
@@ -62,7 +81,7 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     public void addDemographic(InterestGroup demographic, int percentage, boolean wipeForward){
         BoundInt percent = BoundInts.Int256(false);
         percent.set(percentage);
-        populationMap.put(false,wipeForward,demographic,percent);
+        popMap.put(false,wipeForward,demographic,percent);
         this.calculateVariables();
     }
     public void addDemographicWeighted(InterestGroup demographic, int percentage, boolean wipeForward){
@@ -90,15 +109,15 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
                 boundInt.set((int) Math.round(value * (leftOver/totalOther)));
                 toReturn.put(entry.getKey(),boundInt);
             }
-            populationMap.putAll(false,wipeForward,toReturn);
+            popMap.putAll(false,wipeForward,toReturn);
             this.calculateVariables();
         }else{
-            populationMap.put(false,wipeForward,demographic,percent);
+            popMap.put(false,wipeForward,demographic,percent);
         }
     }
 
     public double getDemographicPercentage(InterestGroup demographic){
-        BoundDbl d = interpolatedPopulationMap.get(demographic);
+        BoundDbl d = intPopMap.get(demographic);
         if (d == null){
             return 0;
         }
@@ -108,7 +127,7 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     private double getTotalDemo(@Nullable InterestGroup demographic){
         Map<InterestGroup,BoundDbl> map;
         if (demographic == null){
-            map = new HashMap<>(interpolatedPopulationMap);
+            map = new HashMap<>(intPopMap);
         } else {
             map = filterByDimension(demographic);
         }
@@ -119,14 +138,14 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
         return total;
     }
     private Map<InterestGroup,BoundDbl> filterByDimension(InterestGroup demographic){
-        return new HashMap<>(Maps.filterKeys(interpolatedPopulationMap, (InterestGroup key) -> {
+        return new HashMap<>(Maps.filterKeys(intPopMap, (InterestGroup key) -> {
             return key.getDimension().equals(demographic.getDimension());}));
     }
 
     public boolean isInMajority(InterestGroup group){
-        if (!interpolatedPopulationMap.containsKey(group)) {
+        if (!intPopMap.containsKey(group)) {
             return false;
-        } else if (interpolatedPopulationMap.size() == 1){
+        } else if (intPopMap.size() == 1){
             return true;
         }
         Map<InterestGroup,BoundDbl> doubleMap = filterByDimension(group);
@@ -136,7 +155,7 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     }
     @Override
     public final void calculateVariables() {
-        interpolatedPopulationMap.clear();
+        intPopMap.clear();
         EasingVariable.super.calculateVariables();
     }
 
@@ -164,9 +183,9 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     private Map<Identifiable<?>, VariableContainer> buildEasing(){
         Map<Identifiable<?>, VariableContainer> easingFunctions = new HashMap<>();
         easingFunctions.put(popVar, new VariableContainer(EasingType.LERP, () -> (double) totalPopulation, d -> interpolatedPopulation = Math.round(d)));
-        for (Map.Entry<InterestGroup, BoundInt> c : populationMap.entrySet()){
+        for (Map.Entry<InterestGroup, BoundInt> c : popMap.entrySet()){
             easingFunctions.put(c.getKey(), new VariableContainer(EasingType.LERP, () -> (double) c.getValue().get(), d -> {
-                BoundDbl BoundDbl = interpolatedPopulationMap.computeIfAbsent(c.getKey(), (key) -> {return BoundDoubles.dbl256(false);});
+                BoundDbl BoundDbl = intPopMap.computeIfAbsent(c.getKey(), (key) -> {return BoundDoubles.dbl256(false);});
                 BoundDbl.set(d);
             }));
         }
@@ -180,10 +199,10 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
         totalPopulation = newPopulation;
     }
     public void internalSetMap(TLMap<InterestGroup,BoundInt> newMap){
-        populationMap = newMap;
+        popMap = newMap;
     }
     public TLMap<InterestGroup,BoundInt> internalGetPopulationMap(){
-        return populationMap;
+        return popMap;
     }
     public void internalSetChange(PopulationChange<T> newChange){
         currentChange = newChange;

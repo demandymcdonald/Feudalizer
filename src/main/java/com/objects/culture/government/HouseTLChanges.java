@@ -1,4 +1,4 @@
-package com.objects.government;
+package com.objects.culture.government;
 
 import com.base.DMRegistry;
 import com.base.ObjectType;

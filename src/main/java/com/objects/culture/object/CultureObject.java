@@ -7,6 +7,7 @@ import com.base.timeline.change.multi.type.ChangeType;
 import com.base.timeline.change.multi.type.WipeType;
 import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
+import com.objects.culture.Culture;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
@@ -302,7 +303,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
             return getAcceptanceValue(tr,includeInfluencers) >= floor;
         });
     }
-
+    void internalSetCulture(DMEReference<Culture> culture);
     default void internalSetOpinions(TLMap<TenetReference,TenetInstance<T>> opinions){
         getContainer().setOpinions(opinions);
     };

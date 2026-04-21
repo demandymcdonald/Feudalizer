@@ -7,6 +7,7 @@ import com.base.timeline.change.multi.type.WipeType;
 import com.base.timeline.change.multi.wrapper.TLSet;
 import com.display.geography.GeometryType;
 import com.objects.culture.object.PassiveCultureObject;
+import com.objects.culture.object.compass.CompositeCompass;
 import com.objects.shared.IDemographicDriven;
 import com.objects.shared.PopulationContainer;
 import com.objects.title.land.AbstractLandDivision;
@@ -21,6 +22,7 @@ import java.util.function.Consumer;
 public abstract class HabitableLand<R extends HabitableLand<R>> extends AbstractLandDivision<R> implements PassiveCultureObject, IDemographicDriven<R> {
     PopulationContainer<R> populationContainer;
     TLSet<Node> nodes;
+    CompositeCompass compass;
     public HabitableLand(LocalDate created, LocalDate ended, GeometryType type, String geoID, List<ChangeSupplier<R, ?>> initialState) {
         super(created, ended, type, geoID, initialState);
         getTimeline().internalAddChange(new NodeChange<>(getReference(),created));
@@ -42,6 +44,18 @@ public abstract class HabitableLand<R extends HabitableLand<R>> extends Abstract
     public final void internalSetChanged(ChangeType type, Node node, Consumer<Node> consumer){
         nodes.setChanged(true,type,node,consumer);
     }
+
+    @Override
+    public void onLink() {
+        super.onLink();
+    }
+
+    @Override
+    public void doDateChange() {
+        super.doDateChange();
+
+    }
+
     public final TLSet<Node> getNodes() {
         return nodes;
     }

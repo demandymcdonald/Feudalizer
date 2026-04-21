@@ -15,6 +15,10 @@ public interface Tenet extends IDisplayable, ICultureObject, UUIDIdentifiable {
         return new AcceptanceContainer(getAcceptanceValue(tenet, includeInfluencers));
     };
 
+    @Override
+    default Type getType(){
+        return Type.Tenet;
+    };
 
     @Override
     default Acceptance getAcceptance(TenetReference tenet, boolean includeInfluencers) {

@@ -28,16 +28,6 @@ public class MinorCultureChange<T extends DateMutableEntity<T> & MinorCultureObj
     }
 
     @Override
-    public List<Class<TimelineChange<? super T>>> oppositeChanges() {
-        return List.of();
-    }
-
-    @Override
-    public boolean isPositive() {
-        return true;
-    }
-
-    @Override
     protected String getText() {
         return "minor_culture_change";
     }

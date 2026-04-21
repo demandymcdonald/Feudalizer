@@ -11,7 +11,7 @@ import com.objects.character.physical.species.SentientSpecies;
 import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
-import com.objects.government.House;
+import com.objects.culture.government.House;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 
@@ -192,10 +192,6 @@ public class HumanCharacter extends SentientCharacter<HumanCharacter, SentientSp
             }
         }
         return spouses;
-    }
-    @Override
-    public DMEReference<Culture> getCulture() {
-        return culture;
     }
 
     //==== Conditional Logic ====

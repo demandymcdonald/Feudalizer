@@ -10,6 +10,7 @@ import com.base.timeline.change.display.ITLDisplayable;
 import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
@@ -19,6 +20,7 @@ import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.CultureObjectContainer;
+import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.tenet.dynamic.change.Boundary;
@@ -44,6 +46,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     private final CultureObjectContainer<T> container;
     private DMEReference<Culture> foundingCulture;
     private final DisplayContainer<T> displayContainer;
+    private final Multimap<Type, ICultureObject> followers = HashMultimap.create();
     public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
         this.tenetGroup = group;
@@ -94,8 +97,10 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers) {
         return Tenet.super.getAcceptanceContainer(tenet, includeInfluencers);
     }
-    public final Culture getCulture() {
-        return foundingCulture.get();
+
+    @Override
+    public final DMEReference<Culture> getCulture() {
+        return this.foundingCulture;
     }
 
     @Override
@@ -136,14 +141,15 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
             
         }
     }
-
+    @Override
+    public void doDateChange() {
+        followers.clear();
+    }
+    public void addActiveFollower(ICultureObject follower){
+        followers.put(follower.getType(), follower);
+    }
 //Literally just to clean up override menu
 
-
-    @Override
-    public final void addInfluencer(COReference<?> influencer, InfluencerRelationship relationship) {
-        CultureObject.super.addInfluencer(influencer, relationship);
-    }
 
     @Override
     public final void addOpinion(TenetReference tenet, double d) {

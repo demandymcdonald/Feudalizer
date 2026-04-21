@@ -33,7 +33,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     private final AtomicBoolean isLoaded = new AtomicBoolean(false);
     public DateMutableEntity(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T,?>> initialState) {
         this.id = id;
-        this.reference = DMEReference.of(this.getClass(),id);
+        this.reference = DMEReference.of((Class<T>) this.getClass(),id);
         this.timeline = new Timeline<>((T) this,reference,created,ended,initialState);
     }
     public DateMutableEntity(LocalDate created, LocalDate ended, List<ChangeSupplier<T,?>> initialState){
@@ -76,7 +76,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     protected abstract void onLink();
     //Use to clear any shortcut/linked variables.
     public abstract void doDateChange();
-    public void onDateChange(){
+    public final void onDateChange(){
         isLoaded.set(false);
         doDateChange();
         timeline.doTimeChange(current());

@@ -1,5 +1,6 @@
 package com.objects.culture.object;
 
+import com.base.reference.DMEReference;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.object.compass.IPoliticalCompass;
@@ -7,7 +8,15 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetReference;
 
 public interface ICultureObject {
-    Culture getCulture();
+    enum Type{
+        Character,
+        Territory,
+        Title,
+        Tenet,
+    }
+
+    Type getType();
+    DMEReference<Culture> getCulture();
     IPoliticalCompass getCompass();
     default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
         return new AcceptanceContainer(getAcceptanceValue(tenet,includeInfluencers));

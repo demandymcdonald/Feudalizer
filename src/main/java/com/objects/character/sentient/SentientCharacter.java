@@ -3,20 +3,23 @@ package com.objects.character.sentient;
 import com.Global;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.type.ChangeType;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
 import com.objects.character.Sex;
-import com.objects.character.physical.genetics.GeneticContainer;
+import com.objects.character.physical.PhysicalAppearance;
 import com.objects.character.opinion.Opinion;
 import com.objects.character.opinion.OpinionReason;
 import com.objects.character.sentient.change.CharacterChanges;
 import com.objects.character.sentient.change.SentientMapChange;
+import com.objects.culture.Culture;
+import com.objects.culture.government.IGoverned;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.tenet.dynamic.tenets.Religion;
+import com.objects.culture.religion.IReligious;
+import com.objects.culture.religion.Religion;
 import com.objects.family.Family;
-import com.objects.government.GoverningEntity;
+import com.objects.culture.government.GoverningEntity;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 import com.utilities.id.SimpleUUID;
@@ -26,17 +29,17 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public abstract class SentientCharacter<T extends SentientCharacter<T>> extends LivingCreature<T> implements CultureObject<T> {
-    private GeneticContainer<?> geneticContainer;
+public abstract class SentientCharacter<T extends SentientCharacter<T>> extends LivingCreature<T>
+        implements CultureObject<T>, IGoverned<T>, IReligious<T> {
     private String firstName;
     private String lastName;
     private Gender gender;
     private Orientation orientation;
     private SuccessionEntry<?> preferredSuccession;
-    private MiddlemanMap<SimpleUUID, Opinion,UUID,T> opinions;
-
-
-    private Optional<GoverningEntity<?>> linked_government;
+    private TLMap<SimpleUUID,Opinion> opinions;
+    private DMEReference<? extends GoverningEntity<?>> government;
+    private DMEReference<Culture> culture;
+    private DMEReference<Religion> religion;
     private final Map<Family, Family.Relationship> linked_families = Maps.newHashMap();
     private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
 
@@ -49,7 +52,6 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
         Pansexual("Pansexual"),
         Questioning("Questioning"),
         Other("Other");
-
         private final String display;
         Orientation(String d){
             display = d;
@@ -58,27 +60,13 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
             return display;
         }
     }
-    public SentientCharacter(LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
-        super(created, ended, initialState);
+    public SentientCharacter(LocalDate created, @Nullable LocalDate ended, PhysicalAppearance appearance, List<ChangeSupplier<T, ?>> initialState) {
+        super(created, ended,appearance, initialState);
         getTimeline().internalAddChange(new SentientMapChange.OpinionMapChange<>(getReference(),created));
     }
     public SentientCharacter(DMEReference<T> dme) {
         super(dme);
     }
-
-    public SentientCharacter(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<T, ?>> initialState) {
-        super(id, created, ended, initialState);
-    }
-
-
-
-
-
-
-
-
-
-
 
 
     public final void setFirstName(String firstName) {
@@ -121,11 +109,24 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void internalSetOrientation(Orientation orientation){
         this.orientation = orientation;
     }
-    public final void internalSetOpinionMap(MiddlemanMap<SimpleUUID, Opinion,UUID,T> opinions){
+    public final void internalSetOpinionMap(TLMap<SimpleUUID, Opinion> opinions){
         this.opinions = opinions;
     }
     public final void internalSetPreferredSuccession(SuccessionEntry<?> succession){
         this.preferredSuccession = succession;
+    }
+    public final void internalSetGovernment(DMEReference<? extends GoverningEntity<?>> government){
+        this.government = government;
+    }
+    @Override
+    public final void internalSetCulture(DMEReference<Culture> culture) {
+        this.culture = culture;
+    }
+    public final void internalSetReligion(DMEReference<Religion> religion){
+        this.religion = religion;
+    }
+    public final DMEReference<? extends GoverningEntity<?>> getGovernment() {
+        return government;
     }
     public final String getForename(){
         return firstName;
@@ -142,12 +143,30 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final Orientation getOrientation(){
         return orientation;
     }
-    public final Religion getReligion(){
-
+    public final DMEReference<Religion> getReligion(){
+        return religion;
     }
-
+    @Override
+    public final DMEReference<Culture> getCulture() {
+        return culture;
+    }
     public final SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;
+    }
+
+    public final void linkTitle(DMEReference<? extends Title<?>> title){
+        linked_titles.add(title);
+    }
+
+    @Override
+    public void doDateChange() {
+        linked_families.clear();
+        linked_titles.clear();
+    }
+
+    @Override
+    public void onLink() {
+        IGoverned.super.onLink();
     }
 
     @Override
