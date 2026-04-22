@@ -1,14 +1,11 @@
 package com.base.condition;
 
-import com.base.timeline.change.TimelineChange;
-import org.apache.commons.lang3.function.TriFunction;
-
 import java.util.List;
 import java.util.Optional;
 
 
 
-public abstract class Condition<R extends ConditionResult, A,B,C> implements iCondition{
+public abstract class Condition<R extends IConditionError, A,B,C> implements iCondition{
         private final String id;
     public enum ShouldRun {
         ONCE_PER_STATE,

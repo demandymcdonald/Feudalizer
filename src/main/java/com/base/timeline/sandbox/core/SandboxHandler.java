@@ -24,21 +24,21 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class SandboxHandler<T extends DateMutableEntity<T>> {
+public class SandboxHandler<T extends DateMutableEntity<?>> {
     private final Thread sandboxThread;
-    private final Sandbox<T> sandbox;
+    private final Sandbox<? extends T> sandbox;
     private SandboxHandler<?> child;
     private CompletableFuture<SandboxCode> future = new CompletableFuture<>();
     private Consumer<SandboxCode> doAfter;
 
 
-    private static final Deque<StateError> CurrentErrors = new ConcurrentLinkedDeque<>();
+    private static final Deque<StateError<?>> CurrentErrors = new ConcurrentLinkedDeque<>();
     private static final Deque<Pair<DMEReference<?>, CompletableFuture<JsonObject>>> CurrentDataRequests = new ConcurrentLinkedDeque<>();
     private static final Logger LOG = LoggerFactory.getLogger(SandboxHandler.class);
     private static final AtomicInteger sandboxCount = new AtomicInteger(0);
 
 
-    private SandboxHandler(Thread parentThread, Sandbox<T> sandbox, @Nullable  Consumer<SandboxCode> doAfter) {
+    private SandboxHandler(Thread parentThread, Sandbox<? extends T> sandbox, @Nullable  Consumer<SandboxCode> doAfter) {
         this.sandboxThread = parentThread;
         this.sandbox = sandbox;
         if (doAfter != null){
@@ -125,7 +125,7 @@ public class SandboxHandler<T extends DateMutableEntity<T>> {
     }
     ///  Main Method To be Utilized
     @SuppressWarnings("unchecked")
-    public static <T extends DateMutableEntity<T>> SandboxHandler<T> StartSandbox(Objective<T> objective, @Nullable LocalDate endDate, @Nullable SandboxHandler<?> parent, @Nullable Consumer<SandboxCode> doAfter){
+    public static <T extends DateMutableEntity<?>> SandboxHandler<T> StartSandbox(Objective<T> objective, @Nullable LocalDate endDate, @Nullable SandboxHandler<?> parent, @Nullable Consumer<SandboxCode> doAfter){
         Sandbox<T> sandbox;
         final Thread parentThread = parent != null ? parent.sandboxThread : null;
         if (endDate == null){
@@ -141,13 +141,13 @@ public class SandboxHandler<T extends DateMutableEntity<T>> {
         }
         return handler;
     }
-    public static <T extends DateMutableEntity<T>> void StartSandbox(Objective<T> objective, SandboxHandler<?> parent, Consumer<SandboxCode> doAfter){
+    public static <T extends DateMutableEntity<?>> void StartSandbox(Objective<T> objective, SandboxHandler<?> parent, Consumer<SandboxCode> doAfter){
         StartSandbox(objective,null,parent,doAfter);
     }
-    public static <T extends DateMutableEntity<T>> void StartSandbox(Objective<T> objective, LocalDate endDate){
+    public static <T extends DateMutableEntity<?>> void StartSandbox(Objective<T> objective, LocalDate endDate){
         StartSandbox(objective,endDate,null,null);
     }
-    public static <T extends DateMutableEntity<T>> void StartSandbox(Objective<T> objective){
+    public static <T extends DateMutableEntity<?>> void StartSandbox(Objective<T> objective){
         StartSandbox(objective,null,null);
     }
 }

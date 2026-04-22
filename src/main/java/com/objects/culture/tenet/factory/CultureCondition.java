@@ -22,15 +22,15 @@ public abstract class CultureCondition<TC extends TimelineChange<? super D> & Cu
     public CultureCondition(Tenet tenet) {
         this.tenet = tenet;
     }
-    public final Optional<StateError> check(TC change, DMEReference<? extends S> subject, DMEReference<? extends D> decider) {
+    public final Optional<StateError<D>> check(TC change, DMEReference<? extends S> subject, DMEReference<? extends D> decider) {
         return check(change, subject.get(),decider.get());
     }
-    public final Optional<StateError> check(TC change, S subject, D decider){
+    public final Optional<StateError<D>> check(TC change, S subject, D decider){
         return doCheck(tenet, change,subject,subject.getCulture(),decider,decider.getCulture());
     }
     public abstract List<Key> getKeys();
     public abstract Condition.ShouldRun shouldRun();
-    protected abstract Optional<StateError> doCheck(Tenet tenet, TC change, S subject, Culture subjectCulture, D decider, Culture deciderCulture);
+    protected abstract Optional<StateError<D>> doCheck(Tenet tenet, TC change, S subject, DMEReference<Culture> subjectCulture, D decider, DMEReference<Culture> deciderCulture);
 
     protected final AcceptanceContainer getCulturalAcceptance(S subject, D decider, boolean factorSubjectTolerance) {
         return decider.getCompass().getAcceptanceContainer(subject.getCompass(),factorSubjectTolerance);
@@ -39,14 +39,14 @@ public abstract class CultureCondition<TC extends TimelineChange<? super D> & Cu
         return either.getAcceptanceContainer(tenet.getTenetReference(),true);
     }
     protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject, TC extends TimelineChange<? super D> & CultureAware<TC,S,D>>
-    StateError makeError(Tenet tenet, StateReference message, TC change){
-        return new StateError("culture_condition/"+tenet.getDisplayID(),message,change).addIgnore().addEndCancel().addEndSave();
+    StateError<D> makeError(Tenet tenet, StateReference message, TC change){
+        return new StateError<D>("culture_condition/"+tenet.getDisplayID(),message,change).addIgnore().addEndCancel().addEndSave();
     }
-    protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject,TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError>
+    protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject,TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError<D>>
     AcceptanceTooLow(Tenet tenet, TC change, S subject, D decider){
         return AcceptanceTooLow(tenet,change,subject,decider,false,false);
     }
-    protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject,TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError>
+    protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject,TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError<D>>
     AcceptanceTooLow(Tenet tenet, TC change, S subject, D decider, boolean acceptedAllowed, boolean neutralAllowed){
         final Acceptance accept = decider.getAcceptanceContainer(subject,false).getAcceptance();
         final StateReference sr = ComplexReference.of("{} (decider) and {} (subject) are too incompatible culturally. The decider sees the subject as {}",decider.getDisplayID(),subject.getDisplayID(),accept.getDisplayName());

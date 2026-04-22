@@ -226,8 +226,13 @@ public class TenetManager {
         }
     }
     public static class InterestGroups{
-        private Map<String, InterestGroup> groups = new HashMap<>();
-        Graph<InterestGroup, DefaultEdge> graph = new DirectedPseudograph<>(DefaultEdge.class);
+        private static final Map<String, InterestGroup> groups = new HashMap<>();
+        private static final Graph<InterestGroup, DefaultEdge> graph = new DirectedPseudograph<>(DefaultEdge.class);
+
+
+        public static InterestGroup get(String id){
+            return groups.get(id);
+        }
     }
     public static abstract class TenetFactory<T extends MutableTenet> {
         public final T rebuild(JsonObject object) {

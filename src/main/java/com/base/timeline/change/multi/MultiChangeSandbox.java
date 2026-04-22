@@ -19,6 +19,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.utilities.id.Identifiable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -51,7 +52,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         this.changeContainers = new HashMap<>();
     }
     @Override
-    protected SandboxCode onStartup(Sandbox<T> sandbox, DMEReference<T> entity, TimelineChange<? super T> newChange) {
+    protected SandboxCode onStartup(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineChange<? super T> newChange) {
         M m = (M) newChange;
         if (changes.isEmpty()) {
             return SandboxCode.END_SAVE;
@@ -123,7 +124,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
     }
 
     @Override
-    public SandboxCode onCycle(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, List<Condition.ShouldRun> shouldRun) {
+    public SandboxCode onCycle(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, List<Condition.ShouldRun> shouldRun, @MonotonicNonNull TimelineChange<?> existingChange) {
         if (!existingChange.getClass().equals(newChange.getClass())) {
             return SandboxCode.CONTINUE;
         }
@@ -155,7 +156,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         return SandboxFunctions.resolveStateErrors(sandbox, state, newChange, errors);
     }
     @Override
-    protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+    protected void onStep(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
         if (isFirstCycle) {
             sandbox.buildDirtyMap();
         } else if (propagateFlag){
@@ -203,7 +204,7 @@ public class MultiChangeSandbox<M extends TLMultiChange<M, K, V, I, T>, T extend
         }
     }
     @Override
-    public void onComplete(Sandbox<T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<T> entity, TimelineChange<? super T> newChange) {
+    public void onComplete(@MonotonicNonNull Sandbox<? extends T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<? extends T> entity, TimelineChange<? super T> newChange) {
         final Timeline<T> timeline = sandbox.getSubject().get().getTimeline();
         final TimelineChange<? super T> change = sandbox.getObjective().change();
         final TimelineState<T> state = timeline.getStateAtExact(change.getStart(), true);

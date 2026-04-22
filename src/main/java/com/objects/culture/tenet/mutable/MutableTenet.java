@@ -1,5 +1,6 @@
 package com.objects.culture.tenet.mutable;
 
+import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
@@ -65,11 +66,12 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         }
         return result;
     }
-    public abstract List<CultureCondition<?,?,?>> getConditionList();
+    public abstract Set<CultureCondition<?,?,?>> getChangeConditions();
+    public abstract Set<TenetGroup> compatibleParents();;
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }
-    public abstract List<TenetGroup> compatibleParents();
+
     @Override
     public TenetReference getTenetReference() {
         return reference;
@@ -104,7 +106,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         return id;
     }
     @Override
-    public void mainSave(JsonObject object) {
+    public final void mainSave(JsonObject object) {
         object.addProperty("uuid",id.toString());
         object.addProperty("displayID", displayID);
         object.addProperty("name", name);
@@ -115,7 +117,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     }
 
     @Override
-    public Culture getCulture() {
+    public DMEReference<Culture> getCulture() {
         return parent.get().getCulture();
     }
 

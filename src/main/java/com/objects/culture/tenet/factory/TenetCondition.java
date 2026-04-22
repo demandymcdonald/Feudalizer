@@ -1,45 +1,53 @@
 package com.objects.culture.tenet.factory;
 
 import com.base.DateMutableEntity;
-import com.base.condition.Condition;
+import com.base.condition.IConditionError;
+import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.CultureAware;
-import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.StateError;
 import com.objects.culture.Culture;
-import com.objects.culture.object.ICultureObject;
-import com.objects.culture.tenet.Tenet;
+import com.objects.culture.object.CultureObject;
+import com.objects.culture.tenet.Acceptance;
+import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.dynamic.DynamicTenet;
 
 import java.util.Optional;
-import java.util.Set;
 
-
-public abstract class TenetCondition<S extends DateMutableEntity<S> & ICultureObject, D extends DateMutableEntity<D> & ICultureObject, TC extends TimelineChange<? super D> & CultureAware<TC,S,D>>
-        extends Condition<StateError, TC,Tenet,DMEReference<S>> {
-    public TenetCondition(String id) {
-        super(id);
+public abstract class TenetCondition<T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> {
+    private final TenetReference tenetReference;
+    public TenetCondition(TenetReference tenetReference) {
+        this.tenetReference = tenetReference;
     }
+    public final Optional<TenetError<T,D>> check(T tenet, DMEReference<? extends D> decider){
+        return doCheck(tenetReference,tenet,decider);
+    };
 
-    @Override
-    protected final Optional<StateError> doCheck(TC change, Tenet tenet, DMEReference<S> subject) {
-        D d = (D) change.getOwner().get();
-        return doCultureCheck(change, tenet,subject,subject.get().getCulture(),d.getReference(),d.getCulture());
-    }
-    protected abstract Optional<StateError> doCultureCheck(TC change, Tenet tenet, DMEReference<S> subject, Culture subjectCulture, DMEReference<D> decider, Culture deciderCulture);
-    protected abstract Set<Key> getTCKey();
-    @Override
-    public final ShouldRun whenToRun() {
-        return ShouldRun.ONCE_PER_STATE;
-    }
-    public static abstract class Key {
+    protected abstract Optional<TenetError<T,D>> doCheck(TenetReference tenet, T parentTenet, DMEReference<? extends D> decider);
 
 
-        public <TC extends TimelineChange<D> & CultureAware<TC,?,D>,D extends DateMutableEntity<D> & ICultureObject> boolean isValidChange(TimelineChange<?> change){
-            if (!(change instanceof CultureAware)) {
-                return false;
+    public static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetCondition<T,D> prerequisite(TenetReference thisTenet, TenetReference preRequisite){
+        return new TenetCondition<T,D>(thisTenet){
+            @Override
+            protected Optional<TenetError<T,D>> doCheck(TenetReference tenet, T parentTenet, DMEReference<? extends D> decider) {
+                if(parentTenet.hasActiveOpinion(preRequisite)){
+                    return Optional.empty();
+                }
+                return Optional.of(missing(parentTenet.getTenetReference(),preRequisite));
             }
-            return isValid((TC) change);
-        }
-        protected abstract <TC extends TimelineChange<D> & CultureAware<TC,?,D>,D extends DateMutableEntity<D> & ICultureObject> boolean isValid(TC change);
+        };
+    }
+    public static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetCondition<T,D> hasAcceptance(TenetReference tenet, Acceptance threshold, boolean includeInfluencer){
+        return new TenetCondition<T,D>(tenet){
+            @Override
+            protected Optional<TenetError<T,D>> doCheck(TenetReference tenet, T parentTenet, DMEReference<? extends D> decider) {
+                if(parentTenet.getAcceptance(tenet,includeInfluencer).greaterThan(threshold)){
+                    return Optional.empty();
+                }
+                return Optional.of(missing(parentTenet.getTenetReference(),tenet));
+            }
+        };
+    }
+    protected static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetError<T,D> missing(TenetReference misser, TenetReference missing){
+        return TenetError.generic("dt_missing_pre_req",new ComplexReference("{} is missing Tenet {}",misser,missing));
     }
 }

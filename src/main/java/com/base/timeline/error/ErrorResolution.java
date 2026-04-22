@@ -10,11 +10,15 @@ import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.sandbox.core.SandboxHandler;
 import com.base.timeline.state.TimelineState;
 import com.objects.character.sentient.HumanCharacter;
+import com.objects.character.sentient.SentientCharacter;
+import com.objects.title.Title;
 import com.utilities.IDisplayable;
+
+import java.util.Date;
 
 import static com.base.timeline.error.SandboxCode.*;
 
-public abstract class ErrorResolution implements IDisplayable {
+public abstract class ErrorResolution<T extends DateMutableEntity<?>> implements IResolution<T,Sandbox<? extends T>,TimelineState<? extends T>,TimelineChange<T>,TimelineChange<?>> {
     private final int priority;
     private final SandboxCode expectedCode;
     private final String id;
@@ -53,103 +57,112 @@ public abstract class ErrorResolution implements IDisplayable {
     public SandboxCode getExpectedCode(){
         return expectedCode;
     }
-    public abstract <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange);
 
+    @Override
+    public abstract SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange);
 
-    public static class  GenOverride  extends ErrorResolution {
+    @Override
+    public String getID() {
+        return "";
+    }
+
+    public static class  GenOverride<T extends DateMutableEntity<?>>  extends ErrorResolution<T> {
         public GenOverride() {
             super("gen_override","Override Existing", "Replace the existing change with the new one",5,false,CONTINUE);
         }
 
+
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            newChange.override(state,oldChange,true,false);
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> tTimelineState, TimelineChange<T> change, TimelineChange<?> timelineChange) {
+            change.override(tTimelineState,timelineChange,true,false);
             return SandboxCode.CONTINUE;
         }
     }
-    public static class GenAccept extends ErrorResolution {
+    public static class GenAccept<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         public GenAccept() {
             super("gen_accept","Accept","Accept the Current Change",12,true,CONTINUE);
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            newChange.advanceStage(entity,state,false);
-            return SandboxCode.CONTINUE;
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
+            newChange.advanceStage(reference,state,false);
+            return CONTINUE;
         }
     }
-    public static class EndSandbox_Save extends ErrorResolution {
+    public static class EndSandbox_Save<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         public EndSandbox_Save() {
             super("gen_end_sandbox_save","End Sandbox", "Stop Propagating before this state",1,true,SandboxCode.END_SAVE);
         }
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
             return SandboxCode.END_SAVE;
         }
     }
-    public static class EndSandbox_Cancel extends ErrorResolution {
+    public static class EndSandbox_Cancel<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         public EndSandbox_Cancel() {
             super("gen_end_sandbox_cancel","Cancel Change" ,"Cancel the current change and revert.",0,true,SandboxCode.END_DISCARD);
         }
+
+
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
             return SandboxCode.END_DISCARD;
         }
     }
-    public static class GenIgnore extends ErrorResolution {
+    public static class GenIgnore<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         public GenIgnore() {
             super("gen_ignore","Ignore","Ignore the lore error and apply the change regardless",6,false,CONTINUE);
         }
 
 
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            newChange.advanceStage(entity,state,false);
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
+            newChange.advanceStage(reference,state,false);
             return CONTINUE;
         }
     }
-    public static class MapMergeEnd extends ErrorResolution {
+    public static class MapMergeEnd<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         public MapMergeEnd() {
-            super("map_merge","Merge","merge the two",3,false,END_SAVE);
+            super("map_merge_end", "Merge End", "merge the two", 3, false, END_SAVE);
         }
 
-
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            if (newChange instanceof TimelineMapChange<?,?,?,?> currentTMC && oldChange instanceof TimelineMapChange<?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
-                oldTMC.merge(currentTMC);
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
+            if (newChange instanceof TLMultiChange<?,?,?,?,?> currentTMC && currentChange instanceof TLMultiChange<?,?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
+                oldTMC.mergeSafe(currentTMC);
                 return END_SAVE;
             }
-
-
-            newChange.advanceStage(entity,state,false);
-            return CONTINUE;
+            return CRITICAL_ERROR;
         }
     }
-    public static class MapMergeContinue extends ErrorResolution {
+    public static class MapMergeContinue<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         public MapMergeContinue() {
-            super("map_merge","Merge","merge the two",9,false,CONTINUE);
+            super("map_merge_continue", "Merge Continue", "merge the two", 3, false, CONTINUE);
         }
+
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            if (newChange instanceof TLMultiChange<?,?,?,?> currentTMC && oldChange instanceof TLMultiChange<?,?,?,?> oldTMC && currentTMC.getClass().equals(oldTMC.getClass())){
-                currentTMC.mergeSafe(oldTMC);
-                newChange.override(state,oldTMC,true,false);
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
+            if (newChange instanceof TLMultiChange<?,?,?,?,?> nTLC && currentChange instanceof TLMultiChange<?,?,?,?,?> cTLC && nTLC.getClass().equals(cTLC.getClass())){
+
+                TLMultiChange<?,?,?,?,T> currentTMC = (TLMultiChange<?,?,?,?,T>) nTLC;
+                currentTMC.mergeSafe(cTLC);
+                currentTMC.override(state,cTLC,true,false);
                 return CONTINUE;
             }
             return CONTINUE;
         }
     }
-    public static class SandboxBranching<R extends DateMutableEntity<R>> extends ErrorResolution {
-        private final Objective<R> objective;
-        public SandboxBranching(String branchingSubID, String displayName, String description, Objective<R> newObjective) {
+    public static class SandboxBranching<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
+        private final Objective<T> objective;
+        public SandboxBranching(String branchingSubID, String displayName, String description, Objective<T> newObjective) {
             super("mut_sandbox_branch:"+branchingSubID,displayName,description,3,true,RESTART_FROM_STATE);
             objective = newObjective;
         }
+
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            SandboxHandler<R> handler = SandboxHandler.StartSandbox(objective,null,sandbox.getHandler(),null);
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
+            SandboxHandler<T> handler = SandboxHandler.StartSandbox(objective,null,sandbox.getHandler(),null);
             SandboxCode code = handler.getEndCode().join();
             if (code == SandboxCode.END_SAVE){
                 return SandboxCode.RESTART_FROM_STATE;
@@ -157,22 +170,24 @@ public abstract class ErrorResolution implements IDisplayable {
             return code;
         }
     }
-    public static class ReplaceExistingWithNew extends ErrorResolution {
+    public static class ReplaceExistingWithNew<T extends DateMutableEntity<?>> extends ErrorResolution<T> {
         private final TimelineChange<?> replace;
         public ReplaceExistingWithNew(String replaceSubID, String replaceTitle, String replaceDescription, TimelineChange<?> replace) {
             super("mut_replace:" + replaceSubID,replaceTitle,replaceDescription,4,true,SandboxCode.RESTART_FROM_STATE);
             this.replace = replace;
         }
+
+
         @Override
-        public <T extends DateMutableEntity<T>> SandboxCode resolve(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<?> oldChange) {
-            final TimelineChange<? super T> replacingChange = (TimelineChange<? super T>) replace;
-            replacingChange.override(state,oldChange,false,false);
+        public SandboxCode resolve(DMEReference<? extends T> reference, Sandbox<? extends T> sandbox, TimelineState<? extends T> state, TimelineChange<T> newChange, TimelineChange<?> currentChange) {
+            final TimelineChange<T> replacingChange = (TimelineChange<T>) replace;
+            replacingChange.override(state,currentChange,false,false);
             return SandboxCode.RESTART_FROM_STATE;
         }
     }
 
-    public static class SuccessionPlanning_Title extends SandboxBranching<HumanCharacter> {
-        public SuccessionPlanning_Title(DMEReference<? extends HumanCharacter> newObjective) {
+    public static class SuccessionPlanning_Title<T extends SentientCharacter<?>> extends SandboxBranching<T> {
+        public SuccessionPlanning_Title(DMEReference<? extends SentientCharacter<?>> newObjective) {
             super("title_succession", "Run Succession Planner", "Give the title to their heir or a designated person", (Objective<HumanCharacter>) Objective.buildSuccession(newObjective));
         }
     }

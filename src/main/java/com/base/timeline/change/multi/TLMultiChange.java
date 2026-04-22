@@ -42,7 +42,7 @@ import static com.Global.TimeDirection.BACKWARD;
 import static com.Global.TimeDirection.FORWARD;
 
 @SuppressWarnings("unchecked")
-public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> extends TimelineChange<T> {
+public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> extends TimelineChange<T> {
     //Use of atomics here isn't an indication of thread safety per-say. I just needed a container for bools and ints. I know there are probably better ones. I don't really care
     //right now. I just want to get this working for the moment.
     public static final Logger LOGGER = LoggerFactory.getLogger(TLMultiChange.class);
@@ -462,7 +462,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
 
 
 
-    protected static <M extends TLMultiChange<M, K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> void removeEntry(M change, final Global.TimeDirection direction, final boolean wipe, final boolean includeCurrent, List<K> toRemove){
+    protected static <M extends TLMultiChange<M, K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<?>> void removeEntry(M change, final Global.TimeDirection direction, final boolean wipe, final boolean includeCurrent, List<K> toRemove){
         MapTask<M,K,V,I,T> consumer = new MapTask<>(change) {
             @Override
             protected void onStep(M main, M current, Map<K, V> finalMap, Set<I> endingChanges) {
@@ -493,23 +493,23 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
         Timeline.iterateMap(change,direction,consumer,includeCurrent);
     }
 
-    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> getOtherMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
+    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> Map<K,V> getOtherMap(M change, Global.TimeDirection direction, @Nullable Predicate<M> additional, int steps){
         M desiredChange = TimelineObject.getChangeStep(change, direction, false, steps, additional);
         if (desiredChange == null){
             return null;
         }
         return desiredChange.internalGetFull();
     }
-    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasPastEntry(M change, K key, boolean includeCurrent){
+    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<?>> boolean hasPastEntry(M change, K key, boolean includeCurrent){
         return hasEntry(Global.TimeDirection.BACKWARD,change,key,includeCurrent);
     }
-    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasFutureEntry(M change, K key, boolean includeCurrent){
+    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<?>> boolean hasFutureEntry(M change, K key, boolean includeCurrent){
         return hasEntry(Global.TimeDirection.FORWARD,change,key,includeCurrent);
     }
-    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(M change, K key, boolean includeCurrent){
+    protected static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<?>> boolean hasEntry(M change, K key, boolean includeCurrent){
         return hasEntry(FORWARD,change,key,includeCurrent) || hasEntry(BACKWARD,change,key,includeCurrent);
     }
-    private static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<T>> boolean hasEntry(Global.TimeDirection direction, M change, final K key, boolean includeCurrent){
+    private static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I, T extends DateMutableEntity<?>> boolean hasEntry(Global.TimeDirection direction, M change, final K key, boolean includeCurrent){
         AtomicBoolean toReturn = new AtomicBoolean(false);
         MapTask<M,K,V,I,T> step = new MapTask<>(change) {
             @Override
@@ -530,7 +530,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     protected void cascadeInvalidate(M change, @Nullable final Map<K, Delta> changes){
         cascadeInvalidate(change,changes,pauseCacheChecks.get());
     }
-    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void cascadeInvalidate(M change, @Nullable final Map<K, Delta> changes, boolean isPaused){
+    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> void cascadeInvalidate(M change, @Nullable final Map<K, Delta> changes, boolean isPaused){
         final boolean bypass = changes == null;
         final Map<K, Delta> finalChanges;
         if (bypass){
@@ -576,7 +576,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     }
 
 
-    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> Map<K,V> buildMap(M change, Map<K,V> starting, @Nullable M original){
+    protected static <M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> Map<K,V> buildMap(M change, Map<K,V> starting, @Nullable M original){
         change.onBuildMap();
         if(original == null){
             original = change;
@@ -598,7 +598,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
 
 
 
-    public static abstract class MapTask<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
+    public static abstract class MapTask<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>>{
         private final M main;
         private final Map<K,V> map;
         public MapTask(M main){
@@ -710,7 +710,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
         public abstract void onMapGet(K key, V value);
         public abstract void onMapChange(Delta type, K key, V value);
     }
-    public static class ChangeContainer<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>>{
+    public static class ChangeContainer<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>>{
         private final BiConsumer<K,V> applyChange;
         private final Function<M,K> currentKey;
         private final Function<M,V> currentValue;
@@ -719,10 +719,10 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
             this.currentKey = currentKey;
             this.currentValue = currentValue;
         }
-        public static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> ChangeContainer<M,K,V,I,T> of(M change, BiConsumer<K,V> applyChange, K currentKey){
+        public static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> ChangeContainer<M,K,V,I,T> of(M change, BiConsumer<K,V> applyChange, K currentKey){
             return new ChangeContainer<>(applyChange, (m) ->{return currentKey;}, (m)-> {return change.get(currentKey);});
         }
-        public static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> ChangeContainer<M,K,V,I,T> of(M change, BiConsumer<K,V> applyChange, K currentKey, V currentValue){
+        public static <M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> ChangeContainer<M,K,V,I,T> of(M change, BiConsumer<K,V> applyChange, K currentKey, V currentValue){
             return new ChangeContainer<>(applyChange, (m) ->{return currentKey;}, (m)-> {return currentValue;});
         }
         public K getCurrentKey(M change){

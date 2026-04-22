@@ -9,10 +9,14 @@ import com.objects.culture.tenet.group.groups.EconomicGroups;
 import com.objects.culture.tenet.group.groups.EducationGroups;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
 import com.objects.culture.tenet.TenetReference;
+import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.MutableTenet;
 
+import java.security.PrivateKey;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
@@ -38,8 +42,8 @@ public abstract class Leadership extends MutableTenet {
         OTHER
     }
     @Override
-    public List<TenetGroup> compatibleParents() {
-        return List.of(
+    public Set<TenetGroup> compatibleParents() {
+        return Set.of(
             GOVERNMENT,
             GOVERNMENT_LEADERSHIP,
             GOVERNMENT_OFFICIAL,
@@ -142,8 +146,8 @@ public abstract class Leadership extends MutableTenet {
     public static class TermLimit extends Leadership {
         private int duration;
         private ChronoUnit durationUnit;
-        public TermLimit(TenetReference parent, PoliticalCompass entry, int duration, ChronoUnit durationUnit) {
-            super(parent, findGroup(parent,Type.REMOVAL), entry, "term_limit", "Term Limit", "The term limit for this office");
+        public TermLimit(TenetReference parent, int duration, ChronoUnit durationUnit) {
+            super(parent, findGroup(parent,Type.REMOVAL), buildCompass(duration,durationUnit), "term_limit", "Term Limit", "The term limit for this office");
             this.duration = duration;
             this.durationUnit = durationUnit;
         }
@@ -153,13 +157,20 @@ public abstract class Leadership extends MutableTenet {
         }
 
         @Override
-        public List<CultureCondition<?, ?, ?>> getConditionList() {
-            return List.of(
+        public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
+            return Set.of(
                     LeadershipConditions.buildTermLimit(this,duration,durationUnit)
             );
         }
-
-
+        private static final int STARTING = 40;
+        private static final int MAX_C_PUSH = -40;
+        private static final int MAX_D_PUSH = -40;
+        private static PoliticalCompass buildCompass(int duration, ChronoUnit durationUnit) {
+            final long years = duration * (durationUnit.getDuration().getSeconds() / ChronoUnit.YEARS.getDuration().getSeconds());
+            int axisC = (int) Math.round(MAX_C_PUSH + ((Math.abs(STARTING) + Math.abs(MAX_C_PUSH)) * (years / 100.0)));
+            int axisD = (int) Math.round(MAX_D_PUSH + ((Math.abs(STARTING) + Math.abs(MAX_D_PUSH)) * (years / 100.0))/2);
+            return new PoliticalCompass(0,0,axisC,axisD);
+        }
         @Override
         public void additionalSave(JsonObject data) {
             data.addProperty("duration", duration);
@@ -170,6 +181,59 @@ public abstract class Leadership extends MutableTenet {
         public void additionalLoad(JsonObject data) {
             duration = Integer.parseInt(data.get("duration").getAsString());
             durationUnit = ChronoUnit.valueOf(data.get("unit").getAsString());
+        }
+    }
+    public static class ExcludeGroup extends Leadership {
+        private InterestGroup group;
+        public ExcludeGroup(TenetReference parent, InterestGroup group) {
+            super(parent, findGroup(parent,Type.SELECTION), buildCompass(group), "exclude_group", "Exclude Group", "Members of this group may not hold leadership positions");
+            this.group = group;
+        }
+
+
+
+        @Override
+        public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
+            return Set.of(
+                LeadershipConditions.buildExclude(this,group)
+            );
+        }
+
+        private static final int MAX_B_PUSH = 100;
+        private static final int MAX_D_PUSH = 100;
+        private static PoliticalCompass buildCompass(InterestGroup group) {
+            double modifier = switch (group.getDimension()){
+                case Sex_At_Birth, Class_Caste,Religion -> {
+                    yield .9;
+                }
+                case Gender_Identity -> {
+                    yield .75;
+                }
+                case Race_Ethnicity,Culture -> {
+                    yield 1;
+                }
+                case Sexual_Orientation  -> {
+                    yield .7;
+                }
+                case Political_Ideology -> {
+                    yield .6;
+                }
+                case Lifestyle,Disability -> {
+                    yield .4;
+                }
+            };
+            int d = Math.toIntExact(Math.round(MAX_D_PUSH * modifier));
+            int b = Math.toIntExact(Math.round(MAX_B_PUSH * modifier));
+            return new PoliticalCompass(0,b,0,d);
+        }
+        @Override
+        public void additionalSave(JsonObject data) {
+            data.addProperty("group", group.getID());
+        }
+
+        @Override
+        public void additionalLoad(JsonObject data) {
+            group = TenetManager.InterestGroups.get(data.get("group").getAsString());
         }
     }
 }

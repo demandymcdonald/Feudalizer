@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class MultiCondition<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> {
+public abstract class MultiCondition<M extends TLMultiChange<M,K,V,I,T>, K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> {
     public final Optional<StateError> check(Delta change, M newChange, List<Pair<K,V>> newEntries,
                                             M curChange, List<Pair<K,V>> curEntries){
         //TODO think about listener/subclass stuff here

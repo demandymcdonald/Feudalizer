@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
-public class MiddlemanMap<M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> {
+public class MiddlemanMap<M extends TLMultiChange<M,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> {
     private class ChangeContainer {
         private final M loadedChange;
 
@@ -29,9 +29,10 @@ public class MiddlemanMap<M extends TLMultiChange<M,K,V,I,T>,K extends Identifia
         }
         public M write(){
             if(Global.getDate() != loadedChange.getStart()){
+
                 DMEReference<? extends T> t = loadedChange.getOwner();
                 M newChange = loadedChange.getEmptyChange(t,Global.getDate());
-                t.get().getTimeline().internalAddChange(newChange);
+                loadedChange.getTimeline().internalAddChange(newChange);
                 return newChange;
             } else{
                 return loadedChange;

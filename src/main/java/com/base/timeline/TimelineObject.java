@@ -227,7 +227,7 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
             return null;
         }
     }
-    public static <TC extends TLMultiChange<TC,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<T>> void iterateMap(
+    public static <TC extends TLMultiChange<TC,K,V,I,T>,K extends Identifiable<I>,V,I,T extends DateMutableEntity<?>> void iterateMap(
         TC change,
         TimeDirection direction,
         TLMultiChange.MapTask<TC,K,V,I,T> task,
@@ -270,7 +270,7 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
     }
 
 
-    public static <TC extends TimelineChange<T>,T extends DateMutableEntity<T>> TC getChangeStep(
+    public static <TC extends TimelineChange<T>,T extends DateMutableEntity<?>> TC getChangeStep(
             TC current,
             TimeDirection direction,
             boolean includeDeactivated,
@@ -304,7 +304,7 @@ public abstract class TimelineObject<T extends DateMutableEntity<T>>  {
         }
         return toReturn;
     }
-    private static <T extends DateMutableEntity<T>> Function<LocalDate,TimelineState<? extends T>> buildStateGetterChange(Timeline<? extends T> timeline, TimeDirection direction){
+    private static <T extends DateMutableEntity<?>> Function<LocalDate,TimelineState<? extends T>> buildStateGetterChange(Timeline<? extends T> timeline, TimeDirection direction){
         Function<LocalDate,TimelineState<? extends T>> get;
         if (direction == TimeDirection.FORWARD){
             get = timeline::getNextState;
