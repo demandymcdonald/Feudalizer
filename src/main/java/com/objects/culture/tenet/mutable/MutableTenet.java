@@ -11,6 +11,7 @@ import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.serialization.SuperclassSerializable;
 
@@ -66,6 +67,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         }
         return result;
     }
+    public abstract Set<TenetCondition<?,?>> getApplyConditions();
     public abstract Set<CultureCondition<?,?,?>> getChangeConditions();
     public abstract Set<TenetGroup> compatibleParents();;
     private static String buildID(TenetGroup group, String id){

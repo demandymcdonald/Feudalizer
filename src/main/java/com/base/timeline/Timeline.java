@@ -94,7 +94,7 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         if(!isDirty){
             isDirty = true;
             T owner = getOwner().get();
-            DMRegistry.getManager(owner.getClass()).addDirtyObject(owner);
+            .getManager(owner.getClass()).addDirtyObject(owner);
         }
     }
 

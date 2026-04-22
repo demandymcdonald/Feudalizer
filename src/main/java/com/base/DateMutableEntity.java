@@ -63,10 +63,10 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public final UUID getID() {
         return id;
     }
-    public LocalDate getCreated(){
+    public final LocalDate getCreated(){
         return timeline.getStart();
     };
-    public LocalDate getEnded(){
+    public final LocalDate getEnded(){
         return timeline.getEnd();
     }
     public final DMEReference<T> getReference(){

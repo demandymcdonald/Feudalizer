@@ -62,16 +62,12 @@ public class DMRegistry {
     }
     public static void onDateChange(){
         final LoadingManager lm = Global.getLoadingManager();
-        List<Runnable> r = new ArrayList<>();
+        List<Runnable> runs = new ArrayList<>();
         //To my future self: they are separate to reflect that it's two different stages of loading :)
         for (AbstractMutableManager<?,?> m : MANAGERS) {
             final Runnable r = m::onDateChange;
+            runs.add(r);
         }
-
-            lm.forceComplete();//Only added for the logging and since these actions are chained together.
-            lm.newStage("Linking Entities",getTotalRegistered(),r2,true);
-        };
-        lm.newStage("Updating Entities",getTotalRegistered(),r,true);
     }
     public static int getTotalRegistered(){
         int total = 0;

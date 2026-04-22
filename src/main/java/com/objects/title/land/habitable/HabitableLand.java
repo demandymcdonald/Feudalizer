@@ -2,10 +2,12 @@ package com.objects.title.land.habitable;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.multi.type.ChangeType;
 import com.base.timeline.change.multi.type.WipeType;
 import com.base.timeline.change.multi.wrapper.TLSet;
 import com.display.geography.GeometryType;
+import com.objects.CauseOfEnd;
 import com.objects.culture.object.PassiveCultureObject;
 import com.objects.culture.object.compass.CompositeCompass;
 import com.objects.shared.IDemographicDriven;
@@ -43,6 +45,21 @@ public abstract class HabitableLand<R extends HabitableLand<R>> extends Abstract
     }
     public final void internalSetChanged(ChangeType type, Node node, Consumer<Node> consumer){
         nodes.setChanged(true,type,node,consumer);
+    }
+
+    @Override
+    public TimelineChange<R> getBirthChange(DMEReference<R> dme, LocalDate date) {
+        return null;
+    }
+
+    @Override
+    public TimelineChange<R> getDeathChange(DMEReference<R> dme, LocalDate date, CauseOfEnd<? super R> cOd) {
+        return null;
+    }
+
+    @Override
+    public CauseOfEnd<? super R> defaultDeathCause() {
+        return null;
     }
 
     @Override

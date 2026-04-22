@@ -36,6 +36,17 @@ public abstract class TenetCondition<T extends DynamicTenet<T>,D extends DateMut
             }
         };
     }
+    public static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetCondition<T,D> precluding(TenetReference thisTenet, TenetReference precludes){
+        return new TenetCondition<T,D>(thisTenet){
+            @Override
+            protected Optional<TenetError<T,D>> doCheck(TenetReference tenet, T parentTenet, DMEReference<? extends D> decider) {
+                if(parentTenet.hasActiveOpinion(precludes)){
+                    return Optional.of(precludes(parentTenet.getTenetReference(),precludes,thisTenet));
+                }
+                return Optional.empty();
+            }
+        };
+    }
     public static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetCondition<T,D> hasAcceptance(TenetReference tenet, Acceptance threshold, boolean includeInfluencer){
         return new TenetCondition<T,D>(tenet){
             @Override
@@ -43,11 +54,17 @@ public abstract class TenetCondition<T extends DynamicTenet<T>,D extends DateMut
                 if(parentTenet.getAcceptance(tenet,includeInfluencer).greaterThan(threshold)){
                     return Optional.empty();
                 }
-                return Optional.of(missing(parentTenet.getTenetReference(),tenet));
+                return Optional.of(acceptance(parentTenet.getTenetReference(),threshold,tenet));
             }
         };
     }
     protected static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetError<T,D> missing(TenetReference misser, TenetReference missing){
         return TenetError.generic("dt_missing_pre_req",new ComplexReference("{} is missing Tenet {}",misser,missing));
+    }
+    protected static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetError<T,D> acceptance(TenetReference parent, Acceptance threshold, TenetReference child){
+        return TenetError.generic("dt_missing_acceptance",new ComplexReference("{} does not accept {} by at least {}",parent,child,threshold));
+    }
+    protected static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetError<T,D> precludes(TenetReference parent, TenetReference precluder, TenetReference child){
+        return TenetError.generic("dt_has_conflicting",new ComplexReference("{} has {} which conflicts with {}",parent,precluder,child));
     }
 }
