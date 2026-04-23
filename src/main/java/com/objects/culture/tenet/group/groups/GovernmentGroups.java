@@ -245,7 +245,29 @@ public class GovernmentGroups {
             .setParent(IDENTITY_GROUPS)
             .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
             .build();
-
+    public static final TenetGroup EDUCATION_LEVEL = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "education_level", "Education Level Rights", "")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .build();
+    public static final TenetGroup UNEDUCATED = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "uneducated", "Uneducated Rights", "")
+            .setParent(EDUCATION_LEVEL)
+            .addDependent(MARRIAGE_RIGHTS, CITIZENSHIP, LABOR_RIGHTS, CIVIL_LIBERTIES)
+            .build();
+    public static final TenetGroup BASIC_EDUCATION = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "basic_education", "Basic Education Rights", "")
+            .setParent(EDUCATION_LEVEL)
+            .addDependent(MARRIAGE_RIGHTS, CITIZENSHIP, LABOR_RIGHTS, CIVIL_LIBERTIES)
+            .build();
+    public static final TenetGroup TRADES_EDUCATION = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "trades", "Trades Education Rights", "")
+            .setParent(EDUCATION_LEVEL)
+            .addDependent(MARRIAGE_RIGHTS, CITIZENSHIP, LABOR_RIGHTS, CIVIL_LIBERTIES)
+            .build();
+    public static final TenetGroup COLLEGE_EDUCATED = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "college_educated", "College Educated Rights", "")
+            .setParent(EDUCATION_LEVEL)
+            .addDependent(MARRIAGE_RIGHTS, CITIZENSHIP, LABOR_RIGHTS, CIVIL_LIBERTIES)
+            .build();
+    public static final TenetGroup HYPER_COLLEGE_EDUCATED = new TenetGroup.Builder(TGType.CASTE_SYSTEM, Level.NORMAL, "graduate_college_educated", "Post-Graduate College Educated Rights", "")
+            .setParent(EDUCATION_LEVEL)
+            .addDependent(MARRIAGE_RIGHTS, CITIZENSHIP, LABOR_RIGHTS, CIVIL_LIBERTIES)
+            .build();
     public static final TenetGroup FOREIGN_POLICY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "foreign_policy", "Foreign Policy", "")
             .setParent(GOVERNMENT_SYSTEM)
             .build();

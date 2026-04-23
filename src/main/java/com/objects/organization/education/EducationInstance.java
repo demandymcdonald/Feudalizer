@@ -1,9 +1,7 @@
 package com.objects.organization.education;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.utilities.IDisplayable;
@@ -45,7 +43,9 @@ public class EducationInstance implements IDisplayable, StringIdentifiable {
     public String getDescription() {
         return lore;
     }
-
+    public Education getType(){
+        return education;
+    }
     public JsonElement toJson(){
         StringBuilder builder = new StringBuilder();
         builder.append(CompressString.compress(id)).append("::");

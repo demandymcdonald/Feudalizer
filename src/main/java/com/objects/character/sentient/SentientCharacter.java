@@ -44,9 +44,7 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     private DMEReference<Religion> religion;
     private TLSet<EducationInstance> education;
     private final Map<DMEReference<Family>, FamilyRelationship> linked_families = new HashMap<>();
-    private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
-
-
+    private final Set<DMEReference<? extends Title<?>>> linked_titles = new HashSet<>();
     public enum Orientation {
         Heterosexual("Heterosexual"),
         Homosexual("Homosexual"),
@@ -71,7 +69,9 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
         super(dme);
     }
 
-
+    public final void addEducation(EducationInstance education){
+        this.education.add(education);
+    }
     public final void setFirstName(String firstName) {
         getTimeline().addChange(new CharacterChanges.SetForename<>(getReference(), Global.getDate(),firstName));
     }
@@ -121,6 +121,9 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void internalSetGovernment(DMEReference<? extends GoverningEntity<?>> government){
         this.government = government;
     }
+    public final void internalSetEducation(TLSet<EducationInstance> education){
+        this.education = education;
+    }
     @Override
     public final void internalSetCulture(DMEReference<Culture> culture) {
         this.culture = culture;
@@ -158,6 +161,12 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     }
     public final SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;
+    }
+    public final TLSet<EducationInstance> getEducation(){
+        return education;
+    }
+    public final TLMap<SimpleUUID, Opinion> getOpinion(){
+        return opinions;
     }
     public final Map<DMEReference<Family>,FamilyRelationship> getFamilies(){
         return new HashMap<>(linked_families);

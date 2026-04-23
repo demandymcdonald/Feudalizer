@@ -202,7 +202,7 @@ public class SocietyGroups {
             .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, MARRIAGE_RIGHTS, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
             .addDependent(GovernmentGroups.OTHER, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
             .build();
-        public static final TenetGroup IDENTITY_GROUPS = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "identity_groups", "Identity Group Norms", "")
+        public static final TenetGroup IDENTITY_GROUPS = new TenetGroup.Builder(TGType.IDEOLOGY_SORT, Level.SUBCATEGORY, "identity_groups", "Identity Group Norms", "")
                 .setParent(SOCIAL_ATTITUDE)
                 .build();
         public static final TenetGroup RACIAL_ETHNIC = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "racial", "Racial and Ethnic Norms", "")
@@ -231,7 +231,34 @@ public class SocietyGroups {
                 .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RELIGIOUS_SOFT_CULTURE_INTERVENTION)
                 .addDependent(GovernmentGroups.POLITICAL, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
                 .build();
-
+        public static final TenetGroup EDUCATION_LEVEL = new TenetGroup.Builder(TGType.IDEOLOGY_SORT, Level.SUBCATEGORY, "education_level", "Education Level Rights", "")
+                .setParent(SOCIAL_ATTITUDE)
+                .build();
+        public static final TenetGroup UNEDUCATED = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "uneducated", "Uneducated Rights", "")
+                .setParent(EDUCATION_LEVEL)
+                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                .addDependent(GovernmentGroups.UNEDUCATED, LABOR_RIGHTS, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                .build();
+        public static final TenetGroup BASIC_EDUCATION = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "basic_education", "Basic Education Rights", "")
+                .setParent(EDUCATION_LEVEL)
+                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                .addDependent(GovernmentGroups.BASIC_EDUCATION, LABOR_RIGHTS, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                .build();
+        public static final TenetGroup TRADES_EDUCATION = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "trades", "Trades Education Rights", "")
+                .setParent(EDUCATION_LEVEL)
+                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                .addDependent(GovernmentGroups.TRADES_EDUCATION, LABOR_RIGHTS, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                .build();
+        public static final TenetGroup COLLEGE_EDUCATED = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "college_educated", "College Educated Rights", "")
+                .setParent(EDUCATION_LEVEL)
+                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                .addDependent(GovernmentGroups.COLLEGE_EDUCATED, LABOR_RIGHTS, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                .build();
+        public static final TenetGroup HYPER_COLLEGE_EDUCATED = new TenetGroup.Builder(TGType.SOCIETY_ATTITUDE, Level.NORMAL, "graduate_college_educated", "Post-Graduate College Educated Rights", "")
+                .setParent(EDUCATION_LEVEL)
+                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                .addDependent(GovernmentGroups.HYPER_COLLEGE_EDUCATED, LABOR_RIGHTS, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                .build();
     public static void init() {
 
     }
