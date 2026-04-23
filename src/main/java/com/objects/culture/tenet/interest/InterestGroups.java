@@ -348,15 +348,11 @@ public class InterestGroups {
             return Class_Caste;
         }
 
-        public static class Elite extends ClassCaste {
-            public Elite() {
-                super("elite","Elites","");
-            }
+        public static final InterestGroup ELITE = new ClassCaste("elite","Elites","") {
             @Override
             public Map<IGPointer, BoundInt> getRelations() {
-                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5)
-                new IGPointer.Single(,-10),
-                );
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5),
+                new IGPointer.Single(WORKING),BoundInts.Percent(true,-10));
             }
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -372,15 +368,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.ELITE_CLASS;
             }
-        }
-        public static class Professional extends ClassCaste {
-            public Professional() {
-                super("elite","Elites","");
-            }
+        };
+        public static final InterestGroup PROFESSIONAL = new ClassCaste("professional","Professional","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -392,15 +390,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
-        }
-        public static class Academic extends ClassCaste {
-            public Academic() {
-                super("academic","Academics","");
-            }
+        };
+        public static final InterestGroup ACADEMIC = new ClassCaste("academic","Academics","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -412,15 +412,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
-        }
-        public static class Artist extends ClassCaste {
-            public Artist() {
-                super("artist","Artist","");
-            }
+        };
+        public static final InterestGroup ARTIST = new ClassCaste("artist","Artist","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -432,15 +434,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.ARTIST_CLASS;
             }
-        }
-        public static class Officer extends ClassCaste {
-            public Officer() {
-                super("officer","Officers","");
-            }
+        };
+        public static final InterestGroup OFFICER = new ClassCaste("officer","Officers","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -452,15 +456,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.OFFICER_CLASS;
             }
-        }
-        public static class Business extends ClassCaste {
-            public Business() {
-                super("business", "Business", "");
-            }
+        };
+        public static final InterestGroup BUSINESS = new ClassCaste("business","Business","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -472,35 +478,39 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.BUSINESS_CLASS;
             }
-        }
-            public static class Middle extends ClassCaste {
-                public Middle() {
-                    super("middle","Middle","");
-                }
-
-                @Override
-                public <C extends SentientCharacter<C>> boolean isMember(C character) {
-                    return false;
-                }
-
-                @Override
-                public TenetGroup getRightsGroup() {
-                    return GovernmentGroups.MIDDLE_CLASS;
-                }
-
-                @Override
-                public TenetGroup getSocialStatusGroup() {
-                    return SocietyGroups.MIDDLE_CLASS;
-                }
-            }
-        public static class Soldier extends ClassCaste {
-            public Soldier() {
-                super("soldier","Soldiers","");
-            }
+        };
+        public static final InterestGroup MIDDLE = new ClassCaste("middle","Middle","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.MIDDLE_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.MIDDLE_CLASS;
+            }
+        };
+        public static final InterestGroup SOLDIER = new ClassCaste("soldier","Soldier","") {
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -512,15 +522,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
-        }
-        public static class Working extends ClassCaste {
-            public Working() {
-                super("working","Working","");
-            }
+        };
+        public static final InterestGroup WORKING = new ClassCaste("working","Working","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -532,15 +544,18 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
-        }
-        public static class Disenfranchised extends ClassCaste {
-            public Disenfranchised() {
-                super("disenfranchised","Disenfranchised","");
-            }
+        };
+        public static final InterestGroup DISENFRANCHISED = new ClassCaste("disenfranchised","Disenfranchised","") {
+
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -552,15 +567,17 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.DISENFRANCHISED;
             }
-        }
-        public static class Slave extends ClassCaste {
-            public Slave() {
-                super("slave","Slaves","");
-            }
+        };
+        public static final InterestGroup Slave = new ClassCaste("slave","Slave","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -572,15 +589,16 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.SLAVE;
             }
-        }
-        public static class Outsider extends ClassCaste {
-            public Outsider() {
-                super("outsider","Outsiders","");
-            }
-
+        };
+        public static final InterestGroup Outsider = new ClassCaste("outsider","Outsider","") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;
+            }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of();
             }
 
             @Override
@@ -591,6 +609,6 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.OUTSIDER;
             }
-        }
+        };
     }
 }
