@@ -7,7 +7,7 @@ import com.base.timeline.state.TimelineState;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.multi.TimelineMapChange;
 import com.base.condition.Condition;
-import com.base.condition.IConditionError;
+import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -140,7 +140,7 @@ public class CharacterMapChanges {
         }
 
         @Override
-        protected void nullifyConditions(List<Condition<IConditionError.Nullify, ? super HumanCharacter>> list) {
+        protected void nullifyConditions(List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> list) {
 
         }
 

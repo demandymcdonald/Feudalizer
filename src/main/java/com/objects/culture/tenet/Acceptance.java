@@ -89,20 +89,6 @@ public enum Acceptance implements IDisplayable {
         int ceil = Math.abs(next) -1;
         return ceil - floor;
     }
-    public boolean greaterThan(Acceptance a){
-        if (floor >= 0) {
-            return floor >= a.floor;
-        } else {
-            return floor <= a.floor;
-        }
-    }
-    public boolean lessThan(Acceptance a){
-        if (floor >= 0) {
-            return floor <= a.floor;
-        } else {
-            return floor >= a.floor;
-        }
-    }
     public static Acceptance[] getAll(){
         return floorMap.values().toArray(new Acceptance[0]);
     }

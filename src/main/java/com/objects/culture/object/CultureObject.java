@@ -131,12 +131,6 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
             opinions.put(tenet,new TenetInstance<>(tenet,this.getReference(),d));
         }
     }
-    default boolean hasOpinion(TenetReference reference){
-        return getOpinions().containsKey(reference);
-    }
-    default boolean hasActiveOpinion(TenetReference reference){
-        return getOpinions().containsKey(reference) && getOpinions().get(reference).isActive();
-    }
     default boolean isInfluencer(COReference<?> ref){
         return getInfluencers().containsKey(ref);
     }

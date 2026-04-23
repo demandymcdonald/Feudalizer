@@ -16,9 +16,9 @@ import com.objects.character.sentient.HumanCharacter;
 import java.time.LocalDate;
 import java.util.List;
 
-public record  Objective<T extends DateMutableEntity<?>> (DMEReference<T> subject, Global.TimeDirection start, TimelineChange<? super T> change, SandboxFunction<T>... toCheck) {
+public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subject, Global.TimeDirection start, TimelineChange<? super T> change, SandboxFunction<T>... toCheck) {
     @SafeVarargs
-    public static <T extends DateMutableEntity<?>> Objective<?> build(DMEReference<? extends T> subject, Global.TimeDirection direction, TimelineChange<? super T> change, SandboxFunction<T>... toCheck){
+    public static <T extends DateMutableEntity<T>> Objective<?> build(DMEReference<? extends T> subject, Global.TimeDirection direction, TimelineChange<? super T> change, SandboxFunction<T>... toCheck){
        return new Objective<>((DMEReference<T>) subject, direction,change,toCheck);
     }
     @SafeVarargs

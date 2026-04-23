@@ -5,7 +5,7 @@ import com.base.timeline.change.TimelineChange;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
 import com.base.condition.Condition;
-import com.base.condition.IConditionError;
+import com.base.condition.ConditionResult;
 import com.base.timeline.error.StateError;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
@@ -54,8 +54,8 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
 
         @Override
-        protected List<Condition<IConditionError.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
-            return List.of((Condition<IConditionError.Nullify,? super HumanCharacter>) NEVER_NULLIFY);
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+            return List.of((Condition<ConditionResult.Nullify,? super HumanCharacter>) NEVER_NULLIFY);
         }
         @Override
         protected String getText() {
@@ -114,7 +114,7 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
 
         @Override
-        protected List<Condition<IConditionError.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -180,7 +180,7 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
 
         @Override
-        protected List<Condition<IConditionError.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -244,7 +244,7 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
 
         @Override
-        protected List<Condition<IConditionError.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 
@@ -308,7 +308,7 @@ public abstract class CharacterSingleChange extends TimelineSingleChange<HumanCh
         }
 
         @Override
-        protected List<Condition<IConditionError.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
+        protected List<Condition<ConditionResult.Nullify, ? super HumanCharacter>> buildNullifyConditions() {
             return List.of();
         }
 

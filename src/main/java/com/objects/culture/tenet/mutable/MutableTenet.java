@@ -1,9 +1,6 @@
 package com.objects.culture.tenet.mutable;
 
-import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
@@ -13,9 +10,7 @@ import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.serialization.SuperclassSerializable;
 
 import java.util.*;
@@ -62,6 +57,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     @Override
     public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
         Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> result = HashMultimap.create();
+        List<CultureCondition<?, ?, ?>> conditions = new ArrayList<>();
         for (CultureCondition<?, ?, ?> condition : getConditions().values()) {
             for (CultureCondition.Key key : condition.getKeys()) {
                 result.put(key,condition);
@@ -69,14 +65,11 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         }
         return result;
     }
-    public abstract Set<TenetCondition<?,?>> getApplyConditions();
-    public abstract Set<CultureCondition<?,?,?>> getChangeConditions();
-    public abstract Set<TenetGroup> compatibleParents();
-    public abstract Map<InterestGroup,Integer> getInterestGroupOpinionModifiers();
+    public abstract List<CultureCondition<?,?,?>> getConditionList();
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }
-
+    public abstract List<TenetGroup> compatibleParents();
     @Override
     public TenetReference getTenetReference() {
         return reference;
@@ -111,7 +104,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         return id;
     }
     @Override
-    public final void mainSave(JsonObject object) {
+    public void mainSave(JsonObject object) {
         object.addProperty("uuid",id.toString());
         object.addProperty("displayID", displayID);
         object.addProperty("name", name);
@@ -122,7 +115,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     }
 
     @Override
-    public DMEReference<Culture> getCulture() {
+    public Culture getCulture() {
         return parent.get().getCulture();
     }
 
@@ -130,82 +123,5 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     public void mainLoad(JsonObject object) {
 
     }
-    public static class Builder{
-        private final TenetReference reference;
-        private final TenetGroup group;
-        private final PoliticalCompass politicalCompass;
-        private final String displayID;
-        private final String name;
-        private final String description;
-        private final Set<TenetCondition<?,?>> applyConditions = new HashSet<>();
-        private final Set<CultureCondition<?,?,?>> changeConditions = new HashSet<>();
-        private final Set<TenetGroup> compatibleGroups = new HashSet<>();
-        private final Map<InterestGroup,Integer> igOpinionMod = new HashMap<>();
 
-        public Builder(TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-            this.reference = parent;
-            this.group = group;
-            this.politicalCompass = entry;
-            this.displayID = buildID(group, id);
-            this.name = name;
-            this.description = description;
-        }
-
-        public Builder addApplyConditions(TenetCondition<?,?>... applyConditions) {
-            this.applyConditions.addAll(Arrays.stream(applyConditions).toList());
-            return this;
-        }
-        public Builder addChangeConditions(CultureCondition<?,?,?>... changeConditions) {
-            this.changeConditions.addAll(Arrays.stream(changeConditions).toList());
-            return this;
-        }
-        public Builder addInterestGroups(TenetGroup... groups) {
-            this.compatibleGroups.addAll(Arrays.stream(groups).toList());
-            return this;
-        }
-        public Builder addIGGroupModifier(int i, InterestGroup... groups) {
-            for (InterestGroup group : groups) {
-                if(igOpinionMod.containsKey(group)) {
-                    igOpinionMod.computeIfPresent(group,(key, value) -> value + i);
-                } else {
-                    igOpinionMod.put(group, i);
-                }
-            }
-            return this;
-        }
-        public MutableTenet build() {
-            MutableTenet mt = new MutableTenet(reference,group,politicalCompass,displayID,name,description) {
-                @Override
-                public Set<TenetCondition<?, ?>> getApplyConditions() {
-                    return ImmutableSet.copyOf(applyConditions);
-                }
-
-                @Override
-                public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
-                    return ImmutableSet.copyOf(changeConditions);
-                }
-
-                @Override
-                public Set<TenetGroup> compatibleParents() {
-                    return ImmutableSet.copyOf(compatibleGroups);
-                }
-
-                @Override
-                public Map<InterestGroup, Integer> getInterestGroupOpinionModifiers() {
-                    return ImmutableMap.copyOf(igOpinionMod);
-                }
-
-                @Override
-                public void additionalSave(JsonObject data) {
-
-                }
-
-                @Override
-                public void additionalLoad(JsonObject data) {
-
-                }
-            };
-            return mt;
-        }
-    }
 }

@@ -11,7 +11,6 @@ import com.base.timeline.sandbox.core.Sandbox;
 import com.base.timeline.state.TimelineState;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.succession.SuccessionPlanner;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -20,12 +19,12 @@ public class SandboxFunctions {
 
     public static class canNullify<T extends DateMutableEntity<T>> extends SandboxFunction<T> {
         @Override
-        public void onComplete(Sandbox<? extends T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<? extends T> entity, TimelineChange<? super T> newChange) {
+        public void onComplete(Sandbox<T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<T> entity, TimelineChange<? super T> newChange) {
 
         }
 
         @Override
-        public SandboxCode onCycle(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, List<Condition.ShouldRun> shouldRun, TimelineChange<?> existingChange) {
+        public SandboxCode onCycle(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, List<Condition.ShouldRun> shouldRun) {
             if(newChange.canNullify(existingChange,shouldRun)){
                 newChange.nullify(entity,state,existingChange);
             };
@@ -33,13 +32,13 @@ public class SandboxFunctions {
         }
 
         @Override
-        protected void onStep(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
 
         }
     }
     public static class CanAddChange<T extends DateMutableEntity<T>> extends SandboxFunction<T> {
         @Override
-        public void onComplete(@MonotonicNonNull Sandbox<? extends T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<? extends T> entity, TimelineChange<? super T> newChange) {
+        public void onComplete(Sandbox<T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<T> entity, TimelineChange<? super T> newChange) {
             final Timeline<T> timeline = sandbox.getSubject().get().getTimeline();
             final TimelineChange<? super T> change = sandbox.getObjective().change();
             final TimelineState<T> state = timeline.getStateAtExact(change.getStart(),true);
@@ -57,7 +56,7 @@ public class SandboxFunctions {
         }
 
         @Override
-        public SandboxCode onCycle(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, List<Condition.ShouldRun> shouldRun, TimelineChange<?> existingChange) {
+        public SandboxCode onCycle(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, List<Condition.ShouldRun> shouldRun) {
             List<StateError> errors = newChange.doesConflict(existingChange,shouldRun);
             if (errors.isEmpty()) {
                 return SandboxCode.CONTINUE;
@@ -66,7 +65,7 @@ public class SandboxFunctions {
         }
 
         @Override
-        protected void onStep(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
             if (isFirstCycle) {
                 sandbox.buildDirtyMap();
             }
@@ -81,7 +80,7 @@ public class SandboxFunctions {
 
 
         @Override
-        public SandboxCode onCycle(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, List<Condition.ShouldRun> shouldRun, TimelineChange<?> existingChange) {
+        public SandboxCode onCycle(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, TimelineChange<? super T> existingChange, List<Condition.ShouldRun> shouldRun) {
             List<StateError> errors = newChange.canBeDeactivated(state,isSubPart,shouldRun);
             if (errors.isEmpty()) {
                 return SandboxCode.CONTINUE;
@@ -90,12 +89,12 @@ public class SandboxFunctions {
         }
 
         @Override
-        protected void onStep(Sandbox<? extends T> sandbox, DMEReference<? extends T> entity, TimelineState<? extends T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<T> sandbox, DMEReference<T> entity, TimelineState<T> state, TimelineChange<? super T> newChange, boolean isFirstCycle) {
 
         }
 
         @Override
-        public void onComplete(Sandbox<? extends T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<? extends T> entity, TimelineChange<? super T> newChange) {
+        public void onComplete(Sandbox<T> sandbox, LocalDate endDate, SandboxCode code, DMEReference<T> entity, TimelineChange<? super T> newChange) {
             switch (code){
                 case END_DISCARD,CRITICAL_ERROR -> {
                     sandbox.getWorkingDirty().clear();
@@ -111,7 +110,7 @@ public class SandboxFunctions {
     }
     public static class SuccessionPlanning extends SandboxFunction<HumanCharacter>{
         @Override
-        public void onComplete(@MonotonicNonNull Sandbox<? extends HumanCharacter> sandbox, LocalDate endDate, SandboxCode code, DMEReference<? extends HumanCharacter> entity, TimelineChange<? super HumanCharacter> newChange) {
+        public void onComplete(Sandbox<HumanCharacter> sandbox, LocalDate endDate, SandboxCode code, DMEReference<HumanCharacter> entity, TimelineChange<? super HumanCharacter> newChange) {
             final Timeline<HumanCharacter> timeline = sandbox.getSubject().get().getTimeline();
             final TimelineChange<? super HumanCharacter> change = sandbox.getObjective().change();
             final TimelineState<HumanCharacter> state = timeline.getStateAtExact(change.getStart(),true);
@@ -127,14 +126,14 @@ public class SandboxFunctions {
         }
 
         @Override
-        public SandboxCode onCycle(Sandbox<? extends HumanCharacter> sandbox, @MonotonicNonNull DMEReference<? extends HumanCharacter> entity, TimelineState<? extends HumanCharacter> state, TimelineChange<? super HumanCharacter> newChange, List<Condition.ShouldRun> shouldRun, TimelineChange<?> existingChange) {
+        public SandboxCode onCycle(Sandbox<HumanCharacter> sandbox, DMEReference<HumanCharacter> entity, TimelineState<HumanCharacter> state, TimelineChange<? super HumanCharacter> newChange, TimelineChange<? super HumanCharacter> existingChange, List<Condition.ShouldRun> shouldRun) {
             final HumanCharacter character = entity.get();
             final LocalDate endDate = character.getEnded();
             return SuccessionPlanner.run(sandbox,character,endDate);
         }
 
         @Override
-        protected void onStep(Sandbox<? extends HumanCharacter> sandbox, DMEReference<? extends HumanCharacter> entity, TimelineState<? extends HumanCharacter> state, TimelineChange<? super HumanCharacter> newChange, boolean isFirstCycle) {
+        protected void onStep(Sandbox<HumanCharacter> sandbox, DMEReference<HumanCharacter> entity, TimelineState<HumanCharacter> state, TimelineChange<? super HumanCharacter> newChange, boolean isFirstCycle) {
 
         }
 

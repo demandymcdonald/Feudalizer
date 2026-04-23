@@ -226,20 +226,8 @@ public class TenetManager {
         }
     }
     public static class InterestGroups{
-        private static final Map<String, InterestGroup> groups = new HashMap<>();
-        private static final Multimap<InterestGroup.Dimension,InterestGroup> dimensions = HashMultimap.create();
-        private static final Graph<InterestGroup, DefaultEdge> graph = new DirectedPseudograph<>(DefaultEdge.class);
-
-        public static void register(InterestGroup group){
-            groups.put(group.getID(), group);
-            dimensions.put(group.getDimension(), group);
-        }
-        public static Set<InterestGroup> getByDimension(InterestGroup.Dimension dimension){
-            return new HashSet<>(dimensions.get(dimension));
-        }
-        public static InterestGroup get(String id){
-            return groups.get(id);
-        }
+        private Map<String, InterestGroup> groups = new HashMap<>();
+        Graph<InterestGroup, DefaultEdge> graph = new DirectedPseudograph<>(DefaultEdge.class);
     }
     public static abstract class TenetFactory<T extends MutableTenet> {
         public final T rebuild(JsonObject object) {
