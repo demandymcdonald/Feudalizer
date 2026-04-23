@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.dynamic.government;
+package com.objects.organization.government;
 
 import com.Global;
 import com.base.DateMutableEntity;
@@ -16,7 +16,7 @@ public interface IGoverned<T extends DateMutableEntity<T> & IGoverned<T>> extend
     default void onLink(){
         DMEReference<? extends GoverningEntity<?>> government = getGovernment();
         if(government != null){
-            government.get().addActiveFollower((ICultureObject) getReference().get());
+            government.get().addMember((ICultureObject) getReference().get());
         }
     }
 }

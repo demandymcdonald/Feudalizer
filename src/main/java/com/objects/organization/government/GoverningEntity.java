@@ -1,10 +1,9 @@
-package com.objects.culture.tenet.dynamic.government;
+package com.objects.organization.government;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
-import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -16,13 +15,10 @@ public abstract class GoverningEntity<T extends GoverningEntity<T>> extends Dyna
     public GoverningEntity(LocalDate created, LocalDate ended,String name, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(GovernmentGroups.GOVERNMENT,name,created, ended, foundingCulture,initialState);
     }
-
-    public GoverningEntity(TenetGroup group, DMEReference<T> dme) {
+    public GoverningEntity(DMEReference<T> dme) {
         super(GovernmentGroups.GOVERNMENT, dme);
     }
-
     public GoverningEntity(String name, UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(GovernmentGroups.GOVERNMENT, name, id, created, ended, foundingCulture, initialState);
     }
-
 }

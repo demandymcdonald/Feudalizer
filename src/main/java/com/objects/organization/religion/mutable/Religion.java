@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.mutable.tenets.religion;
+package com.objects.organization.religion.mutable;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;

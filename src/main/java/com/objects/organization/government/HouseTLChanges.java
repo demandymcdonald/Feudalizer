@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.dynamic.government;
+package com.objects.organization.government;
 
 import com.base.DMRegistry;
 import com.base.ObjectType;

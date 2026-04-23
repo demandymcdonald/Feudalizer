@@ -1,13 +1,10 @@
 package com.objects.culture.tenet.dynamic;
 
-import com.Global;
-import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.change.display.DisplayContainer;
 import com.base.timeline.change.display.ITLDisplayable;
-import com.base.timeline.change.multi.MiddlemanMap;
 import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
 import com.google.common.collect.HashMultimap;
@@ -23,7 +20,6 @@ import com.objects.culture.object.CultureObjectContainer;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
-import com.objects.culture.tenet.dynamic.change.Boundary;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.Acceptance;
@@ -46,7 +42,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     private final CultureObjectContainer<T> container;
     private DMEReference<Culture> foundingCulture;
     private final DisplayContainer<T> displayContainer;
-    private final Multimap<Type, ICultureObject> followers = HashMultimap.create();
+    private final Multimap<Type, ICultureObject> members = HashMultimap.create();
     public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
         this.tenetGroup = group;
@@ -143,10 +139,10 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
     @Override
     public void doDateChange() {
-        followers.clear();
+        members.clear();
     }
-    public void addActiveFollower(ICultureObject follower){
-        followers.put(follower.getType(), follower);
+    public void addMember(ICultureObject follower){
+        members.put(follower.getType(), follower);
     }
 //Literally just to clean up override menu
 

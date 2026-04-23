@@ -25,6 +25,7 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable 
         Political_Ideology("ideology:"),
         Lifestyle("lifestyle:"),
         Culture("culture:"),
+        Education("education:"),
         Disability("disability:"),
         ;
         private final String prefix;

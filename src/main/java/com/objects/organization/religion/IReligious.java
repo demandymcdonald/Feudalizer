@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.dynamic.religion;
+package com.objects.organization.religion;
 
 import com.Global;
 import com.base.DateMutableEntity;
@@ -16,7 +16,7 @@ public interface IReligious<T extends DateMutableEntity<T> & IReligious<T>> exte
     default void onLink(){
         DMEReference<Religion> religion = getReligion();
         if(religion != null){
-            religion.get().addActiveFollower((ICultureObject) getReference().get());
+            religion.get().addMember((ICultureObject) getReference().get());
         }
     }
 }

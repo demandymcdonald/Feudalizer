@@ -10,11 +10,10 @@ import com.base.timeline.error.StateError;
 import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
-import com.objects.character.LivingCreature;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.culture.tenet.dynamic.government.IGoverned;
+import com.objects.organization.government.IGoverned;
 import com.objects.culture.object.ICultureObject;
-import com.objects.culture.tenet.dynamic.government.GoverningEntity;
+import com.objects.organization.government.GoverningEntity;
 import com.objects.title.change.TitleSingleChange;
 import com.objects.title.condition.CanHoldCondition;
 import com.objects.title.succession.rules.SuccessionEntry;
@@ -139,18 +138,18 @@ public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> imp
         return offspring;
     }
 
-    public static <T extends Title<T>> Optional<StateError<T>> canHold(DMEReference<T> t, DMEReference<? extends SentientCharacter<?>> creature, LocalDate date, List<Condition.ShouldRun> isSameState){
-        for (CanHoldCondition<? super T> condition : t.get().getCanHoldConditions()){
-            Optional<StateError<T>> error = condition.check(t, creature, date,isSameState);
+    public static <T extends Title<T>> Optional<StateError> canHold(DMEReference<T> title, DMEReference<? extends SentientCharacter<?>> creature, LocalDate date, List<Condition.ShouldRun> isSameState){
+        for (CanHoldCondition<? super T> condition : title.get().getCanHoldConditions()){
+            Optional<StateError> error = condition.check(title, creature, date,isSameState);
             if(error.isPresent()){
                 return error;
             }
         }
         return Optional.empty();
     }
-    public static <T extends Title<T>> Optional<StateError<T>> canInherit(DMEReference<T> t, DMEReference<? extends SentientCharacter<?>> creature, LocalDate date, List<Condition.ShouldRun> isSameState){
-        for (CanHoldCondition<? super T> condition : t.get().getCanInheritConditions()){
-            Optional<StateError<T>> error = condition.check(t, creature, date,isSameState);
+    public static <T extends Title<T>> Optional<StateError> canInherit(DMEReference<T> title, DMEReference<? extends SentientCharacter<?>> creature, LocalDate date, List<Condition.ShouldRun> isSameState){
+        for (CanHoldCondition<? super T> condition : title.get().getCanInheritConditions()){
+            Optional<StateError> error = condition.check(title, creature, date,isSameState);
             if(error.isPresent()){
                 return error;
             }

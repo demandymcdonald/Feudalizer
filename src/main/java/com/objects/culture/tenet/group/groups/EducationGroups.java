@@ -49,31 +49,107 @@ public class EducationGroups {
             .setParent(EDUCATION_IDEOLOGY)
             .addConnected(EDUCATION_FUNDING)
             .build();
-
+    public static final TenetGroup SCHOOL_TYPE = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "school_type", "School Type", "")
+            .setParent(SCHOOL_SYSTEM)
+            .addConnected(SOCIETY_ENFORCED_CONFORMITY, EDUCATION_INTERVENTION, EDUCATION_IDEOLOGY, EDUCATION_FUNDING)
+            .build();
     // School System
     public static final TenetGroup PRIMARY_SCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "primary_school", "Primary School", "")
-            .setParent(SCHOOL_SYSTEM)
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup PRIMARY_SCHOOL_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "primary_edu", "Primary School Education", "")
+            .setParent(PRIMARY_SCHOOL)
             .build();
     public static final TenetGroup SECONDARY_SCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "secondary_school", "Secondary School", "")
-            .setParent(SCHOOL_SYSTEM)
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup SECONDARY_SCHOOL_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "secondary_edu", "Secondary School Education", "")
+            .setParent(SECONDARY_SCHOOL)
+            .build();
+    public static final TenetGroup APPRENTICESHIP = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "apprenticeship", "Technical School", "")
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup APPRENTICE_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "apprenticeship_edu", "Apprenticeship Education", "")
+            .setParent(APPRENTICESHIP)
             .build();
     public static final TenetGroup TECHNICAL_SCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "technical_school", "Technical School", "")
-            .setParent(SCHOOL_SYSTEM)
+            .setParent(SCHOOL_TYPE)
+            .addDependent(APPRENTICESHIP)
+            .build();
+    public static final TenetGroup TECHNICAL_SCHOOL_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "technical_edu", "Technical School Education", "")
+            .setParent(TECHNICAL_SCHOOL)
+            .addDependent(APPRENTICE_EDUCATION)
             .build();
     public static final TenetGroup POST_SECONDARY_SCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "post_secondary_school", "Post Secondary School", "")
-            .setParent(SCHOOL_SYSTEM)
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup UNDERGRADUATE_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "undergraduate_edu", "Undergraduate Education", "")
+            .setParent(POST_SECONDARY_SCHOOL)
+            .build();
+    public static final TenetGroup GRADUATE_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "graduate_edu", "Graduate Education", "")
+            .setParent(POST_SECONDARY_SCHOOL)
+            .build();
+    public static final TenetGroup POST_GRADUATE_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "post_graduate_edu", "Post-Graduate Education", "")
+            .setParent(POST_SECONDARY_SCHOOL)
             .build();
     public static final TenetGroup PRIVATE_SCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "private_school", "Private School", "")
-            .setParent(SCHOOL_SYSTEM)
+            .setParent(SCHOOL_TYPE)
+            .addDependent(PRIMARY_SCHOOL,SECONDARY_SCHOOL)
+            .build();
+    public static final TenetGroup PRIVATE_SCHOOL_PRIMARY_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "primary_edu", "Private School Primary Education", "")
+            .setParent(PRIVATE_SCHOOL)
+            .addDependent(PRIMARY_SCHOOL_EDUCATION)
+            .build();
+    public static final TenetGroup PRIVATE_SCHOOL_SECONDARY_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "secondary_edu", "Private School Secondary Education", "")
+            .setParent(PRIVATE_SCHOOL)
+            .addDependent(SECONDARY_SCHOOL_EDUCATION)
             .build();
     public static final TenetGroup RELIGIOUS_SCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "religious_school", "Religious School", "")
-            .setParent(SCHOOL_SYSTEM)
+            .setParent(SCHOOL_TYPE)
             .addConnected(RELIGIOUS_SOFT_CULTURE_INTERVENTION)
             .build();
-    public static final TenetGroup MILITARY_ACADEMY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "military_academy", "Military Academy", "")
-            .setParent(SCHOOL_SYSTEM)
+    public static final TenetGroup RELIGIOUS_SCHOOL_PRIMARY_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "primary_edu", "Religious School Primary Education", "")
+            .setParent(RELIGIOUS_SCHOOL)
+            .addDependent(PRIMARY_SCHOOL_EDUCATION)
             .build();
-
+    public static final TenetGroup RELIGIOUS_SCHOOL_SECONDARY_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "secondary_edu", "Religious School Secondary Education", "")
+            .setParent(RELIGIOUS_SCHOOL)
+            .addDependent(SECONDARY_SCHOOL_EDUCATION)
+            .build();
+    public static final TenetGroup MILITARY_ACADEMY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "military_academy", "Military Academy", "")
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup OFFICER_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "officer_edu", "Officer Training", "")
+            .setParent(MILITARY_ACADEMY)
+            .addDependent(MilitaryGroups.OFFICER_TRAINING,UNDERGRADUATE_EDUCATION)
+            .build();
+    public static final TenetGroup BOOT_CAMP = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "boot_camp", "Boot Camp", "")
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup SOLDIER_BASIC_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "basic_edu", "Basic Training", "")
+            .setParent(BOOT_CAMP)
+            .addDependent(MilitaryGroups.MILITARY_TRAINING)
+            .build();
+    public static final TenetGroup SOLDIER_TECHNICAL_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "technical_edu", "Technical Training", "")
+            .setParent(BOOT_CAMP)
+            .addDependent(MilitaryGroups.MILITARY_TRAINING,TECHNICAL_SCHOOL_EDUCATION)
+            .addConnected(APPRENTICE_EDUCATION)
+            .build();
+    public static final TenetGroup HOMESCHOOL = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "homeschool", "Homeschooling", "")
+            .setParent(SCHOOL_TYPE)
+            .build();
+    public static final TenetGroup HOMESCHOOL_SCHOOL_PRIMARY_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "primary_edu", "Homeschooled Primary Education", "")
+            .setParent(HOMESCHOOL)
+            .addDependent(PRIMARY_SCHOOL_EDUCATION)
+            .build();
+    public static final TenetGroup HOMESCHOOL_SCHOOL_SECONDARY_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "secondary_edu", "Homeschooled Secondary Education", "")
+            .setParent(HOMESCHOOL)
+            .addDependent(SECONDARY_SCHOOL_EDUCATION)
+            .build();
+    public static final TenetGroup HOMESCHOOL_DOMESTIC_EDUCATION = new TenetGroup.Builder(TGType.SYSTEM_SMALL, Level.NORMAL, "domestic_edu", "Domestic Education", "")
+            .setParent(HOMESCHOOL)
+            .addConnected(APPRENTICESHIP)
+            .build();
     // Education Leadership
     public static final TenetGroup EDUCATION_LEADERSHIP = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "leadership", "Education Leadership", "")
             .setParent(SCHOOL_SYSTEM)

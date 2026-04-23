@@ -4,7 +4,7 @@ import com.Global;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.CharacterManager;
-import com.objects.culture.tenet.dynamic.government.House;
+import com.objects.organization.government.House;
 import com.base.DMRegistry;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

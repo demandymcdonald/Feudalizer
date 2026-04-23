@@ -1,0 +1,38 @@
+package com.objects.organization;
+
+import com.base.DateMutableEntity;
+import com.base.reference.DMEReference;
+import com.base.timeline.change.varswap.TimelineVarChange;
+import com.google.gson.JsonElement;
+
+import java.time.LocalDate;
+
+public class OrgChange<T extends DateMutableEntity<T> & IOrganizedEntity<T>> extends TimelineVarChange<T, DMEReference<? extends AbstractOrganization<?>>> {
+    protected OrgChange(DMEReference<? extends T> owner, LocalDate date) {
+        super(owner, date);
+    }
+
+    protected OrgChange(DMEReference<? extends T> owner, LocalDate date, DMEReference<? extends AbstractOrganization<?>> changed) {
+        super(owner, date, changed);
+    }
+
+    @Override
+    public DMEReference<? extends AbstractOrganization<?>> getCurrent() {
+        return getOwner().get().getOrganization();
+    }
+
+    @Override
+    public void setNew(DMEReference<? extends AbstractOrganization<?>> newValue) {
+        getOwner().get().internalSetOrg(newValue);
+    }
+
+    @Override
+    protected JsonElement serializeO(DMEReference<? extends AbstractOrganization<?>> o) {
+        return o.serialize();
+    }
+
+    @Override
+    protected DMEReference<? extends AbstractOrganization<?>> deserializeO(JsonElement json) {
+        return DMEReference.deserialize(json.getAsJsonObject());
+    }
+}

@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.dynamic.government;
+package com.objects.organization.government;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
@@ -8,22 +8,27 @@ import com.objects.CauseOfEnd;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
-public class House extends GoverningEntity<House> {
+public class Office extends Government<Office>{
+    DMEReference<GoverningEntity<?>> parent;
 
-
-    public House(LocalDate created, LocalDate ended, List<ChangeSupplier<House, ?>> initialState) {
+    public Office(LocalDate created, LocalDate ended, List<ChangeSupplier<Office, ?>> initialState) {
         super(created, ended, initialState);
     }
 
-    public House(DMEReference<House> dme) {
+    public Office(DMEReference<Office> dme) {
         super(dme);
     }
 
-    public House(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<House, ?>> initialState) {
+    public Office(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Office, ?>> initialState) {
         super(id, created, ended, initialState);
     }
+
+
+
+
 
     @Override
     protected void onLink() {
@@ -36,18 +41,17 @@ public class House extends GoverningEntity<House> {
     }
 
     @Override
-    public TimelineChange<House> getBirthChange(DMEReference<House> dme, LocalDate date) {
+    public TimelineChange<Office> getBirthChange(DMEReference<Office> dme, LocalDate date) {
         return null;
     }
 
     @Override
-    public TimelineChange<House> getDeathChange(DMEReference<House> dme, LocalDate date, CauseOfEnd<? super House> cOd) {
+    public TimelineChange<Office> getDeathChange(DMEReference<Office> dme, LocalDate date, CauseOfEnd<? super Office> cOd) {
         return null;
     }
 
-
     @Override
-    public CauseOfEnd<House> defaultDeathCause() {
+    public CauseOfEnd<? super Office> defaultDeathCause() {
         return null;
     }
 

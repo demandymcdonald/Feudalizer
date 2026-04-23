@@ -15,7 +15,7 @@ import com.base.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.culture.tenet.dynamic.government.GoverningEntity;
+import com.objects.organization.government.GoverningEntity;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 

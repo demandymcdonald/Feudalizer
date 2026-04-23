@@ -11,7 +11,7 @@ import com.objects.character.physical.species.SentientSpecies;
 import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
-import com.objects.culture.tenet.dynamic.government.House;
+import com.objects.organization.government.House;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 

@@ -1,4 +1,4 @@
-package com.objects.culture.tenet.dynamic.government;
+package com.objects.organization.government;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
@@ -28,7 +28,7 @@ public class GovernmentChanged<T extends DateMutableEntity<T> & IGoverned<T>> ex
 
     @Override
     protected JsonElement serializeO(DMEReference<? extends GoverningEntity<?>> o) {
-        return null;
+        return ;
     }
 
     @Override

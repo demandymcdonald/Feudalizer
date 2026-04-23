@@ -47,6 +47,9 @@ public class TLSet<E extends Identifiable<?>> {
     public boolean containsAll(Collection<? extends E> c){
         return c.stream().allMatch(this::contains);
     };
+    public Set<E> asSet(){
+        return new HashSet<>(middleman.getKeys());
+    }
     public void addAll(boolean doSandbox, boolean wipeForward, Collection<? extends E> c){
         middleman.putAll(doSandbox,wipeForward,makePairs(c));
     };
