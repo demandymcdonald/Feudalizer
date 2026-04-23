@@ -5,6 +5,10 @@ import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
+import com.utilities.number.BoundInt;
+import com.utilities.number.BoundInts;
+
+import java.util.Map;
 
 import static com.objects.character.sentient.Gender.*;
 import static com.objects.culture.tenet.interest.InterestGroup.Dimension.*;
@@ -18,6 +22,12 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getSex().equals(com.objects.character.Sex.MALE);
             }
+
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
+
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.SEX_MALE;
@@ -38,7 +48,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getSex().equals(com.objects.character.Sex.FEMALE);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.SEX_FEMALE;
@@ -63,7 +76,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Gender.Male);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.GENDER_MALE;
@@ -84,7 +100,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Gender.Female);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.GENDER_FEMALE;
@@ -105,7 +124,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Gender.Trans_Female) || character.getGender().equals(Gender.Trans_Male);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.GENDER_TRANS;
@@ -126,7 +148,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Non_Binary_Male) || character.getGender().equals(Non_Binary_Female);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.GENDER_NB_OTHER;
@@ -149,7 +174,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Heterosexual);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.HETERO;
@@ -170,7 +198,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Homosexual);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.HOMO;
@@ -191,7 +222,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Bisexual);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.BI;
@@ -212,7 +246,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Asexual);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.AE;
@@ -233,7 +270,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Pansexual);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.PAN;
@@ -254,7 +294,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Questioning);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.QUESTIONING;
@@ -276,7 +319,10 @@ public class InterestGroups {
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Other);
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5));
+            }
             @Override
             public TenetGroup getRightsGroup() {
                 return GovernmentGroups.OTHER;
@@ -306,7 +352,12 @@ public class InterestGroups {
             public Elite() {
                 super("elite","Elites","");
             }
-
+            @Override
+            public Map<IGPointer, BoundInt> getRelations() {
+                return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5)
+                new IGPointer.Single(,-10),
+                );
+            }
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;

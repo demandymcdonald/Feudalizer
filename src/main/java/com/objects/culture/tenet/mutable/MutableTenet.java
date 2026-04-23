@@ -2,6 +2,8 @@ package com.objects.culture.tenet.mutable;
 
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
@@ -60,7 +62,6 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     @Override
     public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
         Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> result = HashMultimap.create();
-        List<CultureCondition<?, ?, ?>> conditions = new ArrayList<>();
         for (CultureCondition<?, ?, ?> condition : getConditions().values()) {
             for (CultureCondition.Key key : condition.getKeys()) {
                 result.put(key,condition);
@@ -129,5 +130,82 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     public void mainLoad(JsonObject object) {
 
     }
+    public static class Builder{
+        private final TenetReference reference;
+        private final TenetGroup group;
+        private final PoliticalCompass politicalCompass;
+        private final String displayID;
+        private final String name;
+        private final String description;
+        private final Set<TenetCondition<?,?>> applyConditions = new HashSet<>();
+        private final Set<CultureCondition<?,?,?>> changeConditions = new HashSet<>();
+        private final Set<TenetGroup> compatibleGroups = new HashSet<>();
+        private final Map<InterestGroup,Integer> igOpinionMod = new HashMap<>();
 
+        public Builder(TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            this.reference = parent;
+            this.group = group;
+            this.politicalCompass = entry;
+            this.displayID = buildID(group, id);
+            this.name = name;
+            this.description = description;
+        }
+
+        public Builder addApplyConditions(TenetCondition<?,?>... applyConditions) {
+            this.applyConditions.addAll(Arrays.stream(applyConditions).toList());
+            return this;
+        }
+        public Builder addChangeConditions(CultureCondition<?,?,?>... changeConditions) {
+            this.changeConditions.addAll(Arrays.stream(changeConditions).toList());
+            return this;
+        }
+        public Builder addInterestGroups(TenetGroup... groups) {
+            this.compatibleGroups.addAll(Arrays.stream(groups).toList());
+            return this;
+        }
+        public Builder addIGGroupModifier(int i, InterestGroup... groups) {
+            for (InterestGroup group : groups) {
+                if(igOpinionMod.containsKey(group)) {
+                    igOpinionMod.computeIfPresent(group,(key, value) -> value + i);
+                } else {
+                    igOpinionMod.put(group, i);
+                }
+            }
+            return this;
+        }
+        public MutableTenet build() {
+            MutableTenet mt = new MutableTenet(reference,group,politicalCompass,displayID,name,description) {
+                @Override
+                public Set<TenetCondition<?, ?>> getApplyConditions() {
+                    return ImmutableSet.copyOf(applyConditions);
+                }
+
+                @Override
+                public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
+                    return ImmutableSet.copyOf(changeConditions);
+                }
+
+                @Override
+                public Set<TenetGroup> compatibleParents() {
+                    return ImmutableSet.copyOf(compatibleGroups);
+                }
+
+                @Override
+                public Map<InterestGroup, Integer> getInterestGroupOpinionModifiers() {
+                    return ImmutableMap.copyOf(igOpinionMod);
+                }
+
+                @Override
+                public void additionalSave(JsonObject data) {
+
+                }
+
+                @Override
+                public void additionalLoad(JsonObject data) {
+
+                }
+            };
+            return mt;
+        }
+    }
 }

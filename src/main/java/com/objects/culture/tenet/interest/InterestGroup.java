@@ -6,6 +6,9 @@ import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.IDisplayable;
 import com.utilities.id.StringIdentifiable;
+import com.utilities.number.BoundInt;
+
+import java.util.Map;
 
 public abstract class InterestGroup implements IDisplayable, StringIdentifiable {
 
@@ -44,6 +47,7 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable 
     public TenetGroup.AcceptanceContainer getOpinion(CultureObject<?> object){
 
     }
+    public abstract Map<IGPointer, BoundInt> getRelations();
     public abstract TenetGroup getRightsGroup();
     public abstract TenetGroup getSocialStatusGroup();
     public abstract Dimension getDimension();

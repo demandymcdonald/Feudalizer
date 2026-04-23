@@ -9,6 +9,13 @@ public class BoundInts {
             return new PosPercent(0);
         }
     }
+    public static BoundInt Percent(boolean negative,int integer){
+        if(negative){
+            return new BothPercent(integer);
+        } else {
+            return new PosPercent(integer);
+        }
+    }
     public static BoundInt Int256(boolean negative){
         if(negative){
             return new Both256(0);
