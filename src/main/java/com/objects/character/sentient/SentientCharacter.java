@@ -5,6 +5,8 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.multi.type.ChangeType;
 import com.base.timeline.change.multi.wrapper.TLMap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.objects.character.LivingCreature;
 import com.objects.character.Sex;
@@ -14,12 +16,13 @@ import com.objects.character.opinion.OpinionReason;
 import com.objects.character.sentient.change.CharacterChanges;
 import com.objects.character.sentient.change.SentientMapChange;
 import com.objects.culture.Culture;
-import com.objects.culture.government.IGoverned;
+import com.objects.culture.tenet.dynamic.government.IGoverned;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.religion.IReligious;
-import com.objects.culture.religion.Religion;
+import com.objects.culture.tenet.dynamic.religion.IReligious;
+import com.objects.culture.tenet.dynamic.religion.Religion;
 import com.objects.family.Family;
-import com.objects.culture.government.GoverningEntity;
+import com.objects.culture.tenet.dynamic.government.GoverningEntity;
+import com.objects.family.FamilyRelationship;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 import com.utilities.id.SimpleUUID;
@@ -40,7 +43,7 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     private DMEReference<? extends GoverningEntity<?>> government;
     private DMEReference<Culture> culture;
     private DMEReference<Religion> religion;
-    private final Map<Family, Family.Relationship> linked_families = Maps.newHashMap();
+    private final Map<DMEReference<Family>, FamilyRelationship> linked_families = new HashMap<>();
     private final List<DMEReference<? extends Title<?>>> linked_titles = new ArrayList<>();
 
 
@@ -146,6 +149,9 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final DMEReference<Religion> getReligion(){
         return religion;
     }
+    public final Pronouns getPronouns(){
+        return gender.getPronouns();
+    }
     @Override
     public final DMEReference<Culture> getCulture() {
         return culture;
@@ -153,11 +159,21 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final SuccessionEntry<?> getPreferredSuccession(){
         return preferredSuccession;
     }
-
+    public final Map<DMEReference<Family>,FamilyRelationship> getFamilies(){
+        return new HashMap<>(linked_families);
+    }
+    public final Optional<DMEReference<Family>> getBioFamily(){
+        return Optional.ofNullable(linked_families.entrySet().stream().filter((e) -> e.getValue().getType().equals(FamilyRelationship.MemberType.OFFSPRING_BIOLOGIC)).findFirst().get().getKey());
+    }
+    public final Optional<DMEReference<Family>> getAdoptedFamily(){
+        return Optional.ofNullable(linked_families.entrySet().stream().filter((e) -> e.getValue().getType().equals(FamilyRelationship.MemberType.OFFSPRING_ADOPTED)).findFirst().get().getKey());
+    }
     public final void linkTitle(DMEReference<? extends Title<?>> title){
         linked_titles.add(title);
     }
-
+    public final void linkFamily(DMEReference<Family> family, FamilyRelationship relationship){
+        linked_families.put(family,relationship);
+    }
     @Override
     public void doDateChange() {
         linked_families.clear();

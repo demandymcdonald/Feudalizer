@@ -1,4 +1,4 @@
-package com.objects.culture.religion;
+package com.objects.culture.tenet.dynamic.religion;
 
 import com.Global;
 import com.base.DateMutableEntity;

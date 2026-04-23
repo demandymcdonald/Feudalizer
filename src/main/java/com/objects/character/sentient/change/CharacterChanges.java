@@ -2,14 +2,11 @@ package com.objects.character.sentient.change;
 
 import com.base.reference.DMEReference;
 import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.change.varswap.TimelineVarChange;
 import com.base.timeline.state.TimelineState;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.culture.government.GoverningEntity;
 import com.objects.title.succession.rules.SuccessionEntry;
 
 import java.time.LocalDate;

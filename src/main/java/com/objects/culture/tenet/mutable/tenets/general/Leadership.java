@@ -2,8 +2,10 @@ package com.objects.culture.tenet.mutable.tenets.general;
 
 import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
+import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.EconomicGroups;
 import com.objects.culture.tenet.group.groups.EducationGroups;
@@ -14,10 +16,7 @@ import com.objects.culture.tenet.mutable.MutableTenet;
 
 import java.security.PrivateKey;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.groups.MilitaryGroups.*;
@@ -157,11 +156,24 @@ public abstract class Leadership extends MutableTenet {
         }
 
         @Override
+        public Set<TenetCondition<?, ?>> getApplyConditions() {
+            return Set.of(
+
+            );
+        }
+
+        @Override
         public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
             return Set.of(
                     LeadershipConditions.buildTermLimit(this,duration,durationUnit)
             );
         }
+
+        @Override
+        public Map<InterestGroup, Integer> getInterestGroupOpinionModifiers() {
+            return Map.of();
+        }
+
         private static final int STARTING = 40;
         private static final int MAX_C_PUSH = -40;
         private static final int MAX_D_PUSH = -40;
@@ -183,14 +195,99 @@ public abstract class Leadership extends MutableTenet {
             durationUnit = ChronoUnit.valueOf(data.get("unit").getAsString());
         }
     }
+    public static abstract class Selection extends Leadership {
+        public Selection(TenetReference parent,PoliticalCompass entry, String id, String name, String description) {
+            super(parent,findGroup(parent,Type.SELECTION), entry, id, name, description);
+        }
+        public Selection(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
+
+    }
+    public static class DemocraticElection extends Selection {
+        public DemocraticElection(TenetReference parent) {
+            super(parent, new PoliticalCompass(0,30,-30,-30,100),"democratic_vote" ,"Democratic Election" ,"Democracy");
+        }
+
+        public DemocraticElection(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
+
+        @Override
+        public Set<TenetCondition<?, ?>> getApplyConditions() {
+            return Set.of(
+
+            );
+        }
+        @Override
+        public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
+            return Set.of();
+        }
+        @Override
+        public Map<InterestGroup, Integer> getInterestGroupOpinionModifiers() {
+            return Map.of();
+        }
+
+        @Override
+        public void additionalSave(JsonObject data) {
+
+        }
+
+        @Override
+        public void additionalLoad(JsonObject data) {
+
+        }
+    }
+    public static class Hereditary extends Selection {
+        public Hereditary(TenetReference parent) {
+            super(parent, new PoliticalCompass(40,70,40,70),"hereditary_rule" ,"Hereditary Rulers" ,"");
+        }
+
+        public Hereditary(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
+
+        @Override
+        public Set<TenetCondition<?, ?>> getApplyConditions() {
+            return Set.of(
+
+            );
+        }
+        @Override
+        public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
+            return Set.of();
+        }
+        @Override
+        public Map<InterestGroup, Integer> getInterestGroupOpinionModifiers() {
+            return Map.of();
+        }
+
+        @Override
+        public void additionalSave(JsonObject data) {
+
+        }
+
+        @Override
+        public void additionalLoad(JsonObject data) {
+
+        }
+    }
     public static class ExcludeGroup extends Leadership {
         private InterestGroup group;
         public ExcludeGroup(TenetReference parent, InterestGroup group) {
             super(parent, findGroup(parent,Type.SELECTION), buildCompass(group), "exclude_group", "Exclude Group", "Members of this group may not hold leadership positions");
             this.group = group;
         }
+        public ExcludeGroup(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
 
-
+        @Override
+        public Set<TenetCondition<?, ?>> getApplyConditions() {
+            return Set.of(
+                    TenetCondition.hasAcceptance(this.getTenetReference(), Acceptance.REJECTED,false,false)
+            );
+        }
 
         @Override
         public Set<CultureCondition<?, ?, ?>> getChangeConditions() {
@@ -204,22 +301,19 @@ public abstract class Leadership extends MutableTenet {
         private static PoliticalCompass buildCompass(InterestGroup group) {
             double modifier = switch (group.getDimension()){
                 case Sex_At_Birth, Class_Caste,Religion -> {
-                    yield .9;
+                    yield .95;
                 }
                 case Gender_Identity -> {
-                    yield .75;
+                    yield .85;
                 }
                 case Race_Ethnicity,Culture -> {
                     yield 1;
                 }
-                case Sexual_Orientation  -> {
-                    yield .7;
-                }
-                case Political_Ideology -> {
-                    yield .6;
+                case Political_Ideology,Sexual_Orientation -> {
+                    yield .9;
                 }
                 case Lifestyle,Disability -> {
-                    yield .4;
+                    yield .5;
                 }
             };
             int d = Math.toIntExact(Math.round(MAX_D_PUSH * modifier));

@@ -1,21 +1,22 @@
 package com.objects.family;
 
-import com.Feudalizer;
-
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.reference.StateReference;
+import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.MiddlemanMap;
+import com.base.timeline.change.multi.wrapper.TLMap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.sentient.SentientCharacter;
-import com.utilities.number.DateUtilities;
-import org.apache.commons.lang3.tuple.Pair;
+import com.utilities.caching.CachingSupplier;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DirectedPseudograph;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
+
+import static com.objects.family.FamilyRelationship.*;
 
 /**
  * Represents a FamilyGroups entity which includes information about spouses, children, and
@@ -23,96 +24,53 @@ import java.util.*;
  * relationships and retrieve information about the family members.
  */
 public class Family extends DateMutableEntity<Family> {
-
-    public enum MemberType {
-        HEAD,
-        PARTNER,
-        OFFSPRING
-    }
-    public enum Relationship {
-        HEAD_OF_FAMILY(1, MemberType.HEAD),
-        SPOUSE(1, MemberType.PARTNER),
-        EX_SPOUSE(1, MemberType.PARTNER),
-        LOVER(1, MemberType.PARTNER),
-        EX_LOVER(1, MemberType.PARTNER),
-        CONCUBINE(1, MemberType.PARTNER),
-        EX_CONCUBINE(1, MemberType.PARTNER),
-        CHILD_BORN(99, MemberType.OFFSPRING),
-        CHILD_BORN_DISOWNED(99, MemberType.OFFSPRING),
-        CHILD_ADOPTED(99, MemberType.OFFSPRING),
-        CHILD_ADOPTED_DISOWNED(99, MemberType.OFFSPRING);
-
-        private final int maxInUnit;
-        private final MemberType type;
-        Relationship(int maxInUnit, MemberType type) {
-            this.maxInUnit = maxInUnit;
-            this.type = type;
-        }
-        public MemberType getType() {
-            return type;
-        }
+    TLMap<DMEReference<? extends SentientCharacter<?>>,FamilyRelationship> relationships;
+    CachingSupplier<Graph<DMEReference<? extends SentientCharacter<?>>,FamilyEdge>> familyTree = new CachingSupplier<>(this::buildFamilyTree);
+    public Family(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Family, ?>> initialState) {
+        super(id, created, ended, initialState);
     }
 
-    //######
-    private MiddlemanMap<DMEReference<? extends SentientCharacter<?>>, Relationship,Family> members;
-    private StateReference customName;
-    private Family(UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<? extends SentientCharacter<?>> head) {
-        super(created, LocalDate.MAX, List.of(
-
-        );
+    public Family(LocalDate created, LocalDate ended, List<ChangeSupplier<Family, ?>> initialState) {
+        super(created, ended, initialState);
     }
+
     public Family(DMEReference<Family> dme) {
         super(dme);
     }
-    protected static Pair<DMEReference<? extends SentientCharacter<?>>,Relationship> buildPair(DMEReference<? extends SentientCharacter<?>> member, Relationship rel){
-        return Pair.of(member,rel);
+    public FamilyRelationship getRelationship(DMEReference<? extends SentientCharacter<?>> member) {
+        return relationships.get(member);
     }
-    public DMEReference<? extends SentientCharacter<?>> getHeadofFamily() {
-        return getMembersMatching(Relationship.HEAD_OF_FAMILY)[0];
+    public DMEReference<? extends SentientCharacter<?>> getHead() {
+        return relationships.getWhere((k,v) -> v.equals(FamilyRelationship.HEAD_OF_FAMILY)).keySet().iterator().next();
     }
-    public DMEReference<? extends SentientCharacter<?>> getPartner() {
-        return getMembersMatching(Relationship.SPOUSE)[0];
+    public DMEReference<? extends SentientCharacter<?>> getSpouse() {
+        return relationships.getWhere((k,v) -> v.getType().equals(FamilyRelationship.MemberType.PARTNER)).keySet().iterator().next();
     }
-    public List<DMEReference<? extends SentientCharacter<?>>> getParents() {
-        return Arrays.asList(getHeadofFamily(),getPartner());
+    public Set<DMEReference<? extends SentientCharacter<?>>> getBioChildren() {
+        return new HashSet<>(relationships.getWhere((k,v) -> v.getType().equals(FamilyRelationship.MemberType.OFFSPRING_BIOLOGIC)).keySet());
     }
-    private DMEReference<? extends SentientCharacter<?>>[] getMembersMatching(Relationship rel) {
-        return members.entrySet().stream().filter(
-                e -> e.getValue() == rel).map(Map.Entry::getKey).toArray(DMEReference[]::new);
-    };
-    public MiddlemanMap<DMEReference<? extends SentientCharacter<?>>,Relationship,Family> getFamilyMap(){
-        return members;
+    public Set<DMEReference<? extends SentientCharacter<?>>> getAdoptiveChildren() {
+        return new HashSet<>(relationships.getWhere((k,v) -> v.getType().equals(FamilyRelationship.MemberType.OFFSPRING_ADOPTED)).keySet());
     }
-    public int getNumberOf(MemberType type) {
-        return (int) members.entrySet().stream().filter(e -> e.getValue().type == type).count();
-    }
-    public int getMaxAllowed(Relationship rel) {
-        return rel.maxInUnit;
-    }
-    public boolean hasSpaceFor(Relationship rel) {
-        return getNumberOf(rel.type) < getMaxAllowed(rel);
-    }
-    public int getSlotsLeftFor(Relationship rel) {
-        return getMaxAllowed(rel) - getNumberOf(rel.type);
-    }
-    public void internal_AddMember(DMEReference<? extends SentientCharacter<?>> member, Relationship rel) {
-        if (hasSpaceFor(rel)) {
-            members.put(member, rel);
-        } else {
-            Feudalizer.LOGGER.error("FamilyGroups " + this.toString() + " is at it's limit for members of type {}!", rel.type);
-        }
-    }
-    public void internal_SetMap(MiddlemanMap<DMEReference<? extends SentientCharacter<?>>, Relationship,Family> map) {
-        this.members = map;
-    }
-    @Override
-    protected void onLink() {
-        for (DMEReference<? extends SentientCharacter<?>> member : members.keySet()) {
-            member.get().linkFamily(this,members.get(member));
-        }
-        calculateIsEnded();
+    public Set<DMEReference<? extends SentientCharacter<?>>> getChildren() {
+        Set<DMEReference<? extends SentientCharacter<?>>> children = new HashSet<>();
+        children.addAll(getAdoptiveChildren());
+        children.addAll(getBioChildren());
+        return children;
     }
 
+
+
+
+
+
+    @Override
+    public void onLink() {
+        for (DMEReference<? extends SentientCharacter<?>> character : relationships.getKeys()){
+            character.get().forceLink();
+            character.get().linkFamily(this.getReference(),relationships.get(character));
+        }
+    }
     @Override
     public void doDateChange() {
 
@@ -133,29 +91,135 @@ public class Family extends DateMutableEntity<Family> {
         return null;
     }
 
-
-
     @Override
-    public void additionalSave(JsonObject data) {}
+    public void additionalSave(JsonObject data) {
 
-    @Override
-    public void additionalLoad(JsonObject data) {}
-    public List<DMEReference<? extends SentientCharacter<?>>> getMembers(){
-        return members.keySet().stream().toList();
     }
 
-    private boolean calculateIsEnded(){
-        LocalDate maxEnded = LocalDate.MIN;
-        for (DMEReference<? extends SentientCharacter<?>> member : members.keySet()) {
-            if (member.get().isAlive()) {
-                return false;
-            } else {
-                maxEnded = DateUtilities.ceiling(member.get().getEnded(),maxEnded);
+    @Override
+    public void additionalLoad(JsonObject data) {
+
+    }
+    public Graph<DMEReference<? extends SentientCharacter<?>>,FamilyEdge> buildFamilyTree(){
+        TreeContainer container = new TreeContainer();
+        doBuild(this,container);
+        return container.graph;
+    }
+    protected static void doBuild(Family f, TreeContainer tree){
+        tree.addVisited(f);
+        handleCoreFamily(f, tree.graph);
+        handleExtendedFamily(f, tree);
+    }
+
+    public static Optional<FamilyRelationship> getRelationship(
+            DMEReference<? extends SentientCharacter<?>> characterA, DMEReference<? extends SentientCharacter<?>> characterB) {
+
+    }
+
+
+    private static void handleExtendedFamily(Family f, TreeContainer tree){
+        for(DMEReference<? extends SentientCharacter<?>> member : f.relationships.getKeys()){
+            for(Map.Entry<DMEReference<Family>, FamilyRelationship> family : member.get().getFamilies().entrySet()){
+                Family memberFamily = family.getKey().get();
+                if(tree.visited.contains(memberFamily)) continue;
+                doBuild(memberFamily, tree);
             }
         }
-        this.getTimeline().moveEnd(maxEnded);
-        return true;
     }
+    private static void handleCoreFamily(Family f, Graph<DMEReference<? extends SentientCharacter<?>>, FamilyEdge> tree) {
+        for(DMEReference<? extends SentientCharacter<?>> member : f.relationships.getKeys()){
+            FamilyRelationship relationship = f.relationships.get(member);
+            tree.addVertex(member);
+            switch(relationship.getType()){
+                case PARTNER -> {
+                    handleSpouse(f, tree, member, relationship);
+                }
+                case OFFSPRING_BIOLOGIC -> {
+                    DMEReference<? extends SentientCharacter<?>> head = f.getHead();
+                    DMEReference<? extends SentientCharacter<?>> spouse = f.getSpouse();
+                    Set<DMEReference<? extends SentientCharacter<?>>> children = f.getBioChildren();
+                    handleParents(tree, member, head, spouse, FamilyRelationship.CHILD_BORN, FamilyRelationship.PARENT);
+                    for(DMEReference<? extends SentientCharacter<?>> child : children){
+                        if(child == member) continue;
+                        if (tree.containsEdge(member,child)){
+                            FamilyRelationship e = tree.getEdge(member,child).getRelationship();
+                            if (e.equals(SIBLING)) continue;
+                        }
+                        tree.addVertex(child);
+                        tree.addEdge(child,member,new FamilyEdge(SIBLING,member));
+                        tree.addEdge(member,child,new FamilyEdge(SIBLING,child));
+                    }
+                }
+                case OFFSPRING_ADOPTED -> {
+                    DMEReference<? extends SentientCharacter<?>> head = f.getHead();
+                    DMEReference<? extends SentientCharacter<?>> spouse = f.getSpouse();
+                    Set<DMEReference<? extends SentientCharacter<?>>> children = f.getChildren();
+                    handleParents(tree, member, head, spouse, CHILD_ADOPTED, PARENT_ADOPTIVE);
+                    for(DMEReference<? extends SentientCharacter<?>> child : children){
+                        if(child == member) continue;
+                        if (tree.containsEdge(member,child)){
+                            FamilyRelationship e = tree.getEdge(member,child).getRelationship();
+                            if (e.equals(SIBLING_ADOPTIVE) || e.equals(SIBLING)) continue;
+                        }
+                        tree.addVertex(child);
+                        tree.addEdge(child,member,new FamilyEdge(SIBLING_ADOPTIVE,member));
+                        tree.addEdge(member,child,new FamilyEdge(SIBLING_ADOPTIVE,child));
+                    }
+                }
+            }
+        }
+    }
+    private static void handleSpouse(Family f, Graph<DMEReference<? extends SentientCharacter<?>>, FamilyEdge> tree, DMEReference<? extends SentientCharacter<?>> member, FamilyRelationship relationship) {
+        DMEReference<? extends SentientCharacter<?>> head = f.getHead();
+        FamilyRelationship rt = null;
+        switch(relationship){
+            case LOVER, LOVER_MALE, LOVER_FEMALE -> {
+                rt = LOVER;
+                break;
+            }
+            case SPOUSE, HUSBAND, WIFE -> {
+                rt = SPOUSE;
+                break;
+            }
+            case EX_LOVER, EX_LOVER_MALE, EX_LOVER_FEMALE -> {
+                rt = EX_LOVER;
+
+            }
+            case EX_SPOUSE, EX_SPOUSE_MALE, EX_SPOUSE_FEMALE -> {
+                rt = EX_SPOUSE;
+            }
+            case CONCUBINE -> {
+                rt = CONCUBINE;
+            }
+            case EX_CONCUBINE -> {
+                rt = EX_CONCUBINE;
+            }
+        }
+        tree.addVertex(head);
+        tree.addEdge(member,head,new FamilyEdge(rt,head));
+        tree.addEdge(head, member,new FamilyEdge(rt, member));
+    }
+    private static void handleParents(Graph<DMEReference<? extends SentientCharacter<?>>, FamilyEdge> tree, DMEReference<? extends SentientCharacter<?>> member, DMEReference<? extends SentientCharacter<?>> head, DMEReference<? extends SentientCharacter<?>> spouse, FamilyRelationship familyRelationship, FamilyRelationship familyRelationship2) {
+        tree.addVertex(head);
+        tree.addVertex(spouse);
+        tree.addEdge(head,member,new FamilyEdge(familyRelationship,member));
+        tree.addEdge(spouse,member,new FamilyEdge(familyRelationship,member));
+        tree.addEdge(member,head,new FamilyEdge(familyRelationship2,head));
+        tree.addEdge(member,spouse,new FamilyEdge(familyRelationship2,spouse));
+    }
+    protected record TreeContainer(Set<Family> visited, Graph<DMEReference<? extends SentientCharacter<?>>,FamilyEdge> graph){
+        TreeContainer(){
+            this(new HashSet<>(),new DirectedPseudograph<>(FamilyEdge.class));
+        }
+        public void addVisited(Family f){
+            visited.add(f);
+        }
+    }
+
+    //######
+
+
+
 
 
 

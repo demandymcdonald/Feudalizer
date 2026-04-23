@@ -13,6 +13,7 @@ import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.serialization.SuperclassSerializable;
 
 import java.util.*;
@@ -69,7 +70,8 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     }
     public abstract Set<TenetCondition<?,?>> getApplyConditions();
     public abstract Set<CultureCondition<?,?,?>> getChangeConditions();
-    public abstract Set<TenetGroup> compatibleParents();;
+    public abstract Set<TenetGroup> compatibleParents();
+    public abstract Map<InterestGroup,Integer> getInterestGroupOpinionModifiers();
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }

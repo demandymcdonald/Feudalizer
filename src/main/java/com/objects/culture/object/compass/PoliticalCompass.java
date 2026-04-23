@@ -25,6 +25,13 @@ public class PoliticalCompass implements IPoliticalCompass {
         this.trustInOpacityAxis.set(trustInOpacityAxis);
         this.egalitarianHierarchyAxis.set(egalitarianHierarchyAxis);
     }
+    public PoliticalCompass(int universalParticularAxis,int individualCollectiveAxis, int trustInOpacityAxis, int egalitarianHierarchyAxis, int tolerance) {
+        this.individualCollectiveAxis.set(individualCollectiveAxis);
+        this.universalParticularAxis.set(universalParticularAxis);
+        this.trustInOpacityAxis.set(trustInOpacityAxis);
+        this.egalitarianHierarchyAxis.set(egalitarianHierarchyAxis);
+        this.tolerance.set(tolerance);
+    }
     public PoliticalCompass() {}
     public static PoliticalCompass build(JsonObject json){
         return new PoliticalCompass(json.get("axisA").getAsInt(),json.get("axisB").getAsInt(),json.get("axisC").getAsInt(),json.get("axisD").getAsInt());

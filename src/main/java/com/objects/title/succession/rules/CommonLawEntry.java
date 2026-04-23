@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
+import com.objects.character.sentient.SentientCharacter;
 import com.objects.title.Title;
 import com.objects.title.succession.SuccessionChecksum;
 
@@ -20,8 +21,8 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
     private static final boolean prima = true;
     private boolean isPrimarySpouse;
     private SuccessionChecksum currentChecksum;
-    List<HumanCharacter> cached = new ArrayList<>();
-    public CommonLawEntry(DMEReference<HumanCharacter> character) {
+    List<DMEReference<? extends SentientCharacter<?>>> cached = new ArrayList<>();
+    public CommonLawEntry(DMEReference<? extends SentientCharacter<?>> character) {
         super(character);
     }
 
@@ -31,26 +32,36 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
         super(character);
         this.isPrimarySpouse = isPrimarySpouse;
     }
-    protected static final Function<DMEReference<HumanCharacter>,CommonLawEntry> builder = new Function<>() {
+    protected static final Function<DMEReference<? extends SentientCharacter<?>>,CommonLawEntry> builder = new Function<>() {
 
         @Override
-        public CommonLawEntry apply(DMEReference<HumanCharacter> bookCharacterDMEReference) {
+        public CommonLawEntry apply(DMEReference<? extends SentientCharacter<?>> bookCharacterDMEReference) {
             return new CommonLawEntry(bookCharacterDMEReference);
         }
     };
 
     @Override
-    public List<HumanCharacter> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date) {
-        HumanCharacter character = getSubject().get();
-        LinkedHashMultimap<Type, HumanCharacter> everyone = buildCharacterList(character);
+    protected DMEReference<? extends SentientCharacter<?>> getSubject() {
+        return super.getSubject();
+    }
+
+    @Override
+    protected <T extends Title<T>> boolean canInherit(DMEReference<? extends Title<?>> title, LocalDate date) {
+        return super.canInherit(title, date);
+    }
+
+    @Override
+    public List<DMEReference<? extends SentientCharacter<?>>> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date) {
+        SentientCharacter<?> character = getSubject().get();
+        LinkedHashMultimap<Type, DMEReference<? extends SentientCharacter<?>>> everyone = buildCharacterList(character);
         SuccessionChecksum checksum = SuccessionChecksum.of(everyone.values());
         if (currentChecksum != null && currentChecksum.equals(checksum)){
             return cached;
         }
         currentChecksum = checksum;
         return generate(title,date,everyone);
-
     }
+
 
     private List<HumanCharacter> generate(DMEReference<? extends Title<?>> title, LocalDate date, LinkedHashMultimap<Type, HumanCharacter> everyone){
         List<HumanCharacter> ordered = new ArrayList<>();
@@ -74,7 +85,7 @@ public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
         return ordered;
     }
 
-    private LinkedHashMultimap<Type, HumanCharacter> buildCharacterList(HumanCharacter character){
+    private LinkedHashMultimap<Type, DMEReference<? extends SentientCharacter<?>>> buildCharacterList(SentientCharacter<?> character){
         LinkedHashMultimap<Type, HumanCharacter> result = LinkedHashMultimap.create();
         final List<HumanCharacter> direct = CandidateRules.DirectFamily(character,false,prima);
         final List<HumanCharacter> indirect = CandidateRules.IndirectFamily(character,false,prima);

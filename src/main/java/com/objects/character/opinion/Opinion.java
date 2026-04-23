@@ -16,7 +16,7 @@ public class Opinion implements JsonSerializable {
     private DMEReference<HumanCharacter> us;
     private DMEReference<HumanCharacter> other;
     private int opinionPastTotal;
-    List<OpinionReason> activeReasons = new ArrayList<>();
+    Set<OpinionReason> activeReasons = new HashSet<>();
     public Opinion(JsonObject json){
         fromJson(json);
     }
@@ -24,9 +24,7 @@ public class Opinion implements JsonSerializable {
         this.us = us;
         this.other = other;
         opinionPastTotal = existingTotal;
-        for (OpinionReason reason : reasons){
-            activeReasons.add(reason);
-        }
+        activeReasons.addAll(Arrays.asList(reasons));
     }
     public int getFullTotal(){
         return getPastTotal() + getActiveTotal();
@@ -47,7 +45,7 @@ public class Opinion implements JsonSerializable {
     public int getPastTotal(){
         return opinionPastTotal;
     }
-    public List<OpinionReason> getActiveReasons(){
+    public Set<OpinionReason> getActiveReasons(){
         return activeReasons;
     }
     public void addOpinions(OpinionReason... reasons){

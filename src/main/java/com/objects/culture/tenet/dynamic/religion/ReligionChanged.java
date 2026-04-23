@@ -1,10 +1,9 @@
-package com.objects.culture.religion;
+package com.objects.culture.tenet.dynamic.religion;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.varswap.TimelineVarChange;
 import com.google.gson.JsonElement;
-import com.objects.culture.government.GoverningEntity;
 
 import java.time.LocalDate;
 

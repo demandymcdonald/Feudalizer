@@ -1,15 +1,13 @@
 package com.objects.culture.tenet.factory;
 
 import com.base.DateMutableEntity;
-import com.base.condition.IConditionError;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
-import com.base.timeline.error.StateError;
-import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
+import org.reactfx.util.TriPredicate;
 
 import java.util.Optional;
 
@@ -47,11 +45,17 @@ public abstract class TenetCondition<T extends DynamicTenet<T>,D extends DateMut
             }
         };
     }
-    public static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetCondition<T,D> hasAcceptance(TenetReference tenet, Acceptance threshold, boolean includeInfluencer){
+    public static <T extends DynamicTenet<T>,D extends DateMutableEntity<D> & CultureObject<D>> TenetCondition<T,D> hasAcceptance(TenetReference tenet, Acceptance threshold, boolean greaterThan, boolean includeInfluencer){
         return new TenetCondition<T,D>(tenet){
+            private final TriPredicate<TenetReference,Boolean,Acceptance> greaterAccept = (tr, b, a) ->{
+                return tr.get().getAcceptance(tenet,b).greaterThan(a);
+            };
+            private final TriPredicate<TenetReference,Boolean,Acceptance> lessAccept = (tr, b, a) ->{
+                return tr.get().getAcceptance(tenet,b).lessThan(a);
+            };
             @Override
             protected Optional<TenetError<T,D>> doCheck(TenetReference tenet, T parentTenet, DMEReference<? extends D> decider) {
-                if(parentTenet.getAcceptance(tenet,includeInfluencer).greaterThan(threshold)){
+                if(greaterThan ? greaterAccept.test(parentTenet.getTenetReference(),includeInfluencer,threshold) : lessAccept.test(parentTenet.getTenetReference(),includeInfluencer,threshold)){
                     return Optional.empty();
                 }
                 return Optional.of(acceptance(parentTenet.getTenetReference(),threshold,tenet));

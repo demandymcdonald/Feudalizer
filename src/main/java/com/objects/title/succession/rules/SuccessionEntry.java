@@ -1,5 +1,6 @@
 package com.objects.title.succession.rules;
 
+import com.base.condition.Condition;
 import com.base.reference.DMEReference;
 import com.base.timeline.error.SandboxCode;
 import com.base.timeline.error.StateError;
@@ -13,11 +14,11 @@ import java.util.*;
 import java.util.function.Function;
 
 public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements SuperclassSerializable<SuccessionEntry<?>> {
-    private static final Map<String, Function<DMEReference<SentientCharacter<?,?>>,? extends SuccessionEntry<?>>> typeMap = new HashMap<>();
-    private final DMEReference<SentientCharacter<?,?>> subject;
+    private static final Map<String, Function<DMEReference<? extends SentientCharacter<?>>,? extends SuccessionEntry<?>>> typeMap = new HashMap<>();
+    private final DMEReference<? extends SentientCharacter<?>> subject;
 
 
-    protected SuccessionEntry(DMEReference<SentientCharacter<?,?>> subject) {
+    protected SuccessionEntry(DMEReference<? extends SentientCharacter<?>> subject) {
         this.subject = subject;
 
     }
@@ -30,17 +31,17 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
     }
 
 
-    protected DMEReference<SentientCharacter<?,?>> getSubject() {
+    protected DMEReference<? extends SentientCharacter<?>> getSubject() {
         return subject;
     }
 
     protected <T extends Title<T>> boolean canInherit(DMEReference<? extends Title<?>> title, LocalDate date){
         DMEReference<T> t = (DMEReference<T>) title;
-        Optional<StateError> se = Title.canInherit(t,subject,date,false);
+        Optional<StateError<T>> se = Title.canInherit(t,subject,date,List.of(Condition.ShouldRun.ONCE_PER_ENTITY,Condition.ShouldRun.ONCE_PER_STATE,Condition.ShouldRun.ONCE_PER_CHANGE, Condition.ShouldRun.WHOLE_STATE_PER_ENTITY));
         return se.isEmpty() || se.get().getExpectedSandboxCode() == SandboxCode.CONTINUE;
     }
 
-    public abstract List<SentientCharacter<?,?>> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date);
+    public abstract List<DMEReference<? extends SentientCharacter<?>>> getLoSFull(DMEReference<? extends Title<?>> title, LocalDate date);
 
     @Override
     public final void metadataSave(JsonObject data) {
@@ -64,7 +65,7 @@ public abstract class SuccessionEntry<T extends SuccessionEntry<T>> implements S
         String c = metadata.get("class").getAsString();
         return (T) typeMap.get(c).apply(DMEReference.deserialize(json.get("subject").getAsJsonObject()));
     }
-    protected static void register(String type, Function<DMEReference<SentientCharacter<?,?>>,? extends SuccessionEntry<?>> function){
+    protected static void register(String type, Function<DMEReference<? extends SentientCharacter<?>>,? extends SuccessionEntry<?>> function){
         typeMap.put(type,function);
     }
 

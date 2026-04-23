@@ -1,11 +1,10 @@
-package com.objects.culture.government;
+package com.objects.culture.tenet.dynamic.government;
 
 import com.Global;
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.timeline.change.IChanger;
 import com.objects.culture.object.ICultureObject;
-import com.objects.culture.religion.Religion;
 
 public interface IGoverned<T extends DateMutableEntity<T> & IGoverned<T>> extends IChanger<T> {
     DMEReference<? extends GoverningEntity<?>> getGovernment();

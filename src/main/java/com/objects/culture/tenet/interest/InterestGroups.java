@@ -7,8 +7,7 @@ import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 
 import static com.objects.character.sentient.Gender.*;
-import static com.objects.culture.tenet.interest.InterestGroup.Dimension.Gender_Identity;
-import static com.objects.culture.tenet.interest.InterestGroup.Dimension.Sex_At_Birth;
+import static com.objects.culture.tenet.interest.InterestGroup.Dimension.*;
 
 public class InterestGroups {
 
@@ -293,5 +292,254 @@ public class InterestGroups {
                 return Dimension.Sexual_Orientation;
             }
         };
+    }
+    public static abstract class ClassCaste extends InterestGroup {
+        public ClassCaste(String id, String displayName, String description) {
+            super("class_"+id, displayName, description);
+        }
+        @Override
+        public Dimension getDimension() {
+            return Class_Caste;
+        }
+
+        public static class Elite extends ClassCaste {
+            public Elite() {
+                super("elite","Elites","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.ELITE_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.ELITE_CLASS;
+            }
+        }
+        public static class Professional extends ClassCaste {
+            public Professional() {
+                super("elite","Elites","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.PROFESSIONAL_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.PROFESSIONAL_CLASS;
+            }
+        }
+        public static class Academic extends ClassCaste {
+            public Academic() {
+                super("academic","Academics","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.PROFESSIONAL_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.PROFESSIONAL_CLASS;
+            }
+        }
+        public static class Artist extends ClassCaste {
+            public Artist() {
+                super("artist","Artist","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.ARTIST_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.ARTIST_CLASS;
+            }
+        }
+        public static class Officer extends ClassCaste {
+            public Officer() {
+                super("officer","Officers","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.OFFICER_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.OFFICER_CLASS;
+            }
+        }
+        public static class Business extends ClassCaste {
+            public Business() {
+                super("business", "Business", "");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.BUSINESS_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.BUSINESS_CLASS;
+            }
+        }
+            public static class Middle extends ClassCaste {
+                public Middle() {
+                    super("middle","Middle","");
+                }
+
+                @Override
+                public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                    return false;
+                }
+
+                @Override
+                public TenetGroup getRightsGroup() {
+                    return GovernmentGroups.MIDDLE_CLASS;
+                }
+
+                @Override
+                public TenetGroup getSocialStatusGroup() {
+                    return SocietyGroups.MIDDLE_CLASS;
+                }
+            }
+        public static class Soldier extends ClassCaste {
+            public Soldier() {
+                super("soldier","Soldiers","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.PROFESSIONAL_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.PROFESSIONAL_CLASS;
+            }
+        }
+        public static class Working extends ClassCaste {
+            public Working() {
+                super("working","Working","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.PROFESSIONAL_CLASS;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.PROFESSIONAL_CLASS;
+            }
+        }
+        public static class Disenfranchised extends ClassCaste {
+            public Disenfranchised() {
+                super("disenfranchised","Disenfranchised","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.DISENFRANCHISED;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.DISENFRANCHISED;
+            }
+        }
+        public static class Slave extends ClassCaste {
+            public Slave() {
+                super("slave","Slaves","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.SLAVE;
+            }
+
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.SLAVE;
+            }
+        }
+        public static class Outsider extends ClassCaste {
+            public Outsider() {
+                super("outsider","Outsiders","");
+            }
+
+            @Override
+            public <C extends SentientCharacter<C>> boolean isMember(C character) {
+                return false;
+            }
+
+            @Override
+            public TenetGroup getRightsGroup() {
+                return GovernmentGroups.OUTSIDER;
+            }
+            @Override
+            public TenetGroup getSocialStatusGroup() {
+                return SocietyGroups.OUTSIDER;
+            }
+        }
     }
 }
