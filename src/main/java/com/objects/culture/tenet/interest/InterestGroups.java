@@ -568,7 +568,7 @@ public class InterestGroups {
                 return SocietyGroups.DISENFRANCHISED;
             }
         };
-        public static final InterestGroup Slave = new ClassCaste("slave","Slave","") {
+        public static final InterestGroup SLAVE = new ClassCaste("slave","Slave","") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -590,7 +590,7 @@ public class InterestGroups {
                 return SocietyGroups.SLAVE;
             }
         };
-        public static final InterestGroup Outsider = new ClassCaste("outsider","Outsider","") {
+        public static final InterestGroup OUTSIDER = new ClassCaste("outsider","Outsider","") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;

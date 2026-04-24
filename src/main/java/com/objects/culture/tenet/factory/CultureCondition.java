@@ -26,7 +26,7 @@ public abstract class CultureCondition<TC extends TimelineChange<? super D> & Cu
         return check(change, subject.get(),decider.get());
     }
     public final Optional<StateError> check(TC change, S subject, D decider){
-        return doCheck(tenet, change,subject,subject.getCulture(),decider,decider.getCulture());
+        return doCheck(tenet, change,subject,subject.getCulture().get(),decider,decider.getCulture().get());
     }
     public abstract List<Key> getKeys();
     public abstract Condition.ShouldRun shouldRun();

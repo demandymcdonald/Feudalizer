@@ -1,5 +1,6 @@
 package com.objects.culture.tenet.mutable;
 
+import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
@@ -115,7 +116,7 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     }
 
     @Override
-    public Culture getCulture() {
+    public DMEReference<Culture> getCulture() {
         return parent.get().getCulture();
     }
 

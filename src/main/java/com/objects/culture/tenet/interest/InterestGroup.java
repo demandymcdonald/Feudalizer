@@ -3,6 +3,7 @@ package com.objects.culture.tenet.interest;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.IDisplayable;
 import com.utilities.id.StringIdentifiable;
@@ -37,6 +38,7 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable 
         this.id = "ig_" + getDimension().prefix +id;
         this.displayName = displayName;
         this.description = description;
+        TenetManager.InterestGroups.register(this);
     }
     public abstract <C extends SentientCharacter<C>> boolean isMember(C character);
     public TenetGroup.AcceptanceContainer getSocialAcceptance(Culture culture){

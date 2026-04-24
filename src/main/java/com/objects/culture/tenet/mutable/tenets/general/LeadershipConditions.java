@@ -1,11 +1,15 @@
 package com.objects.culture.tenet.mutable.tenets.general;
 
 import com.Global;
+import com.base.DateMutableEntity;
 import com.base.condition.Condition;
 import com.base.reference.ComplexReference;
+import com.base.timeline.change.CultureAware;
+import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.StateError;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
+import com.objects.culture.object.ICultureObject;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.Tenet;
 import com.objects.title.Title;
@@ -53,6 +57,34 @@ public class LeadershipConditions {
         }
     }
 
+    private static class Barred<D extends Title<D>>  extends CultureCondition<TitleSingleChange.SetHolder<D>,SentientCharacter<?>,D> {
+
+        public Barred(Tenet tenet) {
+            super(tenet);
+        }
+
+        @Override
+        public List<Key> getKeys() {
+            return List.of(
+                    new Key() {
+                        @Override
+                        protected <TC extends TimelineChange<D> & CultureAware<TC, ?, D>, D extends DateMutableEntity<D> & ICultureObject> boolean isValid(TC change) {
+                            return false;
+                        }
+                    }
+            );
+        }
+
+        @Override
+        public Condition.ShouldRun shouldRun() {
+            return Condition.ShouldRun.ONCE_PER_STATE;
+        }
+
+        @Override
+        protected Optional<StateError> doCheck(Tenet tenet, TitleSingleChange.SetHolder<D> change, SentientCharacter<?> subject, Culture subjectCulture, D decider, Culture deciderCulture) {
+            return Optional.empty();
+        }
+    }
 
 
 }

@@ -41,6 +41,13 @@ public abstract class AbstractJob<T extends AbstractJob<T>> extends Title<T> imp
         IOrganizedEntity.super.setOrg(newOrganization);
     }
 
-    public abstract Set<>
 
+    @Override
+    public void onLink() {
+        super.onLink();
+        if (organization != null) {
+            organization.get().forceLink();
+            organization.get().linkEmployee(this);
+        }
+    }
 }

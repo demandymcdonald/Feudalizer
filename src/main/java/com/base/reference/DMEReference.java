@@ -45,7 +45,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
 //    }
     public T get() {
         if (cachedEntity.get() == null) {
-            cachedEntity.set(DMRegistry.getEntity(this));;
+            cachedEntity.set(DMRegistry.getEntity(this));
         }
         return cachedEntity.get();
     }
