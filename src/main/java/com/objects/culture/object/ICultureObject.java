@@ -20,7 +20,7 @@ public interface ICultureObject extends ICultureOpinionated{
     DMEReference<Culture> getCulture();
     IPoliticalCompass getCompass();
     @Override
-    default AcceptanceContainer getAcceptanceContainer(ICultureObject other, boolean factorOtherTolerance){
+    default AcceptanceContainer getAcceptanceTenet(ICultureObject other, boolean factorOtherTolerance){
         return new AcceptanceContainer(getCompass().getCompatibilityValue(other.getCompass(),factorOtherTolerance));
     };
 }

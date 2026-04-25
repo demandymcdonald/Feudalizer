@@ -11,7 +11,7 @@ public interface Tenet extends IDisplayable, ICultureObject, UUIDIdentifiable {
     TenetGroup getGroup();
     Multimap<CultureCondition.Key, CultureCondition<?,?>> getConditions();
     @Override
-    default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
+    default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
         return new AcceptanceContainer(getAcceptanceValue(tenet, includeInfluencers));
     };
 

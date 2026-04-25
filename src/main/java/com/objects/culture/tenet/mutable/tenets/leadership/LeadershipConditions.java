@@ -8,10 +8,8 @@ import com.base.timeline.change.CultureAware;
 import com.base.timeline.change.TimelineChange;
 import com.base.timeline.error.StateError;
 import com.google.common.collect.ImmutableMap;
-import com.ibm.icu.impl.locale.XCldrStub;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
-import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.ICultureOpinionated;
 import com.objects.culture.tenet.Acceptance;
@@ -19,11 +17,8 @@ import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.interest.InterestGroup;
-import com.objects.title.land.habitable.HabitableLand;
-import com.utilities.number.BoundDbl;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -125,7 +120,7 @@ public abstract class LeadershipConditions {
             int maxPos = (Acceptance.MAX_VALUE * 2);
             for (ICultureOpinionated group : groups.keySet()) {
                 int weight = groups.get(group);
-                AcceptanceContainer ac = group.getAcceptanceContainer(deciderCulture,false);
+                AcceptanceContainer ac = group.getAcceptanceTenet(deciderCulture,false);
                 double value = ac.value() + Acceptance.MAX_VALUE; //Doing this to make a -512 score 0, and a 512 score 1024
                 double thresholdclear = value/maxPos;
                 forVote += weight * thresholdclear;

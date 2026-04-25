@@ -2,15 +2,17 @@ package com.objects.culture.object;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
+import com.base.timeline.change.multi.type.ChangeType;
 import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.timeline.change.multi.wrapper.TLSet;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
+import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.object.compass.InterpolatedPoliticalCompass;
 import com.objects.culture.object.reference.COReference;
+import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -19,21 +21,24 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObject<T>> implements CultureObjectVars{
 
-    DMEReference<T> reference;
-    Pair<COReference<?>, InfluencerInstance> parent;
-    TLMap<COReference<?>,InfluencerInstance> influencers;
-    TLSet<TenetInstance<T>> opinions;
-    InterpolatedPoliticalCompass<T> compass;
-    TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
+    private DMEReference<T> reference;
+    private Pair<COReference<?>, InfluencerInstance> parent;
+    private TLMap<COReference<?>,InfluencerInstance> influencers;
+    private TLSet<TenetInstance<T>> opinions;
+    private InterpolatedPoliticalCompass<T> compass;
+    private Map<TenetReference, TenetInstance<T>> opinionMap = new HashMap<>();
+    private TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
     public CultureObjectContainer(DMEReference<T> reference){
         this.reference = reference;
     }
 
-    public TenetInstance<T> getOpinion(TenetReference tenet){
-        return opinions.getWhere((ti) -> ti.getTenet().equals(tenet)).stream().findFirst().orElse(null);
+
+    public Set<TenetInstance<T>> getByGroup(TenetGroup group){
+        return getByGroup(group,false);
     }
     public Set<TenetInstance<T>> getByGroup(TenetGroup group, boolean includeDescendants){
         Set<TenetInstance<T>> result = new HashSet<>();
@@ -50,16 +55,30 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
     public Set<TenetInstance<T>> getByGroupTree(TenetGroup group){
         return getByGroup(group,true);
     }
-    public Set<TenetInstance<T>> getPillarTree(TenetManager.Group.Pillar tenet){
-        return getByGroupTree(tenet.getGroup());
-    }
-    protected TenetInstance<T> getTenetInstance(TenetReference tr){
+    public TenetInstance<T> getTenetInstance(TenetReference tr){
         return opinions.getWhere((ti) -> ti.getTenet().equals(tr)).stream().findFirst().orElse(null);
     }
-    public AcceptanceContainer getOpinionTenet(TenetReference tenet, boolean includeInfluencers){
-        return getOpinionTenet(tenet,includeInfluencers,new HashSet<>());
+    public void addOpinion(TenetReference tenet, boolean wipe, double d){
+        TenetInstance<T> opinion = getTenetInstance(tenet);
+        if (opinion != null){
+            Consumer<TenetInstance<T>> consumer = (i) -> i.add(d);
+            getOpinions().setChanged(wipe, ChangeType.KEY,Map.of(opinion,consumer));
+            invalidateCache(tenet);
+        }else {
+            getOpinions().add(new TenetInstance<>(tenet,this.getReference(),d));
+        }
     }
-    public AcceptanceContainer getOpinionTenet(TenetReference tenet, boolean includeInfluencers, Set<COReference<?>> blacklist){
+    public Set<TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers){
+        int floor = acceptance.getValue();
+        return getOpinions().getWhere((ti) -> {
+            return getAcceptanceTenet(ti.getTenet(),includeInfluencers).value() >= floor;
+        });
+    }
+
+    public AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
+        return getAcceptanceTenet(tenet,includeInfluencers,new HashSet<>());
+    }
+    public AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers, Set<COReference<?>> blacklist){
         T self = reference.get();
         double acceptance = getBase(tenet);
         if(includeInfluencers){
@@ -122,9 +141,9 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
 
             double factor = iMap.get(influencer).weight().get(tenet.getGroup()) * (1 + Math.clamp(self.influencerResistance(influencer),-1,1));
             if (blacklist.contains(influencer)) {
-                raw = influencer.get().getOpinion(tenet, false, new HashSet<>());
+                raw = influencer.get().getAcceptanceTenet(tenet, false, new HashSet<>());
             } else {
-                raw = influencer.get().getOpinion(tenet, true, blacklist);
+                raw = influencer.get().getAcceptanceTenet(tenet, true, blacklist);
             }
             opinionSum += raw.value();
             influencerMap.put(raw.value(), factor);
@@ -157,7 +176,11 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         }
         return normalized;
     }
-
+    public void amendCompass(IPoliticalCompass difference){
+        for (IPoliticalCompass.Axis axis : difference.getAxisMap().keySet()) {
+            compass.amendCompass(axis, Objects.requireNonNull(difference.getAxisMap().get(axis)).get());
+        }
+    }
 
     public InterpolatedPoliticalCompass<T> getCompass() {
         return compass;
@@ -171,9 +194,7 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         return influencedCache;
     }
 
-    public void setInfluencedCache(TLSyncedCache<TenetReference, Double> influencedCache) {
-        this.influencedCache = influencedCache;
-    }
+
     public TLMap<COReference<?>,InfluencerInstance> getInfluencers() {
         return influencers;
     }
@@ -194,10 +215,10 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         return parent;
     }
     public void setParent(COReference<?> influencer, InfluencerRelationship relationship){
-        this.parent = Pair.of(influencer,relationship.makeInstance(false));
+        setParent(influencer,relationship.makeInstance(false));
     }
-    public void setParent(Pair<COReference<?>, InfluencerInstance> parent) {
-        this.parent = parent;
+    public void setParent(COReference<?> ref, InfluencerInstance parent) {
+        this.parent = Pair.of(ref,parent);
     }
 
     public DMEReference<T> getReference() {
@@ -213,5 +234,7 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
     }
     public void invalidateCache(){
         getInfluencedCache().invalidateAll();
+        opinionMap.clear();
     }
+
 }

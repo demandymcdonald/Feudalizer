@@ -21,7 +21,7 @@ public interface MinorCultureObject<T extends DateMutableEntity<T> & MinorCultur
     }
 
     @Override
-    default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
+    default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
         double val = getParent().get().getAcceptanceValue(tenet, includeInfluencers);
         Pair<Double,Integer> added = getAddedOpinion(tenet.get());
         int localInf = Math.clamp(added.getRight(),0,100);

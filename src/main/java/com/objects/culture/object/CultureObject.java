@@ -6,6 +6,7 @@ import com.base.reference.DMEReference;
 import com.base.timeline.change.multi.type.ChangeType;
 import com.base.timeline.change.multi.type.WipeType;
 import com.base.timeline.change.multi.wrapper.TLMap;
+import com.base.timeline.change.multi.wrapper.TLSet;
 import com.base.utilities.TLSyncedCache;
 import com.objects.culture.Culture;
 import com.objects.culture.Influencers.InfluencerInstance;
@@ -15,7 +16,6 @@ import com.objects.culture.object.reference.COReference;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.object.compass.CompassChange;
@@ -31,10 +31,12 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     CultureObjectContainer<T> getContainer();
 
     @Override
-    default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
-        return new AcceptanceContainer(getAcceptanceValue(tenet,includeInfluencers));
+    default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
+        return getContainer().getAcceptanceTenet(tenet,includeInfluencers);
     };
-
+    default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers, Set<COReference<?>> blacklist){
+        return getContainer().getAcceptanceTenet(tenet,includeInfluencers,blacklist);
+    }
     void updateProceduralInfluencers(); //Idea here is that the code can automatically add and remove procedural influencers (like dead people, or new lieges)
     double influencerResistance(COReference<?> influencer); // clamped between -1 and 1. Used to model things like personal opinion of an influencer for people -> people influencer,
     // or situations where a person might have less influence than the relationship suggests (power imbalance, for example).
@@ -44,48 +46,21 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         // will work becuase TOReferences are just janky wrappers for DMEReferences.
         return new COReference<>(getReference());
     }
-    default Acceptance getAcceptance(Tenet tenet, boolean includeInfluencers){
-        return Acceptance.get((int) Math.round(getAcceptanceValue(tenet, includeInfluencers)));
-    }
-    default double getAcceptanceValue(Tenet tenet, boolean includeInfluencers){
-        return getAcceptanceValue(tenet, includeInfluencers, new COReference[0]);
+
+    default void doDateChange(){
+        getContainer().invalidateCache();
     }
 
+    default void amendCompass(IPoliticalCompass values){
+        getContainer().amendCompass(values);
+    }
 
-    default void amendCompass(Pair<IPoliticalCompass.Axis,Integer>... values){
-        InterpolatedPoliticalCompass<?> compass = getCompass();
-        boolean changed = false;
-        for (Pair<IPoliticalCompass.Axis,Integer> pair : values) {
-            if (pair.getLeft() == null || (pair.getRight() == null || pair.getRight() == 0)){
-                continue;
-            }
-            changed = true;
-            compass.amendCompass(pair.getLeft(),pair.getRight());
-        }
-        if (changed){
-            //DMEReference<? extends T> owner = ;
-            getReference().get().getTimeline().addChange(new CompassChange<>(getReference(), Global.getDate(),getCompass()));
-            invalidateCache();
-        }
-    }
-    default AcceptanceContainer getOpinion(TenetReference tenet, boolean includeInfluencers, Set<COReference<?>> blacklist){
-        return getContainer().getOpinionTenet(tenet,includeInfluencers,blacklist);
-    }
     default void addOpinion(TenetReference tenet, double d){
         addOpinion(tenet,false,d);
     }
-    default void addOpinion(TenetReference tenet, boolean wipe, double d){
-        TLMap<TenetReference,TenetInstance<T>> opinions = getOpinions();
-        if (opinions.containsKey(tenet)){
-            BiConsumer<TenetReference,TenetInstance<T>> consumer = (t,i) -> i.add(d);
-            opinions.setChanged(wipe, ChangeType.VALUE,Map.of(tenet,consumer));
-            invalidateCache(tenet);
-        }else {
-            opinions.put(tenet,new TenetInstance<>(tenet,this.getReference(),d));
-        }
-    }
+
     default void setOpinion(TenetReference tenet, double d){
-        setOpinion(tenet,false,d);
+
     }
 
     default boolean isInfluencer(COReference<?> ref){
@@ -148,26 +123,19 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
 
 
 
-
-    default TLSyncedCache<TenetReference,Double> getInfluencedCache(){
-        return getContainer().getInfluencedCache();
-    };
-    default TLMap<TenetReference,TenetInstance<T>> getOpinions(){
+    default TLSet<TenetInstance<T>> getOpinions(){
         return getContainer().getOpinions();
     };
-    default Map<TenetReference,TenetInstance<T>> getActiveTenets(){
-        return getOpinions().getWhere((tr, ti) -> {
+    default Set<TenetInstance<T>> getActiveTenets(){
+        return getOpinions().getWhere( (ti) -> {
             return ti.isActive();
         });
     }
-    default Map<TenetReference,TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers){
-        int floor = acceptance.getValue();
-        return getOpinions().getWhere((tr, ti) -> {
-            return getAcceptanceValue(tr,includeInfluencers) >= floor;
-        });
+    default Set<TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers){
+        return getContainer().getTenetsByThreshold(acceptance,includeInfluencers);
     }
     void internalSetCulture(DMEReference<Culture> culture);
-    default void internalSetOpinions(TLMap<TenetReference,TenetInstance<T>> opinions){
+    default void internalSetOpinions(TLSet<TenetInstance<T>> opinions){
         getContainer().setOpinions(opinions);
     };
     default Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject(){

@@ -14,7 +14,6 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.Tenet;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,7 +36,7 @@ public abstract class CultureCondition<S extends DateMutableEntity<?> & ICulture
         return decider.getCompass().getAcceptanceContainer(subject.getCompass(),factorSubjectTolerance);
     }
     protected final <E extends DateMutableEntity<?> & ICultureObject> AcceptanceContainer getTenetAcceptance(E either){
-        return either.getAcceptanceContainer(tenet.getTenetReference(),true);
+        return either.getAcceptanceTenet(tenet.getTenetReference(),true);
     }
     protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject, TC extends TimelineChange<? super D> & CultureAware<TC,S,D>>
     StateError makeError(Tenet tenet, StateReference message, TC change){
@@ -49,7 +48,7 @@ public abstract class CultureCondition<S extends DateMutableEntity<?> & ICulture
     }
     protected static <S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject,TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError>
     AcceptanceTooLow(Tenet tenet, TC change, S subject, D decider, boolean acceptedAllowed, boolean neutralAllowed){
-        final Acceptance accept = decider.getAcceptanceContainer(subject,false).getAcceptance();
+        final Acceptance accept = decider.getAcceptanceTenet(subject,false).getAcceptance();
         final StateReference sr = ComplexReference.of("{} (decider) and {} (subject) are too incompatible culturally. The decider sees the subject as {}",decider.getDisplayID(),subject.getDisplayID(),accept.getDisplayName());
         switch(accept){
             case CORE,CORE_FANATIC,INTEGRATED -> {
