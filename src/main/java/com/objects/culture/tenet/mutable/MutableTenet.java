@@ -56,21 +56,21 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
 //        return conditions;
 //    }
     @Override
-    public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
-        Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> result = HashMultimap.create();
-        List<CultureCondition<?, ?, ?>> conditions = new ArrayList<>();
-        for (CultureCondition<?, ?, ?> condition : getConditions().values()) {
+    public final Multimap<CultureCondition.Key, CultureCondition<?, ?>> getConditions() {
+        Multimap<CultureCondition.Key, CultureCondition<?, ?>> result = HashMultimap.create();
+        List<CultureCondition<?, ?>> conditions = new ArrayList<>();
+        for (CultureCondition<?, ?> condition : getConditions().values()) {
             for (CultureCondition.Key key : condition.getKeys()) {
                 result.put(key,condition);
             }
         }
         return result;
     }
-    public abstract List<CultureCondition<?,?,?>> getConditionList();
+    public abstract Set<CultureCondition<?,?>> getConditionList();
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }
-    public abstract List<TenetGroup> compatibleParents();
+    public abstract Set<TenetGroup> compatibleParents();
     @Override
     public TenetReference getTenetReference() {
         return reference;

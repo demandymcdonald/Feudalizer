@@ -9,6 +9,8 @@ import com.objects.culture.Culture;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.organization.AbstractOrganization;
+import com.objects.organization.NonGovernmentEntity;
+import com.objects.organization.government.IGoverned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -20,14 +22,13 @@ import java.util.UUID;
 import static com.objects.culture.tenet.group.groups.EducationGroups.SCHOOL_SYSTEM;
 import static com.objects.culture.tenet.group.groups.EducationGroups.SCHOOL_TYPE;
 
-public class EducationInstitution extends AbstractOrganization<EducationInstitution> {
+public class EducationInstitution extends NonGovernmentEntity<EducationInstitution> {
     private TenetGroup eduType;
     private TLSet<Education> teaches;
     public EducationInstitution(TenetGroup group, DMEReference<EducationInstitution> dme) {
         super(group, dme);
         eduType = validate(group);
     }
-
     public EducationInstitution(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<EducationInstitution, ?>> initialState) {
         super(group, name, created, ended, foundingCulture, initialState);
         eduType = validate(group);
@@ -44,10 +45,7 @@ public class EducationInstitution extends AbstractOrganization<EducationInstitut
     public Set<Education> canProvide(){
         return new HashSet<>(teaches.asSet());
     }
-    @Override
-    public void internalSetCulture(DMEReference<Culture> culture) {
-        super.internalSetCulture(culture);
-    }
+
 
     @Override
     public void additionalLoad(JsonObject data) {
@@ -65,5 +63,10 @@ public class EducationInstitution extends AbstractOrganization<EducationInstitut
             throw new IllegalArgumentException("Invalid Education Group");
         }
         return group;
+    }
+
+    @Override
+    protected void onLink() {
+
     }
 }

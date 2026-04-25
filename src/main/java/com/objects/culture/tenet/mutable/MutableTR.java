@@ -11,9 +11,11 @@ import java.util.UUID;
 public class MutableTR extends TenetReference {
     private UUID id;
     private TenetGroup group;
+    private Class<? extends Tenet> tenetClass;
     public MutableTR(MutableTenet tenet) {
         this.id = tenet.getID();
         this.group = tenet.getGroup();
+        this.tenetClass = tenet.getClass();
     }
     public MutableTR() {}
 
@@ -33,12 +35,23 @@ public class MutableTR extends TenetReference {
         object.addProperty(ST_HEADER,MUTABLE);
         object.addProperty("id",id.toString());
         object.addProperty("group",group.getDisplayID());
+        object.addProperty("tenetClass",tenetClass.getName());
     }
 
     @Override
     protected void additionalLoad(JsonObject object) {
         id = UUID.fromString(object.get("id").getAsString());
         group = TenetManager.Group.get(object.get("group").getAsString());
+        try {
+            tenetClass = (Class<? extends Tenet>) Class.forName(object.get("tenetClass").getAsString());
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public <TR extends Tenet> Class<TR> getTenetClass() {
+        return null;
     }
 
     @Override

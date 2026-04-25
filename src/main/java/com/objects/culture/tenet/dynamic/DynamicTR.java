@@ -2,6 +2,7 @@ package com.objects.culture.tenet.dynamic;
 
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
+import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.TenetReference;
@@ -41,6 +42,11 @@ public class DynamicTR<T extends DynamicTenet<T>> extends TenetReference {
     protected void additionalLoad(JsonObject object) {
         group = TenetManager.Group.get(object.get("group").getAsString());
         dmeReference = DMEReference.deserialize(object.get("ref").getAsJsonObject());
+    }
+
+    @Override
+    public <TR extends Tenet> Class<TR> getTenetClass() {
+        return (Class<TR>) dmeReference.getClass();
     }
 
     @Override

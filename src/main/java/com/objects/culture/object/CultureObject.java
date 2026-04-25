@@ -36,7 +36,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     static final double k = .02; //kernal floor
     static final int pf = 2; //crushing power for normalization
     static final int oc = MAX_VALUE; // upper and lower bound for opinion values
-
+    CultureObjectContainer<T> getContainer();
 
     @Override
     default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
@@ -285,7 +285,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         }
         return normalized;
     }
-    CultureObjectContainer<T> getContainer();
+
     default TLSyncedCache<TenetReference,Double> getInfluencedCache(){
         return getContainer().getInfluencedCache();
     };

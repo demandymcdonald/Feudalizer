@@ -9,7 +9,7 @@ import com.utilities.id.UUIDIdentifiable;
 
 public interface Tenet extends IDisplayable, ICultureObject, UUIDIdentifiable {
     TenetGroup getGroup();
-    Multimap<CultureCondition.Key, CultureCondition<?,?,?>> getConditions();
+    Multimap<CultureCondition.Key, CultureCondition<?,?>> getConditions();
     @Override
     default AcceptanceContainer getAcceptanceContainer(TenetReference tenet, boolean includeInfluencers){
         return new AcceptanceContainer(getAcceptanceValue(tenet, includeInfluencers));

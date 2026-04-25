@@ -9,7 +9,7 @@ import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
 import com.objects.culture.tenet.interest.InterestGroup;
-import com.objects.culture.tenet.mutable.tenets.general.Leadership;
+import com.objects.culture.tenet.mutable.tenets.leadership.Leadership;
 import com.objects.culture.tenet.mutable.MutableTenet;
 import com.objects.culture.tenet.mutable.tenets.ReligionTenets;
 import com.utilities.serialization.SuperclassSerializable;

@@ -11,7 +11,7 @@ import com.objects.title.succession.rules.SuccessionEntry;
 
 import java.time.LocalDate;
 
-public class CharacterChanges {
+public class SentientChange {
 
 
     public static class Birth<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {

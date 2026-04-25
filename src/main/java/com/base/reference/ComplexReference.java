@@ -8,7 +8,7 @@ import org.slf4j.helpers.MessageFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComplexReference extends StateReference{
+public class    ComplexReference extends StateReference{
     public static final String COMPLEX_SR_TYPE = "ComplexReference";
     private final List<Object> vars = new ArrayList<>();
     private final String string;

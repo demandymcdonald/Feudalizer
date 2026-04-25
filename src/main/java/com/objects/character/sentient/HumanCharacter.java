@@ -5,13 +5,11 @@ import com.base.timeline.change.ChangeSupplier;
 import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
-import com.objects.character.CharacterSingleChange;
-import com.objects.character.opinion.Opinion;
+import com.objects.character.opinion.OpinionContainer;
 import com.objects.character.physical.species.SentientSpecies;
 import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
-import com.objects.organization.government.House;
 import com.objects.title.Title;
 import com.objects.title.succession.rules.SuccessionEntry;
 
@@ -32,7 +30,7 @@ public class HumanCharacter extends SentientCharacter<HumanCharacter, SentientSp
     private SuccessionEntry<?> preferredSuccession;
     private DMEReference<Culture> culture;
 
-    private final Map<UUID, Opinion> opinions = new HashMap<>();
+    private final Map<UUID, OpinionContainer> opinions = new HashMap<>();
 
     //TODO Add: Religion, Culture, Political Ideology.
 

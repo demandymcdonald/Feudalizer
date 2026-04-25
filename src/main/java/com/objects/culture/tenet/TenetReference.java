@@ -39,9 +39,10 @@ public abstract class TenetReference extends StateReference implements UUIDIdent
         tenetReference.additionalLoad(o);
         return tenetReference;
     }
+    public abstract  <TR extends Tenet> Class<TR> getTenetClass();
     public static <TR extends Tenet> TenetReference of(TR te){
         if (te instanceof MutableTenet tr) {
-            return new MutableTR(tr.getID());
+            return new MutableTR(tr);
         } else if (te instanceof DynamicTenet<?> dtr) {
             return new DynamicTR<>(dtr);
         }

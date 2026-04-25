@@ -7,6 +7,8 @@ import com.base.timeline.change.display.DisplayContainer;
 import com.base.timeline.change.display.ITLDisplayable;
 import com.base.timeline.change.multi.wrapper.TLMap;
 import com.base.utilities.TLSyncedCache;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
@@ -29,6 +31,7 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.object.COReference;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.Tenet;
+import com.utilities.caching.CachingSupplier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -43,6 +46,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     private DMEReference<Culture> foundingCulture;
     private final DisplayContainer<T> displayContainer;
     private final Multimap<Type, ICultureObject> members = HashMultimap.create();
+    private final CachingSupplier<Map<TenetReference,TenetInstance<T>>> activeSupplier = new CachingSupplier<>(CultureObject.super::getActiveTenets);
     public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
         this.tenetGroup = group;
@@ -95,6 +99,11 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
 
     @Override
+    public final Map<TenetReference, TenetInstance<T>> getActiveTenets() {
+        return activeSupplier.get();
+    }
+
+    @Override
     public final DMEReference<Culture> getCulture() {
         return this.foundingCulture;
     }
@@ -112,6 +121,10 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     }
     private static String buildID(TenetGroup tenetGroup, String name) {
         return tenetGroup.getDisplayID() + "/" + name.toLowerCase(Locale.ROOT);
+    }
+    @Override
+    public void internalSetCulture(DMEReference<Culture> culture) {
+        foundingCulture = culture;
     }
 
     @Override
@@ -144,6 +157,32 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     public void addMember(ICultureObject follower){
         members.put(follower.getType(), follower);
     }
+    private final Cache<Class<? extends Tenet>,Set<? extends Tenet>> activeLookup = CacheBuilder.newBuilder().build();
+    public final <R extends Tenet> Set<R> getActiveTenetByClass(Class<R> clazz){
+        Set<? extends Tenet> set = activeLookup.getIfPresent(clazz);
+        if(set == null){
+            Set<TenetReference> map = getActiveTenets().keySet();
+            Set<R> finalSet = new HashSet<>();
+            map.forEach((tr) -> {
+                if(tr.getTenetClass().isInstance(clazz)){finalSet.add((R) tr);}
+            });
+            activeLookup.put(clazz, finalSet);
+            return finalSet;
+        } else {
+            return new HashSet<>((Set<R>) set);
+        }
+    }
+
+    @Override
+    public void onDateChange() {
+        super.onDateChange();
+        activeSupplier.clear();
+        activeLookup.invalidateAll();
+    }
+    public final Set<ICultureObject> getByType(Type type){
+        return new HashSet<>(members.get(type));
+    }
+
 //Literally just to clean up override menu
 
 
@@ -215,10 +254,6 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractCu
     @Override
     public final Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject() {
         return CultureObject.super.getParentObject();
-    }
-    @Override
-    public final Multimap<CultureCondition.Key, CultureCondition<?, ?, ?>> getConditions() {
-        return null;
     }
     @Override
     public final COReference<T> getTOReference() {

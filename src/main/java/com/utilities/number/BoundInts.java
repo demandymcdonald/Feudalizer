@@ -23,6 +23,13 @@ public class BoundInts {
             return new Pos256(0);
         }
     }
+    public static BoundInt Int256(boolean negative,int integer){
+        if(negative){
+            return new Both256(integer);
+        } else {
+            return new Pos256(integer);
+        }
+    }
     public static BoundInt Custom(int min, int starting, int max){
         return new BoundInt(starting) {
             @Override

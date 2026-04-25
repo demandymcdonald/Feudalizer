@@ -2,7 +2,6 @@ package com.base;
 
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.family.Family;
-import com.objects.organization.government.House;
 import com.objects.title.Title;
 
 public enum ObjectType {

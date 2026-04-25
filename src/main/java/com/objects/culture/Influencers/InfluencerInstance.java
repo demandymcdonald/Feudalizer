@@ -26,7 +26,7 @@ public record InfluencerInstance(InfluencerRelationship relationship, MutableBoo
     }
     @Override
     public void toJson(JsonObject json) {
-        json.addProperty("relationship", relationship.name());
+        json.addProperty("relationship", relationship.get());
         json.add("weight", weight.serialize());
     }
 

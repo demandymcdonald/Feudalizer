@@ -71,8 +71,18 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     }
 
     @Override
-    public Culture getCulture() {
-        return null;
+    public void internalSetCulture(DMEReference<Culture> culture) {
+
+    }
+
+    @Override
+    public Type getType() {
+        return Type.Culture;
+    }
+
+    @Override
+    public DMEReference<Culture> getCulture() {
+        return this.getReference();
     }
 
     @Override

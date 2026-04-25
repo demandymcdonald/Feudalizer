@@ -3,6 +3,8 @@ package com.objects.culture.tenet.interest;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.object.PassiveCultureObject;
+import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.IDisplayable;
@@ -11,7 +13,7 @@ import com.utilities.number.BoundInt;
 
 import java.util.Map;
 
-public abstract class InterestGroup implements IDisplayable, StringIdentifiable {
+public abstract class InterestGroup implements IDisplayable, StringIdentifiable, PassiveCultureObject {
 
     private final String id;
     private final String displayName;
@@ -41,13 +43,16 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable 
         TenetManager.InterestGroups.register(this);
     }
     public abstract <C extends SentientCharacter<C>> boolean isMember(C character);
-    public TenetGroup.AcceptanceContainer getSocialAcceptance(Culture culture){
+    public String getQuickID(){
+        return id.substring(3,10);
+    };
+    public AcceptanceContainer getSocialAcceptance(Culture culture){
 
     }
-    public TenetGroup.AcceptanceContainer getRights(Culture culture){
+    public AcceptanceContainer getRights(Culture culture){
 
     }
-    public TenetGroup.AcceptanceContainer getOpinion(CultureObject<?> object){
+    public AcceptanceContainer getOpinion(Culture deciderCulture, CultureObject<?> object){
 
     }
     public abstract Map<IGPointer, BoundInt> getRelations();

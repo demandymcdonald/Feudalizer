@@ -1,5 +1,7 @@
-package com.objects.culture.tenet.mutable.tenets.general;
+package com.objects.culture.tenet.mutable.tenets.leadership;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.TenetManager;
@@ -12,9 +14,12 @@ import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.MutableTenet;
 import com.objects.culture.tenet.mutable.augments.IRightsTenet;
+import com.objects.culture.tenet.mutable.tenets.general.CompassGenerators;
+import com.objects.title.land.habitable.HabitableLand;
 
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.groups.MilitaryGroups.*;
@@ -41,8 +46,8 @@ public abstract class Leadership extends MutableTenet {
     }
 
     @Override
-    public List<TenetGroup> compatibleParents() {
-        return List.of(
+    public Set<TenetGroup> compatibleParents() {
+        return Set.of(
                 GOVERNMENT,
                 GOVERNMENT_LEADERSHIP,
                 GOVERNMENT_OFFICIAL,
@@ -154,25 +159,20 @@ public abstract class Leadership extends MutableTenet {
     public static class TermLimit extends Leadership {
         private int duration;
         private ChronoUnit durationUnit;
-
         public TermLimit(TenetReference parent, PoliticalCompass entry, int duration, ChronoUnit durationUnit) {
             super(parent, Type.REMOVAL, entry, "term_limit", "Term Limit", "The term limit for this office");
             this.duration = duration;
             this.durationUnit = durationUnit;
         }
-
         public TermLimit(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
             super(parent, uuid, group, entry, id, name, description);
         }
-
         @Override
-        public List<CultureCondition<?, ?, ?>> getConditionList() {
-            return List.of(
-                    LeadershipConditions.buildTermLimit(this, duration, durationUnit)
+        public Set<CultureCondition<?, ?>> getConditionList() {
+            return Set.of(
+                LeadershipConditions.TermLimit(this, duration, durationUnit)
             );
         }
-
-
         @Override
         public void additionalSave(JsonObject data) {
             data.addProperty("duration", duration);
@@ -187,22 +187,75 @@ public abstract class Leadership extends MutableTenet {
     }
     public static class Barred extends Leadership implements IRightsTenet<Barred> {
         private final Set<InterestGroup> isAffected = new HashSet<>();
-        public Barred(TenetReference parent, PoliticalCompass entry, String id, String name, String description, InterestGroup... group) {
-            super(parent, Type.SELECTION, entry, id, name, description);
-            isAffected.addAll(Arrays.stream(group).toList());
+        public Barred(TenetReference parent, InterestGroup... groups) {
+            super(parent, Type.SELECTION, CompassGenerators.disenfranchise(4,groups), buildID(groups), "Barred from Office", "");
+            isAffected.addAll(Arrays.stream(groups).toList());
         }
         public Barred(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
             super(parent, uuid, group, entry, id, name, description);
         }
+        @Override
+        public Set<CultureCondition<?, ?>> getConditionList() {
+            return Set.of(
+                LeadershipConditions.Disenfranchised(this,isAffected)
+            );
+        }
+        public boolean contains(InterestGroup group) {
+            return isAffected.contains(group);
+        }
+        @Override
+        public Set<InterestGroup> isAffected() {
+            return isAffected;
+        }
+        @Override
+        public void additionalSave(JsonObject data) {
+            JsonArray array = new JsonArray();
+            for (InterestGroup group : isAffected) {
+                array.add(group.getID());
+            }
+            data.add("isAffected", array);
+        }
+        @Override
+        public void additionalLoad(JsonObject data) {
+            JsonArray array = data.getAsJsonArray("isAffected");
+            isAffected.clear();
+            for(JsonElement element : array) {
+                isAffected.add(TenetManager.InterestGroups.get(element.getAsJsonObject().get("id").getAsString()));
+            }
+        }
+        private static String buildID(InterestGroup... group) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("banned_from_leadership:");
+            boolean isFirst = true;
+            for (InterestGroup group1 : group) {
+                if (isFirst) {
+                    isFirst = false;
+                    builder.append(group1.getQuickID());
+                    continue;
+                }
+                builder.append("-").append(group1.getQuickID());
+            }
+            return builder.toString();
+        }
+    }
+    public static class Election extends Leadership implements IRightsTenet<Election> {
+
+        public Election(TenetReference parent, ElectionType type) {
+            super(parent, type, entry, id, name, description);
+        }
+
+        public Election(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
 
         @Override
-        public List<CultureCondition<?, ?, ?>> getConditionList() {
-            return List.of();
+        public Set<CultureCondition<?, ?>> getConditionList() {
+            return Set.of();
         }
 
         @Override
         public Set<InterestGroup> isAffected() {
-            return isAffected;
+            return Set.of();
         }
 
         @Override

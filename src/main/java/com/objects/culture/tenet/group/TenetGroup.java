@@ -105,7 +105,7 @@ public class TenetGroup implements IDisplayable, Parented<TenetGroup> {
     public List<TenetGroup> getDescendants(){
         return TenetManager.Group.getDescendants(this);
     }
-    public record AcceptanceContainer(int maxNumber, Acceptance... accept){}
+
     @Deprecated
     public static TenetGroup builder(TGType type, String id, String name, String description){
         Builder b = new Builder(type, id, name, description);

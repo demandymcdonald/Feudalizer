@@ -52,7 +52,7 @@ public class PopulationChange<T extends DateMutableEntity<T> & IDemographicDrive
 
     @Override
     public MiddlemanMap<InterestGroup, BoundInt,T> getRuntimeMap() {
-        return getOwner().get().getPopulationContainer().internalGetPopulationMap();
+        return getOwner().get().getPopulationContainer().internalGetMap();
     }
     public void setPopulation(long population){
         this.population = population;

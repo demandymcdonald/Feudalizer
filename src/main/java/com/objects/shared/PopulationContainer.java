@@ -137,6 +137,7 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
         }
         return total;
     }
+
     private Map<InterestGroup,BoundDbl> filterByDimension(InterestGroup demographic){
         return new HashMap<>(Maps.filterKeys(intPopMap, (InterestGroup key) -> {
             return key.getDimension().equals(demographic.getDimension());}));
@@ -175,7 +176,9 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     public DMEReference<? extends T> getOwner() {
         return owner;
     }
-
+    public Map<InterestGroup, BoundDbl> getPopulationMap() {
+        return new HashMap<>(intPopMap);
+    }
     @Override
     public Map<Identifiable<?>, VariableContainer> getEasingFunctions() {
         return buildEasing();
@@ -201,7 +204,7 @@ public class PopulationContainer<T extends DateMutableEntity<T> & IDemographicDr
     public void internalSetMap(TLMap<InterestGroup,BoundInt> newMap){
         popMap = newMap;
     }
-    public TLMap<InterestGroup,BoundInt> internalGetPopulationMap(){
+    public TLMap<InterestGroup,BoundInt> internalGetMap(){
         return popMap;
     }
     public void internalSetChange(PopulationChange<T> newChange){

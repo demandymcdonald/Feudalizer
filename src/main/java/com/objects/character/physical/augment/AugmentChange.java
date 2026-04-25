@@ -27,7 +27,7 @@ public class AugmentChange<T extends LivingCreature<T>> extends TimelineMapChang
 
     @Override
     public void setRuntimeMap(TLMap<AugmentSlot, AugmentInstance> map) {
-        getOwner().get().setAugments(map);
+        getOwner().get().internalSetAugments(map);
     }
 
     @Override

@@ -16,21 +16,22 @@ import com.objects.culture.tenet.Tenet;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-public abstract class CultureCondition<TC extends TimelineChange<? super D> & CultureAware<TC,S,D>, S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject> {
+public abstract class CultureCondition<S extends DateMutableEntity<?> & ICultureObject, D extends DateMutableEntity<?> & ICultureObject> {
     private final Tenet tenet;
     public CultureCondition(Tenet tenet) {
         this.tenet = tenet;
     }
-    public final Optional<StateError> check(TC change, DMEReference<? extends S> subject, DMEReference<? extends D> decider) {
+    public final <TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError> check(TC change, DMEReference<? extends S> subject, DMEReference<? extends D> decider) {
         return check(change, subject.get(),decider.get());
     }
-    public final Optional<StateError> check(TC change, S subject, D decider){
+    public final <TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError> check(TC change, S subject, D decider){
         return doCheck(tenet, change,subject,subject.getCulture().get(),decider,decider.getCulture().get());
     }
-    public abstract List<Key> getKeys();
+    public abstract Set<Key> getKeys();
     public abstract Condition.ShouldRun shouldRun();
-    protected abstract Optional<StateError> doCheck(Tenet tenet, TC change, S subject, Culture subjectCulture, D decider, Culture deciderCulture);
+    protected abstract <TC extends TimelineChange<? super D> & CultureAware<TC,S,D>> Optional<StateError> doCheck(Tenet tenet, TC change, S subject, Culture subjectCulture, D decider, Culture deciderCulture);
 
     protected final AcceptanceContainer getCulturalAcceptance(S subject, D decider, boolean factorSubjectTolerance) {
         return decider.getCompass().getAcceptanceContainer(subject.getCompass(),factorSubjectTolerance);

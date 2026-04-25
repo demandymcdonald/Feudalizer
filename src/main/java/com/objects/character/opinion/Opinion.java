@@ -1,88 +1,71 @@
 package com.objects.character.opinion;
 
 import com.base.reference.DMEReference;
-import com.google.common.collect.Multimap;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.character.sentient.HumanCharacter;
-import com.objects.character.CharacterMapChanges;
-import com.utilities.serialization.JsonSerializable;
+import com.google.gson.JsonParser;
+import com.objects.character.LivingCreature;
+import com.objects.character.sentient.SentientCharacter;
+import com.utilities.id.StringIdentifiable;
+import com.utilities.serialization.CompressString;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
-public class Opinion implements JsonSerializable {
-    private CharacterMapChanges.OpinionChange parent;
-    private DMEReference<HumanCharacter> us;
-    private DMEReference<HumanCharacter> other;
-    private int opinionPastTotal;
-    Set<OpinionReason> activeReasons = new HashSet<>();
-    public Opinion(JsonObject json){
-        fromJson(json);
-    }
-    public Opinion(DMEReference<HumanCharacter> us, DMEReference<HumanCharacter> other, int existingTotal, OpinionReason... reasons) {
-        this.us = us;
-        this.other = other;
-        opinionPastTotal = existingTotal;
-        activeReasons.addAll(Arrays.asList(reasons));
-    }
-    public int getFullTotal(){
-        return getPastTotal() + getActiveTotal();
-    }
-    public int getActiveTotal(){
-        int total = 0;
-        for (OpinionReason reason : activeReasons){
-            total += reason.change();
-        }
-        return total;
-    }
-    public void resetPastTotal(){
-        opinionPastTotal = 0;
-    }
-    public void amendPastTotal(int change){
-        opinionPastTotal += change;
-    }
-    public int getPastTotal(){
-        return opinionPastTotal;
-    }
-    public Set<OpinionReason> getActiveReasons(){
-        return activeReasons;
-    }
-    public void addOpinions(OpinionReason... reasons){
-        activeReasons.addAll(List.of(reasons));
-    }
-    public void setParent(CharacterMapChanges.OpinionChange parent){
-        this.parent = parent;
-    }
+public class Opinion implements StringIdentifiable {
+    private final UUID instanceID;
+    private final DMEReference<? extends LivingCreature<?>> target;
+    private OpinionReason reason;
 
-    public Multimap<LocalDate,OpinionReason> getFullTargetHistory(){
-        return parent.buildFullHistory(this);
+    public Opinion(UUID instanceID, DMEReference<? extends LivingCreature<?>> target, OpinionReason reason) {
+        this.instanceID = instanceID;
+        this.target = target;
+        this.reason = reason;
     }
-    public DMEReference<HumanCharacter> getOther(){
-        return other;
+    public Opinion(DMEReference<? extends LivingCreature<?>> target, OpinionReason reason) {
+        this.instanceID = UUID.randomUUID();
+        this.target = target;
+        this.reason = reason;
+    }
+    public int getValue(){
+        return reason.value().get();
     }
     @Override
+    public String getID() {
+        return target.getID().toString()+":"+instanceID.toString();
+    }
+    public DMEReference<? extends LivingCreature<?>> getTarget() {
+        return target;
+    }
+    public UUID getInstanceID() {
+        return instanceID;
+    }
+    public double getReciprocalMod(){
+        return reason.reciprocalMod();
+    }
+    public OpinionReason getReason() {
+        return reason;
+    }
+    public UUID getTargetID() {
+        return target.getID();
+    }
     public JsonObject toJson() {
-        JsonObject json = new JsonObject();
-        json.addProperty("us", us.getID().toString());
-        json.addProperty("other",other.getID().toString());
-        json.addProperty("runningTotal", opinionPastTotal);
-        JsonArray reasons = new JsonArray();
-        for (OpinionReason reason : activeReasons){
-            reasons.add(reason.toJson());
-        }
-        return json;
-    }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id",CompressString.compress(instanceID.toString()) + "::" + CompressString.compress(CompressString.compress(target.serialize().getAsString())));
 
-    @Override
-    public void fromJson(JsonObject json) {
-        us = DMEReference.of(HumanCharacter.class,UUID.fromString(json.get("us").getAsString()));
-        other = DMEReference.of(HumanCharacter.class,UUID.fromString(json.get("other").getAsString()));
-        opinionPastTotal = json.get("runningTotal").getAsInt();
-        for (int i = 0; i < json.get("reasons").getAsJsonArray().size(); i++) {
-            JsonObject reason = json.get("reasons").getAsJsonArray().get(i).getAsJsonObject();
-            activeReasons.add(OpinionReason.fromJson(reason));
-        }
+        jsonObject.addProperty("reason", reason.toJson().getAsString());
+        return jsonObject;
+    }
+    public Optional<Duration> getDuration() {
+        return Optional.ofNullable(reason.duration());
+    }
+    public static Opinion fromJson(JsonObject object){
+        String[] ids = object.get("id").getAsString().split("::");
+        UUID instanceID = UUID.fromString(Objects.requireNonNull(CompressString.decompress(ids[0])));
+        DMEReference<? extends LivingCreature<?>> target = DMEReference.deserialize(JsonParser.parseString(Objects.requireNonNull(CompressString.decompress(ids[1]))).getAsJsonObject());
+        OpinionReason reason =  OpinionReason.fromJson(object.get("reason").getAsJsonPrimitive());
+        return new Opinion(instanceID,target,reason);
     }
 
 }
