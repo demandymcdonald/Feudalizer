@@ -1,9 +1,10 @@
-package com.objects.culture.object;
+package com.objects.culture.object.reference;
 
 import com.base.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;
+import com.objects.culture.object.CultureObject;
 import com.utilities.id.Identifiable;
 
 import java.util.UUID;

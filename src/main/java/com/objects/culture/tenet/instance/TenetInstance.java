@@ -10,16 +10,18 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetReference;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
+import com.utilities.id.UUIDIdentifiable;
 import com.utilities.number.BoundedDouble;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
 //public class TenetInstance<TI extends TenetInstance<TI,T,TC>,T extends DateMutableEntity<T> & CultureObject<T>,TC extends TenetInstanceChange<TC,T,TI>> implements EasingVariable<TI,TC,T>
-public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>implements EasingVariable<TenetInstance<T>,TenetInstanceChange<T>,T> {
+public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>implements EasingVariable<TenetInstance<T>,TenetInstanceChange<T>,T>, UUIDIdentifiable {
 //    private static final double b = .23; //apathy peak as percent from start
 //    private static final double c = 0.00022; //apathy decay
 //    private static final double z = .125; // zealotry peak as percent from end. Should hit right as the they pass the Fanatic mark
@@ -29,6 +31,7 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
 //    private static final int pf = 2; //crushing power for normalization
     private DMEReference<T> owner;
     private TenetReference tenet;
+    private UUID id;
     private final BoundedDouble opinion = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private final BoundedDouble interpolated = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private MutableBoolean isActive = new MutableBoolean(false);
@@ -48,6 +51,7 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
         this.owner = (DMEReference<T>) owner;
         this.tenet = reference;
         this.opinion.set(opinion);
+        this.id = UUID.randomUUID();
     }
     public TenetInstance(){
         this.owner = null;
@@ -92,11 +96,13 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
         object.addProperty("opinion", opinion.get());
         object.add("owner", owner.serialize());
         object.add("reference", tenet.serialize());
+        object.addProperty("id", id.toString());
     }
 
     @Override
     public void mainLoad(JsonObject object) {
         opinion.set(object.get("opinion").getAsDouble());
+        id = UUID.fromString(object.get("id").getAsString());
         owner = DMEReference.deserialize(object.get("owner").getAsJsonObject());
         tenet = TenetReference.deserialize(object.get("reference").getAsJsonObject());
     }
@@ -121,6 +127,10 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
         return owner;
     }
 
+    public TenetReference getTenet() {
+        return tenet;
+    }
+
     @Override
     public Map<Identifiable<?>, VariableContainer> getEasingFunctions() {
         return Map.of(
@@ -133,5 +143,10 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
         return (ti) -> {
             return ti.tenet.equals(tenet);
         };
+    }
+
+    @Override
+    public UUID getID() {
+        return id;
     }
 }

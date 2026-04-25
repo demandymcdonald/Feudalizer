@@ -6,11 +6,10 @@ import com.base.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.object.CultureObjectContainer;
-import com.objects.culture.object.COReference;
+import com.objects.culture.object.reference.COReference;
 import com.objects.culture.object.CultureObject;
 import com.objects.shared.IDemographicDriven;
 import com.objects.shared.PopulationContainer;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;

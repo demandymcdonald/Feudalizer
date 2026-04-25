@@ -103,7 +103,9 @@ public class TLMap<K extends Identifiable<?>,V> {
     public void setChanged(boolean doPropagate, ChangeType type, K key, BiConsumer<K,V> consumer){
         setChanged(isMain,doPropagate,type,Map.of(key,consumer));
     }
-
+    public Map<K,V> getMutableMap(){
+        return new HashMap<>(middleman.getWhere((k,v) -> true));
+    }
 
 
 }

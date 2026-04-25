@@ -1,6 +1,6 @@
 package com.objects.culture.Influencers;
 
-import com.objects.culture.object.COReference;
+import com.objects.culture.object.reference.COReference;
 
 public class RelationshipsNation {
     public static class Overlord extends InfluencerRelationship{

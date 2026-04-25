@@ -32,6 +32,6 @@ public interface Tenet extends IDisplayable, ICultureObject, UUIDIdentifiable {
         if (tenet.equals(getTenetReference())) {
             return Acceptance.CORE_FANATIC.getValue();
         }
-        return getCompass().getCompatibilityValue(tenet.get().getCompass());
+        return getCompass().getCompatibilityValue(tenet.get().getCompass(),includeInfluencers);
     }
 }

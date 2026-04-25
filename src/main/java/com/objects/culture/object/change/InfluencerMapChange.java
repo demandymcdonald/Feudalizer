@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.object.CultureObject;
-import com.objects.culture.object.COReference;
+import com.objects.culture.object.reference.COReference;
 import com.utilities.serialization.RegistrySerialManager;
 
 import java.time.LocalDate;

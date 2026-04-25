@@ -9,7 +9,7 @@ import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.factory.TenetCondition;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
-import com.objects.culture.object.COReference;
+import com.objects.culture.object.reference.COReference;
 import com.objects.culture.tenet.TenetReference;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

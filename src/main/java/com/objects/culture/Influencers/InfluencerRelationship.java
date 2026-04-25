@@ -1,11 +1,9 @@
 package com.objects.culture.Influencers;
 
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.object.COReference;
+import com.objects.culture.object.reference.COReference;
 
-import javax.annotation.Nullable;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 public abstract class InfluencerRelationship {
     final InfluencerWeight defaultWeight;
