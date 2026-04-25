@@ -121,6 +121,4 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT
 
 //Literally just to clean up override menu
 
-
-    }
 }

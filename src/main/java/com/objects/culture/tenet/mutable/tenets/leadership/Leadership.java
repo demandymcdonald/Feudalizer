@@ -15,6 +15,7 @@ import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.MutableTenet;
 import com.objects.culture.tenet.mutable.augments.IRightsTenet;
 import com.objects.culture.tenet.mutable.tenets.general.CompassGenerators;
+import com.objects.culture.tenet.mutable.tenets.leadership.election.ElectionType;
 import com.objects.title.land.habitable.HabitableLand;
 
 import java.time.temporal.ChronoUnit;
@@ -240,8 +241,8 @@ public abstract class Leadership extends MutableTenet {
     }
     public static class Election extends Leadership implements IRightsTenet<Election> {
 
-        public Election(TenetReference parent, ElectionType type) {
-            super(parent, type, entry, id, name, description);
+        public Election(TenetReference parent, ElectionType<?> type) {
+            super(parent, type, entry, id, name, "");
         }
 
         public Election(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
