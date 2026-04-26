@@ -1,7 +1,7 @@
 package com.objects.organization.religion;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;

@@ -1,8 +1,8 @@
 package com.objects.culture.tenet.factory;
 
-import com.base.DateMutableEntity;
-import com.base.timeline.change.CultureAware;
-import com.base.timeline.change.TimelineChange;
+import com.base.datemutable.DateMutableEntity;
+import com.base.datemutable.timeline.change.CultureAware;
+import com.base.datemutable.timeline.change.TimelineChange;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.object.ICultureObject;
 import com.objects.title.Title;

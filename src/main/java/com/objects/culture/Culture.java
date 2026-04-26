@@ -1,44 +1,39 @@
 package com.objects.culture;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.object.CultureObjectContainer;
+import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.reference.COReference;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.shared.IDemographicDriven;
 import com.objects.shared.PopulationContainer;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture>, IDemographicDriven<Culture> {
+public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture> {
     CultureObjectContainer<Culture> container;
-
-
-
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
         super(created, ended, initialState);
         container = new CultureObjectContainer<>(getReference());
     }
-
     public Culture(DMEReference<Culture> dme) {
         super(dme);
         container = new CultureObjectContainer<>(dme);
     }
-
     @Override
     protected void onLink() {
 
     }
-
     @Override
     public void doDateChange() {
 
     }
-
     @Override
     public TimelineChange<Culture> getBirthChange(DMEReference<Culture> dme, LocalDate date) {
         return null;
@@ -95,7 +90,7 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     }
 
     @Override
-    public PopulationContainer<Culture> getPopulationContainer() {
+    public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
         return null;
     }
 }

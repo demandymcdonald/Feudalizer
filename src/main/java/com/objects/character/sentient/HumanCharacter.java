@@ -1,8 +1,8 @@
 package com.objects.character.sentient;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.opinion.OpinionContainer;

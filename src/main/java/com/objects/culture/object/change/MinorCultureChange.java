@@ -1,16 +1,14 @@
 package com.objects.culture.object.change;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.state.TimelineState;
+import com.base.datemutable.timeline.change.TimelineSingleChange;
+import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
 import com.objects.culture.object.MinorCultureObject;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class MinorCultureChange<T extends DateMutableEntity<T> & MinorCultureObject<T>> extends TimelineSingleChange<T> {
     private DMEReference<Culture> parent;

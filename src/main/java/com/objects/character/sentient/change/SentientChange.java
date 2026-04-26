@@ -1,8 +1,8 @@
 package com.objects.character.sentient.change;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.state.TimelineState;
+import com.base.datemutable.timeline.change.TimelineSingleChange;
+import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.sentient.Gender;

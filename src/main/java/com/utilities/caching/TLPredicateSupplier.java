@@ -1,8 +1,8 @@
 package com.utilities.caching;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.utilities.TimelineSynced;
+import com.base.datemutable.utilities.TimelineSynced;
 import org.reactfx.util.TriPredicate;
 
 import java.time.LocalDate;

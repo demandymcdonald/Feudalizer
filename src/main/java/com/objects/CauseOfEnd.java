@@ -1,8 +1,7 @@
 package com.objects;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.google.gson.JsonObject;
-import com.objects.character.sentient.HumanCharacter;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.utilities.IDisplayable;
 import com.utilities.id.StringIdentifiable;

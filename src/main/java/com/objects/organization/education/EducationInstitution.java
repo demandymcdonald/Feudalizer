@@ -1,16 +1,13 @@
 package com.objects.organization.education;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.multi.wrapper.TLSet;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.organization.AbstractOrganization;
 import com.objects.organization.NonGovernmentEntity;
-import com.objects.organization.government.IGoverned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -19,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.objects.culture.tenet.group.groups.EducationGroups.SCHOOL_SYSTEM;
 import static com.objects.culture.tenet.group.groups.EducationGroups.SCHOOL_TYPE;
 
 public class EducationInstitution extends NonGovernmentEntity<EducationInstitution> {

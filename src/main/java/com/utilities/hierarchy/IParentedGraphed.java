@@ -1,6 +1,6 @@
 package com.utilities.hierarchy;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedPseudograph;

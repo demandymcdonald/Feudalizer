@@ -1,6 +1,6 @@
 package com.objects.shared;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.objects.culture.tenet.interest.InterestGroup;
 
 public interface IDemographicDriven<T extends DateMutableEntity<T> & IDemographicDriven<T>> {

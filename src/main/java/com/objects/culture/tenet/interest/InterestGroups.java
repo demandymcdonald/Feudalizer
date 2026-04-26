@@ -1,7 +1,11 @@
 package com.objects.culture.tenet.interest;
 
+import com.base.instanced.InstanceType;
+import com.google.gson.JsonObject;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
+import com.objects.culture.Culture;
+import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
@@ -10,14 +14,24 @@ import com.utilities.number.BoundInts;
 
 import java.util.Map;
 
+import static com.base.instanced.InstanceType.DATA_DRIVEN;
+import static com.base.instanced.InstanceType.HARDCODED;
 import static com.objects.character.sentient.Gender.*;
 import static com.objects.culture.tenet.interest.InterestGroup.Dimension.*;
 
 public class InterestGroups {
 
 
-    public static class Sex{
-        public static final InterestGroup MALE = new InterestGroup("male", "Male", "Group for people who were born male.") {
+    public static abstract class Sex extends InterestGroup{
+        protected Sex(InstanceType type, String id, String displayName, String description) {
+            super(type, Sex_At_Birth, id, displayName, description);
+        }
+        @Override
+        public PoliticalCompass makeCompass(Culture culture) {
+            return null;
+        }
+
+        public static final Sex MALE = new Sex(HARDCODED,"male", "Male", "Group for people who were born male.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getSex().equals(com.objects.character.Sex.MALE);
@@ -38,12 +52,8 @@ public class InterestGroups {
                 return SocietyGroups.SEX_MALE;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Sex_At_Birth;
-            }
         };
-        public static final InterestGroup FEMALE = new InterestGroup("female", "Female", "Group for people who were born female.") {
+        public static final Sex FEMALE = new Sex(HARDCODED,"female", "Female", "Group for people who were born female.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getSex().equals(com.objects.character.Sex.FEMALE);
@@ -61,17 +71,26 @@ public class InterestGroups {
             public TenetGroup getSocialStatusGroup() {
                 return SocietyGroups.SEX_FEMALE;
             }
-
-            @Override
-            public Dimension getDimension() {
-                return Sex_At_Birth;
-            }
         };
     }
 
 
-    public static class Gender_Identity {
-        public static final InterestGroup MEN = new InterestGroup("men", "Men", "Group for Cisgendered Men.") {
+    public static abstract class Gender_Identity extends InterestGroup {
+
+        protected Gender_Identity(InstanceType type, String id, String displayName, String description) {
+            super(type, Gender_Identity, id, displayName, description);
+        }
+
+        @Override
+        public PoliticalCompass makeCompass(Culture culture) {
+            return null;
+        }
+
+        @Override
+        public InterestGroup getFreshInstance(String id) {
+            return null;
+        }
+        public static final Gender_Identity MEN = new Gender_Identity(HARDCODED,"men", "Men", "Group for Cisgendered Men.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Gender.Male);
@@ -90,12 +109,9 @@ public class InterestGroups {
                 return SocietyGroups.GENDER_MALE;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Gender_Identity;
-            }
+
         };
-        public static final InterestGroup WOMEN = new InterestGroup("women", "Women", "Group for Cisgendered Women.") {
+        public static final Gender_Identity WOMEN = new Gender_Identity(HARDCODED,"women", "Women", "Group for Cisgendered Women.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Gender.Female);
@@ -114,12 +130,9 @@ public class InterestGroups {
                 return SocietyGroups.GENDER_FEMALE;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Gender_Identity;
-            }
+
         };
-        public static final InterestGroup TRANS = new InterestGroup("trans", "Transgender Men & Women", "Group for people whose gender is different to the sex assigned at birth") {
+        public static final Gender_Identity TRANS = new Gender_Identity(HARDCODED,"trans", "Transgender Men & Women", "Group for people whose gender is different to the sex assigned at birth") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Gender.Trans_Female) || character.getGender().equals(Gender.Trans_Male);
@@ -138,12 +151,9 @@ public class InterestGroups {
                 return SocietyGroups.GENDER_TRANS;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Gender_Identity;
-            }
+
         };
-        public static final InterestGroup NB_OTHER = new InterestGroup("nb", "Non-Binary", "Group for people who identify as non-binary") {
+        public static final Gender_Identity NB_OTHER = new Gender_Identity(HARDCODED,"nb", "Non-Binary", "Group for people who identify as non-binary") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getGender().equals(Non_Binary_Male) || character.getGender().equals(Non_Binary_Female);
@@ -162,14 +172,24 @@ public class InterestGroups {
                 return SocietyGroups.GENDER_NB_OTHER;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Gender_Identity;
-            }
+
         };
     }
-    public static class Orientation {
-        public static final InterestGroup HETERO = new InterestGroup("hetero","Heterosexual","Is attracted to members of the opposite sex.") {
+    public static abstract class Orientation extends InterestGroup{
+        public Orientation(InstanceType type, String id, String displayName, String description) {
+            super(type, Sexual_Orientation, id, displayName, description);
+        }
+
+        @Override
+        public PoliticalCompass makeCompass(Culture culture) {
+            return null;
+        }
+
+        @Override
+        public InterestGroup getFreshInstance(String id) {
+            return null;
+        }
+        public static final Orientation HETERO = new Orientation(HARDCODED,"hetero","Heterosexual","Is attracted to members of the opposite sex.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Heterosexual);
@@ -188,12 +208,9 @@ public class InterestGroups {
                 return SocietyGroups.HETERO;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
-        public static final InterestGroup HOMO = new InterestGroup("homo","Homosexual","Is attracted to members of the same sex.") {
+        public static final Orientation HOMO =  new Orientation(HARDCODED,"homo","Homosexual","Is attracted to members of the same sex.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Homosexual);
@@ -212,12 +229,9 @@ public class InterestGroups {
                 return SocietyGroups.HOMO;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
-        public static final InterestGroup BI = new InterestGroup("bi","Bisexual","Is attracted to members of either sex.") {
+        public static final Orientation BI =  new Orientation(HARDCODED,"bi","Bisexual","Is attracted to members of either sex.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Bisexual);
@@ -236,12 +250,9 @@ public class InterestGroups {
                 return SocietyGroups.BI;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
-        public static final InterestGroup AE = new InterestGroup("ae","Asexual","Does not find people sexually attractive.") {
+        public static final Orientation AE =  new Orientation(HARDCODED,"ae","Asexual","Does not find people sexually attractive.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Asexual);
@@ -260,12 +271,9 @@ public class InterestGroups {
                 return SocietyGroups.AE;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
-        public static final InterestGroup PAN = new InterestGroup("pan","Pansexual","Is willing to date a person of any sex or gender.") {
+        public static final Orientation PAN =  new Orientation(HARDCODED,"pan","Pansexual","Is willing to date a person of any sex or gender.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Pansexual);
@@ -284,12 +292,9 @@ public class InterestGroups {
                 return SocietyGroups.PAN;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
-        public static final InterestGroup QUESTIONING = new InterestGroup("questioning","Questioning","Is in the process of figuring out who they're attracted to.") {
+        public static final Orientation QUESTIONING =  new Orientation(HARDCODED,"questioning","Questioning","Is in the process of figuring out who they're attracted to.") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Questioning);
@@ -308,13 +313,10 @@ public class InterestGroups {
                 return SocietyGroups.QUESTIONING;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
         //Todo Demi is nearly impossible to model, so I won't include it for now.. I want to think on it though.
-        public static final InterestGroup OTHER = new InterestGroup("other","Other","Is attracted to something or someone") {
+        public static final Orientation OTHER =  new Orientation(HARDCODED,"other","Other","Is attracted to something or someone") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getOrientation().equals(SentientCharacter.Orientation.Other);
@@ -333,26 +335,43 @@ public class InterestGroups {
                 return SocietyGroups.OTHER;
             }
 
-            @Override
-            public Dimension getDimension() {
-                return Dimension.Sexual_Orientation;
-            }
+
         };
+
+
     }
     public static abstract class ClassCaste extends InterestGroup {
-        private final double prestigeMultiplier;
-        public ClassCaste(String id, String displayName, double prestigeMultiplier, String description) {
-            super("class_"+id, displayName, description);
+        private double prestigeMultiplier;
+        public ClassCaste(InstanceType type, String id, String displayName, double prestigeMultiplier, String description) {
+            super(type,Class_Caste,"class_"+id, displayName, description);
             this.prestigeMultiplier = prestigeMultiplier;
         }
+
         @Override
-        public Dimension getDimension() {
-            return Class_Caste;
+        public PoliticalCompass makeCompass(Culture culture) {
+            return null;
         }
+
+        @Override
+        public InterestGroup getFreshInstance(String id) {
+            return null;
+        }
+        @Override
+        public void additionalLoad(JsonObject object) {
+            super.additionalLoad(object);
+            prestigeMultiplier = object.get("prestigeMultiplier").getAsDouble();
+        }
+
+        @Override
+        public void additionalSave(JsonObject object) {
+            super.additionalSave(object);
+            object.addProperty("prestigeMultiplier", prestigeMultiplier);
+        }
+
         public double getPrestigeMultiplier() {
             return prestigeMultiplier;
         }
-        public static final ClassCaste ELITE = new ClassCaste("elite","Elites",2,"") {
+        public static final ClassCaste ELITE = new ClassCaste(HARDCODED,"elite","Elites",2,"") {
             @Override
             public Map<IGPointer, BoundInt> getRelations() {
                 return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5),
@@ -373,7 +392,7 @@ public class InterestGroups {
                 return SocietyGroups.ELITE_CLASS;
             }
         };
-        public static final ClassCaste PROFESSIONAL = new ClassCaste("professional","Professional",.95,"") {
+        public static final ClassCaste PROFESSIONAL = new ClassCaste(HARDCODED,"professional","Professional",.95,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -395,7 +414,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final ClassCaste ACADEMIC = new ClassCaste("academic","Academics",.9,"") {
+        public static final ClassCaste ACADEMIC = new ClassCaste(HARDCODED,"academic","Academics",.9,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -417,7 +436,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final ClassCaste ARTIST = new ClassCaste("artist","Artist",.85,"") {
+        public static final ClassCaste ARTIST = new ClassCaste(HARDCODED,"artist","Artist",.85,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -439,7 +458,7 @@ public class InterestGroups {
                 return SocietyGroups.ARTIST_CLASS;
             }
         };
-        public static final ClassCaste OFFICER = new ClassCaste("officer","Officers",1.25,"") {
+        public static final ClassCaste OFFICER = new ClassCaste(HARDCODED,"officer","Officers",1.25,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -461,7 +480,7 @@ public class InterestGroups {
                 return SocietyGroups.OFFICER_CLASS;
             }
         };
-        public static final ClassCaste BUSINESS = new ClassCaste("business","Business",1.25,"") {
+        public static final ClassCaste BUSINESS = new ClassCaste(HARDCODED,"business","Business",1.25,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -483,7 +502,7 @@ public class InterestGroups {
                 return SocietyGroups.BUSINESS_CLASS;
             }
         };
-        public static final ClassCaste MIDDLE = new ClassCaste("middle","Middle",.67,"") {
+        public static final ClassCaste MIDDLE = new ClassCaste(HARDCODED,"middle","Middle",.67,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -505,7 +524,7 @@ public class InterestGroups {
                 return SocietyGroups.MIDDLE_CLASS;
             }
         };
-        public static final ClassCaste SOLDIER = new ClassCaste("soldier","Soldier",.55,"") {
+        public static final ClassCaste SOLDIER = new ClassCaste(HARDCODED,"soldier","Soldier",.55,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -527,7 +546,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final ClassCaste WORKING = new ClassCaste("working","Working",.5,"") {
+        public static final ClassCaste WORKING = new ClassCaste(HARDCODED,"working","Working",.5,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -549,7 +568,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final ClassCaste DISENFRANCHISED = new ClassCaste("disenfranchised","Disenfranchised",.3,"") {
+        public static final ClassCaste DISENFRANCHISED = new ClassCaste(HARDCODED,"disenfranchised","Disenfranchised",.3,"") {
 
 
             @Override
@@ -572,7 +591,7 @@ public class InterestGroups {
                 return SocietyGroups.DISENFRANCHISED;
             }
         };
-        public static final ClassCaste SLAVE = new ClassCaste("slave","Slave",.25,"") {
+        public static final ClassCaste SLAVE = new ClassCaste(HARDCODED,"slave","Slave",.25,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -594,7 +613,7 @@ public class InterestGroups {
                 return SocietyGroups.SLAVE;
             }
         };
-        public static final ClassCaste OUTSIDER = new ClassCaste("outsider","Outsider",.4,"") {
+        public static final ClassCaste OUTSIDER = new ClassCaste(HARDCODED,"outsider","Outsider",.4,"") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;

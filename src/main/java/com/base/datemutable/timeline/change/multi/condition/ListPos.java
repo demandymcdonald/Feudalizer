@@ -1,0 +1,16 @@
+package com.base.datemutable.timeline.change.multi.condition;
+
+import com.utilities.id.Identifiable;
+
+public class ListPos implements Identifiable<Integer> {
+    public final int position;
+
+    public ListPos(int position) {
+        this.position = position;
+    }
+
+    @Override
+    public Integer getID() {
+        return position;
+    }
+}

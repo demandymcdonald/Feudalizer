@@ -1,8 +1,5 @@
 package com.base.condition;
 
-import com.base.timeline.change.TimelineChange;
-import org.apache.commons.lang3.function.TriFunction;
-
 import java.util.List;
 import java.util.Optional;
 

@@ -1,17 +1,11 @@
 package com.objects.character.physical.genetics;
 
-import com.base.DateMutableEntity;
-import com.base.reference.DMEReference;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.objects.character.LivingCreature;
 import com.objects.character.physical.GeneManager;
 import com.utilities.number.BoundDbl;
 import com.utilities.number.BoundDoubles;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.geotools.util.DateRange;
-
-import java.time.LocalDate;
 
 import static com.objects.character.physical.genetics.SpectrumTrait.SPECTRUM_SIZE;
 

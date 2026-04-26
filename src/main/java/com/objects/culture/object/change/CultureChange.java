@@ -1,8 +1,8 @@
 package com.objects.culture.object.change;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.varswap.TimelineVarChange;
+import com.base.datemutable.timeline.change.varswap.TimelineVarChange;
 import com.google.gson.JsonElement;
 import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;

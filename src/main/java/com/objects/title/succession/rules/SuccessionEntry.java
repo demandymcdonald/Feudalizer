@@ -2,8 +2,8 @@ package com.objects.title.succession.rules;
 
 import com.base.condition.Condition;
 import com.base.reference.DMEReference;
-import com.base.timeline.error.SandboxCode;
-import com.base.timeline.error.StateError;
+import com.base.datemutable.timeline.error.SandboxCode;
+import com.base.datemutable.timeline.error.StateError;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.title.Title;
 import com.google.gson.JsonObject;

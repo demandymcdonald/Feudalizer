@@ -1,12 +1,12 @@
 package com.objects.title.succession;
 
 import com.Global;
-import com.base.timeline.error.SandboxCode;
+import com.base.datemutable.timeline.error.SandboxCode;
 import com.base.reference.DMEReference;
-import com.base.timeline.sandbox.function.SandboxFunctions;
-import com.base.timeline.sandbox.core.Objective;
-import com.base.timeline.sandbox.core.Sandbox;
-import com.base.timeline.sandbox.core.SandboxHandler;
+import com.base.datemutable.timeline.sandbox.function.SandboxFunctions;
+import com.base.datemutable.timeline.sandbox.core.Objective;
+import com.base.datemutable.timeline.sandbox.core.Sandbox;
+import com.base.datemutable.timeline.sandbox.core.SandboxHandler;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.Title;
 import com.objects.title.change.TitleSingleChange;

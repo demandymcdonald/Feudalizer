@@ -1,10 +1,10 @@
 package com.objects.character;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.wrapper.TLMap;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.multi.wrapper.TLMap;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.change.LivingCOE;

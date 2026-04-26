@@ -1,7 +1,7 @@
 package com.objects.title;
 
 import com.Feudalizer;
-import com.base.AbstractMutableManager;
+import com.base.datemutable.AbstractMutableManager;
 import com.base.ObjectType;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;

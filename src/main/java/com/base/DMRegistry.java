@@ -1,5 +1,7 @@
 package com.base;
 import com.Global;
+import com.base.datemutable.AbstractMutableManager;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.objects.character.CharacterManager;
 import com.objects.family.FamilyManager;
@@ -10,7 +12,7 @@ import com.objects.title.TitleManager;
 import java.util.*;
 
 public class DMRegistry {
-    private static final Map<Class<? extends DateMutableEntity<?>>,AbstractMutableManager<?,? extends DateMutableEntity<?>,? >> MANAGER_MAP = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Class<? extends DateMutableEntity<?>>, AbstractMutableManager<?,? extends DateMutableEntity<?>,? >> MANAGER_MAP = Collections.synchronizedMap(new HashMap<>());
     private static final List<AbstractMutableManager<?,? extends DateMutableEntity<?>,?>> MANAGERS = Collections.synchronizedList(new ArrayList<>());
 
     public static final CharacterManager CHARACTER_MANAGER = new CharacterManager();

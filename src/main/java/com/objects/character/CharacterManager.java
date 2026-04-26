@@ -1,6 +1,6 @@
 package com.objects.character;
 
-import com.base.AbstractMutableManager;
+import com.base.datemutable.AbstractMutableManager;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.Gender;

@@ -1,12 +1,12 @@
 package com.objects.culture.object.change;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.condition.nullify.NullifyCondition;
-import com.base.timeline.change.multi.MiddlemanMap;
-import com.base.timeline.change.multi.TimelineMapChange;
-import com.base.timeline.state.TimelineState;
+import com.base.datemutable.timeline.change.condition.deactivate.DeactivateCondition;
+import com.base.datemutable.timeline.change.condition.nullify.NullifyCondition;
+import com.base.datemutable.timeline.change.multi.MiddlemanMap;
+import com.base.datemutable.timeline.change.multi.TimelineMapChange;
+import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;

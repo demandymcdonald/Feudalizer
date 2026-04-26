@@ -1,7 +1,7 @@
 package com.objects.culture.object;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.objects.culture.Culture;
 import com.objects.culture.object.change.MinorCultureChange;

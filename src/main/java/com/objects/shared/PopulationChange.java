@@ -1,16 +1,16 @@
 package com.objects.shared;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.TimelineObject;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.multi.condition.MultiCondition;
-import com.base.timeline.change.multi.MiddlemanMap;
-import com.base.timeline.change.multi.TimelineMapChange;
-import com.base.timeline.state.TimelineState;
-import com.base.timeline.variable.EasingChange;
+import com.base.datemutable.timeline.TimelineObject;
+import com.base.datemutable.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.condition.deactivate.DeactivateCondition;
+import com.base.datemutable.timeline.change.multi.condition.MultiCondition;
+import com.base.datemutable.timeline.change.multi.MiddlemanMap;
+import com.base.datemutable.timeline.change.multi.TimelineMapChange;
+import com.base.datemutable.timeline.state.TimelineState;
+import com.base.datemutable.timeline.variable.EasingChange;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;

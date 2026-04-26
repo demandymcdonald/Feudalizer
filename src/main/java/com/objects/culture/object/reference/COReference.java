@@ -1,6 +1,6 @@
 package com.objects.culture.object.reference;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.reference.StateReference;
 import com.google.gson.JsonObject;

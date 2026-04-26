@@ -1,9 +1,9 @@
 package com.objects.culture.tenet.instance;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.type.ChangeType;
-import com.base.timeline.variable.EasingVariable;
+import com.base.datemutable.timeline.change.multi.type.ChangeType;
+import com.base.datemutable.timeline.variable.EasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.Acceptance;
@@ -16,7 +16,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 

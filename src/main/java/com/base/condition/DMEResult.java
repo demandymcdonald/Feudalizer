@@ -1,7 +1,7 @@
 package com.base.condition;
 
-import com.base.DateMutableEntity;
-import com.base.timeline.error.StateError;
+import com.base.datemutable.DateMutableEntity;
+import com.base.datemutable.timeline.error.StateError;
 import com.base.reference.DMEReference;
 
 import java.util.function.Supplier;

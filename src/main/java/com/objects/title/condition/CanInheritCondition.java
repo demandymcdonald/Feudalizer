@@ -2,7 +2,7 @@ package com.objects.title.condition;
 
 import com.base.reference.DMEReference;
 import com.base.condition.Condition;
-import com.base.timeline.error.StateError;
+import com.base.datemutable.timeline.error.StateError;
 import com.objects.character.LivingCreature;
 import com.objects.title.Title;
 

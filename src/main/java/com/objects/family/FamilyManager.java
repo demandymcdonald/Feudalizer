@@ -1,16 +1,10 @@
 package com.objects.family;
 
-import com.Feudalizer;
-import com.Global;
-import com.base.AbstractMutableManager;
+import com.base.datemutable.AbstractMutableManager;
 import com.google.gson.JsonObject;
-import com.objects.character.sentient.HumanCharacter;
 import com.utilities.Factory;
-import javafx.util.Pair;
 
-import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class FamilyManager extends AbstractMutableManager<FamilyManager, Family> {
 

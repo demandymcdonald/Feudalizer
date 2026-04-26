@@ -1,26 +1,20 @@
 package com.objects.character.sentient.change;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.condition.deactivate.DeactivateCondition;
-import com.base.timeline.change.multi.TimelineMapChange;
-import com.base.timeline.change.multi.TimelineSetChange;
-import com.base.timeline.change.multi.condition.MultiCondition;
-import com.base.timeline.change.multi.wrapper.TLMap;
-import com.base.timeline.change.multi.wrapper.TLSet;
-import com.base.timeline.state.TimelineState;
+import com.base.datemutable.timeline.change.condition.deactivate.DeactivateCondition;
+import com.base.datemutable.timeline.change.multi.TimelineSetChange;
+import com.base.datemutable.timeline.change.multi.condition.MultiCondition;
+import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
+import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.objects.character.opinion.OpinionContainer;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.organization.education.EducationInstance;
-import com.utilities.id.SimpleUUID;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public class SentientMapChange {
     public static class EducationListChange<T extends SentientCharacter<T>> extends TimelineSetChange<EducationListChange<T>, EducationInstance,String,T> {

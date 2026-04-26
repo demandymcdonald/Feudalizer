@@ -1,7 +1,7 @@
 package com.objects.title.profession;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.objects.culture.tenet.interest.InterestGroups;
 import com.objects.organization.AbstractOrganization;
 import com.objects.organization.IOrganizedEntity;

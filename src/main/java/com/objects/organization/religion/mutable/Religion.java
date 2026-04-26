@@ -1,8 +1,8 @@
 package com.objects.organization.religion.mutable;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.TimelineChange;
 import com.google.common.collect.Multimap;
 import com.objects.CauseOfEnd;
 import com.objects.culture.tenet.Acceptance;

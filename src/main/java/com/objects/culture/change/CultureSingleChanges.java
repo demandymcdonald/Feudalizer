@@ -1,11 +1,9 @@
 package com.objects.culture.change;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.change.condition.apply.ApplyCondition;
-import com.base.timeline.state.TimelineState;
+import com.base.datemutable.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.TimelineSingleChange;
+import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

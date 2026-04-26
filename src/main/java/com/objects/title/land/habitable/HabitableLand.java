@@ -1,11 +1,11 @@
 package com.objects.title.land.habitable;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.multi.type.ChangeType;
-import com.base.timeline.change.multi.type.WipeType;
-import com.base.timeline.change.multi.wrapper.TLSet;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.multi.type.ChangeType;
+import com.base.datemutable.timeline.change.multi.type.WipeType;
+import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.display.geography.GeometryType;
 import com.objects.CauseOfEnd;
 import com.objects.culture.object.PassiveCultureObject;
@@ -14,7 +14,6 @@ import com.objects.shared.IDemographicDriven;
 import com.objects.shared.PopulationContainer;
 import com.objects.title.land.AbstractLandDivision;
 import com.objects.title.land.habitable.changes.NodeChange;
-import com.objects.title.land.resources.Resource;
 import com.objects.title.land.resources.node.Node;
 
 import java.time.LocalDate;

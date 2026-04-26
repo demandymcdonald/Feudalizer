@@ -1,7 +1,7 @@
 package com.objects.organization;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 
 public interface IOrganizedEntity<T extends DateMutableEntity<T> & IOrganizedEntity<T>> {

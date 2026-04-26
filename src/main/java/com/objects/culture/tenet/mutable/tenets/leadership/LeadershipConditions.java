@@ -1,12 +1,12 @@
 package com.objects.culture.tenet.mutable.tenets.leadership;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.condition.Condition;
 import com.base.reference.ComplexReference;
-import com.base.timeline.change.CultureAware;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.error.StateError;
+import com.base.datemutable.timeline.change.CultureAware;
+import com.base.datemutable.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.error.StateError;
 import com.google.common.collect.ImmutableMap;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;

@@ -1,8 +1,8 @@
 package com.objects.organization.government;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.varswap.TimelineVarChange;
+import com.base.datemutable.timeline.change.varswap.TimelineVarChange;
 import com.google.gson.JsonElement;
 
 import java.time.LocalDate;

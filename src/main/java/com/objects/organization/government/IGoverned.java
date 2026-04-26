@@ -1,9 +1,9 @@
 package com.objects.organization.government;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.IChanger;
+import com.base.datemutable.timeline.change.IChanger;
 import com.objects.culture.object.ICultureObject;
 
 public interface IGoverned<T extends DateMutableEntity<T> & IGoverned<T>> extends IChanger<T> {

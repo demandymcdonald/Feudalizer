@@ -1,13 +1,13 @@
 package com.sql;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import com.base.AbstractMutableManager;
+import com.base.datemutable.AbstractMutableManager;
 import com.base.DMRegistry;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

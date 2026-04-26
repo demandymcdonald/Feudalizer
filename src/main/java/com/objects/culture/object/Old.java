@@ -1,8 +1,8 @@
 package com.objects.culture.object;
 
-import com.base.DateMutableEntity;
-import com.base.timeline.change.multi.type.ChangeType;
-import com.base.timeline.change.multi.wrapper.TLMap;
+import com.base.datemutable.DateMutableEntity;
+import com.base.datemutable.timeline.change.multi.type.ChangeType;
+import com.base.datemutable.timeline.change.multi.wrapper.TLMap;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.reference.COReference;

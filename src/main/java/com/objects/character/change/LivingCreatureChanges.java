@@ -1,8 +1,8 @@
 package com.objects.character.change;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.startend.CreatedChange;
-import com.base.timeline.change.startend.EndingChange;
+import com.base.datemutable.timeline.change.startend.CreatedChange;
+import com.base.datemutable.timeline.change.startend.EndingChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.LivingCreature;

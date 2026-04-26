@@ -1,12 +1,12 @@
 package com.objects.title;
 
-import com.base.*;
 import com.base.condition.Condition;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.display.DisplayContainer;
-import com.base.timeline.change.display.ITLDisplayable;
-import com.base.timeline.error.StateError;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.display.DisplayContainer;
+import com.base.datemutable.timeline.change.display.ITLDisplayable;
+import com.base.datemutable.timeline.error.StateError;
 import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;

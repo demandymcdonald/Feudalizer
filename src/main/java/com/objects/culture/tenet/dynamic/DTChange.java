@@ -1,9 +1,8 @@
 package com.objects.culture.tenet.dynamic;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.startend.CreatedChange;
-import com.base.timeline.change.startend.EndingChange;
+import com.base.datemutable.timeline.change.startend.CreatedChange;
+import com.base.datemutable.timeline.change.startend.EndingChange;
 import com.objects.CauseOfEnd;
 
 import java.time.LocalDate;

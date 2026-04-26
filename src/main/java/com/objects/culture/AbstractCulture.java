@@ -1,8 +1,8 @@
 package com.objects.culture;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.ChangeSupplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;

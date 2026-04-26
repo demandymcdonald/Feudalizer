@@ -1,20 +1,18 @@
 package com.objects.culture.object.compass;
 
 import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.Timeline;
-import com.base.timeline.TimelineObject;
-import com.base.timeline.change.ChangeID;
-import com.base.timeline.change.TimelineChange;
-import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.state.TimelineState;
-import com.base.timeline.variable.EasingChange;
+import com.base.datemutable.timeline.Timeline;
+import com.base.datemutable.timeline.TimelineObject;
+import com.base.datemutable.timeline.change.ChangeID;
+import com.base.datemutable.timeline.change.TimelineSingleChange;
+import com.base.datemutable.timeline.state.TimelineState;
+import com.base.datemutable.timeline.variable.EasingChange;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.function.Predicate;
 
 public class CompassChange<T extends DateMutableEntity<T> & CultureObject<T>> extends TimelineSingleChange<T> implements EasingChange<InterpolatedPoliticalCompass<T>,CompassChange<T>,T> {

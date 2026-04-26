@@ -2,8 +2,8 @@ package com.objects.title.land;
 
 import com.Feudalizer;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.display.ITLDisplayable;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.display.ITLDisplayable;
 import com.display.geography.GeographyManager;
 import com.display.geography.GeometryType;
 import com.google.gson.JsonObject;

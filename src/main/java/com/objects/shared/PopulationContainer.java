@@ -1,9 +1,9 @@
 package com.objects.shared;
 
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.wrapper.TLMap;
-import com.base.timeline.variable.EasingVariable;
+import com.base.datemutable.timeline.change.multi.wrapper.TLMap;
+import com.base.datemutable.timeline.variable.EasingVariable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.gson.JsonObject;

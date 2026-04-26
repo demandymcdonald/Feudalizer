@@ -1,13 +1,10 @@
 package com.objects.culture.object.compass;
 
-import com.base.utilities.TLSyncedSupplier;
 import com.google.common.collect.ImmutableMap;
 import com.utilities.caching.CachingSupplier;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Supplier;
 
 public class CompositeCompass implements IPoliticalCompass{

@@ -1,8 +1,8 @@
 package com.objects.organization.government;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.TimelineChange;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.TimelineChange;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import org.checkerframework.checker.nullness.qual.Nullable;

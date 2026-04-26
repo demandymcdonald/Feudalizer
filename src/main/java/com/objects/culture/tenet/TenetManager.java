@@ -1,5 +1,6 @@
 package com.objects.culture.tenet;
 
+import com.base.instanced.IOManager;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -10,6 +11,7 @@ import com.objects.culture.tenet.group.ConnectionEdge;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
+import com.objects.culture.tenet.interest.IGInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.tenets.leadership.Leadership;
 import com.objects.culture.tenet.mutable.MutableTenet;
@@ -227,22 +229,25 @@ public class TenetManager {
             return null;
         }
     }
-    public static class InterestGroups{
-        private static final Map<String, InterestGroup> groups = new HashMap<>();
-        private static final Multimap<InterestGroup.Dimension,InterestGroup> byDimension = HashMultimap.create();
-        public static void register(InterestGroup group){
-            groups.put(group.getID(),group);
-            byDimension.put(group.getDimension(),group);
+    public static class InterestGroups extends IOManager<InterestGroup, IGInstance> {
+
+        private final Multimap<InterestGroup.Dimension,InterestGroup> byDimension = HashMultimap.create();
+        public static final InterestGroups INSTANCE = new InterestGroups();
+        private InterestGroups() {
+            super(InterestGroup.class);
         }
-        public static Set<InterestGroup> getByDimension(InterestGroup.Dimension dimension){
+        @Override
+        protected void onRegister(InterestGroup object) {
+            super.onRegister(object);
+            byDimension.put(object.getDimension(),object);
+        }
+        public Set<InterestGroup> getByDimension(InterestGroup.Dimension dimension){
             return new HashSet<>(byDimension.get(dimension));
         }
-        public static InterestGroup get(String dimension){
-            return groups.get(dimension);
-        }
-        public static Set<InterestGroup> getForCharacter(DMEReference<? extends SentientCharacter<?>> character){
+
+        public Set<InterestGroup> getForCharacter(DMEReference<? extends SentientCharacter<?>> character){
             Set<InterestGroup> toReturn = new HashSet<>();
-            for (InterestGroup group : groups.values()){
+            for (InterestGroup group : instanceMap.values()){
                 if(group.isMember(character)){
                     toReturn.add(group);
                 }

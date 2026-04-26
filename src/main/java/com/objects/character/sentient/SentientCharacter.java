@@ -2,8 +2,8 @@ package com.objects.character.sentient;
 
 import com.Global;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.ChangeSupplier;
-import com.base.timeline.change.multi.wrapper.TLSet;
+import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.objects.character.LivingCreature;
 import com.objects.character.Sex;
 import com.objects.character.physical.PhysicalAppearance;

@@ -3,7 +3,7 @@ package com.base.reference;
 import com.Feudalizer;
 
 import com.base.DMRegistry;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.ObjectType;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

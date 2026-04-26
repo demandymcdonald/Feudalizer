@@ -1,7 +1,7 @@
 package com.objects.title.land.resources.node;
 
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.type.ChangeType;
+import com.base.datemutable.timeline.change.multi.type.ChangeType;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.gson.JsonElement;

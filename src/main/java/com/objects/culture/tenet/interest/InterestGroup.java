@@ -1,6 +1,11 @@
 package com.objects.culture.tenet.interest;
 
+import com.base.instanced.AbstractIO;
+import com.base.instanced.InstanceType;
+import com.base.instanced.bi.IOBi;
+import com.base.instanced.single.IOSingle;
 import com.base.reference.DMEReference;
+import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.CultureObject;
@@ -19,11 +24,10 @@ import com.utilities.number.BoundInt;
 
 import java.util.Map;
 
-public abstract class InterestGroup implements IDisplayable, StringIdentifiable, PassiveCultureObject {
-
-    private final String id;
-    private final String displayName;
-    private final String description;
+public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DMEReference<Culture>> implements IDisplayable, PassiveCultureObject {
+    private Dimension dimension;
+    private String displayName;
+    private String description;
     public enum Dimension{
         Sex_At_Birth("sex:"),
         Gender_Identity("gender:"),
@@ -42,18 +46,18 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable,
             this.prefix = prefix;
         }
     }
-    public InterestGroup(String id, String displayName, String description) {
-        this.id = "ig_" + getDimension().prefix +id;
+    public InterestGroup(InstanceType type, Dimension dimension, String id, String displayName, String description) {
+        super(type, "ig_" + dimension.prefix +id);
         this.displayName = displayName;
         this.description = description;
-        TenetManager.InterestGroups.register(this);
+        this.dimension = dimension;
     }
     public <C extends SentientCharacter<C>> boolean isMember(DMEReference<? extends SentientCharacter<?>> reference){
         return isMember((C) reference.get());
     }
     public abstract <C extends SentientCharacter<C>> boolean isMember(C character);
     public String getQuickID(){
-        return id.substring(3,10);
+        return getID().substring(3,10);
     };
     public AcceptanceContainer getSocialAcceptance(Culture culture){
 
@@ -75,25 +79,49 @@ public abstract class InterestGroup implements IDisplayable, StringIdentifiable,
     public abstract Map<IGPointer, BoundInt> getRelations();
     public abstract TenetGroup getRightsGroup();
     public abstract TenetGroup getSocialStatusGroup();
-    public abstract Dimension getDimension();
+    public final Dimension getDimension(){
+        return dimension;
+    };
     public abstract PoliticalCompass makeCompass(Culture culture);
     @Override
-    public String getDisplayID() {
-        return id;
+    public final String getDisplayID() {
+        return getID();
     }
 
     @Override
-    public String getDescription() {
+    public final String getDescription() {
         return description;
     }
 
     @Override
-    public String getDisplayName() {
+    public final String getDisplayName() {
         return displayName;
+    }
+    @Override
+    public InterestGroup getFreshInstance(String id) {
+        return null;
+    }
+    @Override
+    public final IGInstance instance(DMEReference<Culture> culture) {
+        return new IGInstance(this.getReference(),culture);
+    }
+
+    public InterestGroup(InstanceType type, String id) {
+        super(type, id);
     }
 
     @Override
-    public String getID() {
-        return getDisplayID();
+    public void additionalSave(JsonObject object) {
+        dimension = Dimension.valueOf(object.get("dimension").getAsString());
+        displayName = object.get("displayName").getAsString();
+        description = object.get("description").getAsString();
+    }
+
+    @Override
+    public void additionalLoad(JsonObject object) {
+        super.mainSave(object);
+        object.addProperty("id", getID());
+        object.addProperty("displayName", getDisplayName());
+        object.addProperty("description", getDescription());
     }
 }

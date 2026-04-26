@@ -1,11 +1,10 @@
 package com.objects.culture.tenet.instance;
 
-import com.Global.*;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.TimelineSingleChange;
-import com.base.timeline.change.condition.apply.ApplyCondition;
-import com.base.timeline.state.TimelineState;
+import com.base.datemutable.timeline.change.TimelineSingleChange;
+import com.base.datemutable.timeline.change.condition.apply.ApplyCondition;
+import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 

@@ -1,13 +1,11 @@
 package com.objects.culture.object;
 
-import com.Global;
-import com.base.DateMutableEntity;
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
-import com.base.timeline.change.multi.type.ChangeType;
-import com.base.timeline.change.multi.type.WipeType;
-import com.base.timeline.change.multi.wrapper.TLMap;
-import com.base.timeline.change.multi.wrapper.TLSet;
-import com.base.utilities.TLSyncedCache;
+import com.base.datemutable.timeline.change.multi.type.ChangeType;
+import com.base.datemutable.timeline.change.multi.type.WipeType;
+import com.base.datemutable.timeline.change.multi.wrapper.TLMap;
+import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.objects.culture.Culture;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
@@ -18,7 +16,6 @@ import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.instance.TenetInstance;
-import com.objects.culture.object.compass.CompassChange;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.Tenet;
 import org.apache.commons.lang3.tuple.Pair;
