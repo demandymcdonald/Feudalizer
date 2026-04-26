@@ -38,7 +38,7 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
     private final CultureObjectContainer<T> container;
     private DMEReference<Culture> foundingCulture;
     private final CachingSupplier<Set<TenetInstance<T>>> activeSupplier = new CachingSupplier<>(this::getActiveTenets);
-    private final Cache<Class<? extends Tenet>,Set<? extends Tenet>> activeLookup = CacheBuilder.newBuilder().build();
+    private final Cache<Class<? extends Tenet>,Set<TenetInstance<T>>> activeLookup = CacheBuilder.newBuilder().build();
 
     public AbstractDT(LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, initialState);
@@ -61,19 +61,28 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
         return TenetReference.of(this);
     }
 
-    public final <R extends Tenet> Set<R> getActiveTenetByClass(Class<R> clazz){
-        Set<? extends Tenet> set = activeLookup.getIfPresent(clazz);
+    public final Set<TenetInstance<T>> getActiveTenetByClass(Class<? extends Tenet> clazz){
+        Set<TenetInstance<T>> set = activeLookup.getIfPresent(clazz);
         if(set == null){
             Set<TenetInstance<T>> map = getActiveTenets();
-            Set<R> finalSet = new HashSet<>();
+            Set<TenetInstance<T>> toReturn = new HashSet<>();
             map.forEach((tr) -> {
-                if(tr.getTenet().getTenetClass().isInstance(clazz)){finalSet.add((R) tr);}
+                if(tr.getTenet().getTenetClass().isInstance(clazz)){toReturn.add((tr));}
             });
-            activeLookup.put(clazz, finalSet);
-            return finalSet;
+            activeLookup.put(clazz, toReturn);
+            return toReturn;
         } else {
-            return new HashSet<>((Set<R>) set);
+            return new HashSet<>(set);
         }
+    }
+    public final Set<TenetInstance<T>> getActiveTenetByGroup(TenetGroup group, boolean includeDescendants){
+        final Set<TenetInstance<T>> toReturn = new HashSet<>();
+        getActiveTenets().forEach((at -> {
+            if(CultureObject.matchesGroup(at, group, includeDescendants)){
+                toReturn.add(at);
+            }
+        }));
+        return toReturn;
     }
     public final boolean isAllowedTenet(Tenet tenet){
         return getGroup().isParentOf(tenet.getGroup());
@@ -142,14 +151,15 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
         CultureObject.super.addOpinion(tenet, d);
     }
 
+
     @Override
-    public final void addOpinion(TenetReference tenet, boolean wipe, double d) {
-        CultureObject.super.addOpinion(tenet, wipe, d);
+    public final void amendCompass(IPoliticalCompass values) {
+        CultureObject.super.amendCompass(values);
     }
 
     @Override
-    public final void amendCompass(Pair<IPoliticalCompass.Axis, Integer>... values) {
-        CultureObject.super.amendCompass(values);
+    public final Set<TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants, boolean activeOnly) {
+        return CultureObject.super.getOpinionByGroup(group, includeDescendants, activeOnly);
     }
 
     @Override
@@ -172,20 +182,13 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
         return CultureObject.super.getInfluencers();
     }
 
-    @Override
-    public final Set<TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants) {
-        return CultureObject.super.getOpinionByGroup(group, includeDescendants);
-    }
 
     @Override
     public final TLSet<TenetInstance<T>> getOpinions() {
         return CultureObject.super.getOpinions();
     }
 
-    @Override
-    public final Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject() {
-        return CultureObject.super.getParentObject();
-    }
+
 
     @Override
     public final  Set<TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers) {

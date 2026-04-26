@@ -340,15 +340,19 @@ public class InterestGroups {
         };
     }
     public static abstract class ClassCaste extends InterestGroup {
-        public ClassCaste(String id, String displayName, String description) {
+        private final double prestigeMultiplier;
+        public ClassCaste(String id, String displayName, double prestigeMultiplier, String description) {
             super("class_"+id, displayName, description);
+            this.prestigeMultiplier = prestigeMultiplier;
         }
         @Override
         public Dimension getDimension() {
             return Class_Caste;
         }
-
-        public static final InterestGroup ELITE = new ClassCaste("elite","Elites","") {
+        public double getPrestigeMultiplier() {
+            return prestigeMultiplier;
+        }
+        public static final ClassCaste ELITE = new ClassCaste("elite","Elites",2,"") {
             @Override
             public Map<IGPointer, BoundInt> getRelations() {
                 return Map.of(new IGPointer.OtherDimension(this),BoundInts.Percent(true,-5),
@@ -369,7 +373,7 @@ public class InterestGroups {
                 return SocietyGroups.ELITE_CLASS;
             }
         };
-        public static final InterestGroup PROFESSIONAL = new ClassCaste("professional","Professional","") {
+        public static final ClassCaste PROFESSIONAL = new ClassCaste("professional","Professional",.95,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -391,7 +395,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final InterestGroup ACADEMIC = new ClassCaste("academic","Academics","") {
+        public static final ClassCaste ACADEMIC = new ClassCaste("academic","Academics",.9,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -413,7 +417,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final InterestGroup ARTIST = new ClassCaste("artist","Artist","") {
+        public static final ClassCaste ARTIST = new ClassCaste("artist","Artist",.85,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -435,7 +439,7 @@ public class InterestGroups {
                 return SocietyGroups.ARTIST_CLASS;
             }
         };
-        public static final InterestGroup OFFICER = new ClassCaste("officer","Officers","") {
+        public static final ClassCaste OFFICER = new ClassCaste("officer","Officers",1.25,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -457,7 +461,7 @@ public class InterestGroups {
                 return SocietyGroups.OFFICER_CLASS;
             }
         };
-        public static final InterestGroup BUSINESS = new ClassCaste("business","Business","") {
+        public static final ClassCaste BUSINESS = new ClassCaste("business","Business",1.25,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -479,7 +483,7 @@ public class InterestGroups {
                 return SocietyGroups.BUSINESS_CLASS;
             }
         };
-        public static final InterestGroup MIDDLE = new ClassCaste("middle","Middle","") {
+        public static final ClassCaste MIDDLE = new ClassCaste("middle","Middle",.67,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -501,7 +505,7 @@ public class InterestGroups {
                 return SocietyGroups.MIDDLE_CLASS;
             }
         };
-        public static final InterestGroup SOLDIER = new ClassCaste("soldier","Soldier","") {
+        public static final ClassCaste SOLDIER = new ClassCaste("soldier","Soldier",.55,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -523,7 +527,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final InterestGroup WORKING = new ClassCaste("working","Working","") {
+        public static final ClassCaste WORKING = new ClassCaste("working","Working",.5,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -545,7 +549,7 @@ public class InterestGroups {
                 return SocietyGroups.PROFESSIONAL_CLASS;
             }
         };
-        public static final InterestGroup DISENFRANCHISED = new ClassCaste("disenfranchised","Disenfranchised","") {
+        public static final ClassCaste DISENFRANCHISED = new ClassCaste("disenfranchised","Disenfranchised",.3,"") {
 
 
             @Override
@@ -568,7 +572,7 @@ public class InterestGroups {
                 return SocietyGroups.DISENFRANCHISED;
             }
         };
-        public static final InterestGroup SLAVE = new ClassCaste("slave","Slave","") {
+        public static final ClassCaste SLAVE = new ClassCaste("slave","Slave",.25,"") {
 
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
@@ -590,7 +594,7 @@ public class InterestGroups {
                 return SocietyGroups.SLAVE;
             }
         };
-        public static final InterestGroup OUTSIDER = new ClassCaste("outsider","Outsider","") {
+        public static final ClassCaste OUTSIDER = new ClassCaste("outsider","Outsider",.4,"") {
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return false;

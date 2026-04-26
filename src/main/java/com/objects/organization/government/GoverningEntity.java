@@ -6,6 +6,7 @@ import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureOpinionated;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
+import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.AbstractOrganization;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -13,6 +14,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public abstract class GoverningEntity<T extends GoverningEntity<T>> extends AbstractOrganization<T> {
@@ -25,8 +27,9 @@ public abstract class GoverningEntity<T extends GoverningEntity<T>> extends Abst
     public GoverningEntity(String name, UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(GovernmentGroups.GOVERNMENT, name, id, created, ended, foundingCulture, initialState);
     }
-    public boolean canVote(InterestGroup group) {
 
+    public Set<TenetInstance<T>> getRights(){
+        return getOpinionByGroup(GovernmentGroups.POPULATION_GROUP_RIGHTS,true,true);
     }
-    public abstract boolean hasStakeholdersFor(AbstractOrganization<?> organization, ICultureOpinionated cultureOpinionated);
+
 }

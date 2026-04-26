@@ -17,6 +17,5 @@ import java.util.Optional;
 public interface ILeadered<T extends DateMutableEntity<T> & ILeadered<T>> extends ICultureObject {
 
     Optional<DMEReference<? extends SentientCharacter<?>>> getLeader();
-    Map<ICultureOpinionated,Integer> getStakeholders();
     Acceptance getAcceptanceOf(SentientCharacter<?> character);
 }

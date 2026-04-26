@@ -1,8 +1,10 @@
 package com.objects.culture.tenet;
 
+import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
+import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.ConnectionEdge;
 import com.objects.culture.tenet.group.TGType;
@@ -237,6 +239,15 @@ public class TenetManager {
         }
         public static InterestGroup get(String dimension){
             return groups.get(dimension);
+        }
+        public static Set<InterestGroup> getForCharacter(DMEReference<? extends SentientCharacter<?>> character){
+            Set<InterestGroup> toReturn = new HashSet<>();
+            for (InterestGroup group : groups.values()){
+                if(group.isMember(character)){
+                    toReturn.add(group);
+                }
+            }
+            return toReturn;
         }
     }
     public static abstract class TenetFactory<T extends MutableTenet> {

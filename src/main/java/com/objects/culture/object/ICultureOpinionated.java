@@ -5,13 +5,7 @@ import com.objects.culture.tenet.TenetReference;
 
 public interface ICultureOpinionated {
     default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
-        return new AcceptanceContainer(getAcceptanceValue(tenet,includeInfluencers));
+        return getAcceptanceObject(tenet.get(),includeInfluencers,false);
     };
-//    default Acceptance getAcceptance(TenetReference tenet, boolean includeInfluencers){
-//        return getAcceptanceContainer(tenet,includeInfluencers).getAcceptance();
-//    };
-//    default double getAcceptanceValue(TenetReference tenet, boolean includeInfluencers){
-//        return getAcceptanceContainer(tenet,includeInfluencers).value();
-//    };
-    AcceptanceContainer getAcceptanceTenet(ICultureObject other, boolean factorOtherTolerance);
+    AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance);
 }

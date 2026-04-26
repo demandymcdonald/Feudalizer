@@ -43,10 +43,7 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
     public Set<TenetInstance<T>> getByGroup(TenetGroup group, boolean includeDescendants){
         Set<TenetInstance<T>> result = new HashSet<>();
         for(TenetInstance<T> t : opinions.asSet()){
-            TenetGroup oGroup = t.getTenet().getGroup();
-            if (oGroup.equals(group)){
-                result.add(t);
-            } else if(includeDescendants && oGroup.isDescendantOf(group)){
+            if(CultureObject.matchesGroup(t, group, includeDescendants)){
                 result.add(t);
             }
         }

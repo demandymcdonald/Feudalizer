@@ -56,7 +56,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     }
 
     default void addOpinion(TenetReference tenet, double d){
-        addOpinion(tenet,false,d);
+        addOpinion(tenet,d);
     }
 
     default void setOpinion(TenetReference tenet, double d){
@@ -111,14 +111,14 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         }
         getInfluencers().remove(WipeType.FORWARD,influencer);
     }
-    default Set<TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants){
+    default Set<TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants, boolean activeOnly){
         return getContainer().getByGroup(group,includeDescendants);
     }
     default boolean isMainstream(Tenet tenet, boolean includeInfluencers){
         return isMainstream(TenetReference.of(tenet),includeInfluencers);
     }
     default boolean isMainstream(TenetReference tenet, boolean includeInfluencers){
-        return getTenetsByThreshold(Acceptance.INTEGRATED,includeInfluencers).containsKey(tenet);
+        return getTenetsByThreshold(Acceptance.INTEGRATED,includeInfluencers).stream().anyMatch(t -> t.getTenet().equals(tenet));
     }
 
 
@@ -138,7 +138,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void internalSetOpinions(TLSet<TenetInstance<T>> opinions){
         getContainer().setOpinions(opinions);
     };
-    default Optional<Pair<COReference<?>, InfluencerRelationship>> getParentObject(){
+    default Optional<Pair<COReference<?>, InfluencerInstance>> getParentObject(){
         return Optional.ofNullable(getContainer().getParent());
     }; //todo, implement opinion crushing for Hegamon.
     default void setParentObject(COReference<?> influencer, InfluencerRelationship relationship){
@@ -161,5 +161,8 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
         return getContainer().getCompass();
     };
 
-
+    static <T extends DateMutableEntity<T> & CultureObject<T>> boolean matchesGroup(TenetInstance<T> instance, TenetGroup group, boolean includeDescendents){
+        final TenetGroup checkGroup = instance.getTenet().getGroup();
+        return checkGroup.equals(group) || (includeDescendents && group.isAncestorOf(checkGroup));
+    }
 }

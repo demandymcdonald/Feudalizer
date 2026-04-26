@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("unchecked")
 public class DMEReference<T extends DateMutableEntity<?>> extends StateReference implements UUIDIdentifiable {
     public static final String DME_SR_TYPE = "DMEReference";
     private final Class<T> type;
@@ -124,6 +125,7 @@ public class DMEReference<T extends DateMutableEntity<?>> extends StateReference
     public long hash(){
         return doHash(uuid,type);
     }
+
     private static <T extends DateMutableEntity<?>> long doHash(UUID uuid, Class<T> type){
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putLong(uuid.getMostSignificantBits());

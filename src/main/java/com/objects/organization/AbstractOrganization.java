@@ -10,13 +10,14 @@ import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.mutable.tenets.leadership.ILeadered;
 import com.objects.organization.government.IGoverned;
+import com.objects.title.IPrestiged;
 import com.objects.title.profession.AbstractJob;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public abstract class AbstractOrganization<T extends AbstractOrganization<T>> extends DynamicTenet<T> implements ILeadered<T> {
+public abstract class AbstractOrganization<T extends AbstractOrganization<T>> extends DynamicTenet<T> implements ILeadered<T>, IPrestiged {
     Map<DMEReference<? extends AbstractJob<?>>, Optional<DMEReference<? extends SentientCharacter<?>>>> employees = new HashMap<>();
 
     public AbstractOrganization(TenetGroup group, DMEReference<T> dme) {

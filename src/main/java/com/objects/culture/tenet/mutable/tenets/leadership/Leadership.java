@@ -3,7 +3,9 @@ package com.objects.culture.tenet.mutable.tenets.leadership;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -16,14 +18,19 @@ import com.objects.culture.tenet.mutable.MutableTenet;
 import com.objects.culture.tenet.mutable.augments.IRightsTenet;
 import com.objects.culture.tenet.mutable.tenets.general.CompassGenerators;
 import com.objects.culture.tenet.mutable.tenets.leadership.election.ElectionType;
+import com.objects.organization.education.Education;
 import com.objects.title.land.habitable.HabitableLand;
 
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.objects.culture.tenet.group.groups.EconomicGroups.BUSINESS;
+import static com.objects.culture.tenet.group.groups.EconomicGroups.LABOR_UNION;
+import static com.objects.culture.tenet.group.groups.EducationGroups.EDUCATION;
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.groups.MilitaryGroups.*;
+import static com.objects.culture.tenet.group.groups.ReligionGroups.RELIGION;
 
 public abstract class Leadership extends MutableTenet {
 
@@ -55,17 +62,35 @@ public abstract class Leadership extends MutableTenet {
                 GOVERNMENT_OFFICE,
                 MILITARY,
                 MILITARY_LEADERSHIP,
-                ReligionGroups.RELIGION,
+                RELIGION,
                 ReligionGroups.RELIGION_LEADERSHIP,
-                EducationGroups.EDUCATION,
+                EDUCATION,
                 EducationGroups.EDUCATION_LEADERSHIP,
-                EconomicGroups.BUSINESS,
+                BUSINESS,
                 EconomicGroups.BUSINESS_LEADERSHIP,
                 EconomicGroups.LABOR_UNION,
                 EconomicGroups.UNION_LEADERSHIP
         );
     }
-
+    private static double getModifier(TenetGroup category){
+        if(category == null){
+            throw new NullPointerException("TenetGroup cannot be null");
+        } else if (category == GOVERNMENT){
+            return 1;
+        } else if (category == MILITARY){
+            return .8;
+        } else if (category == GOVERNMENT_OFFICIAL){
+            return .7;
+        } else if (category == RELIGION){
+            return .4;
+        } else if (category == EDUCATION){
+            return .5;
+        } else if (category == BUSINESS){
+            return .45;
+        } else if (category == LABOR_UNION){
+            return .65;
+        }
+    }
     private static TenetGroup findGroup(TenetReference reference, Type type) {
         //Not sure if the thows will ever be supported, but they need to throw to tell me if I need to add them. Tags are bloated as is.
         TenetGroup group = TenetManager.Group.getCategory(reference.get().getGroup());
@@ -105,7 +130,7 @@ public abstract class Leadership extends MutableTenet {
                 case TRAINING -> OFFICER_TRAINING;
                 case OTHER -> throw new UnsupportedOperationException("Other is not supported in Military Leadership");
             };
-        } else if (group == ReligionGroups.RELIGION || group == ReligionGroups.RELIGION_LEADERSHIP) {
+        } else if (group == RELIGION || group == ReligionGroups.RELIGION_LEADERSHIP) {
             return switch (type) {
                 case TYPES -> ReligionGroups.PRIEST_TYPES;
                 case SELECTION -> ReligionGroups.RELIGION_LEADER_SELECTION;
@@ -118,7 +143,7 @@ public abstract class Leadership extends MutableTenet {
                         throw new UnsupportedOperationException("Training is not supported in Religious Leadership");
                 case OTHER -> throw new UnsupportedOperationException("Other is not supported in Religious Leadership");
             };
-        } else if (group == EducationGroups.EDUCATION || group == EducationGroups.EDUCATION_LEADERSHIP) {
+        } else if (group == EDUCATION || group == EducationGroups.EDUCATION_LEADERSHIP) {
             return switch (type) {
                 case TYPES -> EducationGroups.TEACHER_TYPES;
                 case SELECTION -> EducationGroups.TEACHER_SELECTION;
@@ -129,7 +154,7 @@ public abstract class Leadership extends MutableTenet {
                 case TRAINING -> EducationGroups.TEACHER_TRAINING;
                 case OTHER -> throw new UnsupportedOperationException("Other is not supported in Teacher Leadership");
             };
-        } else if (group == EconomicGroups.BUSINESS || group == EconomicGroups.BUSINESS_LEADERSHIP) {
+        } else if (group == BUSINESS || group == EconomicGroups.BUSINESS_LEADERSHIP) {
             return switch (type) {
                 case TYPES -> EconomicGroups.BUSINESS_LEADER_TYPES;
                 case SELECTION -> EconomicGroups.BUSINESS_LEADER_SELECTION;
@@ -242,7 +267,7 @@ public abstract class Leadership extends MutableTenet {
     public static class Election extends Leadership implements IRightsTenet<Election> {
 
         public Election(TenetReference parent, ElectionType<?> type) {
-            super(parent, type, entry, id, name, "");
+            super(parent, type, , id, name, "");
         }
 
         public Election(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
@@ -259,6 +284,49 @@ public abstract class Leadership extends MutableTenet {
             return Set.of();
         }
 
+        @Override
+        public void additionalSave(JsonObject data) {
+
+        }
+
+        @Override
+        public void additionalLoad(JsonObject data) {
+
+        }
+    }
+    public static class EducationRequirement extends Leadership{
+
+        public EducationRequirement(TenetReference parent, Education level) {
+            super(parent, Type.SELECTION, bc(parent,level), "education_level", "Education Requirement", "");
+        }
+
+        public EducationRequirement(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+            super(parent, uuid, group, entry, id, name, description);
+        }
+
+        @Override
+        public Set<CultureCondition<?, ?>> getConditionList() {
+            return Set.of();
+        }
+
+        @Override
+        public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
+            return null;
+        }
+        public static PoliticalCompass bc(TenetReference parent, Education level) {
+            TenetGroup group = TenetManager.Group.getCategory(parent.getGroup());
+            if (group == EDUCATION){
+                return new PoliticalCompass(5,-10,10,5,-5);
+            }
+            int lvl = level.getLevel();
+            double mod = Leadership.getModifier(group);
+            int A = (int) Math.round((15 * lvl) * mod);
+            int B = (int) Math.round((10 * lvl) * mod);
+            int C = (int) Math.round((15 * lvl) * mod);
+            int D = (int) Math.round((15 * lvl) * mod);
+            int T = (int) Math.round((-15 * lvl) * mod);
+            return new PoliticalCompass(A,B,C,D,T);
+        }
         @Override
         public void additionalSave(JsonObject data) {
 

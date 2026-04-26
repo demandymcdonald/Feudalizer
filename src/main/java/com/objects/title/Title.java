@@ -26,7 +26,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Supplier;
 
-public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> implements ICultureObject, ITLDisplayable<T>, IGoverned<T> {
+public abstract class Title<T extends Title<T>> extends DateMutableEntity<T> implements ICultureObject, ITLDisplayable<T>, IGoverned<T>, IPrestiged {
     private Graph<Title<?>, DefaultEdge> titleGraph;
     private DMEReference<? extends SentientCharacter<?>> holder;
     private DMEReference<? extends Title<?>> parent;
