@@ -63,7 +63,7 @@ public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DM
 
     }
     public AcceptanceContainer getRights(DMEReference<? extends GoverningEntity<?>> government){
-
+        government.get().
     }
     @Override
     public AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers) {

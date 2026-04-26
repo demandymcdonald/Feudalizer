@@ -5,6 +5,7 @@ import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.instance.TenetInstance;
+import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.AbstractOrganization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -27,5 +28,9 @@ public abstract class GoverningEntity<T extends GoverningEntity<T>> extends Abst
     public Set<TenetInstance<T>> getRights(){
         return getOpinionByGroup(GovernmentGroups.POPULATION_GROUP_RIGHTS,true,true);
     }
-
+    public Set<TenetInstance<T>> getRightsFor(InterestGroup group){
+        return getOpinionByGroup(GovernmentGroups.POPULATION_GROUP_RIGHTS,true,true).stream().filter(t -> {
+            if (t.getTenet().get().)
+        }
+    }
 }
