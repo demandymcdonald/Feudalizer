@@ -13,7 +13,7 @@ import com.google.gson.JsonPrimitive;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.instance.CultureTenetInstance;
 import com.objects.culture.tenet.mutable.MutableTenet;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;

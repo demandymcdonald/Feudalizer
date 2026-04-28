@@ -9,7 +9,7 @@ import static com.objects.culture.tenet.group.TenetGroup.Level;
 
 public class MilitaryGroups {
     public static final TenetGroup MILITARY = new TenetGroup.Builder(TGType.SYSTEM_SORT, TenetGroup.Level.CATEGORY, "military", "Military", "")
-            .setParent(GOVERNMENT_SYSTEM)
+            .setParent(GOVERNMENT)
             .addConnected(MILITARY_FUNDING)
             .build();
 

@@ -1,7 +1,6 @@
 package com.objects.culture.tenet.group;
 
-import com.objects.culture.tenet.Acceptance;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.utilities.IDisplayable;
 import com.utilities.hierarchy.Parented;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -48,15 +47,6 @@ public class TenetGroup implements IDisplayable, Parented<TenetGroup> {
     public void init(){
         //May be needed to do buildList after all the statics are registered, but that seems unlikely.
     }
-//    private static ImmutableList<TenetGroup> buildList(TenetGroup parent, List<TenetGroup> connected){
-//        List<TenetGroup> list = new ArrayList<>(connected);
-//        TenetGroup current = parent;
-//        while(current.parent() != null){
-//            list.addAll(current.connected());
-//            current = current.parent();
-//        }
-//        return ImmutableList.copyOf(list);
-//    }
     private static String buildID(String id, TenetGroup parent){
         if (parent == null){
             return id.toLowerCase();

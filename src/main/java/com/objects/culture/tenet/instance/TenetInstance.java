@@ -20,15 +20,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
-//public class TenetInstance<TI extends TenetInstance<TI,T,TC>,T extends DateMutableEntity<T> & CultureObject<T>,TC extends TenetInstanceChange<TC,T,TI>> implements EasingVariable<TI,TC,T>
+
 public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>implements EasingVariable<TenetInstance<T>,TenetInstanceChange<T>,T>, UUIDIdentifiable {
-//    private static final double b = .23; //apathy peak as percent from start
-//    private static final double c = 0.00022; //apathy decay
-//    private static final double z = .125; // zealotry peak as percent from end. Should hit right as the they pass the Fanatic mark
-//    private static final double f = .69; // zealotry drop-off  target
-//    private static final double g = 2.2; //zealotry drop-off steepness
-//    private static final double k = .05; //kernal floor
-//    private static final int pf = 2; //crushing power for normalization
+
     private DMEReference<T> owner;
     private TenetReference tenet;
     private UUID id;

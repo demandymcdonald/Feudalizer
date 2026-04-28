@@ -102,7 +102,7 @@ public abstract class IOManager<T extends IInstancedObject<T,TI>,TI extends IOIn
                 }
                 if (template == null) throw new RuntimeException("Could not find template for " + clazz.getName());
             }
-            T value = template.getFreshInstance(entry.getKey());
+            T value = template.getNewObject(entry.getKey());
             value.deserialize(entry.getValue());
             register(value);
             onLoad(value);

@@ -2,7 +2,7 @@ package com.objects.organization.government.rights;
 
 import com.base.reference.DMEReference;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.government.GoverningEntity;
 import com.utilities.IDisplayable;

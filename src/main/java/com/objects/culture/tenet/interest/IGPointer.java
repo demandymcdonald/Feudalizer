@@ -1,6 +1,6 @@
 package com.objects.culture.tenet.interest;
 
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 
 import java.util.HashSet;
 import java.util.Set;

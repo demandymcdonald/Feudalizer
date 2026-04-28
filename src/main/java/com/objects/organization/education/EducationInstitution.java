@@ -5,7 +5,7 @@ import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.organization.NonGovernmentEntity;
 import org.checkerframework.checker.nullness.qual.Nullable;

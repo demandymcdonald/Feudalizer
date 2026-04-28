@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.utilities.IDisplayable;
 import com.utilities.number.BoundInt;
 import com.utilities.serialization.JsonSerializable;
@@ -145,6 +145,10 @@ public interface IPoliticalCompass extends JsonSerializable {
         Value axisValue = axis.get(this);
         axisValue.add(acceptance);
     }
+    default void setCompass(Axis axis, int acceptance){
+        Value axisValue = axis.get(this);
+        axisValue.set(acceptance);
+    }
     default Ideology getClosestIdeology(IPoliticalCompass compass){
         Ideology closest = null;
         double closetMatch = Double.MIN_VALUE;
@@ -185,7 +189,9 @@ public interface IPoliticalCompass extends JsonSerializable {
     default AcceptanceContainer getAcceptanceContainer(IPoliticalCompass compass, boolean factorOtherTolerance){
         return new AcceptanceContainer(getCompatibilityValue(compass,factorOtherTolerance));
     }
-
+    default Value getByAxis(Axis axis){
+        return axis.get(this);
+    }
     ;
     @Override
     default JsonObject toJson() {

@@ -87,7 +87,7 @@ public class InterestGroups {
         }
 
         @Override
-        public InterestGroup getFreshInstance(String id) {
+        public InterestGroup getNewObject(String id) {
             return null;
         }
         public static final Gender_Identity MEN = new Gender_Identity(HARDCODED,"men", "Men", "Group for Cisgendered Men.") {
@@ -186,7 +186,7 @@ public class InterestGroups {
         }
 
         @Override
-        public InterestGroup getFreshInstance(String id) {
+        public InterestGroup getNewObject(String id) {
             return null;
         }
         public static final Orientation HETERO = new Orientation(HARDCODED,"hetero","Heterosexual","Is attracted to members of the opposite sex.") {
@@ -353,7 +353,7 @@ public class InterestGroups {
         }
 
         @Override
-        public InterestGroup getFreshInstance(String id) {
+        public InterestGroup getNewObject(String id) {
             return null;
         }
         @Override

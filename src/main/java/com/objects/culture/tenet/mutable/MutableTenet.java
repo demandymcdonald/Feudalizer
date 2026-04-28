@@ -5,15 +5,21 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.culture.Culture;
+import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.IPoliticalCompass;
+import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.Tenet;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.tenet.group.CategoryModifier;
 import com.objects.culture.tenet.group.TenetGroup;
+import com.utilities.number.BoundDbl;
 import com.utilities.serialization.SuperclassSerializable;
+import javafx.scene.chart.Axis;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class MutableTenet implements Tenet, SuperclassSerializable<MutableTenet> {
@@ -114,7 +120,10 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         object.add("parent",parent.serialize());
         object.add("compass", politicalCompass.toJson());
     }
-
+    @Override
+    public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
+        return politicalCompass.getAcceptanceContainer(other.getCompass(), factorOtherTolerance);
+    }
     @Override
     public DMEReference<Culture> getCulture() {
         return parent.get().getCulture();
@@ -124,5 +133,27 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
     public void mainLoad(JsonObject object) {
 
     }
-
+    public static PoliticalCompass makeCompass(Set<PoliticalCompass.IdeologyEntry> opinions, @Nullable TenetGroup reference, @Nullable CategoryModifier modifiers){
+        PoliticalCompass compass = PoliticalCompass.of(opinions);
+        return makeCompass(compass, reference, modifiers);
+    }
+    public static PoliticalCompass makeCompass(PoliticalCompass base, @Nullable TenetGroup reference, @Nullable CategoryModifier modifiers){
+        if (modifiers == null || reference == null) return base;
+        return factorModifiers(base,reference, modifiers);
+    }
+    protected static PoliticalCompass factorModifiers(PoliticalCompass compass, TenetGroup reference, CategoryModifier modifiers){
+//        if(!modifiers.contains(reference)){
+//            return compass;
+//        }
+        for (Map.Entry<TenetGroup, BoundDbl> entry : modifiers.modifiers().entrySet()) {
+            TenetGroup group = entry.getKey();
+            if(group.equals(reference) || group.isAncestorOf(reference)){
+                double mod = modifiers.getModifier(group);
+                for(IPoliticalCompass.Axis axis : IPoliticalCompass.Axis.values()){
+                    compass.setCompass(axis,(int) Math.round(compass.getByAxis(axis).get() * mod));
+                }
+            }
+        }
+        return compass;
+    }
 }

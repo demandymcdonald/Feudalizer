@@ -1,4 +1,4 @@
-package com.objects.culture.tenet;
+package com.objects.culture;
 
 import com.base.instanced.IOManager;
 import com.base.reference.DMEReference;
@@ -7,6 +7,9 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.object.ideology.Ideology;
+import com.objects.culture.object.ideology.IdeologyInstance;
+import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.group.ConnectionEdge;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -227,6 +230,12 @@ public class TenetManager {
                 }
             }
             return null;
+        }
+    }
+    public static class Ideologies extends IOManager<Ideology, IdeologyInstance> {
+        public static final Ideologies INSTANCE = new Ideologies();
+        public Ideologies() {
+            super(Ideology.class);
         }
     }
     public static class InterestGroups extends IOManager<InterestGroup, IGInstance> {

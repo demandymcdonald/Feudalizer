@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.Influencers.InfluencerWeight;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.number.BoundedInteger;
 

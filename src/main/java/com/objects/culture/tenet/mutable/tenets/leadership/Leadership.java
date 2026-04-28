@@ -5,13 +5,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.object.ideology.Ideologies;
+import com.objects.culture.object.ideology.Ideology;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.TenetManager;
+import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
+import com.objects.culture.tenet.group.CategoryModifier;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.group.groups.EconomicGroups;
-import com.objects.culture.tenet.group.groups.EducationGroups;
-import com.objects.culture.tenet.group.groups.ReligionGroups;
+import com.objects.culture.tenet.group.groups.*;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.MutableTenet;
@@ -19,11 +20,9 @@ import com.objects.culture.tenet.mutable.augments.IRightsTenet;
 import com.objects.culture.tenet.mutable.tenets.general.CompassGenerators;
 import com.objects.culture.tenet.mutable.tenets.leadership.election.ElectionType;
 import com.objects.organization.education.Education;
-import com.objects.title.land.habitable.HabitableLand;
 
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Function;
 
 import static com.objects.culture.tenet.group.groups.EconomicGroups.BUSINESS;
 import static com.objects.culture.tenet.group.groups.EconomicGroups.LABOR_UNION;
@@ -56,41 +55,16 @@ public abstract class Leadership extends MutableTenet {
     @Override
     public Set<TenetGroup> compatibleParents() {
         return Set.of(
-                GOVERNMENT,
-                GOVERNMENT_LEADERSHIP,
-                GOVERNMENT_OFFICIAL,
-                GOVERNMENT_OFFICE,
-                MILITARY,
-                MILITARY_LEADERSHIP,
-                RELIGION,
-                ReligionGroups.RELIGION_LEADERSHIP,
-                EDUCATION,
-                EducationGroups.EDUCATION_LEADERSHIP,
-                BUSINESS,
-                EconomicGroups.BUSINESS_LEADERSHIP,
-                EconomicGroups.LABOR_UNION,
-                EconomicGroups.UNION_LEADERSHIP
+            GovernmentGroups.GOVERNMENT_LEADERSHIP,
+            GovernmentGroups.GOVERNMENT_OFFICIAL,
+            MilitaryGroups.MILITARY_LEADERSHIP,
+            ReligionGroups.RELIGION_LEADERSHIP,
+            EducationGroups.EDUCATION_LEADERSHIP,
+            EconomicGroups.BUSINESS_LEADERSHIP,
+            EconomicGroups.UNION_LEADERSHIP
         );
     }
-    private static double getModifier(TenetGroup category){
-        if(category == null){
-            throw new NullPointerException("TenetGroup cannot be null");
-        } else if (category == GOVERNMENT){
-            return 1;
-        } else if (category == MILITARY){
-            return .8;
-        } else if (category == GOVERNMENT_OFFICIAL){
-            return .7;
-        } else if (category == RELIGION){
-            return .4;
-        } else if (category == EDUCATION){
-            return .5;
-        } else if (category == BUSINESS){
-            return .45;
-        } else if (category == LABOR_UNION){
-            return .65;
-        }
-    }
+
     private static TenetGroup findGroup(TenetReference reference, Type type) {
         //Not sure if the thows will ever be supported, but they need to throw to tell me if I need to add them. Tags are bloated as is.
         TenetGroup group = TenetManager.Group.getCategory(reference.get().getGroup());
@@ -185,8 +159,8 @@ public abstract class Leadership extends MutableTenet {
     public static class TermLimit extends Leadership {
         private int duration;
         private ChronoUnit durationUnit;
-        public TermLimit(TenetReference parent, PoliticalCompass entry, int duration, ChronoUnit durationUnit) {
-            super(parent, Type.REMOVAL, entry, "term_limit", "Term Limit", "The term limit for this office");
+        public TermLimit(TenetReference parent, int duration, ChronoUnit durationUnit) {
+            super(parent, Type.REMOVAL, makeTLC(parent.getGroup(), duration, durationUnit), "term_limit", "Term Limit", "The term limit for this office");
             this.duration = duration;
             this.durationUnit = durationUnit;
         }
@@ -210,6 +184,31 @@ public abstract class Leadership extends MutableTenet {
             duration = Integer.parseInt(data.get("duration").getAsString());
             durationUnit = ChronoUnit.valueOf(data.get("unit").getAsString());
         }
+        private static final Map<Ideology,Integer> base_map = Map.of(
+                Ideologies.LIBERALISM,90,
+                Ideologies.SOCIAL_DEMOCRACY,85,
+                Ideologies.NEOCONSERVATISM,85,
+                Ideologies.AUTHORITARIAN_COMMUNISM,-33,
+                Ideologies.FASCISM,-90,
+                Ideologies.ARISTOCRACY,-90,
+                Ideologies.ABSOLUTE_MONARCHY, -90,
+                Ideologies.CONSTITUTIONAL_MONARCHY, -50
+        );
+        private static final CategoryModifier mod = new CategoryModifier.Builder().build();
+
+        private static PoliticalCompass makeTLC(TenetGroup parent, int duration, ChronoUnit unit){
+            long years = duration * (unit.getDuration().toHours() * 24 * 365);
+            double curveAuth = Math.pow((double) years /100L,2);
+            double curveLib = Math.log((double) years /100L);
+            Map<Ideology,Integer> map = new HashMap<>(base_map);
+            map.compute(Ideologies.LIBERALISM, (k,v) -> (int) (v * curveLib));
+            map.compute(Ideologies.SOCIAL_DEMOCRACY, (k,v) -> (int) (v * curveLib));
+            map.compute(Ideologies.AUTHORITARIAN_COMMUNISM, (k,v) -> (int) (v * curveAuth));
+            map.compute(Ideologies.FASCISM, (k,v) -> (int) (v * curveAuth));
+            map.compute(Ideologies.ABSOLUTE_MONARCHY, (k,v) -> (int) (v * curveAuth));
+            return MutableTenet.makeCompass(PoliticalCompass.IdeologyEntry.of(map),parent, mod);
+        }
+
     }
     public static class Barred extends Leadership implements IRightsTenet<Barred> {
         private final Set<InterestGroup> isAffected = new HashSet<>();
@@ -246,7 +245,7 @@ public abstract class Leadership extends MutableTenet {
             JsonArray array = data.getAsJsonArray("isAffected");
             isAffected.clear();
             for(JsonElement element : array) {
-                isAffected.add(TenetManager.InterestGroups.get(element.getAsJsonObject().get("id").getAsString()));
+                isAffected.add(TenetManager.InterestGroups.INSTANCE.get(element.getAsJsonObject().get("id").getAsString()));
             }
         }
         private static String buildID(InterestGroup... group) {
@@ -263,11 +262,14 @@ public abstract class Leadership extends MutableTenet {
             }
             return builder.toString();
         }
+
     }
     public static class Election extends Leadership implements IRightsTenet<Election> {
-
+        private final Set<InterestGroup> isAffected = new HashSet<>();
+        private ElectionType<?> type = null;
         public Election(TenetReference parent, ElectionType<?> type) {
-            super(parent, type, , id, name, "");
+            super(parent, Type.SELECTION, makeTLC(parent.getGroup(),type), "election_" + type.getId(), "Election: "+ type.getDisplayName(), type.getDescription());
+            this.type = type;
         }
 
         public Election(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
@@ -281,17 +283,40 @@ public abstract class Leadership extends MutableTenet {
 
         @Override
         public Set<InterestGroup> isAffected() {
-            return Set.of();
+            return isAffected;
         }
 
         @Override
         public void additionalSave(JsonObject data) {
-
+            JsonArray array = new JsonArray();
+            for (InterestGroup group : isAffected) {
+                array.add(group.getID());
+            }
+            data.add("")
+            data.add("isAffected", array);
         }
 
         @Override
         public void additionalLoad(JsonObject data) {
+            JsonArray array = data.getAsJsonArray("isAffected");
+            isAffected.clear();
+            for(JsonElement element : array) {
+                isAffected.add(TenetManager.InterestGroups.INSTANCE.get(element.getAsJsonObject().get("id").getAsString()));
+            }
+        }
 
+        private static final CategoryModifier mod = new CategoryModifier.Builder()
+                .setEducation(128)
+                .setBusiness(200)
+                .setGovernmentLeader(128)
+                .setOfficial(150)
+                .setMilitary(200)
+                .setLabor(-64)
+                .setReligion(200)
+                .build();
+
+        private static PoliticalCompass makeTLC(TenetGroup parent, ElectionType<?> type){
+            return MutableTenet.makeCompass(type.getPoliticalCompass(),parent, mod);
         }
     }
     public static class EducationRequirement extends Leadership{

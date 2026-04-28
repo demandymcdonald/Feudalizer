@@ -3,7 +3,7 @@ package com.objects.culture.tenet.group.groups;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 
-import static com.objects.culture.tenet.TenetManager.SOFT_CULTURE;
+import static com.objects.culture.TenetManager.SOFT_CULTURE;
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.TenetGroup.*;
 import static com.objects.culture.tenet.group.groups.ReligionGroups.*;

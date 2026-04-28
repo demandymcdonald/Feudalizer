@@ -42,4 +42,5 @@ public abstract class ElectionType<E extends ICultureOpinionated> implements IDi
     public abstract Map<E,Long> fromGovernment(GoverningEntity<?> land);
     public abstract Map<E,Long> fromOrganization(NonGovernmentEntity<?> land);
     public abstract PoliticalCompass getPoliticalCompass();
+
 }

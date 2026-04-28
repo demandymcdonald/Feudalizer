@@ -3,8 +3,8 @@ package com.objects.culture.tenet.group.groups;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 
-import static com.objects.culture.tenet.TenetManager.HARD_CULTURE;
-import static com.objects.culture.tenet.TenetManager.SOFT_CULTURE;
+import static com.objects.culture.TenetManager.HARD_CULTURE;
+import static com.objects.culture.TenetManager.SOFT_CULTURE;
 import static com.objects.culture.tenet.group.groups.EconomicGroups.*;
 import static com.objects.culture.tenet.group.groups.EducationGroups.EDUCATION;
 import static com.objects.culture.tenet.group.groups.FamilyGroups.FAMILY;
@@ -273,7 +273,7 @@ public class GovernmentGroups {
             .build();
 
     // Government Leadership
-    public static final TenetGroup GOVERNMENT_LEADERSHIP = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "leadership", "Leadership", "")
+    public static final TenetGroup GOVERNMENT_LEADERSHIP = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.CATEGORY, "leadership", "Leadership", "")
             .setParent(GOVERNMENT_SYSTEM)
             .build();
     public static final TenetGroup LEADER_CORRUPTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "corruption", "Leader Corruption", "")
@@ -300,7 +300,7 @@ public class GovernmentGroups {
             .build();
 
     // Government Office
-    public static final TenetGroup GOVERNMENT_OFFICE = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "office", "GovernmentTenet Office", "")
+    public static final TenetGroup GOVERNMENT_OFFICE = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.CATEGORY, "office", "GovernmentTenet Office", "")
             .setParent(GOVERNMENT_SYSTEM)
             .build();
     public static final TenetGroup GOVERNMENT_OFFICE_AUTHORITY = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "authority", "GovernmentTenet Office Authority", "")
@@ -310,7 +310,6 @@ public class GovernmentGroups {
             .setParent(GOVERNMENT_OFFICE)
             .addDependent(GOVERNMENT_FUNDING)
             .build();
-
     // Government Officials
     public static final TenetGroup GOVERNMENT_OFFICIAL = new TenetGroup.Builder(TGType.SYSTEM_SORT, Level.SUBCATEGORY, "official", "GovernmentTenet Official", "")
             .setParent(GOVERNMENT_OFFICE)

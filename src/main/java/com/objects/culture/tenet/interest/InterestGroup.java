@@ -1,25 +1,19 @@
 package com.objects.culture.tenet.interest;
 
-import com.base.instanced.AbstractIO;
 import com.base.instanced.InstanceType;
-import com.base.instanced.bi.IOBi;
 import com.base.instanced.single.IOSingle;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
-import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.PassiveCultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.tenet.Tenet;
-import com.objects.culture.tenet.TenetManager;
 import com.objects.culture.tenet.TenetReference;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.organization.government.GoverningEntity;
 import com.utilities.IDisplayable;
-import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundInt;
 
 import java.util.Map;
@@ -98,7 +92,7 @@ public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DM
         return displayName;
     }
     @Override
-    public InterestGroup getFreshInstance(String id) {
+    public InterestGroup getNewObject(String id) {
         return null;
     }
     @Override
