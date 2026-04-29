@@ -1,6 +1,6 @@
 package com.objects.culture.tenet.interest;
 
-import com.base.instanced.InstanceType;
+import com.base.component.InstanceType;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
@@ -14,8 +14,7 @@ import com.utilities.number.BoundInts;
 
 import java.util.Map;
 
-import static com.base.instanced.InstanceType.DATA_DRIVEN;
-import static com.base.instanced.InstanceType.HARDCODED;
+import static com.base.component.InstanceType.HARDCODED;
 import static com.objects.character.sentient.Gender.*;
 import static com.objects.culture.tenet.interest.InterestGroup.Dimension.*;
 

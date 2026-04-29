@@ -1,5 +1,8 @@
 package com.objects.culture.tenet.mutable.tenets.leadership;
 
+import com.base.component.ComponentReference;
+import com.base.component.IComponent;
+import com.base.component.InstanceType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,12 +36,12 @@ import static com.objects.culture.tenet.group.groups.ReligionGroups.RELIGION;
 
 public abstract class Leadership extends MutableTenet {
 
-    public Leadership(TenetReference parent, Type type, PoliticalCompass entry, String id, String name, String description) {
-        super(parent, findGroup(parent,type), entry, id, name, description);
+    public Leadership(InstanceType instType, TenetReference parent, Type type, PoliticalCompass entry, String id, String name, String description) {
+        super(instType,parent, findGroup(parent,type), entry, id, name, description);
     }
 
-    public Leadership(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-        super(parent, uuid, group, entry, id, name, description);
+    public Leadership(InstanceType type, String id) {
+        super(type, id);
     }
 
     protected enum Type {
@@ -159,14 +162,16 @@ public abstract class Leadership extends MutableTenet {
     public static class TermLimit extends Leadership {
         private int duration;
         private ChronoUnit durationUnit;
-        public TermLimit(TenetReference parent, int duration, ChronoUnit durationUnit) {
-            super(parent, Type.REMOVAL, makeTLC(parent.getGroup(), duration, durationUnit), "term_limit", "Term Limit", "The term limit for this office");
+        public TermLimit(InstanceType type, TenetReference parent, int duration, ChronoUnit durationUnit) {
+            super(type, parent, Type.REMOVAL, makeTLC(parent.getGroup(), duration, durationUnit), "term_limit", "Term Limit", "The term limit for this office");
             this.duration = duration;
             this.durationUnit = durationUnit;
         }
-        public TermLimit(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-            super(parent, uuid, group, entry, id, name, description);
+
+        public TermLimit(InstanceType instType, String id) {
+            super(instType, id);
         }
+
         @Override
         public Set<CultureCondition<?, ?>> getConditionList() {
             return Set.of(
@@ -175,14 +180,16 @@ public abstract class Leadership extends MutableTenet {
         }
         @Override
         public void additionalSave(JsonObject data) {
-            data.addProperty("duration", duration);
-            data.addProperty("unit", durationUnit.name());
+            super.additionalSave(data);
+            data.addProperty("tl:duration", duration);
+            data.addProperty("tl:unit", durationUnit.name());
         }
 
         @Override
         public void additionalLoad(JsonObject data) {
-            duration = Integer.parseInt(data.get("duration").getAsString());
-            durationUnit = ChronoUnit.valueOf(data.get("unit").getAsString());
+            super.additionalLoad(data);
+            duration = Integer.parseInt(data.get("tl:duration").getAsString());
+            durationUnit = ChronoUnit.valueOf(data.get("tl:unit").getAsString());
         }
         private static final Map<Ideology,Integer> base_map = Map.of(
                 Ideologies.LIBERALISM,90,
@@ -209,15 +216,19 @@ public abstract class Leadership extends MutableTenet {
             return MutableTenet.makeCompass(PoliticalCompass.IdeologyEntry.of(map),parent, mod);
         }
 
+        @Override
+        public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+            return new TermLimit(type, id);
+        }
     }
     public static class Barred extends Leadership implements IRightsTenet<Barred> {
         private final Set<InterestGroup> isAffected = new HashSet<>();
-        public Barred(TenetReference parent, InterestGroup... groups) {
-            super(parent, Type.SELECTION, CompassGenerators.disenfranchise(4,groups), buildID(groups), "Barred from Office", "");
+        public Barred(InstanceType type, TenetReference parent, InterestGroup... groups) {
+            super(type, parent, Type.SELECTION, CompassGenerators.disenfranchise(4,groups), buildID(groups), "Barred from Office", "");
             isAffected.addAll(Arrays.stream(groups).toList());
         }
-        public Barred(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-            super(parent, uuid, group, entry, id, name, description);
+        public Barred(InstanceType instType, String id) {
+            super(instType, id);
         }
         @Override
         public Set<CultureCondition<?, ?>> getConditionList() {
@@ -263,27 +274,23 @@ public abstract class Leadership extends MutableTenet {
             return builder.toString();
         }
 
+        @Override
+        public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+            return new Barred(type, id);
+        }
     }
-    public static class Election extends Leadership implements IRightsTenet<Election> {
-        private final Set<InterestGroup> isAffected = new HashSet<>();
-        private ElectionType<?> type = null;
-        public Election(TenetReference parent, ElectionType<?> type) {
-            super(parent, Type.SELECTION, makeTLC(parent.getGroup(),type), "election_" + type.getId(), "Election: "+ type.getDisplayName(), type.getDescription());
-            this.type = type;
+    public static class Election extends Leadership {
+        private ComponentReference<ElectionType<?>> type = null;
+        public Election(InstanceType instType, TenetReference parent, ElectionType<?> type) {
+            super(instType, parent, Type.SELECTION, makeTLC(parent.getGroup(),type), "election_" + type.getID(), "Election: "+ type.getDisplayName(), type.getDescription());
+            this.type = type.getReference();
         }
-
-        public Election(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-            super(parent, uuid, group, entry, id, name, description);
+        public Election(InstanceType instType, String id) {
+            super(instType, id);
         }
-
         @Override
         public Set<CultureCondition<?, ?>> getConditionList() {
             return Set.of();
-        }
-
-        @Override
-        public Set<InterestGroup> isAffected() {
-            return isAffected;
         }
 
         @Override
@@ -292,13 +299,14 @@ public abstract class Leadership extends MutableTenet {
             for (InterestGroup group : isAffected) {
                 array.add(group.getID());
             }
-            data.add("")
-            data.add("isAffected", array);
+            data.add("el:type",type.toJson());
+            data.add("el:isAffected", array);
         }
 
         @Override
         public void additionalLoad(JsonObject data) {
-            JsonArray array = data.getAsJsonArray("isAffected");
+            type = IComponent.deserializeRef(data.get("el:type"));
+            JsonArray array = data.getAsJsonArray("el:isAffected");
             isAffected.clear();
             for(JsonElement element : array) {
                 isAffected.add(TenetManager.InterestGroups.INSTANCE.get(element.getAsJsonObject().get("id").getAsString()));
@@ -318,17 +326,20 @@ public abstract class Leadership extends MutableTenet {
         private static PoliticalCompass makeTLC(TenetGroup parent, ElectionType<?> type){
             return MutableTenet.makeCompass(type.getPoliticalCompass(),parent, mod);
         }
+
+        @Override
+        public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+            return new Election(type, id);
+        }
     }
     public static class EducationRequirement extends Leadership{
 
-        public EducationRequirement(TenetReference parent, Education level) {
-            super(parent, Type.SELECTION, bc(parent,level), "education_level", "Education Requirement", "");
+        public EducationRequirement(InstanceType instType, TenetReference parent, Education level) {
+            super(instType, parent, Type.SELECTION, bc(parent,level), "education_level", "Education Requirement", "");
         }
-
-        public EducationRequirement(TenetReference parent, UUID uuid, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-            super(parent, uuid, group, entry, id, name, description);
+        public EducationRequirement(InstanceType instType, String id) {
+            super(instType, id);
         }
-
         @Override
         public Set<CultureCondition<?, ?>> getConditionList() {
             return Set.of();
@@ -360,6 +371,11 @@ public abstract class Leadership extends MutableTenet {
         @Override
         public void additionalLoad(JsonObject data) {
 
+        }
+
+        @Override
+        public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+            return new EducationRequirement(type, id);
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.objects.culture;
 
-import com.base.instanced.IOManager;
+import com.base.component.ComponentManager;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -18,7 +18,6 @@ import com.objects.culture.tenet.interest.IGInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.tenets.leadership.Leadership;
 import com.objects.culture.tenet.mutable.MutableTenet;
-import com.objects.culture.tenet.mutable.tenets.ReligionTenets;
 import com.utilities.serialization.SuperclassSerializable;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -33,45 +32,26 @@ import java.util.*;
 import static com.objects.culture.tenet.group.TenetGroup.Level.META_PILLAR;
 import static com.objects.culture.tenet.group.TenetGroup.builder;
 
-public class TenetManager {
-    private static final Map<String, MutableTenet> tenets = new HashMap<>();
-
-    private static final Multimap<TenetGroup, MutableTenet> tenetsByGroup = HashMultimap.create();
-    private static final Map<Class<? extends MutableTenet>, TenetFactory<? extends MutableTenet>> mutableTenetFactories = new HashMap<>();
-
-
+public class TenetManager extends ComponentManager<MutableTenet>{
     public static final TenetGroup CULTURE = new TenetGroup.Builder(TGType.SORT_ONLY,META_PILLAR,"culture", "All_Culture", "Every Tenet").build();
     public static final TenetGroup HARD_CULTURE = new TenetGroup.Builder(TGType.SORT_ONLY,META_PILLAR,"hard", "Hard Culture", "").setParent(CULTURE).build();
     public static final TenetGroup SOFT_CULTURE = new TenetGroup.Builder(TGType.SORT_ONLY,META_PILLAR,"soft", "Soft Culture", "").setParent(CULTURE).build();
 
-    public static void registerTenet(MutableTenet tenet) {
-        tenets.put(tenet.getDisplayID(), tenet);
-        tenetsByGroup.put(tenet.getGroup(), tenet);
+    public TenetManager() {
+        super(MutableTenet.class);
     }
 
-
-    public static <T extends MutableTenet> void registerMutableFactory(Class<T> mutClass, TenetFactory<T> factory) {
-        mutableTenetFactories.put(mutClass, factory);
-    }
-    public static <T extends MutableTenet> T deserialize(JsonObject object) {
-        Class<T> tC = (Class<T>) SuperclassSerializable.getSSClass(object);
-        return (T) mutableTenetFactories.get(tC).rebuild(object);
-    }
-
-    public static MutableTenet getTenet(String id) {
-        return tenets.get(id);
-    }
-
-    public static void init(){
+    @Override
+    protected void onInit() {
+        super.onInit();
         SocietyGroups.init();
         FamilyGroups.init();
         EducationGroups.init();
         EconomicGroups.init();
         ReligionGroups.init();
         GovernmentGroups.init();
-
-        ReligionTenets.init();
     }
+
     public static class Group {
         private static final Map<String, TenetGroup> groups = new HashMap<>();
         private static final Multimap<TenetGroup.Level, TenetGroup> groupLevels = HashMultimap.create();
@@ -232,13 +212,13 @@ public class TenetManager {
             return null;
         }
     }
-    public static class Ideologies extends IOManager<Ideology, IdeologyInstance> {
+    public static class Ideologies extends ComponentManager<Ideology> {
         public static final Ideologies INSTANCE = new Ideologies();
         public Ideologies() {
             super(Ideology.class);
         }
     }
-    public static class InterestGroups extends IOManager<InterestGroup, IGInstance> {
+    public static class InterestGroups extends ComponentManager<InterestGroup> {
 
         private final Multimap<InterestGroup.Dimension,InterestGroup> byDimension = HashMultimap.create();
         public static final InterestGroups INSTANCE = new InterestGroups();
@@ -264,30 +244,11 @@ public class TenetManager {
             return toReturn;
         }
     }
-    public static abstract class TenetFactory<T extends MutableTenet> {
-        public final T rebuild(JsonObject object) {
-            JsonObject main = SuperclassSerializable.getMainData(object);
-            UUID id = UUID.fromString(main.get("id").getAsString());
-            TenetReference reference = TenetReference.fromJson(main.get("parent").getAsJsonObject());
-            TenetGroup g = TenetManager.Group.get(main.get("group").getAsString());
-            String displayID = main.get("displayID").getAsString();
-            String displayName = main.get("name").getAsString();
-            String description = main.get("description").getAsString();
-            PoliticalCompass compass = PoliticalCompass.build(main.get("compass").getAsJsonObject());
-            T t = onRebuild(id,reference,g,compass,displayID,displayName,description);
-            t.additionalLoad(SuperclassSerializable.getAdditional(object));
-            return t;
+    public static class ElectionType extends ComponentManager<ElectionType<?>> {
+        public static final ElectionType INSTANCE = new ElectionType();
+        private ElectionType() {
+            super(ElectionType.class);
         }
-        protected abstract T onRebuild(UUID id, TenetReference parent, TenetGroup tenetGroup, PoliticalCompass compass, String displayID, String displayName, String description);
-    }
-
-    static {
-        registerMutableFactory(Leadership.TermLimit.class, new TenetFactory<Leadership.TermLimit>() {
-            @Override
-            protected Leadership.TermLimit onRebuild(UUID id, TenetReference parent, TenetGroup tenetGroup, PoliticalCompass compass, String displayID, String displayName, String description) {
-                return new Leadership.TermLimit(parent,id, tenetGroup, compass, displayID, displayName, description);
-            }
-        });
     }
 }
 

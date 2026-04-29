@@ -1,7 +1,7 @@
-package com.base.instanced.tri;
+package com.base.component.instanced.tri;
 
-import com.base.instanced.AbstractIO;
-import com.base.instanced.InstanceType;
+import com.base.component.instanced.AbstractIO;
+import com.base.component.InstanceType;
 
 public abstract class IOTri<T extends IOTri<T,I,A,B,C>,I extends IOITri<T,I,A,B,C>,A,B,C> extends AbstractIO<T,I> {
     public IOTri(InstanceType type, String id) {

@@ -4,8 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.ideology.Ideology;
+import com.objects.culture.tenet.group.CategoryModifier;
+import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.number.BoundedInteger;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +74,27 @@ public class PoliticalCompass implements IPoliticalCompass {
     @Override
     public IPoliticalCompass clone() {
         return new PoliticalCompass(getAxisB().get(), getAxisA().get(), getAxisC().get(), getAxisD().get());
+    }
+    public static PoliticalCompass of(PoliticalCompass... compasses){
+        double axisA = 0;
+        double axisB = 0;
+        double axisC = 0;
+        double axisD = 0;
+        double tolerance = 0;
+        for (PoliticalCompass compass : compasses) {
+            axisA += compass.getAxisA().get();
+            axisB += compass.getAxisB().get();
+            axisC += compass.getAxisC().get();
+            axisD += compass.getAxisD().get();
+            tolerance += compass.getTolerance().get();
+        }
+        return new PoliticalCompass((int) Math.round(axisA/compasses.length), (int) Math.round(axisB/compasses.length), (int) Math.round(axisC/compasses.length), (int) Math.round(axisD/compasses.length), (int) Math.round(tolerance/compasses.length));
+    }
+    public static PoliticalCompass of(PoliticalCompass base, Map<Ideology,Integer>  opinions){
+        return PoliticalCompass.of(base,PoliticalCompass.of(opinions));
+    }
+    public static PoliticalCompass of(PoliticalCompass base, Set<PoliticalCompass.IdeologyEntry> opinions){
+        return PoliticalCompass.of(base,PoliticalCompass.of(opinions));
     }
     public static PoliticalCompass of(Map<Ideology,Integer> ideologies){
         return of(IdeologyEntry.of(ideologies));

@@ -1,7 +1,7 @@
 package com.objects.culture.tenet.interest;
 
-import com.base.instanced.InstanceType;
-import com.base.instanced.single.IOSingle;
+import com.base.component.InstanceType;
+import com.base.component.instanced.single.IOSingle;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;

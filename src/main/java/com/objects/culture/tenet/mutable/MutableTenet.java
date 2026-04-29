@@ -1,5 +1,7 @@
 package com.objects.culture.tenet.mutable;
 
+import com.base.component.InstanceType;
+import com.base.component.mutable.MutableComponent;
 import com.base.reference.DMEReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -22,45 +24,28 @@ import javafx.scene.chart.Axis;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class MutableTenet implements Tenet, SuperclassSerializable<MutableTenet> {
+public abstract class MutableTenet extends MutableComponent<MutableTenet> implements Tenet {
+    private TenetReference reference;
+    private TenetGroup group;
+    private PoliticalCompass politicalCompass;
+    private String displayID;
+    private String name;
+    private String description;
+    private TenetReference parent;
+    public MutableTenet(InstanceType type, TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+        super(type,buildID(group,id));
+        this.group = group;
+        this.displayID = buildID(group, id);
+        this.politicalCompass = entry;
+        this.name = name;
+        this.description = description;
+        reference = TenetReference.of(this);
+        this.parent = parent;
+    }
+    public MutableTenet(InstanceType type, String id){
+        super(type,id);
+    }
 
-    private final UUID id;
-    private final TenetReference reference;
-    private final TenetGroup group;
-    private final PoliticalCompass politicalCompass;
-    private final String displayID;
-    private final String name;
-    private final String description;
-    private final TenetReference parent;
-    public MutableTenet(TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-        this.id = UUID.randomUUID();
-        this.group = group;
-        this.displayID = buildID(group, id);
-        this.politicalCompass = entry;
-        this.name = name;
-        this.description = description;
-        reference = TenetReference.of(this);
-        this.parent = parent;
-        TenetManager.registerTenet(this);
-    }
-    public MutableTenet(TenetReference parent, UUID uuid,TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
-        this.id = uuid;
-        this.group = group;
-        this.politicalCompass = entry;
-        this.displayID = buildID(group, id);
-        this.name = name;
-        this.description = description;
-        reference = TenetReference.of(this);
-        this.parent = parent;
-        TenetManager.registerTenet(this);
-    }
-//    public <T extends DateMutableEntity<T>, C extends TimelineChange<T>> List<TenetCondition<? super C,? extends T,?>>  getConditions(TimelineChange<T> change){
-//        List<TenetCondition<? super C, ? extends T,?>> conditions = new ArrayList<>();
-//        for (TenetCondition<?,?,?> lCondition : condition.get().get((Class<? extends TimelineChange<?>>) change.getClass())){
-//            conditions.add((TenetCondition<? super C, ? extends T,TE>) lCondition);
-//        };
-//        return conditions;
-//    }
     @Override
     public final Multimap<CultureCondition.Key, CultureCondition<?, ?>> getConditions() {
         Multimap<CultureCondition.Key, CultureCondition<?, ?>> result = HashMultimap.create();
@@ -107,18 +92,22 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         return description;
     }
     @Override
-    public UUID getID() {
-        return id;
+    public void additionalSave(JsonObject object) {
+        object.addProperty("mt:displayID", displayID);
+        object.addProperty("mt:name", name);
+        object.addProperty("mt:description", description);
+        object.addProperty("mt:group", group.getDisplayID());
+        object.add("mt:parent",parent.serialize());
+        object.add("mt:compass", politicalCompass.toJson());
     }
     @Override
-    public void mainSave(JsonObject object) {
-        object.addProperty("uuid",id.toString());
-        object.addProperty("displayID", displayID);
-        object.addProperty("name", name);
-        object.addProperty("description", description);
-        object.addProperty("group", group.getDisplayID());
-        object.add("parent",parent.serialize());
-        object.add("compass", politicalCompass.toJson());
+    public void additionalLoad(JsonObject object) {
+        displayID = object.get("mt:displayID").getAsString();
+        name = object.get("mt:name").getAsString();
+        description = object.get("mt:description").getAsString();
+        group = TenetManager.Group.get(object.get("mt:group").getAsString());
+        parent = TenetReference.deserialize(object.get("mt:parent").getAsJsonObject());
+        politicalCompass = PoliticalCompass.build(object.get("mt:compass").getAsJsonObject());
     }
     @Override
     public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
@@ -129,9 +118,9 @@ public abstract class MutableTenet implements Tenet, SuperclassSerializable<Muta
         return parent.get().getCulture();
     }
 
-    @Override
-    public void mainLoad(JsonObject object) {
-
+    public static PoliticalCompass makeCompass(PoliticalCompass base, Set<PoliticalCompass.IdeologyEntry> opinions, @Nullable TenetGroup reference, @Nullable CategoryModifier modifiers){
+        PoliticalCompass compass = PoliticalCompass.of(opinions);
+        return PoliticalCompass.of(base,makeCompass(compass, reference, modifiers));
     }
     public static PoliticalCompass makeCompass(Set<PoliticalCompass.IdeologyEntry> opinions, @Nullable TenetGroup reference, @Nullable CategoryModifier modifiers){
         PoliticalCompass compass = PoliticalCompass.of(opinions);

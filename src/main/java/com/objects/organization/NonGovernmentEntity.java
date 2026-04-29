@@ -32,5 +32,9 @@ public abstract class NonGovernmentEntity<T extends NonGovernmentEntity<T>> exte
             return getStakeholders(object);
         }
     }
+    @Override
+    public final Type getType() {
+        return Type.Organization;
+    }
     public abstract Map<ICultureOpinionated,Integer> getStakeholders(ILeadered<?> object);
 }

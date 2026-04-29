@@ -11,6 +11,8 @@ public interface ICultureObject extends ICultureOpinionated{
     enum Type{
         Culture,
         Character,
+        Organization,
+        Government,
         Land,
         Job,
         Tenet,

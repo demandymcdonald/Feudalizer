@@ -1,6 +1,6 @@
 package com.objects.culture.object.ideology;
 
-import com.base.instanced.InstanceType;
+import com.base.component.InstanceType;
 import com.objects.culture.object.compass.PoliticalCompass;
 
 public class Ideologies {

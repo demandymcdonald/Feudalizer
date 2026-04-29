@@ -1,4 +1,4 @@
-package com.base.instanced;
+package com.base.component;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -11,29 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class IOManager<T extends IInstancedObject<T,TI>,TI extends IOInstance<T,TI>> implements IIO{
-    private static final Map<Class<? extends IInstancedObject<?,?>>,IOManager<?,?>> MANAGER_MAP = Collections.synchronizedMap(new HashMap<>());
+public abstract class ComponentManager<T extends IComponent<?>> implements IComponentLogged {
+
     protected final AtomicBoolean isLoaded = new AtomicBoolean(false);
     protected final Map<String,T> instanceMap = Collections.synchronizedMap(new HashMap<>());
-    protected final Multimap<Class<? extends T>,IInstancedObject<?,?>> classInstanceMap = Multimaps.synchronizedMultimap(HashMultimap.create());
+    protected final Multimap<Class<? extends T>,IComponent<?>> classInstanceMap = Multimaps.synchronizedMultimap(HashMultimap.create());
 
-    public IOManager(Class<T> type){
-        MANAGER_MAP.put(type,this);
-    }
-
-    public static <T extends IInstancedObject<T,?>> IOManager<T,?> getManager(Class<T> type){
-        IOManager<?,?> man = MANAGER_MAP.get(type);
-        if(man == null){
-            for(Class<? extends IInstancedObject<?,?>> c : MANAGER_MAP.keySet()){
-                if(c.isAssignableFrom(type)){
-                    man = MANAGER_MAP.get(c);
-                    MANAGER_MAP.put(type,man);
-                    break;
-                }
-            }
-            throw new RuntimeException("Could not find IOManager for " + type.getName());
-        }
-        return (IOManager<T,?>) man;
+    public ComponentManager(Class<? extends T> type){
+        ComponentRegistry.registerManager(this,type);
     }
 
     public final <t extends T> void register(t object){
@@ -78,18 +63,23 @@ public abstract class IOManager<T extends IInstancedObject<T,TI>,TI extends IOIn
     public final Map<String, JsonObject> save(){
         Map<String, JsonObject> saveableMap = new HashMap<>();
         for(T t : instanceMap.values()){
-            if(t.getInstanceType() == InstanceType.DATA_DRIVEN){
-                saveableMap.put(t.getID(), t.serialize());
+            if(t.getInstanceType().isSavable()){
+                JsonObject json = new JsonObject();
+                json.addProperty("type",t.getInstanceType().name());
+                json.add("payload",t.serialize());
+                saveableMap.put(t.getID(), json);
             }
             onSave(t);
         }
         return saveableMap;
     }
-    public final void load(Map<String, JsonObject> toLoad){
+    public void load(Map<String, JsonObject> toLoad){
         Map<Class<? extends T>, T> templateMap = new HashMap<>();
+
         for(Map.Entry<String, JsonObject> entry : toLoad.entrySet()){
             Class<? extends T> clazz = SuperclassSerializable.getSSClass(entry.getValue());
             T template = null;
+            JsonObject jsonObj = entry.getValue();
             if(templateMap.containsKey(clazz)){
                 template= templateMap.get(clazz);
             } else {
@@ -102,8 +92,8 @@ public abstract class IOManager<T extends IInstancedObject<T,TI>,TI extends IOIn
                 }
                 if (template == null) throw new RuntimeException("Could not find template for " + clazz.getName());
             }
-            T value = template.getNewObject(entry.getKey());
-            value.deserialize(entry.getValue());
+            T value = (T) template.getNewObject(InstanceType.valueOf(jsonObj.get("type").getAsString()),entry.getKey());
+            value.deserialize(jsonObj.get("payload").getAsJsonObject());
             register(value);
             onLoad(value);
         }

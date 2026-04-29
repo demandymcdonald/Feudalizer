@@ -7,7 +7,7 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.IDisplayable;
 import com.utilities.id.UUIDIdentifiable;
 
-public interface Tenet extends IDisplayable, ICultureObject, UUIDIdentifiable {
+public interface Tenet extends IDisplayable, ICultureObject {
     TenetGroup getGroup();
     Multimap<CultureCondition.Key, CultureCondition<?,?>> getConditions();
     @Override

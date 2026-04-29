@@ -1,8 +1,12 @@
 package com.objects.culture.tenet.mutable.tenets.leadership.election;
 
 
+import com.base.component.InstanceType;
+import com.google.gson.JsonObject;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
+import com.objects.culture.object.ideology.Ideology;
+import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.tenets.leadership.Leadership;
 import com.objects.organization.AbstractOrganization;
@@ -10,7 +14,6 @@ import com.objects.organization.NonGovernmentEntity;
 import com.objects.organization.government.GoverningEntity;
 import com.objects.shared.PopulationContainer;
 import com.objects.title.land.habitable.HabitableLand;
-import com.utilities.number.BoundDbl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +22,7 @@ import java.util.Set;
 public class ElectionTypes {
     private static final Map<String, ElectionType<?>> types = new HashMap<>();
     public static void registerType(ElectionType<?> type) {
-        types.put(type.getId(), type);
+        types.put(type.getID(), type);
     }
     public static ElectionType<?> get(String id) {
         ElectionType<?> et = types.get(id);
@@ -28,7 +31,22 @@ public class ElectionTypes {
         }
         return et;
     }
-    public static final ElectionType<InterestGroup> POPULAR = new ElectionType<InterestGroup>("popular") {
+    public static final ElectionType<InterestGroup> POPULAR = new ElectionType<InterestGroup>(InstanceType.HARDCODED,"popular", "Popular", "Election based on the population of the land.") {
+        @Override
+        public ElectionType<?> getNewObject(InstanceType type, String id, JsonObject data) {
+            return POPULAR;
+        }
+
+        @Override
+        public Map<Ideology, Integer> getIdeologyWeights() {
+            return Map.of(
+
+            );
+        }
+        @Override
+        public PoliticalCompass getBase() {
+            return new PoliticalCompass(-25,25,0,-25,15);
+        }
         @Override
         public Map<InterestGroup, Long> fromLand(HabitableLand<?> land) {
             return popularLand(land);
@@ -40,10 +58,6 @@ public class ElectionTypes {
         @Override
         public Map<InterestGroup, Long> fromOrganization(NonGovernmentEntity<?> land) {
             return getFrom(land);
-        }
-        @Override
-        public PoliticalCompass getPoliticalCompass() {
-            return new PoliticalCompass(-25,25,0,-25,15);
         }
         private Map<InterestGroup,Long> getFrom(AbstractOrganization<?> organization) {
             Map<InterestGroup, Long> map = new HashMap<>();
@@ -62,16 +76,32 @@ public class ElectionTypes {
             return map;
         }
     };
-    public static final ElectionType<InterestGroup> WORKER_CO_OP = new ElectionType<InterestGroup>("worker-co-op") {
+    public static final ElectionType<InterestGroup> SYNDICALIST_WORKER_ELECTION = new ElectionType<>(InstanceType.HARDCODED,
+            "syndicalist_worker", "Syndicalist Worker", "Labor Unions decide the election outcome") {
+
+        @Override
+        public ElectionType<?> getNewObject(InstanceType type, String id, JsonObject data) {
+            return SYNDICALIST_WORKER_ELECTION;
+        }
+
+        @Override
+        public Map<Ideology, Integer> getIdeologyWeights() {
+            return Map.of();
+        }
+
+        @Override
+        public PoliticalCompass getBase() {
+            return null;
+        }
 
         @Override
         public Map<InterestGroup, Long> fromLand(HabitableLand<?> land) {
-            return popularLand(land);
+            return
         }
 
         @Override
         public Map<InterestGroup, Long> fromGovernment(GoverningEntity<?> land) {
-
+            return GoverningEntity.
         }
 
         @Override
@@ -79,13 +109,10 @@ public class ElectionTypes {
             return Map.of();
         }
 
-        @Override
-        public PoliticalCompass getPoliticalCompass() {
-            return null;
-        }
+
     };
-    public static boolean isDisenfranchised(AbstractOrganization<?> entity, InterestGroup group) {
-        Set<Leadership.Barred> barred = entity.getActiveTenetByClass(Leadership.Barred.class);
+    public static <T extends AbstractOrganization<T>> boolean isDisenfranchised(T entity, InterestGroup group) {
+        Set<TenetInstance<T>> barred = entity.getActiveTenetByClass(Leadership.Barred.class);
         for(Leadership.Barred b : barred){
             if(b.contains(group)){
                 return true;
