@@ -112,8 +112,8 @@ public class ElectionTypes {
 
     };
     public static <T extends AbstractOrganization<T>> boolean isDisenfranchised(T entity, InterestGroup group) {
-        Set<TenetInstance<T>> barred = entity.getActiveTenetByClass(Leadership.Barred.class);
-        for(Leadership.Barred b : barred){
+        Set<TenetInstance<T>> barred = entity.getActiveTenetByClass(Leadership.CannotLead.class);
+        for(Leadership.CannotLead b : barred){
             if(b.contains(group)){
                 return true;
             }

@@ -50,7 +50,13 @@ public class EconomicGroups {
             .setParent(ECONOMIC_SYSTEM)
             .addConnected(FOREIGN_POLICY)
             .build();
-
+    public static final TenetGroup JOBS = new TenetGroup.Builder(TGType.SORT_ONLY, Level.SUBCATEGORY, "job", "Jobs", "")
+            .setParent(ECONOMIC_SYSTEM)
+            .build();
+    public static final TenetGroup JOB_REQUIREMENT = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "requirement", "Job Requirement", "")
+            .setParent(JOBS)
+            .addDependent(REGULATED_JOBS)
+            .build();
 
     public static final TenetGroup LABOR_UNION = new TenetGroup.Builder(TGType.PILLAR_IDEOLOGY, Level.CATEGORY, "labor", "Labor", "")
             .setParent(ECONOMIC_SYSTEM)

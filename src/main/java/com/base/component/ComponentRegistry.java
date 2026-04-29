@@ -6,11 +6,10 @@ import java.util.Map;
 
 public class ComponentRegistry implements IComponentLogged {
     private static final Map<Class<? extends IComponent<?>>, ComponentManager<?>> MANAGER_MAP = Collections.synchronizedMap(new HashMap<>());
-
     protected static Map<Class<? extends IComponent<?>>, ComponentManager<?>> getManagerMap() {
         return MANAGER_MAP;
     }
-    public static <T extends IComponent<T>> ComponentManager<T> getManager(Class<? extends T> type){
+    public static <T extends IComponent<?>> ComponentManager<T> getManager(Class<? extends T> type){
         ComponentManager<?> man = MANAGER_MAP.get(type);
         if(man == null){
             for(Class<? extends IComponent<?>> c : MANAGER_MAP.keySet()){
@@ -20,7 +19,9 @@ public class ComponentRegistry implements IComponentLogged {
                     break;
                 }
             }
-            throw new RuntimeException("Could not find ComponentManager for " + type.getName());
+            LOGGER.warn(type.getName() + " does not have a prebuilt ComponentManager, creating new one");
+            man = new ComponentManager<T>(type) {};
+            //throw new RuntimeException("Could not find ComponentManager for " + type.getName());
         }
         return (ComponentManager<T>) man;
     }

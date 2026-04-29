@@ -23,7 +23,7 @@ public class Rights {
     public static final Right VOTING = new Right("voting","Voting Rights","") {
         @Override
         public <G extends GoverningEntity<G>> IndividualRightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
-            Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.Barred.class);
+            Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.CannotLead.class);
             for(TenetInstance<G> tenetInstance : instance) {
                 if(tenetInstance.getTenet() instanceof IRightsTenet<?> irt && irt.isAffected().contains(interestGroup)){
                     return new IndividualRightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
@@ -36,7 +36,7 @@ public class Rights {
 
         @Override
         public <G extends GoverningEntity<G>> IndividualRightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
-            Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.Barred.class);
+            Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.CannotLead.class);
             for(TenetInstance<G> tenetInstance : instance) {
                 if(tenetInstance.getTenet() instanceof IRightsTenet<?> irt && irt.isAffected().contains(interestGroup)){
                     return new IndividualRightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);

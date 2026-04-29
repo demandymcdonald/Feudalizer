@@ -21,7 +21,7 @@ public abstract class ComponentManager<T extends IComponent<?>> implements IComp
         ComponentRegistry.registerManager(this,type);
     }
 
-    public final <t extends T> void register(t object){
+    public final void register(T object){
         if(instanceMap.containsKey(object.getID())){
             if(instanceMap.get(object.getID()) != object){
                 throw new RuntimeException("Duplicate ID: " + object.getID() + " for " + object.getClass().getName());

@@ -28,7 +28,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static com.objects.culture.tenet.group.groups.EconomicGroups.BUSINESS;
-import static com.objects.culture.tenet.group.groups.EconomicGroups.LABOR_UNION;
 import static com.objects.culture.tenet.group.groups.EducationGroups.EDUCATION;
 import static com.objects.culture.tenet.group.groups.GovernmentGroups.*;
 import static com.objects.culture.tenet.group.groups.MilitaryGroups.*;
@@ -221,13 +220,13 @@ public abstract class Leadership extends MutableTenet {
             return new TermLimit(type, id);
         }
     }
-    public static class Barred extends Leadership implements IRightsTenet<Barred> {
+    public static class CannotLead extends Leadership implements IRightsTenet<CannotLead> {
         private final Set<InterestGroup> isAffected = new HashSet<>();
-        public Barred(InstanceType type, TenetReference parent, InterestGroup... groups) {
+        public CannotLead(InstanceType type, TenetReference parent, InterestGroup... groups) {
             super(type, parent, Type.SELECTION, CompassGenerators.disenfranchise(4,groups), buildID(groups), "Barred from Office", "");
             isAffected.addAll(Arrays.stream(groups).toList());
         }
-        public Barred(InstanceType instType, String id) {
+        public CannotLead(InstanceType instType, String id) {
             super(instType, id);
         }
         @Override
@@ -276,7 +275,7 @@ public abstract class Leadership extends MutableTenet {
 
         @Override
         public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
-            return new Barred(type, id);
+            return new CannotLead(type, id);
         }
     }
     public static class Election extends Leadership {

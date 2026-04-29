@@ -8,7 +8,7 @@ import com.utilities.serialization.StringToHex;
 
 import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
-public class ComponentReference<T extends IComponent<T>> implements IComponentLogged {
+public class ComponentReference<T extends IComponent<?>> implements IComponentLogged {
     private static final Cache<String, ComponentReference<?>> cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(500).build();
     private final Class<T> type;
     private final String id;

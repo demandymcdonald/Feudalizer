@@ -1,7 +1,5 @@
 package com.objects.organization.labor;
 
-import com.Global.*;
-import com.base.datemutable.timeline.change.multi.wrapper.TLMap;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.AbstractOrganization;
 
@@ -24,7 +22,7 @@ public class LaborUnion extends AbstractOrganization<LaborUnion> {
         super.doDateChange();
         chapters.clear();
     }
-    public UnionLocal newChapter(Unionizable<?> unionizable){
+    public UnionLocal newChapter(IUnionizable<?> unionizable){
         int candidate = 1;
         for (Integer key : chapters.keySet()) { // keySet() is sorted ascending
             if (key > candidate) break;    // gap found

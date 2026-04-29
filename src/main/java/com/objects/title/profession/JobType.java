@@ -1,46 +1,99 @@
 package com.objects.title.profession;
 
-import com.objects.culture.tenet.interest.InterestGroups.*;
+import com.base.component.ComponentReference;
+import com.base.component.InstanceType;
+import com.base.component.mutable.MutableComponent;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.objects.culture.tenet.interest.InterestGroup;
+import com.objects.culture.tenet.interest.groups.ClassCaste;
+import com.objects.title.condition.CanHoldCondition;
+import com.objects.title.condition.CanInheritCondition;
 import com.utilities.IDisplayable;
 
-public enum JobType implements IDisplayable {
-    Leader(ClassCaste.ELITE,"type_leader","Leader",""),
-    Business_Leader(ClassCaste.ELITE,ClassCaste.BUSINESS,"type_business_leader","Business_Leader","")
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-    ;
-    private final ClassCaste group;
-    private final ClassCaste secondary_group;
-    private final String id;
-    private final String name;
-    private final String description;
-    JobType(ClassCaste group, String id, String name, String description) {
-        this.group = group;
-        this.secondary_group = null;
-        this.id = id;
+public abstract class JobType extends MutableComponent<JobType> implements IDisplayable {
+    private ClassCaste primaryClass;
+    private ClassCaste[] secondaryClass;
+    private String name;
+    private String description;
+    private final Set<CanHoldCondition<? super Job>>  canHoldConditions = new HashSet<>();
+    private final Set<CanInheritCondition<? super Job>>  canInheritConditions = new HashSet<>();
+    JobType(InstanceType type, ClassCaste group, String id, String name, String description) {
+        super(type, "job_type:"+id);
+        this.primaryClass = group;
+        this.secondaryClass = new ClassCaste[0];
         this.name = name;
         this.description = description;
     }
-    JobType(ClassCaste group, ClassCaste secondary, String id, String name, String description) {
-        this.group = group;
-        this.secondary_group = secondary;
-        this.id = id;
+    JobType(InstanceType type, ClassCaste group, String id, String name, String description, ClassCaste... secondary_groups) {
+        super(type,"job_type:"+id);
+        this.primaryClass = group;
+        this.secondaryClass = secondary_groups;
         this.name = name;
         this.description = description;
     }
+    public JobType(InstanceType type, String id) {
+        super(type, id);
+    }
 
+    public ClassCaste getPrimaryClass() {
+        return primaryClass;
+    }
+
+    public ClassCaste[] getSecondaryClass() {
+        return secondaryClass;
+    }
 
     @Override
     public String getDisplayID() {
-        return "";
+        return getID();
     }
 
     @Override
     public String getDisplayName() {
-        return "";
+        return name;
     }
 
     @Override
     public String getDescription() {
-        return "";
+        return description;
+    }
+    public Set<CanHoldCondition<? super Job>> getCanHoldConditions() {
+
+    }
+
+
+    public Set<CanHoldCondition<? super Job>> getCanInheritConditions() {
+
+    }
+
+    @Override
+    public void additionalSave(JsonObject data) {
+        data.addProperty("jt:name", name);
+        data.addProperty("jt:description", description);
+        data.add("jt:primary", primaryClass.serializeRef());
+        JsonArray array = new JsonArray();
+        for (ClassCaste c : secondaryClass) {
+            array.add(c.serializeRef());
+        }
+        data.add("jt:secondary",array);
+    }
+
+    @Override
+    public void additionalLoad(JsonObject data) {
+        name = data.get("jt:name").getAsString();
+        description = data.get("jt:description").getAsString();
+        primaryClass = (ClassCaste) ComponentReference.fromJson(data.getAsJsonPrimitive("jt:primary")).get();
+        List<ClassCaste> castes = new ArrayList<>();
+        JsonArray array = data.getAsJsonArray("jt:secondary");
+        for (int i = 0; i < array.size(); i++) {
+            castes.add((ClassCaste) ComponentReference.fromJson(array.get(i).getAsJsonPrimitive()).get());
+        }
+        secondaryClass = castes.toArray(new ClassCaste[0]);
     }
 }

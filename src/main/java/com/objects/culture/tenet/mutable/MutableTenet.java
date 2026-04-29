@@ -117,7 +117,9 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
     public DMEReference<Culture> getCulture() {
         return parent.get().getCulture();
     }
-
+    public TenetReference getParentTenet(){
+        return parent;
+    }
     public static PoliticalCompass makeCompass(PoliticalCompass base, Set<PoliticalCompass.IdeologyEntry> opinions, @Nullable TenetGroup reference, @Nullable CategoryModifier modifiers){
         PoliticalCompass compass = PoliticalCompass.of(opinions);
         return PoliticalCompass.of(base,makeCompass(compass, reference, modifiers));

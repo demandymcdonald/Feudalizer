@@ -1,15 +1,12 @@
 package com.objects.organization.labor;
 
-import com.Global.*;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.utilities.hierarchy.Parented;
 import com.utilities.id.UUIDIdentifiable;
 import com.utilities.serialization.JsonSerializable;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,7 +14,7 @@ public class UnionLocal implements JsonSerializable, UUIDIdentifiable {
     UUID id;
     DMEReference<LaborUnion> union;
     int chapterNumber;
-    Set<DMEReference<? extends Unionizable<?>>> linked_scope = new HashSet<>();
+    Set<DMEReference<? extends IUnionizable<?>>> linked_scope = new HashSet<>();
 
     public UnionLocal(DMEReference<LaborUnion> union, int chapterNumber) {
         this.id = UUID.randomUUID();
@@ -33,7 +30,7 @@ public class UnionLocal implements JsonSerializable, UUIDIdentifiable {
         return union.get().getDisplayName() + " Local " + chapterNumber;
     }
 
-    public void link(Unionizable<?> unionizable){
+    public void link(IUnionizable<?> unionizable){
         linked_scope.add(unionizable.getReference());
         union.get().chapters.put(chapterNumber, this);
     }

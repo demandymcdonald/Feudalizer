@@ -16,7 +16,8 @@ public abstract class AbstractComponent<T extends AbstractComponent<T>> implemen
         this.id = id;
         reference = ComponentReference.of((T)this);
         if (type != InstanceType.DATA_DRIVEN) {
-            ComponentRegistry.getManager(this.getClass()).register(this);
+            ComponentManager<T> ct = (ComponentManager<T>) ComponentRegistry.getManager(this.getClass());
+            ct.register((T) this);
         }
     }
     @Override
@@ -45,13 +46,28 @@ public abstract class AbstractComponent<T extends AbstractComponent<T>> implemen
     }
 
     @Override
-    public void mainLoad(JsonObject object) {
+    public final void mainLoad(JsonObject object) {
         id = object.get("id").getAsString();
         type = InstanceType.valueOf(object.get("type").getAsString());
     }
     @Override
-    public void mainSave(JsonObject object) {
+    public final void mainSave(JsonObject object) {
         object.addProperty("id", getID());
         object.addProperty("type", getInstanceType().toString());
+    }
+
+    @Override
+    public final void metadataSave(JsonObject data) {
+        IComponent.super.metadataSave(data);
+    }
+
+    @Override
+    public final void deserialize(JsonObject data) {
+        IComponent.super.deserialize(data);
+    }
+
+    @Override
+    public final JsonObject serialize() {
+        return IComponent.super.serialize();
     }
 }

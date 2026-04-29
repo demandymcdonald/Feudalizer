@@ -6,7 +6,7 @@ import com.base.datemutable.timeline.change.TimelineChange;
 import com.base.condition.Condition;
 import com.base.datemutable.timeline.error.StateError;
 
-public abstract class ApplyCondition<T extends DateMutableEntity<?>> extends Condition<StateError, DMEReference<? extends T>,TimelineChange<? extends T>, TimelineChange<?>> {
+public abstract class ApplyCondition<T extends DateMutableEntity<?>> extends Condition<ApplyCondition<T>,StateError, DMEReference<? extends T>,TimelineChange<? extends T>, TimelineChange<?>> {
     public ApplyCondition(String id) {
         super(id);
     }

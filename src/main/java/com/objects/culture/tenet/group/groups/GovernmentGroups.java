@@ -65,9 +65,13 @@ public class GovernmentGroups {
     public static final TenetGroup GOVERNMENT_CORRUPTION = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "corruption", "Corruption", "")
             .setParent(JUSTICE_SYSTEM)
             .build();
+    public static final TenetGroup REGULATED_JOBS = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "regulated_jobs", "Regulated Jobs", "")
+            .setParent(GOVERNMENT_SYSTEM)
+            .build();
     public static final TenetGroup POPULATION_GROUP_RIGHTS = new TenetGroup.Builder(TGType.SORT_ONLY, Level.SUBCATEGORY,"rights","Population Rights","")
             .setParent(GOVERNMENT_SYSTEM)
             .build();
+
     public static final TenetGroup CITIZENSHIP = new TenetGroup.Builder(TGType.SYSTEM_LARGE, Level.NORMAL, "citizenship", "Citizenship", "")
             .setParent(POPULATION_GROUP_RIGHTS)
             .build();

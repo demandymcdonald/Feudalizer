@@ -6,7 +6,7 @@ import com.utilities.IDisplayable;
 
 public interface ITLDisplayable<T extends DateMutableEntity<T>  & ITLDisplayable<T>> extends IDisplayable {
     DisplayContainer<T> getDisplayable();
-    DMEReference<T> getOwner();
+    DMEReference<T> getReference();
     @Override
     default String getDisplayID(){
         return getDisplayable().getDisplayId();

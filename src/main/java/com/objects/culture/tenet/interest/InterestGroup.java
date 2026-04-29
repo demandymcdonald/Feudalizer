@@ -2,6 +2,7 @@ package com.objects.culture.tenet.interest;
 
 import com.base.component.InstanceType;
 import com.base.component.instanced.single.IOSingle;
+import com.base.component.mutable.MutableComponent;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
@@ -17,8 +18,9 @@ import com.utilities.IDisplayable;
 import com.utilities.number.BoundInt;
 
 import java.util.Map;
+import java.util.UUID;
 
-public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DMEReference<Culture>> implements IDisplayable, PassiveCultureObject {
+public abstract class InterestGroup extends MutableComponent<InterestGroup> implements IDisplayable, PassiveCultureObject {
     private Dimension dimension;
     private String displayName;
     private String description;
@@ -33,6 +35,7 @@ public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DM
         Lifestyle("lifestyle:"),
         Culture("culture:"),
         Education("education:"),
+        Profession("profession:"),
         Disability("disability:"),
         ;
         private final String prefix;
@@ -54,7 +57,6 @@ public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DM
         return getID().substring(3,10);
     };
     public AcceptanceContainer getSocialAcceptance(Culture culture){
-
     }
     public AcceptanceContainer getRights(DMEReference<? extends GoverningEntity<?>> government){
         government.get().
@@ -91,18 +93,12 @@ public abstract class InterestGroup extends IOSingle<InterestGroup,IGInstance,DM
     public final String getDisplayName() {
         return displayName;
     }
-    @Override
-    public InterestGroup getNewObject(String id) {
-        return null;
-    }
-    @Override
-    public final IGInstance instance(DMEReference<Culture> culture) {
-        return new IGInstance(this.getReference(),culture);
-    }
+
 
     public InterestGroup(InstanceType type, String id) {
         super(type, id);
     }
+
 
     @Override
     public void additionalSave(JsonObject object) {
