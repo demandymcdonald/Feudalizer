@@ -21,8 +21,6 @@ import java.time.LocalDate;
 import java.util.*;
 
 public interface ICharacterHeld<T extends DateMutableEntity<T> & ICharacterHeld<T>> extends IGoverned<T>, IPrestige, ICultureObject {
-
-
     DMEReference<T> getReference();
     Optional<DMEReference<? extends ICharacterHeld<?>>> getParent();
     void internalSetParent(DMEReference<? extends ICharacterHeld<?>> newParent);
@@ -94,8 +92,9 @@ public interface ICharacterHeld<T extends DateMutableEntity<T> & ICharacterHeld<
         }
     }
     default void onLink(){
+        IGoverned.super.onLink();
         if (!isTopLevel()) {
-            DMEReference<? extends ICharacterHeld<?>> parent = this.getParent().get();
+            DMEReference<? extends ICharacterHeld<?>> parent = this.getParent().orElseThrow();
             parent.get().forceLink();
             parent.get().internalGetChildrenSet().add(this.getReference());
             Graph<ICharacterHeld<?>,DefaultEdge> graph = parent.get().getTitleGraph();
