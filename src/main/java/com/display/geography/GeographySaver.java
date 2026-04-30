@@ -73,7 +73,7 @@ public class GeographySaver {
         // Ensure parent directories exist
         Files.createDirectories(outputFile.toPath().getParent());
 
-        // Set up the ShapefileDataStore
+        // Change up the ShapefileDataStore
         ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
 
         Map<String, Serializable> params = new HashMap<>();

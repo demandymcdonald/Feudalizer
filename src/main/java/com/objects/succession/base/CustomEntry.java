@@ -1,4 +1,4 @@
-package com.objects.title.succession.rules;
+package com.objects.succession.base;
 
 import com.base.reference.DMEReference;
 import com.google.common.collect.Multimap;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class CustomEntry extends SuccessionEntry<CustomEntry> {
+public class CustomEntry extends SuccessionPlan<CustomEntry> {
      Multimap<DMEReference<? extends Title<?>>,DMEReference<HumanCharacter>> characters;
     public CustomEntry(DMEReference<HumanCharacter> primary) {
         super(primary);

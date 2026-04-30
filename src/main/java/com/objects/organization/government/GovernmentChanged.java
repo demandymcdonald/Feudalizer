@@ -17,12 +17,12 @@ public class GovernmentChanged<T extends DateMutableEntity<T> & IGoverned<T>> ex
     }
 
     @Override
-    public DMEReference<? extends GoverningEntity<?>> getCurrent() {
+    public DMEReference<? extends GoverningEntity<?>> getCurrent(T owner) {
         return getOwner().get().getGovernment();
     }
 
     @Override
-    public void setNew(DMEReference<? extends GoverningEntity<?>> newValue) {
+    public void setNew(T entity, DMEReference<? extends GoverningEntity<?>> newValue) {
         getOwner().get().internalSetGovernment(newValue);
     }
 

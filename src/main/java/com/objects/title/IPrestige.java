@@ -1,5 +1,5 @@
 package com.objects.title;
 
-public interface IPrestiged {
+public interface IPrestige {
     int getPrestige();
 }

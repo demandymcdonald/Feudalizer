@@ -11,8 +11,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public abstract class TimelineVarChange<T extends DateMutableEntity<T>,O> extends TimelineSingleChange<T> {
-    O changed;
-    Optional<O> old;
+    private O changed;
+    private Optional<O> old;
     protected TimelineVarChange(DMEReference<? extends T> owner, LocalDate date, O changed) {
         super(owner, date);
         this.changed = changed;
@@ -23,13 +23,21 @@ public abstract class TimelineVarChange<T extends DateMutableEntity<T>,O> extend
         this.changed = null;
         old = Optional.ofNullable(null);
     }
-    public abstract O getCurrent();
-    public abstract void setNew(O newValue);
+    public final O getCurrent(){
+        return getCurrent(getOwner().get());
+    }
+    public abstract O getCurrent(T owner);
+    public abstract void setNew(T entity, O newValue);
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-        setNew(changed);
+        setNew(entity.get(), changed);
     }
-
+    public final Optional<O> getOld(){
+        return old;
+    }
+    public final O getNew(){
+        return changed;
+    }
     @Override
     protected String getText() {
         return "";

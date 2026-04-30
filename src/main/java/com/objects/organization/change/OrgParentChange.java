@@ -1,11 +1,9 @@
 package com.objects.organization.change;
 
-import com.Global.*;
 import com.base.datemutable.timeline.change.varswap.TimelineVarChange;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonElement;
 import com.objects.organization.AbstractOrganization;
-import org.apache.commons.math3.analysis.function.Abs;
 
 import java.time.LocalDate;
 
@@ -19,12 +17,12 @@ public class OrgParentChange<T extends AbstractOrganization<T>> extends Timeline
     }
 
     @Override
-    public DMEReference<? extends AbstractOrganization<?>> getCurrent() {
+    public DMEReference<? extends AbstractOrganization<?>> getCurrent(T owner) {
         return getOwner().get().getParent().orElse(null);
     }
 
     @Override
-    public void setNew(DMEReference<? extends AbstractOrganization<?>> newValue) {
+    public void setNew(T entity, DMEReference<? extends AbstractOrganization<?>> newValue) {
         getOwner().get().internalSetParent(newValue);
     }
 

@@ -24,12 +24,4 @@ public abstract class MutableComponent<T extends MutableComponent<T>> extends Ab
     public UUID getRuntime() {
         return runtime;
     }
-    @Override
-    public final void mainLoad(JsonObject object) {
-        super.mainLoad(object);
-    }
-    @Override
-    public final void mainSave(JsonObject object) {
-        super.mainSave(object);
-    }
 }

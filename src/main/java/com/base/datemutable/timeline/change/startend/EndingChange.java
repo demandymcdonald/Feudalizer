@@ -12,6 +12,7 @@ import com.objects.CauseOfEnd;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public abstract class EndingChange<T extends DateMutableEntity<?>> extends TimelineChange<T> {
     private CauseOfEnd<? super T> coe;
@@ -43,7 +44,7 @@ public abstract class EndingChange<T extends DateMutableEntity<?>> extends Timel
     }
 
     @Override
-    protected void applyConditions(List<ApplyCondition<? super T>> list) {
+    protected void applyConditions(Set<ApplyCondition<? super T>> list) {
 
     }
 

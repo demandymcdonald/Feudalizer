@@ -21,4 +21,14 @@ public interface ITLDisplayable<T extends DateMutableEntity<T>  & ITLDisplayable
     default String getDescription(){
         return getDisplayable().getDescription();
     };
+
+    default void setDisplayName(String name){
+        getDisplayable().setName(name);
+    }
+    default void setDescription(String description){
+        getDisplayable().setDescription(description);
+    }
+    default void setDisplayID(String displayID){
+        getDisplayable().setDisplayId(displayID);
+    }
 }

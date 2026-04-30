@@ -298,7 +298,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
                 this.deactivateConditions(conditions);
                 return conditions;
             });
-    protected abstract void applyConditions(List<ApplyCondition<? super T>> list);
+    protected abstract void applyConditions(Set<ApplyCondition<? super T>> list);
     protected abstract void nullifyConditions(List<NullifyCondition<? super T>> list);
     protected abstract void deactivateConditions(List<DeactivateCondition<? super T>> list);
     protected final List<ApplyCondition<? super T>> getApplyConditions(){
@@ -324,6 +324,15 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         return this.getDeactivateConditions().size() > 1;
     }
 
+    @Override
+    public final void deserialize(JsonObject data) {
+        SuperclassSerializable.super.deserialize(data);
+    }
+
+    @Override
+    public final JsonObject serialize() {
+        return SuperclassSerializable.super.serialize();
+    }
 
     @Override
     public void mainSave(JsonObject o) {
@@ -354,10 +363,16 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         }
     }
 
+
+
+
+    public static <C extends TimelineChange<T>,T extends DateMutableEntity<T>> C deserializeChange(JsonObject json){
+        return TLChangeRegistry.deserializeChange(json);
+    }
     @Override
     public final void metadataSave(JsonObject o) {
         o.add("subject", owner.serialize());
-        o.addProperty("date", start.toEpochDay());
+        o.addProperty("date", start.toString());
     }
 
     //==== Generic Class ====

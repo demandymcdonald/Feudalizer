@@ -1,4 +1,4 @@
-package com.objects.title.succession.rules;
+package com.objects.succession.base;
 
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.family.Family;

@@ -17,12 +17,14 @@ public abstract class Condition<CON extends Condition<CON,R,A,B,C>,R extends Con
         WHOLE_STATE_PER_ENTITY,
         ONCE_PER_CHANGE,
     }
+    protected List<ShouldRun> currentRuns;
     public Condition(String id) {
         super(InstanceType.HARDCODED,id);
     }
     @SuppressWarnings("unchecked")
     public final Optional<R> check(A entity, B thisChange, C checkAgainst, List<ShouldRun> shouldRun){
         if (shouldRun.contains(whenToRun())){
+            currentRuns = shouldRun;
             return doCheck(entity, thisChange, checkAgainst);
         }
         return Optional.empty();

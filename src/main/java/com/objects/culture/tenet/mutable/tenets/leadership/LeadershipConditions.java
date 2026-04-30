@@ -17,6 +17,8 @@ import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.interest.InterestGroup;
+import com.objects.succession.held.ICharacterHeld;
+import com.objects.succession.change.HolderChanges;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
 
@@ -27,20 +29,20 @@ public abstract class LeadershipConditions {
     public static final CultureCondition.Key BASE = new CultureCondition.Key() {
         @Override
         protected <TC extends TimelineChange<D> & CultureAware<TC, ?, D>, D extends DateMutableEntity<D> & ICultureObject> boolean isValid(TC change) {
-            return change instanceof ILeaderChange;
+            return change instanceof HolderChanges<?>;
         }
     };
-    public static <D extends DateMutableEntity<D> & ILeadered<D>> CultureCondition<SentientCharacter<?>,D> TermLimit(Tenet t, int duration, ChronoUnit unit){
+    public static <D extends DateMutableEntity<D> & ICharacterHeld<D>> CultureCondition<SentientCharacter<?>,D> TermLimit(Tenet t, int duration, ChronoUnit unit){
         return new TermLimit<>(t, duration, unit);
     }
-    public static <D extends DateMutableEntity<D> & ILeadered<D>> CultureCondition<SentientCharacter<?>,D> Disenfranchised(Tenet t, Set<InterestGroup> groups){
+    public static <D extends DateMutableEntity<D> & ICharacterHeld<D>> CultureCondition<SentientCharacter<?>,D> Disenfranchised(Tenet t, Set<InterestGroup> groups){
         return new Disenfranchised<>(t, groups);
     }
     
-    public static <D extends DateMutableEntity<D> & ILeadered<D>> CultureCondition<SentientCharacter<?>, D> Election(Tenet t, int percentageRequired) {
+    public static <D extends DateMutableEntity<D> & ICharacterHeld<D>> CultureCondition<SentientCharacter<?>, D> Election(Tenet t, int percentageRequired) {
         return new Election<D>(t, percentageRequired);
     }
-    private static class TermLimit<D extends DateMutableEntity<D> & ILeadered<D>> extends CultureCondition<SentientCharacter<?>,D>{
+    private static class TermLimit<D extends DateMutableEntity<D> & ICharacterHeld<D>> extends CultureCondition<SentientCharacter<?>,D>{
         private final int amount;
         private final ChronoUnit unit;
         public TermLimit(Tenet tenet, int amount, ChronoUnit unit) {
@@ -72,7 +74,7 @@ public abstract class LeadershipConditions {
         }
     }
 
-    private static class Disenfranchised<D extends DateMutableEntity<D> & ILeadered<D>>  extends CultureCondition<SentientCharacter<?>,D> {
+    private static class Disenfranchised<D extends DateMutableEntity<D> & ICharacterHeld<D>>  extends CultureCondition<SentientCharacter<?>,D> {
         Set<InterestGroup> groups;
         public Disenfranchised(Tenet tenet, Set<InterestGroup> group) {
             super(tenet);
@@ -99,7 +101,7 @@ public abstract class LeadershipConditions {
             return Optional.empty();
         }
     }
-    private static class Election<D extends DateMutableEntity<D> & ILeadered<D>>  extends CultureCondition<SentientCharacter<?>,D>{
+    private static class Election<D extends DateMutableEntity<D> & ICharacterHeld<D>>  extends CultureCondition<SentientCharacter<?>,D>{
         private final BoundInt requirement;
         public Election(Tenet tenet, int percentageRequired) {
             super(tenet);

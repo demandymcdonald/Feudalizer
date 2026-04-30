@@ -11,7 +11,7 @@ import com.objects.culture.Culture;
 import com.objects.culture.term.CulturalObject;
 import com.objects.family.Family;
 import com.objects.title.Title;
-import com.objects.title.succession.rules.SuccessionEntry;
+import com.objects.succession.SuccessionPlan;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -27,7 +27,7 @@ public class HumanCharacter extends SentientCharacter<HumanCharacter, SentientSp
     private String surname;
     private Gender gender;
     private Orientation orientation;
-    private SuccessionEntry<?> preferredSuccession;
+    private SuccessionPlan<?> preferredSuccession;
     private DMEReference<Culture> culture;
 
     private final Map<UUID, OpinionContainer> opinions = new HashMap<>();

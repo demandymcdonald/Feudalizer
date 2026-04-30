@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public abstract class CreatedChange<T extends DateMutableEntity<?>> extends TimelineChange<T> {
     protected CreatedChange(DMEReference<? extends T> owner, LocalDate date) {
@@ -38,7 +39,7 @@ public abstract class CreatedChange<T extends DateMutableEntity<?>> extends Time
     }
 
     @Override
-    protected void applyConditions(List<ApplyCondition<? super T>> list) {
+    protected void applyConditions(Set<ApplyCondition<? super T>> list) {
 
     }
 

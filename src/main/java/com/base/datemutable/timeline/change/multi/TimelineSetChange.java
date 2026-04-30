@@ -1,6 +1,7 @@
 package com.base.datemutable.timeline.change.multi;
 
 import com.base.datemutable.DateMutableEntity;
+import com.base.datemutable.timeline.change.TLChangeRegistry;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.base.datemutable.timeline.state.TimelineState;
@@ -34,12 +35,19 @@ public abstract class TimelineSetChange<M extends TimelineSetChange<M, K,I,T>, K
     protected final Boolean vDeserialize(JsonElement o) {
         return true;
     }
-    public abstract TLSet<K> getRuntimeSet();
-    public abstract void setRuntimeSet(TLSet<K> set);
+    public final TLSet<K> getRuntimeSet(){
+        return getRuntimeSet(getOwner().get());
+    };
+    @Override
+    public M getEmptyChange(DMEReference<? extends T> owner, LocalDate date) {
+        return TLChangeRegistry.deserializeChange(this.getClass(),owner,date);
+    }
+    protected abstract TLSet<K> getRuntimeSet(T owner);
+    public abstract void setRuntimeSet(T owner, TLSet<K> set);
     @Override
     public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
         super.apply(entity, currentState);
-        setRuntimeSet(new TLSet<>(getFullMap()));
+        setRuntimeSet(getOwner().get(),new TLSet<>(getFullMap()));
     }
     protected static <V extends Identifiable<I>,I> Map<V,Boolean> setToMap(Set<V> set){
         Map<V,Boolean> toReturn = new HashMap<>();

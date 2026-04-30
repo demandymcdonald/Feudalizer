@@ -9,7 +9,7 @@ import com.base.datemutable.timeline.sandbox.core.Objective;
 import com.base.datemutable.timeline.sandbox.core.Sandbox;
 import com.base.datemutable.timeline.sandbox.core.SandboxHandler;
 import com.base.datemutable.timeline.state.TimelineState;
-import com.objects.character.sentient.HumanCharacter;
+import com.objects.character.sentient.SentientCharacter<?>;
 import com.utilities.IDisplayable;
 
 import static com.base.datemutable.timeline.error.SandboxCode.*;
@@ -171,9 +171,9 @@ public abstract class ErrorResolution implements IDisplayable {
         }
     }
 
-    public static class SuccessionPlanning_Title extends SandboxBranching<HumanCharacter> {
-        public SuccessionPlanning_Title(DMEReference<? extends HumanCharacter> newObjective) {
-            super("title_succession", "Run Succession Planner", "Give the title to their heir or a designated person", (Objective<HumanCharacter>) Objective.buildSuccession(newObjective));
+    public static class SuccessionPlanning_Title extends SandboxBranching<SentientCharacter<?>> {
+        public SuccessionPlanning_Title(DMEReference<? extends SentientCharacter<?>> newObjective) {
+            super("title_succession", "Run Succession Planner", "Give the title to their heir or a designated person", (Objective<SentientCharacter<?>>) Objective.buildSuccession(newObjective));
         }
     }
 

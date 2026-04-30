@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unchecked")
 public class DMEReference<T extends DateMutableEntity<?>> implements UUIDIdentifiable {
+    private static final String DELIMITER = ":DME:";
     public static final String DME_SR_TYPE = "DMEReference";
     private final Class<T> type;
     private final UUID uuid;
@@ -49,10 +50,10 @@ public class DMEReference<T extends DateMutableEntity<?>> implements UUIDIdentif
         return cachedEntity.get();
     }
     public JsonElement serialize(){
-        return new JsonPrimitive(StringToHex.encode(type.getName())+"::"+StringToHex.encode(uuid.toString()));
+        return new JsonPrimitive(StringToHex.encode(type.getName())+DELIMITER+StringToHex.encode(uuid.toString()));
     }
     public static <T extends DateMutableEntity<?>> DMEReference<T> deserialize(JsonElement object)  {
-        String[] splits = object.getAsString().split("::");
+        String[] splits = object.getAsString().split(DELIMITER);
         String name = StringToHex.decode(splits[0]);
         UUID uuid = UUID.fromString(StringToHex.decode(splits[1]));
         try {

@@ -15,6 +15,7 @@ import com.objects.character.sentient.HumanCharacter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subject, Global.TimeDirection start, TimelineChange<? super T> change, SandboxFunction<T>... toCheck) {
     @SafeVarargs
@@ -53,7 +54,7 @@ public record  Objective<T extends DateMutableEntity<T>> (DMEReference<T> subjec
             }
 
             @Override
-            protected void applyConditions(List<ApplyCondition<? super T>> list) {
+            protected void applyConditions(Set<ApplyCondition<? super T>> list) {
 
             }
 

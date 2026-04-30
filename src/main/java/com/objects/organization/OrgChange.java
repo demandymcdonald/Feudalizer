@@ -17,12 +17,12 @@ public class OrgChange<T extends DateMutableEntity<T> & IOrganizedEntity<T>> ext
     }
 
     @Override
-    public DMEReference<? extends AbstractOrganization<?>> getCurrent() {
+    public DMEReference<? extends AbstractOrganization<?>> getCurrent(T owner) {
         return getOwner().get().getOrganization();
     }
 
     @Override
-    public void setNew(DMEReference<? extends AbstractOrganization<?>> newValue) {
+    public void setNew(T entity, DMEReference<? extends AbstractOrganization<?>> newValue) {
         getOwner().get().internalSetOrg(newValue);
     }
 

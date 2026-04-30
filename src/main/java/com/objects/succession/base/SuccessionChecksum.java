@@ -1,4 +1,4 @@
-package com.objects.title.succession;
+package com.objects.succession.base;
 
 import com.base.reference.DMEReference;
 import com.objects.character.sentient.HumanCharacter;

@@ -20,8 +20,12 @@ import com.objects.organization.religion.Religion;
 import com.objects.family.Family;
 import com.objects.organization.government.GoverningEntity;
 import com.objects.family.FamilyRelationship;
+import com.objects.succession.held.ICharacterHeld;
 import com.objects.title.Title;
-import com.objects.title.succession.rules.SuccessionEntry;
+
+import com.objects.succession.plan.SuccessionPlan;
+import com.objects.succession.rules.RuleEntry;
+import com.utilities.caching.CachingSupplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
@@ -34,13 +38,13 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     private Gender gender;
     private Orientation orientation;
     private final CultureObjectContainer<T> cultureContainer;
-    private SuccessionEntry<?> preferredSuccession;
+    private final SuccessionPlan succession;
     private DMEReference<? extends GoverningEntity<?>> government;
     private DMEReference<Culture> culture;
     private DMEReference<Religion> religion;
     private TLSet<EducationInstance> education;
     private final Map<DMEReference<Family>, FamilyRelationship> linked_families = new HashMap<>();
-    private final Set<DMEReference<? extends Title<?>>> linked_titles = new HashSet<>();
+    private final Set<DMEReference<? extends ICharacterHeld<?>>> linked_holdings = new HashSet<>();
     public enum Orientation {
         Heterosexual("Heterosexual"),
         Homosexual("Homosexual"),
@@ -60,11 +64,13 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public SentientCharacter(LocalDate created, @Nullable LocalDate ended, PhysicalAppearance appearance, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended,appearance, initialState);
         cultureContainer = new CultureObjectContainer<>(getReference());
+        succession = new SuccessionPlan(this.getReference());
         getTimeline().internalAddChange(new SentientMapChange.EducationListChange<>(getReference(),created));
     }
     public SentientCharacter(DMEReference<T> dme) {
         super(dme);
         cultureContainer = new CultureObjectContainer<>(dme);
+        succession = new SuccessionPlan(dme);
     }
     public final void addEducation(EducationInstance education){
         this.education.add(education);
@@ -81,9 +87,6 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void setOrientation(Orientation orientation) {
         getTimeline().addChange(new SentientChange.SetOrientation<>(getReference(),Global.getDate(),orientation));
     }
-    public final void setPreferredSuccession(SuccessionEntry<?> preferredSuccession) {
-        getTimeline().addChange(new SentientChange.SetDefaultSuccession<>(getReference(),Global.getDate(),preferredSuccession));
-    }
     public final void internalSetForename(String forename){
         this.firstName = forename;
     }
@@ -96,8 +99,8 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void internalSetOrientation(Orientation orientation){
         this.orientation = orientation;
     }
-    public final void internalSetPreferredSuccession(SuccessionEntry<?> succession){
-        this.preferredSuccession = succession;
+    public final void internalSetPreferredSuccession(TLSet<RuleEntry<?>> succession){
+        this.succession.internalSetRules(succession);
     }
     public final void internalSetGovernment(DMEReference<? extends GoverningEntity<?>> government){
         this.government = government;
@@ -140,8 +143,8 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final DMEReference<Culture> getCulture() {
         return culture;
     }
-    public final SuccessionEntry<?> getPreferredSuccession(){
-        return preferredSuccession;
+    public final SuccessionPlan getSuccession(){
+        return succession;
     }
     public final TLSet<EducationInstance> getEducation(){
         return education;
@@ -155,8 +158,44 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final Optional<DMEReference<Family>> getAdoptedFamily(){
         return Optional.ofNullable(linked_families.entrySet().stream().filter((e) -> e.getValue().getType().equals(FamilyRelationship.MemberType.OFFSPRING_ADOPTED)).findFirst().get().getKey());
     }
-    public final void linkTitle(DMEReference<? extends Title<?>> title){
-        linked_titles.add(title);
+    private final CachingSupplier<Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship>> spousesSupplier = new CachingSupplier<>(() -> buildSpouses((T) this));
+    public final Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> getSpouses(){
+        return new HashMap<>(spousesSupplier.get());
+    }
+    private final CachingSupplier<Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship>> childrenSupplier = new CachingSupplier<>(() -> buildChildren((T) this));
+    public final Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> getChildren(){
+        return new HashMap<>(childrenSupplier.get());
+    }
+    private static <T extends SentientCharacter<T>> Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> buildSpouses(T character){
+        Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> spouses = new HashMap<>();
+        for(Map.Entry<DMEReference<Family>, FamilyRelationship> family : character.getFamilies().entrySet()){
+            Family f = family.getKey().get();
+            if(family.getValue().getType().equals(FamilyRelationship.MemberType.HEAD) || family.getValue().getType().equals(FamilyRelationship.MemberType.PARTNER)){
+                DMEReference<? extends SentientCharacter<?>> spouse = f.getSpouse();
+                spouses.put(spouse,f.getRelationship(spouse));
+            }
+        }
+        return spouses;
+    }
+    private static <T extends SentientCharacter<T>> Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> buildChildren(T character){
+        Map<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> children = new HashMap<>();
+        for(Map.Entry<DMEReference<Family>, FamilyRelationship> family : character.getFamilies().entrySet()){
+            Family f = family.getKey().get();
+            if(family.getValue().getType().equals(FamilyRelationship.MemberType.HEAD) || family.getValue().getType().equals(FamilyRelationship.MemberType.PARTNER)){
+                Set<DMEReference<? extends SentientCharacter<?>>> childs = f.getChildren();
+                childs.remove(character.getReference());
+                for(DMEReference<? extends SentientCharacter<?>> child : childs){
+                    children.put(child,f.getRelationship(child));
+                }
+            }
+        }
+        return children;
+    }
+    public final Set<DMEReference<? extends ICharacterHeld<?>>> getTitles(){
+        return new HashSet<>(linked_holdings);
+    }
+    public final void linkHeld(DMEReference<? extends ICharacterHeld<?>> title){
+        linked_holdings.add(title);
     }
     public final void linkFamily(DMEReference<Family> family, FamilyRelationship relationship){
         linked_families.put(family,relationship);
@@ -164,7 +203,9 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     @Override
     public void doDateChange() {
         linked_families.clear();
-        linked_titles.clear();
+        linked_holdings.clear();
+        spousesSupplier.clear();
+        childrenSupplier.clear();
     }
 
     @Override

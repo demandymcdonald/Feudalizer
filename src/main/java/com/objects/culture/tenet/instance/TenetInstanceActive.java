@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 public class TenetInstanceActive<T extends DateMutableEntity<T> & CultureObject<T>> extends TimelineSingleChange<T> {
     protected TenetInstanceActive(DMEReference<? extends T> owner, LocalDate date) {
@@ -17,7 +17,7 @@ public class TenetInstanceActive<T extends DateMutableEntity<T> & CultureObject<
     }
 
     @Override
-    protected void applyConditions(List<ApplyCondition<? super T>> list) {
+    protected void applyConditions(Set<ApplyCondition<? super T>> list) {
         super.applyConditions(list);
 
     }

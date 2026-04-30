@@ -18,12 +18,12 @@ public class CultureChange <T extends DateMutableEntity<T> & CultureObject<T>> e
     }
 
     @Override
-    public DMEReference<Culture> getCurrent() {
+    public DMEReference<Culture> getCurrent(T owner) {
         return getOwner().get().getCulture();
     }
 
     @Override
-    public void setNew(DMEReference<Culture> newValue) {
+    public void setNew(T entity, DMEReference<Culture> newValue) {
         getOwner().get().internalSetCulture(newValue);
     }
 

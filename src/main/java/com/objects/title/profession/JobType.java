@@ -5,10 +5,9 @@ import com.base.component.InstanceType;
 import com.base.component.mutable.MutableComponent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.interest.groups.ClassCaste;
-import com.objects.title.condition.CanHoldCondition;
-import com.objects.title.condition.CanInheritCondition;
+import com.objects.succession.condition.CanHoldCondition;
+import com.objects.succession.condition.CanInheritCondition;
 import com.utilities.IDisplayable;
 
 import java.util.ArrayList;

@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.title.succession.rules.SuccessionEntry;
+import com.objects.succession.SuccessionPlan;
 
 import java.time.LocalDate;
 
@@ -219,12 +219,12 @@ public class SentientChange {
         }
     }
     public static class SetDefaultSuccession<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private SuccessionEntry<?> container;
+        private SuccessionPlan<?> container;
 
         protected SetDefaultSuccession(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
-        public SetDefaultSuccession(DMEReference<? extends T> owner, LocalDate date, SuccessionEntry<?> container) {
+        public SetDefaultSuccession(DMEReference<? extends T> owner, LocalDate date, SuccessionPlan<?> container) {
             super(owner, date);
             this.container = container;
         }
@@ -245,7 +245,7 @@ public class SentientChange {
 
         @Override
         public void additionalLoad(JsonObject data) {
-            container = SuccessionEntry.fromJson(data.get("default_container").getAsJsonObject());
+            container = SuccessionPlan.fromJson(data.get("default_container").getAsJsonObject());
         }
     }
 }

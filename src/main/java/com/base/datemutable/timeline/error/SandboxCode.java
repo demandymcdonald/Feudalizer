@@ -7,6 +7,7 @@ public enum SandboxCode {
     END_SAVE(true),
     END_DISCARD(true),
     CRITICAL_ERROR(true),
+    END_SUCCESSION_PLANNING(true),
     SUCCESSION_NEXT_HEIR(true);
 
     private final boolean sandboxEnding;

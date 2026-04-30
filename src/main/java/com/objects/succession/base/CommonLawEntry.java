@@ -1,4 +1,4 @@
-package com.objects.title.succession.rules;
+package com.objects.succession.base;
 
 import com.base.reference.DMEReference;
 import com.google.common.collect.LinkedHashMultimap;
@@ -7,15 +7,14 @@ import com.google.gson.JsonObject;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.title.Title;
-import com.objects.title.succession.SuccessionChecksum;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.objects.title.succession.rules.CandidateRules.handleIfDead;
+import static com.objects.succession.base.CandidateRules.handleIfDead;
 
-public class CommonLawEntry extends SuccessionEntry<CommonLawEntry> {
+public class CommonLawEntry extends SuccessionPlan<CommonLawEntry> {
     //private static final Cache<,ArrayList<HumanCharacter>> CACHE = CacheBuilder.newBuilder().build();
     private final Map<Integer,DMEReference<HumanCharacter>> additional = new HashMap<>();
     private static final boolean prima = true;

@@ -129,7 +129,7 @@ public class CharacterEditCard extends BaseEditCard<HumanCharacter> {
             dodField.setText(character.getDOD().format(DATE_FORMAT));
         }
 
-        // Set noble/commoner state
+        // Change noble/commoner state
         if (character.getHouse().isPresent()) {
             nobleRadio.setSelected(true);
             houseCombo.setValue(character.getHouse().get());

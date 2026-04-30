@@ -10,7 +10,8 @@ import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.mutable.tenets.leadership.ILeadered;
 import com.objects.organization.change.OrgParentChange;
 import com.objects.organization.labor.LaborUnion;
-import com.objects.title.IPrestiged;
+import com.objects.succession.held.ICharacterHeld;
+import com.objects.title.IPrestige;
 import com.objects.title.profession.Job;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -18,8 +19,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractOrganization<T extends AbstractOrganization<T>> extends DynamicTenet<T> implements ILeadered<T>, IPrestiged {
-    private final Map<DMEReference<? extends Job<?>>, Optional<DMEReference<? extends SentientCharacter<?>>>> employees = new HashMap<>();
+public abstract class AbstractOrganization<T extends AbstractOrganization<T>> extends DynamicTenet<T> implements ICharacterHeld<T>, IPrestige {
+    private final Map<DMEReference<? extends Job>, Optional<DMEReference<? extends SentientCharacter<?>>>> employees = new HashMap<>();
     private DMEReference<? extends AbstractOrganization<?>> parent;
     public AbstractOrganization(TenetGroup group, DMEReference<T> dme) {
         super(group, dme);
@@ -45,10 +46,10 @@ public abstract class AbstractOrganization<T extends AbstractOrganization<T>> ex
 
     public abstract Set<LaborUnion> getRelevantUnions();
 
-    public final void linkEmployee(Job<?> job) {
+    public final void linkEmployee(Job job) {
         employees.put(job.getReference(),job.getHolder());
     }
-    public abstract Map<ICultureOpinionated,Integer> getStakeholdersFor(ILeadered<?> object);
+    public abstract Map<ICultureOpinionated,Integer> getStakeholdersFor(ICharacterHeld<?> object);
     protected <O extends AbstractOrganization<O>> Set<O> getMemberOrganizations(Class<O> clazz, boolean includeParents){
         Set<?> set = new HashSet<>(getByType(Type.Organization).stream().filter(clazz::isInstance).collect(Collectors.toSet()));
         Set<O> orgs = (Set<O>) set;

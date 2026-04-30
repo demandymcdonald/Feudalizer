@@ -17,7 +17,7 @@ public class AugmentSlot implements IDisplayable, IGeneNode<AugmentSlot> {
     private final String description;
     private final CachingSupplier<Set<PhysicalAspect>> validAspects = new CachingSupplier<>(this::buildValidAspects);
     private final boolean canSubInherit;
-    //private final Supplier<Set<BodyPart>> validBodyParts = Suppliers.memoize(this::buildParts);
+    //private final Supplier<Change<BodyPart>> validBodyParts = Suppliers.memoize(this::buildParts);
     public AugmentSlot(String id, String name, String description) {
         this.id = "aug_slot:"+id;
         this.name = name;

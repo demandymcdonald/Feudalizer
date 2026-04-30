@@ -18,12 +18,12 @@ public class ReligionChanged<T extends DateMutableEntity<T> & IReligious<T>> ext
     }
 
     @Override
-    public DMEReference<Religion> getCurrent() {
+    public DMEReference<Religion> getCurrent(T owner) {
         return getOwner().get().getReligion();
     }
 
     @Override
-    public void setNew(DMEReference<Religion> newValue) {
+    public void setNew(T entity, DMEReference<Religion> newValue) {
         getOwner().get().internalSetReligion(newValue);
     }
 

@@ -2,6 +2,7 @@ package com.base.datemutable.timeline.change.multi;
 
 import com.Global;
 import com.base.datemutable.DateMutableEntity;
+import com.base.datemutable.timeline.change.TLChangeRegistry;
 import com.base.reference.DMEReference;
 import com.base.reference.SimpleReference;
 import com.base.datemutable.timeline.Timeline;
@@ -28,6 +29,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.utilities.id.Identifiable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,35 +88,37 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     protected final void nullifyConditions(List<NullifyCondition<? super T>> list) {
 
     }
-    public abstract M getEmptyChange(DMEReference<? extends T> owner, LocalDate date);
+    public M getEmptyChange(DMEReference<? extends T> owner, LocalDate date) {
+        return TLChangeRegistry.deserializeChange(this.getClass(),owner,date);
+    }
     public abstract boolean hasEndingChanges();
     private final MultiCondition<M,K,V,I,T> condition = new MultiCondition<>() {
         @Override
         protected Optional<StateError> doCheck(Delta change, M newChange, List<Pair<K, V>> newEntries, M curChange, List<Pair<K, V>> curEntries) {
-            switch (change) {
-                case ADD_WIPE, MODIFY_BOTH_WIPE, MODIFY_KEY_WIPE, MODIFY_VALUE_WIPE -> {
-                    return Optional.empty();
-                }
-                default -> {
-                    List<Pair<K, V>> newEntriesToRemove = new ArrayList<>();
-                    boolean canEnd = true;
-                    for (Pair<K, V> entry : newEntries) {
-                        for (Pair<K, V> curEntry : curEntries) {
-                            if (entry.getKey().getID().equals(curEntry.getKey().getID())) {
-                                newEntriesToRemove.add(entry);
-                            } else {
-                                canEnd = false;
-                            }
+        switch (change) {
+            case ADD_WIPE, MODIFY_BOTH_WIPE, MODIFY_KEY_WIPE, MODIFY_VALUE_WIPE -> {
+                return Optional.empty();
+            }
+            default -> {
+                List<Pair<K, V>> newEntriesToRemove = new ArrayList<>();
+                boolean canEnd = true;
+                for (Pair<K, V> entry : newEntries) {
+                    for (Pair<K, V> curEntry : curEntries) {
+                        if (entry.getKey().getID().equals(curEntry.getKey().getID())) {
+                            newEntriesToRemove.add(entry);
+                        } else {
+                            canEnd = false;
                         }
                     }
-                    newEntries.removeAll(newEntriesToRemove);
-                    if (canEnd) {
-                        return Optional.of(new StateError("tmc_add_complete", SimpleReference.of("Complete"), curChange).addEndSave());
-                    } else {
-                        return Optional.empty();
-                    }
+                }
+                newEntries.removeAll(newEntriesToRemove);
+                if (canEnd) {
+                    return Optional.of(new StateError("tmc_add_complete", SimpleReference.of("Complete"), curChange).addEndSave());
+                } else {
+                    return Optional.empty();
                 }
             }
+        }
         }
     };
     public void conditionsAdd(List<MultiCondition<M,K,V,I,T>> current){
@@ -693,7 +697,7 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
     }
 
     @Override
-    protected void applyConditions(List<ApplyCondition<? super T>> list) {
+    protected void applyConditions(@MonotonicNonNull Set<ApplyCondition<? super T>> list) {
         list.add(new CanMerge());
     }
     public void mergeSafe(TLMultiChange<?,?,?,?,?> other){

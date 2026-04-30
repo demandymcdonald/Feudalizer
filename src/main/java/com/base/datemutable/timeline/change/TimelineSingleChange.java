@@ -7,10 +7,12 @@ import com.base.datemutable.timeline.change.condition.deactivate.DeactivateCondi
 import com.base.datemutable.timeline.change.condition.nullify.NullifyCondition;
 import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonObject;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> extends TimelineChange<T> {
     protected TimelineSingleChange(DMEReference<? extends T> owner, LocalDate date) {
@@ -48,7 +50,7 @@ public abstract class TimelineSingleChange<T extends DateMutableEntity<?>> exten
 
     }
     @Override
-    protected void applyConditions(List<ApplyCondition<? super T>> list) {
+    protected void applyConditions(@MonotonicNonNull Set<ApplyCondition<? super T>> list) {
         list.add(new HasVariableClass(this.getClass()));
     }
     @Override

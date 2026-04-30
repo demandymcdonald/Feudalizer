@@ -10,7 +10,7 @@ import com.base.datemutable.timeline.error.StateError;
 import com.base.datemutable.timeline.sandbox.core.Sandbox;
 import com.base.datemutable.timeline.state.TimelineState;
 import com.objects.character.sentient.HumanCharacter;
-import com.objects.title.succession.SuccessionPlanner;
+import com.objects.succession.base.SuccessionPlanner;
 
 import java.time.LocalDate;
 import java.util.*;

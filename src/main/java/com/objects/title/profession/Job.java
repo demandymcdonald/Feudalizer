@@ -1,8 +1,10 @@
 package com.objects.title.profession;
 
+import com.base.component.IComponent;
 import com.base.datemutable.timeline.change.TimelineChange;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.ChangeSupplier;
+import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
@@ -12,18 +14,21 @@ import com.objects.culture.tenet.interest.groups.ClassCaste;
 import com.objects.organization.AbstractOrganization;
 import com.objects.organization.IOrganizedEntity;
 import com.objects.title.Title;
-import com.objects.title.condition.CanHoldCondition;
+import com.objects.succession.condition.CanHoldCondition;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.objects.title.profession.JobChange.JOB_REMOVED;
+
 public class Job extends Title<Job> implements IOrganizedEntity<Job> {
     private DMEReference<? extends AbstractOrganization<?>> organization;
     private JobType type;
 
-    public Job(UUID id, LocalDate created, @Nullable LocalDate ended, List<ChangeSupplier<Job, ?>> initialState) {
+    public Job(UUID id, LocalDate created, @Nullable LocalDate ended, JobType type, List<ChangeSupplier<Job, ?>> initialState) {
         super(id, created, ended, initialState);
+        this.type = type;
     }
 
     public Job(LocalDate created, LocalDate ended, List<ChangeSupplier<Job, ?>> initialState) {
@@ -83,7 +88,7 @@ public class Job extends Title<Job> implements IOrganizedEntity<Job> {
     }
     @Override
     public String getTitleName() {
-        return "";
+        return getDisplayName();
     }
 
     @Override
@@ -96,18 +101,30 @@ public class Job extends Title<Job> implements IOrganizedEntity<Job> {
     }
 
     @Override
+    public void additionalLoad(JsonObject data) {
+        super.additionalLoad(data);
+        type = (JobType) IComponent.deserializeRef(data.get("jt:type").getAsJsonObject()).get();
+    }
+
+    @Override
+    public void additionalSave(JsonObject data) {
+        super.additionalSave(data);
+        data.add("jt:type",type.serializeRef());
+    }
+
+    @Override
     public TimelineChange<Job> getBirthChange(DMEReference<Job> dme, LocalDate date) {
-        return null;
+        return new JobChange.Created(dme, date);
     }
 
     @Override
     public TimelineChange<Job> getDeathChange(DMEReference<Job> dme, LocalDate date, CauseOfEnd<? super Job> cOd) {
-        return null;
+        return new JobChange.Removed(dme, date, cOd);
     }
 
     @Override
     public CauseOfEnd<? super Job> defaultDeathCause() {
-        return null;
+        return JOB_REMOVED;
     }
 
 
@@ -123,6 +140,6 @@ public class Job extends Title<Job> implements IOrganizedEntity<Job> {
 
     @Override
     public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
-        return null;
+        return getCulture().get().getAcceptanceObject(other,includeInfluencers,factorOtherTolerance);
     }
 }
