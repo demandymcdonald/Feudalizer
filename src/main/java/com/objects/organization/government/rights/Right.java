@@ -1,5 +1,7 @@
 package com.objects.organization.government.rights;
 
+import com.base.component.InstanceType;
+import com.base.component.instanced.bi.IOBi;
 import com.base.reference.DMEReference;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.TenetManager;
@@ -10,39 +12,34 @@ import com.utilities.IDisplayable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class Right implements IDisplayable {
+public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>, DMEReference<? extends GoverningEntity<?>>,DMEReference<? extends SentientCharacter<?>>> implements IDisplayable {
     private final String id;
     private final String name;
     private final String description;
-    public Right(String id, String name, String description) {
+    public Right(InstanceType type, String id, String name, String description) {
+        super(type,id);
         this.id = id;
         this.name = name;
         this.description = description;
     }
-    public abstract <G extends GoverningEntity<G>> IndividualRightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup);
-    public <G extends GoverningEntity<G>> IndividualRightInstance getRightFor(DMEReference<G> government, DMEReference<? extends SentientCharacter<?>> character) {
-        AtomicInteger currentLevel = new AtomicInteger(9999);
-        AtomicReference<IndividualRightInstance> rightInstance = new AtomicReference<>();
-        TenetManager.InterestGroups.getForCharacter(character).forEach(interestGroup -> {
-            IndividualRightInstance currentRightInstance = getRightFor(government,interestGroup);
-            int level = currentRightInstance.level().getLevel();
-            if (level < currentLevel.get()) {
-                currentLevel.set(level);
-                rightInstance.set(currentRightInstance);
-            }
-        });
-        return rightInstance.get();
-    }
+
     @Override
-    public String getDisplayID() {
+    public final String getDisplayID() {
         return id;
     }
     @Override
-    public String getDisplayName() {
+    public final String getDisplayName() {
         return name;
     }
     @Override
-    public String getDescription() {
+    public final String getDescription() {
         return description;
     }
+    protected static <T extends Right<T>> RightLevel getRightLevel(
+            T right,
+            DMEReference<? extends GoverningEntity<?>> government,
+            DMEReference<? extends SentientCharacter<?>> character){
+
+    }
+
 }

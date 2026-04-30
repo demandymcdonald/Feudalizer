@@ -22,27 +22,27 @@ public class Rights {
     }
     public static final Right VOTING = new Right("voting","Voting Rights","") {
         @Override
-        public <G extends GoverningEntity<G>> IndividualRightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
+        public <G extends GoverningEntity<G>> RightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
             Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.CannotLead.class);
             for(TenetInstance<G> tenetInstance : instance) {
                 if(tenetInstance.getTenet() instanceof IRightsTenet<?> irt && irt.isAffected().contains(interestGroup)){
-                    return new IndividualRightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
+                    return new RightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
                 }
             }
-            return new IndividualRightInstance(this,interestGroup,RightLevel.POSSESS);
+            return new RightInstance(this,interestGroup,RightLevel.POSSESS);
         }
     };
     public static final Right HOLD_OFFICE = new Right("hold_office","Hold Office","") {
 
         @Override
-        public <G extends GoverningEntity<G>> IndividualRightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
+        public <G extends GoverningEntity<G>> RightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
             Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.CannotLead.class);
             for(TenetInstance<G> tenetInstance : instance) {
                 if(tenetInstance.getTenet() instanceof IRightsTenet<?> irt && irt.isAffected().contains(interestGroup)){
-                    return new IndividualRightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
+                    return new RightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
                 }
             }
-            return new IndividualRightInstance(this,interestGroup,RightLevel.POSSESS);
+            return new RightInstance(this,interestGroup,RightLevel.POSSESS);
         }
     };
 
