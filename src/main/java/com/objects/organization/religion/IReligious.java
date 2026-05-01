@@ -6,7 +6,7 @@ import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.IChanger;
 import com.objects.culture.object.ICultureObject;
 
-public interface IReligious<T extends DateMutableEntity<T> & IReligious<T>> extends IChanger<T> {
+public interface IReligious<T extends DateMutableEntity<T> & IReligious<T>> extends IChanger<T>,IReligionObject {
 
     DMEReference<Religion> getReligion();
     void internalSetReligion(DMEReference<Religion> religion);

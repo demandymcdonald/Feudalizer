@@ -2,23 +2,18 @@ package com.objects.culture;
 
 import com.base.component.ComponentManager;
 import com.base.reference.DMEReference;
+import com.google.common.cache.Cache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.object.ideology.Ideology;
-import com.objects.culture.object.ideology.IdeologyInstance;
-import com.objects.culture.tenet.TenetReference;
+
 import com.objects.culture.tenet.group.ConnectionEdge;
 import com.objects.culture.tenet.group.TGType;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
-import com.objects.culture.tenet.interest.IGInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
-import com.objects.culture.tenet.mutable.tenets.leadership.Leadership;
 import com.objects.culture.tenet.mutable.MutableTenet;
-import com.utilities.serialization.SuperclassSerializable;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
@@ -33,9 +28,9 @@ import static com.objects.culture.tenet.group.TenetGroup.Level.META_PILLAR;
 import static com.objects.culture.tenet.group.TenetGroup.builder;
 
 public class TenetManager extends ComponentManager<MutableTenet>{
-    public static final TenetGroup CULTURE = new TenetGroup.Builder(TGType.SORT_ONLY,META_PILLAR,"culture", "All_Culture", "Every Tenet").build();
-    public static final TenetGroup HARD_CULTURE = new TenetGroup.Builder(TGType.SORT_ONLY,META_PILLAR,"hard", "Hard Culture", "").setParent(CULTURE).build();
-    public static final TenetGroup SOFT_CULTURE = new TenetGroup.Builder(TGType.SORT_ONLY,META_PILLAR,"soft", "Soft Culture", "").setParent(CULTURE).build();
+    public static final TenetGroup CULTURE = new TenetGroup.Builder<TenetGroup>(TGType.SORT_ONLY,META_PILLAR,"culture", "All_Culture", "Every Tenet").build();
+    public static final TenetGroup HARD_CULTURE = new TenetGroup.Builder<TenetGroup>(TGType.SORT_ONLY,META_PILLAR,"hard", "Hard Culture", "").setParent(CULTURE).build();
+    public static final TenetGroup SOFT_CULTURE = new TenetGroup.Builder<TenetGroup>(TGType.SORT_ONLY,META_PILLAR,"soft", "Soft Culture", "").setParent(CULTURE).build();
 
     public TenetManager() {
         super(MutableTenet.class);
@@ -52,12 +47,17 @@ public class TenetManager extends ComponentManager<MutableTenet>{
         GovernmentGroups.init();
     }
 
-    public static class Group {
-        private static final Map<String, TenetGroup> groups = new HashMap<>();
-        private static final Multimap<TenetGroup.Level, TenetGroup> groupLevels = HashMultimap.create();
-        private static final Graph<TenetGroup, DefaultEdge> groupParents = new DirectedPseudograph<>(DefaultEdge.class);
-        private static final Graph<TenetGroup, DefaultEdge> groupChildren = new EdgeReversedGraph<>(groupParents);
-        private static final Graph<TenetGroup, ConnectionEdge> groupConnected = new DefaultUndirectedGraph<>(ConnectionEdge.class);
+    public static class Group extends ComponentManager<TenetGroup> {
+        public static final Group INSTANCE = new Group(TenetGroup.class);
+        private final Multimap<TenetGroup.Level, TenetGroup> groupLevels = HashMultimap.create();
+        private final Graph<TenetGroup, DefaultEdge> groupParents = new DirectedPseudograph<>(DefaultEdge.class);
+        private final Graph<TenetGroup, DefaultEdge> groupChildren = new EdgeReversedGraph<>(groupParents);
+        private final Graph<TenetGroup, ConnectionEdge> groupConnected = new DefaultUndirectedGraph<>(ConnectionEdge.class);
+
+        public Group(Class<? extends TenetGroup> type) {
+            super(type);
+        }
+
         public enum Pillar {
             GOVERNMENT(GovernmentGroups.GOVERNMENT),
             ECONOMY(EconomicGroups.ECONOMY),
@@ -75,81 +75,54 @@ public class TenetManager extends ComponentManager<MutableTenet>{
                 return group;
             }
         }
-        public static void register(TenetGroup group) {
-            String id = group.getDisplayID();
-            if (groups.containsKey(id)) {
-                if (groups.get(id).equals(group)) {
-                    return;
-                } else {
-                    throw new RuntimeException("Duplicate group Name: " + id);
-                }
-            }
-            groupLevels.put(group.getLevel(), group);
-            groups.put(group.getDisplayID(), group);
-        }
-        public static TenetGroup get(String id) {
-            return groups.get(id);
-        }
-        public static List<TenetGroup> getPillars(){
-            return new ArrayList<>(groupLevels.get(TenetGroup.Level.PILLAR));
-        }
-        public static List<TenetGroup> getCategories(){
-            return new ArrayList<>(groupLevels.get(TenetGroup.Level.CATEGORY));
-        }
-        public static List<TenetGroup> getSubCategories(){
-            return new ArrayList<>(groupLevels.get(TenetGroup.Level.SUBCATEGORY));
-        }
-        public static List<TenetGroup> getMetaPillars(){
-            return new ArrayList<>(groupLevels.get(TenetGroup.Level.META_PILLAR));
-        }
         public static Graph<TenetGroup, DefaultEdge> getParentGraph() {
-            return groupParents;
+            return INSTANCE.groupParents;
         }
         public static Graph<TenetGroup, ConnectionEdge> getConnectedGraph() {
-            return groupConnected;
+            return INSTANCE.groupConnected;
         }
         public static TenetGroup getParent(TenetGroup child){
-            return Graphs.successorListOf(groupChildren,child).getFirst();
+            return Graphs.successorListOf(INSTANCE.groupChildren,child).getFirst();
         }
-        public static List<TenetGroup> getChildren(TenetGroup parent){
-            return Graphs.successorListOf(groupParents,parent);
+        public static Set<TenetGroup> getChildren(TenetGroup parent){
+            return new HashSet<>(Graphs.successorListOf(INSTANCE.groupParents,parent));
         }
-        public static List<TenetGroup> getConnected(TenetGroup group){
+        public static Set<TenetGroup> getConnected(TenetGroup group){
             return getConnected(group, ConnectionEdge.Type.ANY);
         }
-        public static List<TenetGroup> getDependent(TenetGroup group){
+        public static Set<TenetGroup> getDependent(TenetGroup group){
             return getConnected(group, ConnectionEdge.Type.DEPENDENT);
         }
-        public static List<TenetGroup> getInfluencing(TenetGroup group){
+        public static Set<TenetGroup> getInfluencing(TenetGroup group){
             return getConnected(group, ConnectionEdge.Type.INFLUENCING);
         }
-        public static List<TenetGroup> getStructural(TenetGroup group){
+        public static Set<TenetGroup> getStructural(TenetGroup group){
             return getConnected(group, ConnectionEdge.Type.STRUCTURAL);
         }
-        public static List<TenetGroup> getConnected(TenetGroup group, ConnectionEdge.Type type){
-            List<TenetGroup> preList = Graphs.successorListOf(groupConnected,group);
+        public static Set<TenetGroup> getConnected(TenetGroup group, ConnectionEdge.Type type){
+            Set<TenetGroup> preList = new HashSet<>(Graphs.successorListOf(INSTANCE.groupConnected,group));
             return switch (type){
                 case ANY ->  preList;
-                case STRUCTURAL ->  preList.stream().filter(g -> groupConnected.getEdge(group, g).getType() == ConnectionEdge.Type.STRUCTURAL).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-                case DEPENDENT ->  preList.stream().filter(g -> groupConnected.getEdge(group, g).getType() == ConnectionEdge.Type.DEPENDENT).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-                case INFLUENCING ->  preList.stream().filter(g -> groupConnected.getEdge(group, g).getType() == ConnectionEdge.Type.INFLUENCING).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+                case STRUCTURAL ->  preList.stream().filter(g -> INSTANCE.groupConnected.getEdge(group, g).getType() == ConnectionEdge.Type.STRUCTURAL).collect(HashSet::new, HashSet::add, HashSet::addAll);
+                case DEPENDENT ->  preList.stream().filter(g -> INSTANCE.groupConnected.getEdge(group, g).getType() == ConnectionEdge.Type.DEPENDENT).collect(HashSet::new, HashSet::add, HashSet::addAll);
+                case INFLUENCING ->  preList.stream().filter(g -> INSTANCE.groupConnected.getEdge(group, g).getType() == ConnectionEdge.Type.INFLUENCING).collect(HashSet::new, HashSet::add, HashSet::addAll);
             };
         }
-        public static List<TenetGroup> getAncestors(TenetGroup group){
-            List<TenetGroup> toReturn = new ArrayList<>();
-            List<TenetGroup> current = Graphs.successorListOf(groupChildren,group);
+        public static Set<TenetGroup> getAncestors(TenetGroup group){
+            Set<TenetGroup> toReturn = new HashSet<>();
+            List<TenetGroup> current = Graphs.successorListOf(INSTANCE.groupChildren,group);
             for (TenetGroup g : current){
                 toReturn.add(g);
-                current.addAll(Graphs.successorListOf(groupChildren,g));
+                current.addAll(Graphs.successorListOf(INSTANCE.groupChildren,g));
             }
             return toReturn;
         }
-        public static List<TenetGroup> getDescendants(TenetGroup group){
-            List<TenetGroup> toReturn = new ArrayList<>();
-            List<TenetGroup> current = Graphs.successorListOf(groupParents,group);
+        public static Set<TenetGroup> getDescendants(TenetGroup group){
+            Set<TenetGroup> toReturn = new HashSet<>();
+            List<TenetGroup> current = Graphs.successorListOf(INSTANCE.groupParents,group);
             for (TenetGroup g : current){
                 toReturn.add(g);
-                current.addAll(Graphs.successorListOf(groupParents,g));
+                current.addAll(Graphs.successorListOf(INSTANCE.groupParents,g));
             }
             return toReturn;
         }
@@ -157,7 +130,7 @@ public class TenetManager extends ComponentManager<MutableTenet>{
             if (group.getLevel() == TenetGroup.Level.META_PILLAR){
                 return group;
             }
-            BreadthFirstIterator<TenetGroup,DefaultEdge> iterator = new BreadthFirstIterator<>(groupParents,group);
+            BreadthFirstIterator<TenetGroup,DefaultEdge> iterator = new BreadthFirstIterator<>(INSTANCE.groupParents,group);
             while (iterator.hasNext()){
                 TenetGroup g = iterator.next();
                 if (g.getLevel() == TenetGroup.Level.META_PILLAR){
@@ -170,7 +143,7 @@ public class TenetManager extends ComponentManager<MutableTenet>{
             if (group.getLevel() == TenetGroup.Level.PILLAR){
                 return group;
             }
-            BreadthFirstIterator<TenetGroup,DefaultEdge> iterator = new BreadthFirstIterator<>(groupParents,group);
+            BreadthFirstIterator<TenetGroup,DefaultEdge> iterator = new BreadthFirstIterator<>(INSTANCE.groupParents,group);
             while (iterator.hasNext()){
                 TenetGroup g = iterator.next();
                 if (g.getLevel() == TenetGroup.Level.PILLAR){
@@ -183,7 +156,7 @@ public class TenetManager extends ComponentManager<MutableTenet>{
             if (group.getLevel() == TenetGroup.Level.CATEGORY){
                 return group;
             }
-            BreadthFirstIterator<TenetGroup,DefaultEdge> iterator = new BreadthFirstIterator<>(groupChildren,group);
+            BreadthFirstIterator<TenetGroup,DefaultEdge> iterator = new BreadthFirstIterator<>(INSTANCE.groupChildren,group);
             while (iterator.hasNext()){
                 TenetGroup g = iterator.next();
                 if (g.getLevel() == TenetGroup.Level.CATEGORY){
@@ -199,9 +172,9 @@ public class TenetManager extends ComponentManager<MutableTenet>{
             if (group.getLevel() == TenetGroup.Level.SUBCATEGORY){
                 return group;
             } else if (group.getLevel() == TenetGroup.Level.CATEGORY){
-                iterator = new BreadthFirstIterator<>(groupParents,group);
+                iterator = new BreadthFirstIterator<>(INSTANCE.groupParents,group);
             } else {
-                iterator = new BreadthFirstIterator<>(groupChildren,group);
+                iterator = new BreadthFirstIterator<>(INSTANCE.groupChildren,group);
             }
             while (iterator.hasNext()){
                 TenetGroup g = iterator.next();

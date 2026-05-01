@@ -1,5 +1,6 @@
 package com.base.component;
 
+import com.base.reference.IReference;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -8,7 +9,7 @@ import com.utilities.serialization.StringToHex;
 
 import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
-public class ComponentReference<T extends IComponent<?>> implements IComponentLogged {
+public class ComponentReference<T extends IComponent<?>> implements IComponentLogged, IReference<ComponentReference<T>,T,String> {
     private static final Cache<String, ComponentReference<?>> cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(500).build();
     private final Class<T> type;
     private final String id;
@@ -27,6 +28,17 @@ public class ComponentReference<T extends IComponent<?>> implements IComponentLo
     public T get(){
         return supplier.get();
     }
+
+    @Override
+    public Class<T> getType() {
+        return type;
+    }
+
+    @Override
+    public String getID() {
+        return id;
+    }
+
     public static <T extends IComponent<T>>  ComponentReference<T> of(Class<T> type, String id){
         try {
             return (ComponentReference<T>) cache.get(type.getName() + "::" + id, () -> new ComponentReference<>(type, id));

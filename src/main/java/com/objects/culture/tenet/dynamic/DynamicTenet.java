@@ -1,5 +1,6 @@
 package com.objects.culture.tenet.dynamic;
 
+import com.Feudalizer;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.base.datemutable.timeline.change.TimelineChange;
@@ -38,10 +39,6 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT
         displayContainer = new DisplayContainer<>(this.getReference(),null,null,null);
     }
 
-    @Override
-    public final DMEReference<T> getOwner() {
-        return getReference();
-    }
 
     public DynamicTenet(TenetGroup group, String name, UUID id, LocalDate created, @Nullable LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(id, created, ended, foundingCulture,initialState);
@@ -78,7 +75,12 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT
         return (CauseOfEnd<T>) NO_MEMBERS;
     }
     public final void addActiveTenet(Tenet tenet){
+        if(!isAllowedActive(tenet.getGroup())){
+            Feudalizer.LOGGER.error("Tried to add a tenet: {} that is not allowed to be active in {}",tenet.getTenetReference(),this.getReference());
+            return;
+        }
         TenetInstance<T> ti = getTenetInstance(tenet.getTenetReference());
+
         if(ti == null){
             getOpinions().add(new TenetInstance<>(tenet.getTenetReference(), this.getReference(), Acceptance.getMid(Acceptance.CORE),true));
         } else if(!ti.isActive()){
@@ -91,10 +93,21 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT
         super.doDateChange();
         members.clear();
     }
+    private boolean isAllowedActive(TenetGroup group){
+        if(allowedTenets().contains(group)){
+            return true;
+        };
+        for (TenetGroup g : allowedTenets()){
+            if(g.isAncestorOf(group)){
+                return true;
+            }
+        }
+        return false;
+    }
     public void addMember(ICultureObject follower){
         members.put(follower.getType(), follower);
     }
-
+    public abstract Set<TenetGroup> allowedTenets();
 
     public final Set<ICultureObject> getByType(Type type){
         return new HashSet<>(members.get(type));

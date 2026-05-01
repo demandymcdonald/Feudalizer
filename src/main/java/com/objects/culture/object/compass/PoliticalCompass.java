@@ -72,7 +72,7 @@ public class PoliticalCompass implements IPoliticalCompass {
     }
 
     @Override
-    public IPoliticalCompass clone() {
+    public PoliticalCompass clone() {
         return new PoliticalCompass(getAxisB().get(), getAxisA().get(), getAxisC().get(), getAxisD().get());
     }
     public static PoliticalCompass of(PoliticalCompass... compasses){
@@ -135,6 +135,11 @@ public class PoliticalCompass implements IPoliticalCompass {
                     .map(e -> IdeologyEntry.of(e.getKey(), e.getValue()))
                     .collect(Collectors.toSet());
         }
+    }
+    public PoliticalCompass merge(IPoliticalCompass compass){
+        getAxisMap().forEach((k,v) -> amendCompass(k,compass.getByAxis(k).get()));
+        tolerance.add(compass.getTolerance().get());
+        return this;
     }
     @Override
     public void fromJson(JsonElement json) {

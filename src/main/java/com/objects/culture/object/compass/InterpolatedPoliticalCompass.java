@@ -4,6 +4,7 @@ import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.variable.EasingVariable;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
 import com.utilities.id.Identifiable;
@@ -95,12 +96,18 @@ public class InterpolatedPoliticalCompass<T extends DateMutableEntity<T> & Cultu
     public JsonObject toJson() {
         return serialize();
     }
+
+    @Override
+    public void fromJson(JsonElement json) {
+
+    }
+
     @Override
     public void fromJson(JsonObject json) {
         deserialize(json);
     }
     @Override
-    public IPoliticalCompass clone() {
+    public InterpolatedPoliticalCompass<?> clone() {
         return new InterpolatedPoliticalCompass<>(owner, axisBMain.get(), axisAMain.get(), axisCMain.get(), axisDMain.get());
     }
 

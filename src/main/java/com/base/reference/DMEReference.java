@@ -9,19 +9,17 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.utilities.id.UUIDIdentifiable;
 import com.utilities.serialization.StringToHex;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ConcurrentModificationException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unchecked")
-public class DMEReference<T extends DateMutableEntity<?>> implements UUIDIdentifiable {
+public class DMEReference<T extends DateMutableEntity<?>> implements UUIDIdentifiable, IReference<DMEReference<T>,T,UUID> {
     private static final String DELIMITER = ":DME:";
     public static final String DME_SR_TYPE = "DMEReference";
     private final Class<T> type;

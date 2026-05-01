@@ -1,10 +1,6 @@
-package com.base;
+package com.base.component.instanced;
 
-import com.Global.*;
 import com.base.component.ComponentReference;
-import com.base.component.instanced.IComponentInstance;
-import com.base.component.instanced.IInstancedComponent;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.utilities.serialization.StringToHex;
