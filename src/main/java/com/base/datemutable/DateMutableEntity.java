@@ -78,13 +78,14 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
     public abstract void doDateChange();
     public final void onDateChange(){
         isLoaded.set(false);
+        timeline.onTimeChange(current());
         doDateChange();
-        timeline.doTimeChange(current());
     }
     public final void link(){
         if (isLoaded()){
             return;
         }
+        timeline.doLink(current());
         onLink();
         isLoaded.set(true);
     }
@@ -120,7 +121,7 @@ public abstract class DateMutableEntity<T extends DateMutableEntity<T>> implemen
         return timeline;
     }
     public final TimelineState<T> getCurrentState(){
-        //Intentionally left with a compile error so I don't forget to wire this once I figure out the best way to handle it.
+        return timeline.getCurrent();
     }
     public final List<TimelineChange<? super T>> getCurrentChanges(){
         return getCurrentState().getAllCurrentChanges(false);

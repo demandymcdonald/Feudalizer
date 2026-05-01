@@ -9,7 +9,7 @@ import com.base.datemutable.timeline.sandbox.core.Objective;
 import com.base.datemutable.timeline.sandbox.core.Sandbox;
 import com.base.datemutable.timeline.sandbox.core.SandboxHandler;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.succession.change.HolderChanges;
+import com.objects.succession.held.HolderChanges;
 import com.objects.succession.held.ICharacterHeld;
 import com.objects.title.Title;
 import com.objects.succession.plan.SuccessionPlan;

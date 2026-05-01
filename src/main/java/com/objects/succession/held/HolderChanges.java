@@ -1,4 +1,4 @@
-package com.objects.succession.change;
+package com.objects.succession.held;
 
 import com.base.datemutable.DateMutableEntity;
 import com.base.datemutable.timeline.change.condition.apply.ApplyCondition;
@@ -8,7 +8,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.organization.government.GoverningEntity;
-import com.objects.succession.held.ICharacterHeld;
 import com.objects.title.profession.Job;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;

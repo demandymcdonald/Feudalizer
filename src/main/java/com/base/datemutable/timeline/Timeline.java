@@ -1,6 +1,7 @@
 package com.base.datemutable.timeline;
 
 import com.Global;
+import com.base.DMRegistry;
 import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.ChangeID;
@@ -17,13 +18,17 @@ import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> {
     private final TreeMap<LocalDate, TimelineState<T>> timeline = new TreeMap<>();
     //TODO Caching for performance?
-    private boolean isLoaded = false;
-    private boolean isDirty = false;
+    private final AtomicReference<TimelineState<T>> current = new AtomicReference<>();
+    private final AtomicReference<TimelineState<T>> last = new AtomicReference<>();
+    private final AtomicBoolean isLoaded = new AtomicBoolean(false);
+    private final AtomicBoolean isDirty = new AtomicBoolean(false);
     public Timeline(T o, DMEReference<T> owner, LocalDate start, @Nullable LocalDate end, List<ChangeSupplier<T,?>> initialState) {
         super(owner);
         //AbstractMutableManager<?,T,?> manager = DMRegistry.getManager(o.getClass());
@@ -33,7 +38,7 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         } else {
             timeline.put(end, o.buildDeath(owner,end,o.defaultDeathCause(),initialState));
         }
-        isLoaded = true;
+        isLoaded.set(true);
     }
 
     public Timeline(DMEReference<T> dme){
@@ -89,11 +94,11 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
     }
 
     @Override
-    public void setDirty() {
-        if(!isDirty){
-            isDirty = true;
+    public synchronized void setDirty() {
+        if(!isDirty.get()){
+            isDirty.set(true);
             T owner = getOwner().get();
-            .getManager(owner.getClass()).addDirtyObject(owner);
+            DMRegistry.getManager(owner.getClass()).addDirtyObject(owner);
         }
     }
 
@@ -108,13 +113,35 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
 
 
     public boolean isLoaded() {
-        return isLoaded;
+        return isLoaded.get();
     }
-    public void doTimeChange(LocalDate date){
+    public synchronized void onTimeChange(LocalDate date){
         final TimelineState<T> t = getStateAt(date);
+        if(t == current.get()){
+            isLoaded.set(true);
+            return;
+        }
+        last.set(current.get());
+        current.set(t);
         for(TimelineChange<? super T> tc : t.getAllChanges(false)){
             tc.apply(getOwner(),t);
         }
+    }
+    public synchronized void doLink(LocalDate date){
+        if (isLoaded()){
+            //Technically redundant, since link also checks this, but there's a small chance that forcelink gets called
+            //while linking is happening, and if that happens, it'll get held, but I don't want it to then double link.
+            //That still poses issues for DME's link, but since the in DME-based onLink is effectively deprecated in favor of
+            // tlchange-based smart linking, it won't matter for long.
+            return;
+        }
+        final TimelineState<T> t = getStateAt(date);
+        for(TimelineChange<? super T> tc : t.getAllChanges(false)){
+            tc.link(getOwner(),t);
+        }
+    }
+    public AtomicReference<TimelineState<T>> getLastLoaded(){
+        return last;
     }
     public TimelineState<T> getStateNullable(LocalDate date){
         return timeline.floorEntry(date).getValue();
@@ -228,10 +255,14 @@ public class Timeline<T extends DateMutableEntity<T>> extends TimelineObject<T> 
         return true;
     }
     public void replaceTimeline(JsonObject o){
-        isLoaded = false;
+        isLoaded.set(false);
         timeline.clear();
         fromJson(o);
-        isLoaded = true;
+        isLoaded.set(true);
+    }
+
+    public TimelineState<T> getCurrent(){
+        return current.get();
     }
     //==== Shortcut Methods ====
     public final <TC extends TimelineChange<? super T>> TC followBreadcrumb(ChangeID id){

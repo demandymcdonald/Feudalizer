@@ -18,7 +18,7 @@ import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.succession.held.ICharacterHeld;
-import com.objects.succession.change.HolderChanges;
+import com.objects.succession.held.HolderChanges;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
 

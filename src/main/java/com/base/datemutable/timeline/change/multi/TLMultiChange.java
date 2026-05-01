@@ -167,6 +167,12 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
         cascadeInvalidate((M) this, buildChangeTypes(new ArrayList<>(activeChanges.keySet())));
     }
     @Override
+    public void link(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        super.link(entity, currentState);
+        fullMap.clear();
+    }
+
+    @Override
     public final void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance) {
         super.advanceStage(entity,currentState, isFirstAdvance);
     }

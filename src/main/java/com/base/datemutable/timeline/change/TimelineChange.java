@@ -2,7 +2,6 @@ package com.base.datemutable.timeline.change;
 
 import com.Global;
 import com.base.datemutable.DateMutableEntity;
-import com.base.ObjectType;
 import com.base.reference.ComplexReference;
 import com.base.reference.SimpleReference;
 import com.base.datemutable.timeline.Timeline;
@@ -79,7 +78,12 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     }
 
     //==================================================================================================================
-
+    private boolean didChange(){
+        TimelineState<? extends T> ts = getTimeline().getLastState()
+        if(ts == null) return true;
+        TimelineChange<T> lastChange = ts.getChange(this.getClassID(),false);
+        return lastChange != this;
+    }
     public void sandboxInit(Sandbox<? extends T> sandbox){
         onSandboxInit(sandbox);
     }
@@ -92,10 +96,14 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
      *               the target for timeline changes, ensuring accurate and consistent state updates.
      */
     public void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
-        onApply(entity,currentState);
+        if(didChange()) {
+            onApply(entity, currentState);
+        }
     }
     public void link(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
-        onLink(entity,currentState);
+       if(didChange()) {
+           onLink(entity, currentState);
+       }
     }
     public void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance){
         onStageAdvance(entity, currentState,isFirstAdvance);
@@ -225,7 +233,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     public final <C extends Condition<StateError,T,TimelineChange<? super T>, TimelineChange<?>>> List<StateError> canBeDeactivated(TimelineState<? extends T> state, boolean isBeingReplaced, List<Condition.ShouldRun> shouldRun){
         List<StateError> results = new ArrayList<>();
         for (DeactivateCondition<? super T> c : deactivateConditions.get()) {
-            Optional<StateError> result = c.check(this.owner,this,isBeingReplaced,shouldRun);
+            Optional<StateError> result = c.check(this.getOwner(),this,isBeingReplaced,shouldRun);
             result.ifPresent(results::add);
         }
         return results;
@@ -252,14 +260,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     public final LocalDate getEnd(){
         return end;
     }
-    /**
-     * Safely adds a {@link DMEReference} of the given {@link ObjectType} and {@link UUID} to the provided
-     * {@code HashSet} if it is not already present. This method ensures duplicates are avoided in the set.
-     *
-     * @param map the {@code HashSet} to which the {@code DMEReference} object is to be added
-     * @param type the {@code ObjectType} of the entity associated with the {@code DMEReference}
-     * @param uuid the {@code UUID} of the entity associated with the {@code DMEReference}
-     */
+
     protected static <Tt extends DateMutableEntity<Tt>> void safeAddToSet(HashSet<DMEReference<?>> map, Class<Tt> type, UUID uuid){
         //Internal method exclusively used by getScope to safely build DMES and add to the scope set
         DMEReference<Tt> reference = DMEReference.of(type,uuid);

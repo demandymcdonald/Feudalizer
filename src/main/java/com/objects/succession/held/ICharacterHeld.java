@@ -9,7 +9,6 @@ import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.object.ICultureObject;
 import com.objects.organization.government.GoverningEntity;
 import com.objects.organization.government.IGoverned;
-import com.objects.succession.change.HolderChanges;
 import com.objects.title.IPrestige;
 import com.objects.succession.condition.CanHoldCondition;
 import com.objects.succession.condition.CanInheritCondition;

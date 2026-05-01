@@ -1,4 +1,4 @@
-package com.objects.succession.change;
+package com.objects.succession.held;
 
 import com.Global;
 import com.base.component.InstanceType;
@@ -11,7 +11,6 @@ import com.base.datemutable.timeline.sandbox.core.Objective;
 import com.base.reference.ComplexReference;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
-import com.objects.succession.held.ICharacterHeld;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
@@ -42,7 +41,7 @@ public class HolderConditions {
                 if(detector.detectCyclesContainingVertex(newParent)){
                     Set<ICharacterHeld<?>> held = detector.findCyclesContainingVertex(newParent);
                     Objective<?> parentChange = Objective.buildInChange(entity, Global.TimeDirection.FORWARD,new HolderChanges.NewParent<>(entity, Global.getDate(),null));
-                    Optional.of(new StateError("held_looping", ComplexReference.of("{} is offspring of {}", ca.getOwner(),newParent),tc)
+                    return Optional.of(new StateError("held_looping", ComplexReference.of("{} is offspring of {}", ca.getOwner(),newParent),tc)
                             .addEndSave().addEndCancel().addSandbox(
                                     "held_looping_fix",
                                     "Remove Existing Parent",

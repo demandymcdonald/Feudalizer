@@ -32,9 +32,15 @@ public abstract class TimelineVarChange<T extends DateMutableEntity<T>,O> extend
     @Override
     public final void link(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
         super.link(entity, currentState);
+    }
+
+    @Override
+    protected final void onLink(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        super.onLink(entity, currentState);
         if (getCurrent().equals(changed)) {return;}
         onVariableLink(entity.get(), changed, getCurrent());
     }
+
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
         if (getCurrent().equals(changed)) {return;}
