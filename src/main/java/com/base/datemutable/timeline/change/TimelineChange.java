@@ -94,6 +94,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     public void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
         onApply(entity,currentState);
     }
+    public void link(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
+        onLink(entity,currentState);
+    }
     public void advanceStage(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, boolean isFirstAdvance){
         onStageAdvance(entity, currentState,isFirstAdvance);
 
@@ -171,6 +174,7 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
     //==================================================================================================================
     //What to do when the provided object is getting the change from this object applied to it.
     protected abstract void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState);
+    protected void onLink(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){}
     protected void onContinue(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> oldChange){}
     protected void onOverwrite(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingOverwritten, boolean destructive){};
     protected void onNullify(DMEReference<? extends T> entity, TimelineState<? extends T> currentState, TimelineChange<?> beingNullified){}

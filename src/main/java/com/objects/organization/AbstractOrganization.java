@@ -10,7 +10,6 @@ import com.objects.culture.object.ICultureOpinionated;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.group.TenetGroup;
 
-import com.objects.organization.change.OrgParentChange;
 import com.objects.organization.labor.LaborUnion;
 import com.objects.succession.condition.CanHoldCondition;
 import com.objects.succession.condition.CanInheritCondition;

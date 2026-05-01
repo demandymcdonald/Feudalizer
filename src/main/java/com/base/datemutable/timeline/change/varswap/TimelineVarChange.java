@@ -28,10 +28,19 @@ public abstract class TimelineVarChange<T extends DateMutableEntity<T>,O> extend
     }
     public abstract O getCurrent(T owner);
     public abstract void setNew(T entity, O newValue);
+
+    @Override
+    public final void link(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        super.link(entity, currentState);
+        if (getCurrent().equals(changed)) {return;}
+        onVariableLink(entity.get(), changed, getCurrent());
+    }
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
+        if (getCurrent().equals(changed)) {return;}
         setNew(entity.get(), changed);
     }
+    public abstract void onVariableLink(T entity, O changed, O former);
     public final Optional<O> getOld(){
         return old;
     }

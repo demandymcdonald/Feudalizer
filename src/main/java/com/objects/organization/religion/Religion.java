@@ -1,5 +1,6 @@
 package com.objects.organization.religion;
 
+import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.google.common.collect.Multimap;
@@ -20,6 +21,7 @@ import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.religion.tenets.faith.Faith;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -102,6 +104,7 @@ public class Religion extends DynamicTenet<Religion> implements IInterestGroup, 
     public void internalSetCulture(DMEReference<Culture> culture) {
 
     }
+
 
     @Override
     public Multimap<CultureCondition.Key, CultureCondition<?, ?>> getConditions() {

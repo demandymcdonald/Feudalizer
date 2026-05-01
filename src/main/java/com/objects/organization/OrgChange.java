@@ -27,6 +27,11 @@ public class OrgChange<T extends DateMutableEntity<T> & IOrganizedEntity<T>> ext
     }
 
     @Override
+    public void onVariableLink(T entity, DMEReference<? extends AbstractOrganization<?>> changed, DMEReference<? extends AbstractOrganization<?>> former) {
+
+    }
+
+    @Override
     protected JsonElement serializeO(DMEReference<? extends AbstractOrganization<?>> o) {
         return o.serialize();
     }

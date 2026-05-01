@@ -13,10 +13,4 @@ public interface IReligious<T extends DateMutableEntity<T> & IReligious<T>> exte
     default void setReligion(DMEReference<Religion> religion){
         getReference().get().getTimeline().addChange(new ReligionChanged<>(getReference(), Global.getDate(),religion));
     };
-    default void onLink(){
-        DMEReference<Religion> religion = getReligion();
-        if(religion != null){
-            religion.get().addMember((ICultureObject) getReference().get());
-        }
-    }
 }

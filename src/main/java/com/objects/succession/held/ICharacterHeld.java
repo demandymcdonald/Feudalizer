@@ -72,6 +72,7 @@ public interface ICharacterHeld<T extends DateMutableEntity<T> & ICharacterHeld<
         return list;
     }
     Optional<DMEReference<? extends SentientCharacter<?>>> getHolder();
+    boolean needSameGovHolder();
     void internalSetHolder(DMEReference<? extends SentientCharacter<?>> character);
     default void setHolder(DMEReference<? extends SentientCharacter<?>> character){
         getReference().get().getTimeline().addChange(new HolderChanges.Change<>(getReference(), Global.getDate(),character));

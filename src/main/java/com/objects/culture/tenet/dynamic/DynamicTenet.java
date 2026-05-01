@@ -24,7 +24,7 @@ import static com.objects.CauseOfEnd.DynamicTenets.NO_MEMBERS;
 public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT<T> {
     private final TenetGroup tenetGroup;
     private final DisplayContainer<T> displayContainer;
-    private final Multimap<Type, ICultureObject> members = HashMultimap.create();
+
 
     public DynamicTenet(TenetGroup group, String name, LocalDate created, LocalDate ended, DMEReference<Culture> foundingCulture, List<ChangeSupplier<T, ?>> initialState) {
         super(created, ended, foundingCulture,initialState);
@@ -104,9 +104,7 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT
         }
         return false;
     }
-    public void addMember(ICultureObject follower){
-        members.put(follower.getType(), follower);
-    }
+
     public abstract Set<TenetGroup> allowedTenets();
 
     public final Set<ICultureObject> getByType(Type type){

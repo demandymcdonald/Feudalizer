@@ -88,7 +88,9 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     public void additionalLoad(JsonObject data) {
 
     }
+    public void linkMember(ICultureObject member) {
 
+    }
     @Override
     public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
         return null;

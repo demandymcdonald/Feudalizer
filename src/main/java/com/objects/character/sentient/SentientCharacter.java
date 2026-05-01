@@ -197,6 +197,9 @@ public abstract class SentientCharacter<T extends SentientCharacter<T>> extends 
     public final void linkHeld(DMEReference<? extends ICharacterHeld<?>> title){
         linked_holdings.add(title);
     }
+    public final void removeHeld(DMEReference<? extends ICharacterHeld<?>> title){
+        linked_holdings.remove(title);
+    }
     public final void linkFamily(DMEReference<Family> family, FamilyRelationship relationship){
         linked_families.put(family,relationship);
     }

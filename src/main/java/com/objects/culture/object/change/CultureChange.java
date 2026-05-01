@@ -28,6 +28,16 @@ public class CultureChange <T extends DateMutableEntity<T> & CultureObject<T>> e
     }
 
     @Override
+    public void onVariableLink(T entity, DMEReference<Culture> changed, DMEReference<Culture> former) {
+        if(changed != null){
+            changed.get().linkFollower(entity.getReference());
+        }
+        if(former != null){
+            former.get().unlinkFollower(entity.getReference());
+        }
+    }
+
+    @Override
     protected JsonElement serializeO(DMEReference<Culture> o) {
         return o.serialize();
     }

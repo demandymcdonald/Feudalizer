@@ -7,7 +7,12 @@ import com.base.reference.DMEReference;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
+import com.objects.organization.government.GoverningEntity;
 import com.objects.succession.held.ICharacterHeld;
+import com.objects.title.profession.Job;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DirectedPseudograph;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -56,12 +61,31 @@ public abstract class HolderChanges<T extends DateMutableEntity<T> & ICharacterH
     public void additionalLoad(JsonObject data) {
         super.additionalLoad(data);
     }
-
+    public static <T extends DateMutableEntity<T> & ICharacterHeld<T>> void doInheritHold(T entity, DMEReference<? extends SentientCharacter<?>> changed, DMEReference<? extends SentientCharacter<?>> former){
+        if(former != null) {
+            former.get().removeHeld(entity.getReference());
+        }
+        if (changed != null){
+            SentientCharacter<?> character = changed.get();
+            character.forceLink();
+            character.linkHeld(entity.getReference());
+            DMEReference<? extends GoverningEntity<?>> ourGov = entity.getGovernment();
+            if (ourGov == null || !entity.needSameGovHolder()) return;
+            if (!character.getGovernment().equals(ourGov)) {
+                character.setGovernment(ourGov);
+            }
+        }
+        if(entity instanceof Job j){
+            j.getOrganization().get().linkEmployee(j);
+        }
+    }
 
     public static class Change<T extends DateMutableEntity<T> & ICharacterHeld<T>> extends HolderChanges<T>{
         public Change(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
+
+
         public Change(DMEReference<? extends T> owner, LocalDate date, DMEReference<? extends SentientCharacter<?>> changed) {
             super(owner, date, changed);
         }
@@ -71,6 +95,11 @@ public abstract class HolderChanges<T extends DateMutableEntity<T> & ICharacterH
             list.add(new HolderConditions.CanHold<>());
             list.add(new HolderConditions.HolderDead<>());
         }
+        @Override
+        public void onVariableLink(T entity, DMEReference<? extends SentientCharacter<?>> changed, DMEReference<? extends SentientCharacter<?>> former) {
+            doInheritHold(entity, changed, former);
+        }
+
     }
     public static class Inherit<T extends DateMutableEntity<T> & ICharacterHeld<T>> extends HolderChanges<T>{
         public Inherit(DMEReference<? extends T> owner, LocalDate date) {
@@ -84,6 +113,10 @@ public abstract class HolderChanges<T extends DateMutableEntity<T> & ICharacterH
             super.applyConditions(list);
             list.add(new HolderConditions.CanHold<>());
             list.add(new HolderConditions.HolderDead<>());
+        }
+        @Override
+        public void onVariableLink(T entity, DMEReference<? extends SentientCharacter<?>> changed, DMEReference<? extends SentientCharacter<?>> former) {
+            doInheritHold(entity, changed, former);
         }
     }
     public static class NewParent<T extends DateMutableEntity<T> & ICharacterHeld<T>> extends TimelineVarChange<T,DMEReference<? extends ICharacterHeld<?>>>{
@@ -108,6 +141,30 @@ public abstract class HolderChanges<T extends DateMutableEntity<T> & ICharacterH
         @Override
         public void setNew(T entity, DMEReference<? extends ICharacterHeld<?>> newValue) {
             entity.internalSetParent(newValue);
+        }
+
+        @Override
+        public void onVariableLink(T entity, DMEReference<? extends ICharacterHeld<?>> changed, DMEReference<? extends ICharacterHeld<?>> former) {
+            if(changed == null){
+                entity.internalSetGraph(new DirectedPseudograph<>(DefaultEdge.class));
+                entity.getTitleGraph().addVertex(entity);
+            }  else {
+                Graph<ICharacterHeld<?>, DefaultEdge> graph = changed.get().getTitleGraph();
+                if(former == null) {
+                    entity.internalSetGraph(null);
+                }
+                if (!graph.containsVertex(entity)){
+                    graph.addVertex(entity);
+                }
+                changed.get().forceLink();
+                changed.get().internalGetChildrenSet().add(entity.getReference());
+                graph.addEdge(changed.get(), entity);
+            }
+            if(former != null){
+                former.get().forceLink();
+                former.get().internalGetChildrenSet().remove(entity.getReference());
+            }
+
         }
 
         @Override
