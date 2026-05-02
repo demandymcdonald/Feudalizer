@@ -1,4 +1,4 @@
-package com.objects.succession.rules;
+package com.objects.succession.rule;
 
 import com.base.component.ComponentReference;
 import com.base.component.instanced.bi.IOIBi;

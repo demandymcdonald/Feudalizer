@@ -60,8 +60,12 @@ public class Family extends DateMutableEntity<Family> {
     }
 
 
-
-
+    public TLMap<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> getRelationships() {
+        return relationships;
+    }
+    public void internalSetRelationship(TLMap<DMEReference<? extends SentientCharacter<?>>, FamilyRelationship> relationships) {
+        this.relationships = relationships;
+    }
 
 
     @Override

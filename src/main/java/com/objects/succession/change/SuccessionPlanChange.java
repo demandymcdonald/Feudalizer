@@ -10,7 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.character.sentient.SentientCharacter;
-import com.objects.succession.rules.RuleEntry;
+import com.objects.succession.rule.RuleEntry;
 
 import java.time.LocalDate;
 import java.util.List;

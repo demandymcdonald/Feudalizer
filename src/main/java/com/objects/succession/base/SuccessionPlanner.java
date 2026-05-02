@@ -13,7 +13,7 @@ import com.objects.succession.held.HolderChanges;
 import com.objects.succession.held.ICharacterHeld;
 import com.objects.title.Title;
 import com.objects.succession.plan.SuccessionPlan;
-import com.objects.succession.rules.RuleEntry;
+import com.objects.succession.rule.RuleEntry;
 
 import java.time.LocalDate;
 import java.util.*;

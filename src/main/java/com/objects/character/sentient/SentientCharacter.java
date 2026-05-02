@@ -21,10 +21,9 @@ import com.objects.family.Family;
 import com.objects.organization.government.GoverningEntity;
 import com.objects.family.FamilyRelationship;
 import com.objects.succession.held.ICharacterHeld;
-import com.objects.title.Title;
 
 import com.objects.succession.plan.SuccessionPlan;
-import com.objects.succession.rules.RuleEntry;
+import com.objects.succession.rule.RuleEntry;
 import com.utilities.caching.CachingSupplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

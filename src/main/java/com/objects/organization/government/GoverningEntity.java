@@ -11,8 +11,8 @@ import com.objects.culture.tenet.mutable.augments.IRightsTenet;
 import com.objects.organization.AbstractOrganization;
 import com.objects.organization.labor.LaborUnion;
 import com.objects.succession.held.ICharacterHeld;
-import com.objects.succession.rules.RuleEntry;
-import com.objects.succession.rules.SuccessionRule;
+import com.objects.succession.rule.RuleEntry;
+import com.objects.succession.rule.SuccessionRule;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.LocalDate;

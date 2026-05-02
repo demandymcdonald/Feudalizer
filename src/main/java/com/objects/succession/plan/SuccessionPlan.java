@@ -8,7 +8,7 @@ import com.objects.character.sentient.SentientCharacter;
 import com.objects.succession.held.ICharacterHeld;
 import com.objects.succession.change.SuccessionPlanChange;
 
-import com.objects.succession.rules.RuleEntry;
+import com.objects.succession.rule.RuleEntry;
 
 import java.util.Set;
 
