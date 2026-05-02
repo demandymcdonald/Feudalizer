@@ -6,6 +6,8 @@ import com.base.datemutable.timeline.change.multi.type.ChangeType;
 import com.base.datemutable.timeline.variable.EasingVariable;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.CultureObject;
+import com.objects.culture.object.change.InfluencerMapChange;
+import com.objects.culture.object.change.OpinionChange;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetReference;
 import com.utilities.id.Identifiable;
@@ -21,14 +23,13 @@ import java.util.function.Predicate;
 
 import static com.objects.culture.tenet.Acceptance.MAX_VALUE;
 
-public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>implements EasingVariable<TenetInstance<T>,TenetInstanceChange<T>,T>, UUIDIdentifiable {
-
-    private DMEReference<T> owner;
+public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>implements EasingVariable<TenetInstance<T>, OpinionChange<T>,T>, UUIDIdentifiable {
+    private final DMEReference<T> owner;
     private TenetReference tenet;
     private UUID id;
     private final BoundedDouble opinion = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
     private final BoundedDouble interpolated = new BoundedDouble(-MAX_VALUE, MAX_VALUE);
-    private MutableBoolean isActive = new MutableBoolean(false);
+    private final MutableBoolean isActive = new MutableBoolean(false);
 
     private static final StringIdentifiable doubleID = new StringIdentifiable("opinion"){
         @Override
@@ -54,8 +55,8 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
         this.opinion.set(opinion);
         this.id = UUID.randomUUID();
     }
-    public TenetInstance(){
-        this.owner = null;
+    public TenetInstance(DMEReference<? extends T> owner){
+        this.owner = (DMEReference<T>) owner;
     }
     public Acceptance getAcceptance(){
         return Acceptance.get((int) Math.round(opinion.get()));
@@ -95,19 +96,15 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     @Override
     public void mainSave(JsonObject object) {
         object.addProperty("opinion", opinion.get());
-        object.add("owner", owner.serialize());
         object.add("reference", tenet.serialize());
         object.addProperty("id", id.toString());
     }
-
     @Override
     public void mainLoad(JsonObject object) {
         opinion.set(object.get("opinion").getAsDouble());
         id = UUID.fromString(object.get("id").getAsString());
-        owner = DMEReference.deserialize(object.get("owner").getAsJsonObject());
         tenet = TenetReference.deserialize(object.get("reference").getAsJsonObject());
     }
-
     @Override
     public void additionalSave(JsonObject data) {
 
@@ -117,10 +114,10 @@ public class TenetInstance<T extends DateMutableEntity<T> & CultureObject<T>>imp
     public void additionalLoad(JsonObject data) {
 
     }
-
+    private static final String name = InfluencerMapChange.class.getName();
     @Override
     public String getChangeClassName() {
-        return TenetInstanceChange.class.getName();
+        return name;
     }
 
     @Override

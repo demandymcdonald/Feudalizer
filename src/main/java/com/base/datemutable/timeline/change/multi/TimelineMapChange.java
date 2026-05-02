@@ -18,8 +18,8 @@ public abstract class TimelineMapChange<M extends TimelineMapChange<M,K,V,I,T>,K
     protected TimelineMapChange(DMEReference<? extends T> owner, LocalDate date) {
         super(owner, date);
     }
-    protected abstract TLMap<K,V> getRuntimeMap(T owner);
-    public abstract void setRuntimeMap(T owner, TLMap<K,V> map);
+    protected abstract TLMap<K,V> getRuntimeMap(T t);
+    public abstract void setRuntimeMap(T t, TLMap<K,V> map);
     public final TLMap<K,V> getRuntimeMap(){
         return getRuntimeMap(getOwner().get());
     };

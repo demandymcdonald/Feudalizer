@@ -144,7 +144,7 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
 
     @Override
     public final void addOpinion(TenetReference tenet, double d) {
-        CultureObject.super.addOpinion(tenet, d);
+        CultureObject.super.amendOpinion(tenet, d);
     }
 
 

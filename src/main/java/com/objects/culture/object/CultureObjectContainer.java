@@ -27,9 +27,10 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
     private DMEReference<T> reference;
     private Pair<COReference<?>, InfluencerInstance> parent;
     private TLMap<COReference<?>,InfluencerInstance> influencers;
+    private Map<TenetReference, TenetInstance<T>> opinionMap = new HashMap<>();
     private TLSet<TenetInstance<T>> opinions;
     private InterpolatedPoliticalCompass<T> compass;
-    private Map<TenetReference, TenetInstance<T>> opinionMap = new HashMap<>();
+
     private TLSyncedCache<TenetReference, Double> influencedCache = new TLSyncedCache<>(50L, TimeUnit.MINUTES,10L,null);
     public CultureObjectContainer(DMEReference<T> reference){
         this.reference = reference;
@@ -54,15 +55,28 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
     public TenetInstance<T> getTenetInstance(TenetReference tr){
         return opinions.getWhere((ti) -> ti.getTenet().equals(tr)).stream().findFirst().orElse(null);
     }
-    public void addOpinion(TenetReference tenet, boolean wipe, double d){
+    public void amendOpinion(TenetReference tenet, boolean wipe, double d){
         TenetInstance<T> opinion = getTenetInstance(tenet);
         if (opinion != null){
             Consumer<TenetInstance<T>> consumer = (i) -> i.add(d);
             getOpinions().setChanged(wipe, ChangeType.KEY,Map.of(opinion,consumer));
             invalidateCache(tenet);
         }else {
-            getOpinions().add(new TenetInstance<>(tenet,this.getReference(),d));
+            insertNewOpinion(tenet,d);
         }
+    }
+    public void setOpinion(TenetReference tenet, boolean wipe, double d){
+        TenetInstance<T> opinion = getTenetInstance(tenet);
+        if (opinion != null){
+            Consumer<TenetInstance<T>> consumer = (i) -> i.set(d);
+            getOpinions().setChanged(wipe, ChangeType.KEY,Map.of(opinion,consumer));
+            invalidateCache(tenet);
+        }else {
+            insertNewOpinion(tenet,d);
+        }
+    }
+    public void insertNewOpinion(TenetReference reference, double d){
+        getOpinions().add(new TenetInstance<>(reference,this.getReference(),d));
     }
     public Set<TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers){
         int floor = acceptance.getValue();
@@ -203,7 +217,7 @@ public class CultureObjectContainer<T extends DateMutableEntity<T> & CultureObje
         return opinions;
     }
 
-    public void setOpinions(TLSet<TenetInstance<T>> opinions) {
+    public void internalSetOpinions(TLSet<TenetInstance<T>> opinions) {
         this.opinions = opinions;
     }
 

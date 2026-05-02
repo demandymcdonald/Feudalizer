@@ -1,12 +1,18 @@
 package com.objects.character.sentient.change;
 
+import com.base.datemutable.timeline.change.startend.CreatedChange;
+import com.base.datemutable.timeline.change.startend.EndingChange;
+import com.base.datemutable.timeline.change.varswap.TimelineVarChange;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.TimelineSingleChange;
 import com.base.datemutable.timeline.state.TimelineState;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.objects.CauseOfEnd;
 import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
+import com.objects.culture.tenet.interest.groups.Orientation;
 import com.objects.succession.SuccessionPlan;
 
 import java.time.LocalDate;
@@ -14,7 +20,7 @@ import java.time.LocalDate;
 public class SentientChange {
 
 
-    public static class Birth<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
+    public static class Birth<T extends SentientCharacter<T>> extends CreatedChange<T> {
         public Birth(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
@@ -28,23 +34,14 @@ public class SentientChange {
             return "character_birth";
         }
 
-        @Override
-        public void additionalSave(JsonObject data) {
-
-        }
-
-        @Override
-        public void additionalLoad(JsonObject data) {
-
-        }
     }
-    public static class Death<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
+    public static class Death<T extends SentientCharacter<T>> extends EndingChange<T> {
         CauseOfEnd<? super T> cause;
         public Death(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
         public Death(DMEReference<? extends T> owner, LocalDate date, CauseOfEnd<? super T> cause) {
-            super(owner, date);
+            super(owner, date,cause);
             this.cause = cause;
         }
 
@@ -66,186 +63,153 @@ public class SentientChange {
             CauseOfEnd.get(data.get("cause").getAsString());
         }
     }
-    public static class SetForename<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private String newName;
-        private String oldName;
+    public static class SetForename<T extends SentientCharacter<T>> extends TimelineVarChange<T,String> {
+
         public SetForename(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
         public SetForename(DMEReference<? extends T> owner, LocalDate date, String newName) {
-            super(owner, date);
-            this.newName = newName;
-            this.oldName = owner.get().getForename();
+            super(owner, date,newName);
         }
 
         @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().internalSetForename(newName);
+        public String getCurrent(T owner) {
+            return owner.getForename();
         }
 
         @Override
-        protected String getText() {
-            return "character_new_name";
+        public void setNew(T entity, String newValue) {
+            entity.internalSetForename(newValue);
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("new_name",newName);
-            if (oldName != null) {
-                data.addProperty("old_name",oldName);
-            }
+        public void onVariableLink(T entity, String changed, String former) {
+
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-            newName = data.get("new_name").getAsString();
-            if(data.has("old_name")) {
-                oldName = data.get("old_name").getAsString();
-            }
+        protected JsonElement serializeO(String o) {
+            return new JsonPrimitive(o);
+        }
+
+        @Override
+        protected String deserializeO(JsonElement json) {
+            return json.getAsString();
         }
     }
-    public static class SetSurname<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private String newName;
-        private String oldName;
+    public static class SetSurname<T extends SentientCharacter<T>> extends TimelineVarChange<T,String> {
         public SetSurname(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
+
         public SetSurname(DMEReference<? extends T> owner, LocalDate date, String newName) {
-            super(owner, date);
-            this.newName = newName;
-            this.oldName = owner.get().getSurname();
+            super(owner, date,newName);
         }
 
         @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().internalSetSurname(newName);
+        public String getCurrent(T owner) {
+            return owner.getSurname();
         }
 
         @Override
-        protected String getText() {
-            return "character_new_name";
+        public void setNew(T entity, String newValue) {
+            entity.internalSetSurname(newValue);
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("new_name",newName);
-            if (oldName != null) {
-                data.addProperty("old_name",oldName);
-            }
+        public void onVariableLink(T entity, String changed, String former) {
+
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-            newName = data.get("new_name").getAsString();
-            if(data.has("old_name")) {
-                oldName = data.get("old_name").getAsString();
-            }
+        protected JsonElement serializeO(String o) {
+            return new JsonPrimitive(o);
         }
+
+        @Override
+        protected String deserializeO(JsonElement json) {
+            return json.getAsString();
+        }
+
+
     }
-    public static class SetOrientation<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private SentientCharacter.Orientation newOrientation;
-        private SentientCharacter.Orientation oldOrientation;
+    public static class SetOrientation<T extends SentientCharacter<T>> extends TimelineVarChange<T, SentientCharacter.Orientation> {
         public SetOrientation(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
-        public SetOrientation(DMEReference<? extends T> owner, LocalDate date, SentientCharacter.Orientation newGender) {
-            super(owner, date);
-            this.newOrientation = newGender;
-            this.oldOrientation = owner.get().getOrientation();
+        public SetOrientation(DMEReference<? extends T> owner, LocalDate date, SentientCharacter.Orientation newOrientation) {
+            super(owner, date,newOrientation);
+
+        }
+        @Override
+        public SentientCharacter.Orientation getCurrent(T owner) {
+            return owner.getOrientation();
         }
 
         @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().internalSetOrientation(newOrientation);
+        public void setNew(T entity, SentientCharacter.Orientation newValue) {
+            entity.internalSetOrientation(newValue);
         }
 
         @Override
-        protected String getText() {
-            return "character_new_name";
+        public void onVariableLink(T entity, SentientCharacter.Orientation changed, SentientCharacter.Orientation former) {
+
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("new_orientation", newOrientation.name());
-            if (oldOrientation != null) {
-                data.addProperty("old_orientation", oldOrientation.name());
-            }
+        protected JsonElement serializeO(SentientCharacter.Orientation o) {
+            return new JsonPrimitive(o.name());
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-            newOrientation = SentientCharacter.Orientation.valueOf(data.get("new_orientation").getAsString());
-            if(data.has("old_orientation")) {
-                oldOrientation = SentientCharacter.Orientation.valueOf(data.get("old_orientation").getAsString());
-            }
+        protected SentientCharacter.Orientation deserializeO(JsonElement json) {
+            return SentientCharacter.Orientation.valueOf(json.getAsString());
         }
+
+
+
+
     }
-    public static class SetGender<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private Gender newGender;
-        private Gender oldGender;
+    public static class SetGender<T extends SentientCharacter<T>> extends TimelineVarChange<T,Gender> {
         public SetGender(DMEReference<? extends T> owner, LocalDate date) {
             super(owner, date);
         }
+
+        @Override
+        public Gender getCurrent(T owner) {
+            return owner.getGender();
+        }
+
+        @Override
+        public void setNew(T entity, Gender newValue) {
+            entity.internalSetGender(newValue);
+        }
+
         public SetGender(DMEReference<? extends T> owner, LocalDate date, Gender newGender) {
             super(owner, date);
-            this.newGender = newGender;
-            this.oldGender = owner.get().getGender();
         }
 
-        @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().internalSetGender(newGender);
-        }
 
         @Override
-        protected String getText() {
-            return "character_new_name";
-        }
+        public void onVariableLink(T entity, Gender changed, Gender former) {
 
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("new_gender",newGender.name());
-            if (oldGender != null) {
-                data.addProperty("old_gender",oldGender.name());
-            }
-        }
-
-        @Override
-        public void additionalLoad(JsonObject data) {
-            newGender = Gender.valueOf(data.get("new_gender").getAsString());
-            if(data.has("old_gender")) {
-                oldGender = Gender.valueOf(data.get("old_gender").getAsString());
-            }
-        }
-    }
-    public static class SetDefaultSuccession<T extends SentientCharacter<T>> extends TimelineSingleChange<T> {
-        private SuccessionPlan<?> container;
-
-        protected SetDefaultSuccession(DMEReference<? extends T> owner, LocalDate date) {
-            super(owner, date);
-        }
-        public SetDefaultSuccession(DMEReference<? extends T> owner, LocalDate date, SuccessionPlan<?> container) {
-            super(owner, date);
-            this.container = container;
-        }
-        @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().internalSetPreferredSuccession(container);
         }
 
         @Override
         protected String getText() {
-            return "set_preferred_succession";
+            return "character_new_gender";
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
-            data.add("default_container",container.serialize());
+        protected JsonElement serializeO(Gender o) {
+            return new JsonPrimitive(o.name());
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-            container = SuccessionPlan.fromJson(data.get("default_container").getAsJsonObject());
+        protected Gender deserializeO(JsonElement json) {
+            return Gender.valueOf(json.getAsString());
         }
+
     }
+//
 }

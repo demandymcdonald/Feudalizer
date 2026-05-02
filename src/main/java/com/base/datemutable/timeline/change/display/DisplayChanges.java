@@ -1,22 +1,19 @@
 package com.base.datemutable.timeline.change.display;
 
 import com.base.datemutable.DateMutableEntity;
+import com.base.datemutable.timeline.change.varswap.TimelineVarChange;
 import com.base.reference.DMEReference;
-import com.base.datemutable.timeline.change.TimelineSingleChange;
 import com.base.datemutable.timeline.state.TimelineState;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.utilities.serialization.CompressString;
 
 import java.time.LocalDate;
 public class DisplayChanges {
-    public static class ID<T extends DateMutableEntity<T> & ITLDisplayable<T>> extends TimelineSingleChange<T> {
-        private String changed;
-        private String previous;
+    public static class ID<T extends DateMutableEntity<T> & ITLDisplayable<T>> extends TimelineVarChange<T,String> {
         protected ID(DMEReference<T> owner, LocalDate date, String changed) {
-            super(owner, date);
-            this.changed = changed;
-            String previous = owner.get().getDisplayID();
-            this.previous = previous != null ? previous : "";
+            super(owner, date, changed);
         }
 
         protected ID(DMEReference<T> owner, LocalDate date) {
@@ -24,96 +21,95 @@ public class DisplayChanges {
         }
 
         @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().getDisplayable().internalID(changed);
+        public String getCurrent(T owner) {
+            return owner.getDisplayID();
         }
 
         @Override
-        protected String getText() {
-            return "";
-        }
-        @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("dc", CompressString.compress(previous)+"::"+CompressString.compress(changed));
+        public void setNew(T entity, String newValue) {
+            entity.getDisplayable().internalID(newValue);
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-            String[] changes = data.get("dc").getAsString().split("::");
-            previous = CompressString.decompress(changes[0]);
-            changed = CompressString.decompress(changes[1]);
+        public void onVariableLink(T entity, String changed, String former) {}
+
+        @Override
+        protected JsonElement serializeO(String o) {
+            return new JsonPrimitive(o);
+        }
+
+        @Override
+        protected String deserializeO(JsonElement json) {
+            return json.getAsString();
         }
     }
-    public static class Name<T extends DateMutableEntity<T> & ITLDisplayable<T>> extends TimelineSingleChange<T> {
+    public static class Name<T extends DateMutableEntity<T> & ITLDisplayable<T>> extends TimelineVarChange<T,String> {
         private String changed;
         private String previous;
 
         protected Name(DMEReference<T> owner, LocalDate date, String changed) {
-            super(owner, date);
-            this.changed = changed;
-            String previous = owner.get().getDisplayID();
-            this.previous = previous != null ? previous : "";
-        }
-
-        protected Name(DMEReference<T> owner, LocalDate date) {
-            super(owner, date);
+            super(owner, date,changed);
         }
 
         @Override
-        protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-            entity.get().getDisplayable().internalID(changed);
+        public String getCurrent(T owner) {
+            return owner.getDisplayable().getName();
         }
 
         @Override
-        protected String getText() {
-            return "";
+        public void setNew(T entity, String newValue) {
+            entity.getDisplayable().internalName(newValue);
         }
 
         @Override
-        public void additionalSave(JsonObject data) {
-            data.addProperty("dc", CompressString.compress(previous) + "::" + CompressString.compress(changed));
+        public void onVariableLink(T entity, String changed, String former) {
+
         }
 
         @Override
-        public void additionalLoad(JsonObject data) {
-            String[] changes = data.get("dc").getAsString().split("::");
-            previous = CompressString.decompress(changes[0]);
-            changed = CompressString.decompress(changes[1]);
+        protected JsonElement serializeO(String o) {
+            return new JsonPrimitive(o);
+        }
+
+        @Override
+        protected String deserializeO(JsonElement json) {
+            return json.getAsString();
         }
     }
-        public static class Description<T extends DateMutableEntity<T> & ITLDisplayable<T>> extends TimelineSingleChange<T> {
-            private String changed;
-            private String previous;
+        public static class Description<T extends DateMutableEntity<T> & ITLDisplayable<T>> extends TimelineVarChange<T,String> {
             protected Description(DMEReference<T> owner, LocalDate date, String changed) {
-                super(owner, date);
-                this.changed = changed;
-                String previous = owner.get().getDisplayID();
-                this.previous = previous != null ? previous : "";
+                super(owner, date, changed);
+
             }
 
             protected Description(DMEReference<T> owner, LocalDate date) {
                 super(owner, date);
             }
 
+
             @Override
-            protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
-                entity.get().getDisplayable().internalID(changed);
+            public String getCurrent(T owner) {
+                return owner.getDisplayable().getDescription();
             }
 
             @Override
-            protected String getText() {
-                return "";
-            }
-            @Override
-            public void additionalSave(JsonObject data) {
-                data.addProperty("dc", CompressString.compress(previous)+"::"+CompressString.compress(changed));
+            public void setNew(T entity, String newValue) {
+                entity.getDisplayable().internalDescription(newValue);
             }
 
             @Override
-            public void additionalLoad(JsonObject data) {
-                String[] changes = data.get("dc").getAsString().split("::");
-                previous = CompressString.decompress(changes[0]);
-                changed = CompressString.decompress(changes[1]);
+            public void onVariableLink(T entity, String changed, String former) {
+
+            }
+
+            @Override
+            protected JsonElement serializeO(String o) {
+                return new JsonPrimitive(o);
+            }
+
+            @Override
+            protected String deserializeO(JsonElement json) {
+                return json.getAsString();
             }
         }
     }

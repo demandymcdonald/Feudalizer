@@ -20,7 +20,10 @@ public abstract class EndingChange<T extends DateMutableEntity<?>> extends Timel
         super(owner, date);
         this.coe = causeOfEnd;
     }
-
+    protected EndingChange(DMEReference<? extends T> owner, LocalDate date) {
+        super(owner, date);
+        this.coe = null;
+    }
     @Override
     protected void onApply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
 
@@ -65,6 +68,6 @@ public abstract class EndingChange<T extends DateMutableEntity<?>> extends Timel
 
     @Override
     public void additionalLoad(JsonObject data) {
-        CauseOfEnd.fromJson(data);
+        coe = CauseOfEnd.fromJson(data);
     }
 }

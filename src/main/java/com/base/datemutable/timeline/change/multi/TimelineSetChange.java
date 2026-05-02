@@ -2,12 +2,14 @@ package com.base.datemutable.timeline.change.multi;
 
 import com.base.datemutable.DateMutableEntity;
 import com.base.datemutable.timeline.change.TLChangeRegistry;
+import com.base.datemutable.timeline.change.multi.condition.MultiCondition;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
 import com.base.datemutable.timeline.state.TimelineState;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.utilities.id.Identifiable;
+import org.geotools.api.filter.Id;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -42,8 +44,8 @@ public abstract class TimelineSetChange<M extends TimelineSetChange<M, K,I,T>, K
     public M getEmptyChange(DMEReference<? extends T> owner, LocalDate date) {
         return TLChangeRegistry.deserializeChange(this.getClass(),owner,date);
     }
-    protected abstract TLSet<K> getRuntimeSet(T owner);
-    public abstract void setRuntimeSet(T owner, TLSet<K> set);
+    protected abstract TLSet<K> getRuntimeSet(T t);
+    public abstract void setRuntimeSet(T t, TLSet<K> set);
     @Override
     public final void apply(DMEReference<? extends T> entity, TimelineState<? extends T> currentState) {
         super.apply(entity, currentState);
@@ -55,5 +57,9 @@ public abstract class TimelineSetChange<M extends TimelineSetChange<M, K,I,T>, K
             toReturn.put(v,true);
         }
         return toReturn;
+    }
+
+    public static abstract class SetCondition<M extends TimelineSetChange<M,K,I,T>,K extends Identifiable<I>,I,T extends DateMutableEntity<T>>
+            extends MultiCondition<M,K,Boolean,I,T>{
     }
 }

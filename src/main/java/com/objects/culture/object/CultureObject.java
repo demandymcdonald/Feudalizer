@@ -51,13 +51,20 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void amendCompass(IPoliticalCompass values){
         getContainer().amendCompass(values);
     }
-
-    default void addOpinion(TenetReference tenet, double d){
-        addOpinion(tenet,d);
+    default void amendOpinion(TenetReference tenet, double d){
+        getContainer().amendOpinion(tenet,true,d);
     }
-
+    default void amendOpinion(TenetReference tenet, boolean adjustForward, double d){
+        getContainer().amendOpinion(tenet,adjustForward,d);
+    }
+    default void setOpinion(TenetReference tenet,boolean adjustForward, double d){
+        getContainer().setOpinion(tenet,adjustForward,d);
+    }
     default void setOpinion(TenetReference tenet, double d){
-
+        getContainer().setOpinion(tenet,true,d);
+    }
+    default void insertOpinion(TenetReference tenet, double d){
+        getContainer().insertNewOpinion(tenet,d);
     }
 
     default boolean isInfluencer(COReference<?> ref){
@@ -133,7 +140,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     }
     void internalSetCulture(DMEReference<Culture> culture);
     default void internalSetOpinions(TLSet<TenetInstance<T>> opinions){
-        getContainer().setOpinions(opinions);
+        getContainer().internalSetOpinions(opinions);
     };
     default Optional<Pair<COReference<?>, InfluencerInstance>> getParentObject(){
         return Optional.ofNullable(getContainer().getParent());

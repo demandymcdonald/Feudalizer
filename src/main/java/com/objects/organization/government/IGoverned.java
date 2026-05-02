@@ -9,7 +9,7 @@ import com.objects.culture.object.ICultureObject;
 
 import java.util.Optional;
 
-public interface IGoverned<T extends DateMutableEntity<T> & IGoverned<T>> extends IChanger<T> {
+public interface IGoverned<T extends DateMutableEntity<T> & IGoverned<T>> extends IChanger<T>,ICultureObject {
     DMEReference<? extends GoverningEntity<?>> getGovernment();
     void internalSetGovernment(DMEReference<? extends GoverningEntity<?>> government);
     default void setGovernment(DMEReference<? extends GoverningEntity<?>> government){
@@ -17,11 +17,5 @@ public interface IGoverned<T extends DateMutableEntity<T> & IGoverned<T>> extend
     };
     default Optional<DMEReference<? extends SentientCharacter<?>>> getGovLeader(){
         return getGovernment().get().getHolder();
-    }
-    default void onLink(){
-        DMEReference<? extends GoverningEntity<?>> government = getGovernment();
-        if(government != null){
-            government.get().addMember((ICultureObject) getReference().get());
-        }
     }
 }

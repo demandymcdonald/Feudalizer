@@ -27,12 +27,18 @@ public class GovernmentChanged<T extends DateMutableEntity<T> & IGoverned<T>> ex
     }
 
     @Override
+    public void onVariableLink(T entity, DMEReference<? extends GoverningEntity<?>> changed, DMEReference<? extends GoverningEntity<?>> former) {
+        if (former != null)  former.get().unlinkFollower(entity.getReference());
+        if (changed != null) changed.get().linkFollower(entity.getReference());
+    }
+
+    @Override
     protected JsonElement serializeO(DMEReference<? extends GoverningEntity<?>> o) {
-        return ;
+        return o.serialize();
     }
 
     @Override
     protected DMEReference<? extends GoverningEntity<?>> deserializeO(JsonElement json) {
-        return null;
+        return DMEReference.deserialize(json.getAsJsonObject());
     }
 }
