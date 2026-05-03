@@ -3,15 +3,16 @@ package com.base.datemutable.utilities;
 import com.google.common.base.Suppliers;
 
 import java.time.LocalDate;
+import java.util.UUID;
 import java.util.function.Supplier;
 
-public class TLSyncedSupplier<T> implements TimelineSynced {
+public class TLSyncedSupplier<T> extends TLSynced {
     private final Supplier<T> supplier;
     private Supplier<T> usableSupplier;
     public TLSyncedSupplier(Supplier<T> supplier) {
+        super(UUID.randomUUID());
         this.supplier = supplier;
         resetCache();
-        registerListener();
     }
     private void resetCache(){
         usableSupplier = Suppliers.memoize(supplier::get);

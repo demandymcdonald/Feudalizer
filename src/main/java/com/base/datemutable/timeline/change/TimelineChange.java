@@ -25,6 +25,7 @@ import com.google.common.base.Suppliers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.utilities.hierarchy.Parented;
 import com.utilities.serialization.SuperclassSerializable;
 
 import javax.annotation.Nullable;
@@ -101,6 +102,9 @@ public abstract class TimelineChange<T extends DateMutableEntity<?>> implements 
         }
     }
     public void link(DMEReference<? extends T> entity, TimelineState<? extends T> currentState){
+//        if(entity.get() instanceof Parented<?> parented && parented.hasParent() && parented.getParent().get() instanceof DateMutableEntity<?> parentEntity){
+//            parentEntity.forceLink();
+//        }
        if(didChange()) {
            onLink(entity, currentState);
        }

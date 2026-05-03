@@ -1,10 +1,10 @@
 package com.objects.culture.tenet.interest.groups;
 
 import com.base.component.InstanceType;
+import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
@@ -23,11 +23,16 @@ public abstract class Sex extends InterestGroup {
     }
 
     @Override
-    public PoliticalCompass makeCompass(Culture culture) {
+    public PoliticalCompass getCompass(Culture culture) {
         return null;
     }
 
     public static final Sex MALE = new Sex(HARDCODED, "male", "Male", "Group for people who were born male.") {
+        @Override
+        public InterestGroup getNewObject(InstanceType type, String id, JsonObject data) {
+            return MALE;
+        }
+
         @Override
         public <C extends SentientCharacter<C>> boolean isMember(C character) {
             return character.getSex().equals(com.objects.character.Sex.MALE);
@@ -39,17 +44,22 @@ public abstract class Sex extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.SEX_MALE;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.SEX_MALE;
         }
 
     };
     public static final Sex FEMALE = new Sex(HARDCODED, "female", "Female", "Group for people who were born female.") {
+        @Override
+        public InterestGroup getNewObject(InstanceType type, String id, JsonObject data) {
+            return FEMALE;
+        }
+
         @Override
         public <C extends SentientCharacter<C>> boolean isMember(C character) {
             return character.getSex().equals(com.objects.character.Sex.FEMALE);
@@ -61,12 +71,12 @@ public abstract class Sex extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.SEX_FEMALE;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.SEX_FEMALE;
         }
     };

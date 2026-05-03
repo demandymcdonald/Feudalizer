@@ -145,22 +145,26 @@ public interface IPoliticalCompass extends JsonSerializable {
         Value axisValue = axis.get(this);
         axisValue.add(acceptance);
     }
+    default void applyMultiplier(Axis axis, double multiplier){
+        if (axis == null) {applyMultiplier(multiplier);
+        return;};
+        Value axisValue = axis.get(this);
+        axisValue.set((int) Math.round(axisValue.get() * multiplier));
+    };
+    default void applyMultiplier(double multiplier){
+        for(Axis axis : Axis.values()){
+            Value axisValue = axis.get(this);
+            axisValue.set((int) Math.round(axisValue.get() * multiplier));
+        }
+    };
+    default void toleranceMultiplier(double multiplier){
+        getTolerance().set((int) Math.round(getTolerance().get() * multiplier));
+    };
     default void setCompass(Axis axis, int acceptance){
         Value axisValue = axis.get(this);
         axisValue.set(acceptance);
     }
-    default Ideology getClosestIdeology(IPoliticalCompass compass){
-        Ideology closest = null;
-        double closetMatch = Double.MIN_VALUE;
-        for (Ideology ideology : TenetManager.getIdeologies()) {
-            double distance = this.getCompatibilityValue(ideology.getCompass(),false);
-            if (distance > closetMatch) {
-                closest = ideology;
-                closetMatch = distance;
-            }
-        }
-        return closest;
-    }
+
     default Acceptance getCompatibility(IPoliticalCompass compass){
         return Acceptance.get((int) Math.round(getCompatibilityValue(compass,false)));
     }
@@ -207,7 +211,6 @@ public interface IPoliticalCompass extends JsonSerializable {
 
     IPoliticalCompass clone();
 
-    @Override
     default void fromJson(JsonObject json) {
         getAxisA().set(json.get("axisA").getAsInt());
         getAxisB().set(json.get("axisB").getAsInt());

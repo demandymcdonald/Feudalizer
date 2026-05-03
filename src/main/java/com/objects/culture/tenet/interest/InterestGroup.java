@@ -1,7 +1,7 @@
 package com.objects.culture.tenet.interest;
 
 import com.base.component.InstanceType;
-import com.base.component.instanced.single.IOSingle;
+import com.base.component.immutable.ImmutableComponent;
 import com.base.component.mutable.MutableComponent;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
@@ -12,35 +12,40 @@ import com.objects.culture.object.PassiveCultureObject;
 import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.TenetReference;
-import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.group.groups.GovernmentGroups;
+import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.organization.government.GoverningEntity;
 import com.utilities.IDisplayable;
 import com.utilities.number.BoundInt;
 
 import java.util.Map;
-import java.util.UUID;
 
-public abstract class InterestGroup extends MutableComponent<InterestGroup> implements IDisplayable, PassiveCultureObject {
+public abstract class InterestGroup extends ImmutableComponent<InterestGroup> implements IDisplayable, PassiveCultureObject {
     private Dimension dimension;
     private String displayName;
     private String description;
     public enum Dimension{
-        Sex_At_Birth("sex:"),
-        Gender_Identity("gender:"),
-        Race_Ethnicity("race:"),
-        Class_Caste("class:"),
-        Sexual_Orientation("orientation:"),
-        Religion("religion:"),
-        Political_Ideology("ideology:"),
-        Lifestyle("lifestyle:"),
-        Culture("culture:"),
-        Education("education:"),
-        Profession("profession:"),
-        Disability("disability:"),
+        Sex_At_Birth("sex:",5),
+        Gender_Identity("gender:",4.5),
+        Race_Ethnicity("race:",5),
+        Class_Caste("class:",3.5),
+        Sexual_Orientation("orientation:",4),
+        Religion("religion:",4),
+        Political_Ideology("ideology:",3),
+        Lifestyle("lifestyle:",.5),
+        Culture("culture:",1.5),
+        Education("education:",.8),
+        Profession("profession:",.9),
+        Disability("disability:",3.5),
         ;
         private final String prefix;
-        Dimension(String prefix) {
+        private final double coreIdentityMult;
+        Dimension(String prefix, double coreIdentityMult) {
             this.prefix = prefix;
+            this.coreIdentityMult = coreIdentityMult;
+        }
+        public double getMult() {
+            return coreIdentityMult;
         }
     }
     public InterestGroup(InstanceType type, Dimension dimension, String id, String displayName, String description) {
@@ -70,15 +75,15 @@ public abstract class InterestGroup extends MutableComponent<InterestGroup> impl
         return getAcceptanceObject(other,other.getCulture().get(),factorOtherTolerance);
     }
     public AcceptanceContainer getAcceptanceObject(ICultureObject object, Culture culture, boolean factorOtherTolerance) {
-        return makeCompass(culture).getAcceptanceContainer(object.getCompass(), factorOtherTolerance);
+        return getCompass(culture).getAcceptanceContainer(object.getCompass(), factorOtherTolerance);
     }
     public abstract Map<IGPointer, BoundInt> getRelations();
-    public abstract TenetGroup getRightsGroup();
-    public abstract TenetGroup getSocialStatusGroup();
+    public abstract GovernmentGroups.GovernmentGroup getRightsGroup();
+    public abstract SocietyGroups.SocietyGroup getSocialStatusGroup();
     public final Dimension getDimension(){
         return dimension;
     };
-    public abstract PoliticalCompass makeCompass(Culture culture);
+    public abstract PoliticalCompass getCompass(Culture culture);
     @Override
     public final String getDisplayID() {
         return getID();

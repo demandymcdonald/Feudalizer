@@ -1,12 +1,10 @@
 package com.objects.culture.tenet.interest.groups;
 
-import com.base.component.IComponent;
 import com.base.component.InstanceType;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
@@ -28,7 +26,7 @@ public abstract class ClassCaste extends InterestGroup {
     }
 
     @Override
-    public PoliticalCompass makeCompass(Culture culture) {
+    public PoliticalCompass getCompass(Culture culture) {
         return null;
     }
 
@@ -66,12 +64,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.ELITE_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.ELITE_CLASS;
         }
     };
@@ -88,12 +86,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.PROFESSIONAL_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.PROFESSIONAL_CLASS;
         }
     };
@@ -110,12 +108,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.PROFESSIONAL_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.PROFESSIONAL_CLASS;
         }
     };
@@ -132,12 +130,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.ARTIST_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.ARTIST_CLASS;
         }
     };
@@ -154,12 +152,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.OFFICER_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.OFFICER_CLASS;
         }
     };
@@ -176,12 +174,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.BUSINESS_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.BUSINESS_CLASS;
         }
     };
@@ -198,12 +196,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.MIDDLE_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.MIDDLE_CLASS;
         }
     };
@@ -220,12 +218,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.PROFESSIONAL_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.PROFESSIONAL_CLASS;
         }
     };
@@ -242,12 +240,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.PROFESSIONAL_CLASS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.PROFESSIONAL_CLASS;
         }
     };
@@ -265,12 +263,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.DISENFRANCHISED;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.DISENFRANCHISED;
         }
     };
@@ -287,12 +285,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.SLAVE;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.SLAVE;
         }
     };
@@ -308,12 +306,12 @@ public abstract class ClassCaste extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.OUTSIDER;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.OUTSIDER;
         }
     };

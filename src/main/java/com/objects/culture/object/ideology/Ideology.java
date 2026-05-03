@@ -1,7 +1,6 @@
 package com.objects.culture.object.ideology;
 
 import com.base.component.immutable.ImmutableComponent;
-import com.base.component.instanced.AbstractIO;
 import com.base.component.InstanceType;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.ICultureObject;

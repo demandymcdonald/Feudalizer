@@ -10,6 +10,7 @@ import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.AcceptanceContainer;
+import com.objects.culture.tenet.SubTenet;
 import com.objects.culture.tenet.Tenet;
 import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.factory.CultureCondition;
@@ -18,14 +19,11 @@ import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.CategoryModifier;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.utilities.number.BoundDbl;
-import com.utilities.serialization.SuperclassSerializable;
-import javafx.scene.chart.Axis;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class MutableTenet extends MutableComponent<MutableTenet> implements Tenet {
-    private TenetReference reference;
+public abstract class MutableTenet extends MutableComponent<MutableTenet> implements SubTenet {
     private TenetGroup group;
     private PoliticalCompass politicalCompass;
     private String displayID;
@@ -39,33 +37,21 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
         this.politicalCompass = entry;
         this.name = name;
         this.description = description;
-        reference = TenetReference.of(this);
         this.parent = parent;
     }
     public MutableTenet(InstanceType type, String id){
         super(type,id);
     }
 
-    @Override
-    public final Multimap<CultureCondition.Key, CultureCondition<?, ?>> getConditions() {
-        Multimap<CultureCondition.Key, CultureCondition<?, ?>> result = HashMultimap.create();
-        List<CultureCondition<?, ?>> conditions = new ArrayList<>();
-        for (CultureCondition<?, ?> condition : getConditions().values()) {
-            for (CultureCondition.Key key : condition.getKeys()) {
-                result.put(key,condition);
-            }
-        }
-        return result;
+
+    public final AcceptanceContainer getCultureOpinion(DMEReference<Culture> culture){
+        return culture.get().getAcceptanceTenet(getTenetReference(),true);
     }
     public abstract Set<CultureCondition<?,?>> getConditionList();
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }
     public abstract Set<TenetGroup> compatibleParents();
-    @Override
-    public TenetReference getTenetReference() {
-        return reference;
-    }
 
     @Override
     public TenetGroup getGroup() {
@@ -73,7 +59,7 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
     }
 
     @Override
-    public IPoliticalCompass getCompass() {
+    public IPoliticalCompass getCompass(DMEReference<Culture> culture) {
         return politicalCompass;
     }
 
@@ -105,13 +91,13 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
         displayID = object.get("mt:displayID").getAsString();
         name = object.get("mt:name").getAsString();
         description = object.get("mt:description").getAsString();
-        group = TenetManager.Group.get(object.get("mt:group").getAsString());
+        group = TenetManager.Group.INSTANCE.get(object.get("mt:group").getAsString());
         parent = TenetReference.deserialize(object.get("mt:parent").getAsJsonObject());
         politicalCompass = PoliticalCompass.build(object.get("mt:compass").getAsJsonObject());
     }
     @Override
     public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
-        return politicalCompass.getAcceptanceContainer(other.getCompass(), factorOtherTolerance);
+        return politicalCompass.getAcceptanceContainer(other.getCompass(other.getCulture()), factorOtherTolerance);
     }
     @Override
     public DMEReference<Culture> getCulture() {

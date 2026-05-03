@@ -17,7 +17,7 @@ public abstract class JobRequirement<T extends AbstractOrganization<T>> extends 
     @SafeVarargs
     public JobRequirement(InstanceType type, DMEReference<? extends T> parent, String id, String name, String description, ComponentReference<JobType>... affected) {
         super(type, parent.get().getTenetReference(), EconomicGroups.JOB_REQUIREMENT,
-                new PoliticalCompass(5,0,5,15,-2),
+                new PoliticalCompass(-5,0,5,5,-2),
                 id,
                 name,
                 description,

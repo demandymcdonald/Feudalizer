@@ -7,14 +7,14 @@ import com.utilities.serialization.StringToHex;
 
 import java.util.UUID;
 
-public abstract class AbstractIOI<IO extends IInstancedComponent<IO,IN>,IN extends IComponentInstance<IO,IN>> implements IComponentInstance<IO,IN> {
+public abstract class AbstractComponentInstance<IO extends IInstancedComponent<IO,IN>,IN extends IComponentInstance<IO,IN>> implements IComponentInstance<IO,IN> {
     private ComponentReference<IO> base;
     private UUID runtimeID;
-    public AbstractIOI(ComponentReference<IO> reference){
+    public AbstractComponentInstance(ComponentReference<IO> reference){
         this.base = reference;
         this.runtimeID = UUID.randomUUID();
     }
-    public AbstractIOI(JsonObject reference){
+    public AbstractComponentInstance(JsonObject reference){
         this.deserialize(reference);
     }
     @Override

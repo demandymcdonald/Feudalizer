@@ -10,6 +10,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonObject;
 import com.objects.culture.AbstractCulture;
 import com.objects.culture.Culture;
+import com.objects.culture.IActivatable;
 import com.objects.culture.Influencers.InfluencerInstance;
 import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.object.CultureObject;
@@ -30,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 
-public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCulture<T> implements Tenet, CultureObject<T>, ITLDisplayable<T> {
+public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCulture<T> implements Tenet, ITLDisplayable<T>, IActivatable<T> {
     private final CultureObjectContainer<T> container;
     private DMEReference<Culture> foundingCulture;
     private final CachingSupplier<Set<TenetInstance<T>>> activeSupplier = new CachingSupplier<>(this::getActiveTenets);
@@ -57,39 +58,15 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
         return TenetReference.of(this);
     }
 
-    public final Set<TenetInstance<T>> getActiveTenetByClass(Class<? extends Tenet> clazz){
-        Set<TenetInstance<T>> set = activeLookup.getIfPresent(clazz);
-        if(set == null){
-            Set<TenetInstance<T>> map = getActiveTenets();
-            Set<TenetInstance<T>> toReturn = new HashSet<>();
-            map.forEach((tr) -> {
-                if(tr.getTenet().getTenetClass().isInstance(clazz)){toReturn.add((tr));}
-            });
-            activeLookup.put(clazz, toReturn);
-            return toReturn;
-        } else {
-            return new HashSet<>(set);
-        }
-    }
-    public final Set<TenetInstance<T>> getActiveTenetByGroup(TenetGroup group, boolean includeDescendants){
-        final Set<TenetInstance<T>> toReturn = new HashSet<>();
-        getActiveTenets().forEach((at -> {
-            if(CultureObject.matchesGroup(at, group, includeDescendants)){
-                toReturn.add(at);
-            }
-        }));
-        return toReturn;
-    }
-    public final boolean isAllowedTenet(Tenet tenet){
-        return getGroup().isParentOf(tenet.getGroup());
-    }
+
+
     @Override
     public final DMEReference<Culture> getCulture() {
         return this.foundingCulture;
     }
     @Override
     public void doDateChange() {
-        CultureObject.super.doDateChange();
+        IActivatable.super.doDateChange();
         activeSupplier.clear();
         activeLookup.invalidateAll();
     }
@@ -129,43 +106,38 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
 
     @Override
     public final AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers, Set<COReference<?>> blacklist) {
-        return CultureObject.super.getAcceptanceTenet(tenet, includeInfluencers, blacklist);
+        return IActivatable.super.getAcceptanceTenet(tenet, includeInfluencers, blacklist);
     }
 
     @Override
     public final AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers) {
-        return CultureObject.super.getAcceptanceTenet(tenet, includeInfluencers);
+        return IActivatable.super.getAcceptanceTenet(tenet, includeInfluencers);
     }
 
     @Override
     public final void addInfluencer(COReference<?> influencer, InfluencerRelationship relationship, boolean isProcedural) {
-        CultureObject.super.addInfluencer(influencer, relationship, isProcedural);
-    }
-
-    @Override
-    public final void addOpinion(TenetReference tenet, double d) {
-        CultureObject.super.amendOpinion(tenet, d);
+        IActivatable.super.addInfluencer(influencer, relationship, isProcedural);
     }
 
 
     @Override
     public final void amendCompass(IPoliticalCompass values) {
-        CultureObject.super.amendCompass(values);
+        IActivatable.super.amendCompass(values);
     }
 
     @Override
     public final Set<TenetInstance<T>> getOpinionByGroup(TenetGroup group, boolean includeDescendants, boolean activeOnly) {
-        return CultureObject.super.getOpinionByGroup(group, includeDescendants, activeOnly);
+        return IActivatable.super.getOpinionByGroup(group, includeDescendants, activeOnly);
     }
 
     @Override
     public final Set<TenetInstance<T>> getActiveTenets() {
-        return CultureObject.super.getActiveTenets();
+        return IActivatable.super.getActiveTenets();
     }
 
     @Override
-    public final InterpolatedPoliticalCompass<T> getCompass() {
-        return CultureObject.super.getCompass();
+    public final InterpolatedPoliticalCompass<T> getCompass(DMEReference<Culture> culture) {
+        return IActivatable.super.getCompass(culture);
     }
 
     @Override
@@ -175,36 +147,36 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
 
     @Override
     public final TLMap<COReference<?>, InfluencerInstance> getInfluencers() {
-        return CultureObject.super.getInfluencers();
+        return IActivatable.super.getInfluencers();
     }
 
 
     @Override
     public final TLSet<TenetInstance<T>> getOpinions() {
-        return CultureObject.super.getOpinions();
+        return IActivatable.super.getOpinions();
     }
 
 
 
     @Override
     public final  Set<TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers) {
-        return CultureObject.super.getTenetsByThreshold(acceptance, includeInfluencers);
+        return IActivatable.super.getTenetsByThreshold(acceptance, includeInfluencers);
     }
 
     @Override
     public final COReference<T> getTOReference() {
-        return CultureObject.super.getTOReference();
+        return IActivatable.super.getTOReference();
     }
 
 
     @Override
     public final void internalParentObject(COReference<?> influencer, InfluencerRelationship relationship) {
-        CultureObject.super.internalParentObject(influencer, relationship);
+        IActivatable.super.internalParentObject(influencer, relationship);
     }
 
     @Override
     public final void internalSetCompass(InterpolatedPoliticalCompass<?> compass) {
-        CultureObject.super.internalSetCompass(compass);
+        IActivatable.super.internalSetCompass(compass);
     }
 
     @Override
@@ -214,52 +186,52 @@ public abstract class AbstractDT<T extends AbstractDT<T>> extends AbstractCultur
 
     @Override
     public final void internalSetInfluencers(TLMap<COReference<?>, InfluencerInstance> influencers) {
-        CultureObject.super.internalSetInfluencers(influencers);
+        IActivatable.super.internalSetInfluencers(influencers);
     }
 
     @Override
     public final void internalSetOpinions(TLSet<TenetInstance<T>> opinions) {
-        CultureObject.super.internalSetOpinions(opinions);
+        IActivatable.super.internalSetOpinions(opinions);
     }
 
     @Override
     public final boolean isInfluencer(COReference<?> ref) {
-        return CultureObject.super.isInfluencer(ref);
+        return IActivatable.super.isInfluencer(ref);
     }
 
     @Override
     public final boolean isMainstream(Tenet tenet, boolean includeInfluencers) {
-        return CultureObject.super.isMainstream(tenet, includeInfluencers);
+        return IActivatable.super.isMainstream(tenet, includeInfluencers);
     }
 
     @Override
     public final boolean isMainstream(TenetReference tenet, boolean includeInfluencers) {
-        return CultureObject.super.isMainstream(tenet, includeInfluencers);
+        return IActivatable.super.isMainstream(tenet, includeInfluencers);
     }
 
     @Override
     public final void modifyInfluence(COReference<?> influencer, boolean doWipe, Pair<TenetGroup, Integer>... changes) {
-        CultureObject.super.modifyInfluence(influencer, doWipe, changes);
+        IActivatable.super.modifyInfluence(influencer, doWipe, changes);
     }
 
     @Override
     public final void removeInfluencer(COReference<?> influencer) {
-        CultureObject.super.removeInfluencer(influencer);
+        IActivatable.super.removeInfluencer(influencer);
     }
 
     @Override
     public final void setInfluence(COReference<?> influencer, boolean doWipe, Pair<TenetGroup, Integer>... changes) {
-        CultureObject.super.setInfluence(influencer, doWipe, changes);
+        IActivatable.super.setInfluence(influencer, doWipe, changes);
     }
 
     @Override
     public final void setOpinion(TenetReference tenet, double d) {
-        CultureObject.super.setOpinion(tenet, d);
+        IActivatable.super.setOpinion(tenet, d);
     }
 
     @Override
     public final void setParentObject(COReference<?> influencer, InfluencerRelationship relationship) {
-        CultureObject.super.setParentObject(influencer, relationship);
+        IActivatable.super.setParentObject(influencer, relationship);
     }
 
 

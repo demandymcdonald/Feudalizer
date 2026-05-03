@@ -227,12 +227,16 @@ public class SocietyGroups {
                 .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
                 .addDependent(GovernmentGroups.CULTURAL, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
                 .build();
-
-        public static final SocietyGroup DISABILITY = new TenetGroup.Builder<SocietyGroup>(SGF,TGType.SOCIETY_ATTITUDE, Level.NORMAL, "disability", "Disabled Community Norms", "")
+        public static final SocietyGroup PROFESSION = new TenetGroup.Builder<>(Builder.SGF,TGType.SOCIETY_ATTITUDE, Level.NORMAL, "profession", "IGProfession-Based Rights", "")
                 .setParent(IDENTITY_GROUPS)
-                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
-                .addDependent(GovernmentGroups.DISABILITY, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RACE_AND_ETHNIC_ORIGIN, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                .addDependent(GovernmentGroups.CULTURAL, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
                 .build();
+        public static final SocietyGroup DISABILITY = new TenetGroup.Builder<SocietyGroup>(SGF,TGType.SOCIETY_ATTITUDE, Level.NORMAL, "disability", "Disabled Community Norms", "")
+                    .setParent(IDENTITY_GROUPS)
+                    .addConnected(CITIZENSHIP, CIVIL_LIBERTIES, DISENFRANCHISED, RELIGIOUS_SOFT_CULTURE_INTERVENTION)
+                    .addDependent(GovernmentGroups.DISABILITY, GOVERNMENT_ENFORCED_CONFORMITY, SOCIETY_ENFORCED_CONFORMITY)
+                    .build();
         public static final SocietyGroup POLITICAL_MAJORITY = new TenetGroup.Builder<SocietyGroup>(SGF,TGType.SOCIETY_ATTITUDE, Level.NORMAL, "political_majority", "Political Majority", "")
                 .setParent(IDENTITY_GROUPS)
                 .addConnected(CITIZENSHIP, CIVIL_LIBERTIES,RELIGIOUS_SOFT_CULTURE_INTERVENTION)

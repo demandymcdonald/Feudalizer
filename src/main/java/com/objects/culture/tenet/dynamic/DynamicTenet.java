@@ -74,43 +74,9 @@ public abstract class DynamicTenet<T extends DynamicTenet<T>> extends AbstractDT
     public final CauseOfEnd<T> defaultDeathCause() {
         return (CauseOfEnd<T>) NO_MEMBERS;
     }
-    public final void addActiveTenet(Tenet tenet){
-        if(!isAllowedActive(tenet.getGroup())){
-            Feudalizer.LOGGER.error("Tried to add a tenet: {} that is not allowed to be active in {}",tenet.getTenetReference(),this.getReference());
-            return;
-        }
-        TenetInstance<T> ti = getTenetInstance(tenet.getTenetReference());
-
-        if(ti == null){
-            getOpinions().add(new TenetInstance<>(tenet.getTenetReference(), this.getReference(), Acceptance.getMid(Acceptance.CORE),true));
-        } else if(!ti.isActive()){
-            ti.setActive();
-        }
-    }
 
     @Override
     public void doDateChange() {
         super.doDateChange();
-        members.clear();
     }
-    private boolean isAllowedActive(TenetGroup group){
-        if(allowedTenets().contains(group)){
-            return true;
-        };
-        for (TenetGroup g : allowedTenets()){
-            if(g.isAncestorOf(group)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public abstract Set<TenetGroup> allowedTenets();
-
-    public final Set<ICultureObject> getByType(Type type){
-        return new HashSet<>(members.get(type));
-    }
-
-//Literally just to clean up override menu
-
 }

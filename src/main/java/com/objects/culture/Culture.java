@@ -3,6 +3,8 @@ package com.objects.culture;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.base.datemutable.timeline.change.TimelineChange;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonObject;
 import com.objects.CauseOfEnd;
 import com.objects.culture.object.CultureObjectContainer;
@@ -10,14 +12,18 @@ import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.reference.COReference;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.tenet.AcceptanceContainer;
+import com.objects.culture.tenet.Tenet;
+import com.objects.culture.tenet.group.TenetGroup;
+import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.shared.IDemographicDriven;
 import com.objects.shared.PopulationContainer;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public class Culture extends AbstractCulture<Culture> implements CultureObject<Culture> {
+public class Culture extends AbstractCulture<Culture> implements IActivatable<Culture> {
     CultureObjectContainer<Culture> container;
+    private final Cache<Class<? extends Tenet>,Set<TenetInstance<Culture>>> activeLookup = CacheBuilder.newBuilder().build();
     public Culture(LocalDate created, LocalDate ended, List<ChangeSupplier<Culture, ?>> initialState) {
         super(created, ended, initialState);
         container = new CultureObjectContainer<>(getReference());
@@ -94,5 +100,9 @@ public class Culture extends AbstractCulture<Culture> implements CultureObject<C
     @Override
     public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
         return null;
+    }
+    @Override
+    public final Cache<Class<? extends Tenet>, Set<TenetInstance<Culture>>> getActiveLookup() {
+        return activeLookup;
     }
 }

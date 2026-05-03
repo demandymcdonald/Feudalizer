@@ -1,11 +1,8 @@
 package com.objects.organization.religion;
 
-import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.base.datemutable.timeline.change.ChangeSupplier;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
-import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.ICultureObject;
 import com.objects.culture.object.reference.COReference;
@@ -13,15 +10,12 @@ import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
-import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.ReligionGroups;
-import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IInterestGroup;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.religion.tenets.faith.Faith;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -107,7 +101,7 @@ public class Religion extends DynamicTenet<Religion> implements IInterestGroup, 
 
 
     @Override
-    public Multimap<CultureCondition.Key, CultureCondition<?, ?>> getConditions() {
+    public void getConditions(Set<CultureCondition<?, ?>> conditions) {
         return null;
     }
 

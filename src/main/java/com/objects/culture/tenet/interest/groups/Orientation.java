@@ -5,14 +5,12 @@ import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.number.BoundInt;
 import com.utilities.number.BoundInts;
-import org.geotools.api.filter.Or;
 
 import java.util.Map;
 
@@ -29,7 +27,7 @@ public abstract class Orientation extends InterestGroup {
     }
 
     @Override
-    public PoliticalCompass makeCompass(Culture culture) {
+    public PoliticalCompass getCompass(Culture culture) {
         return new PoliticalCompass();
     }
     @Override
@@ -50,12 +48,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.HETERO;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.HETERO;
         }
 
@@ -73,12 +71,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.HOMO;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.HOMO;
         }
 
@@ -96,12 +94,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.BI;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.BI;
         }
 
@@ -119,12 +117,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.AE;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.AE;
         }
 
@@ -142,12 +140,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.PAN;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.PAN;
         }
 
@@ -165,12 +163,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.QUESTIONING;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.QUESTIONING;
         }
 
@@ -189,12 +187,12 @@ public abstract class Orientation extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.OTHER;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.OTHER;
         }
 

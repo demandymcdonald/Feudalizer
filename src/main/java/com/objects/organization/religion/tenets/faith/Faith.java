@@ -1,6 +1,5 @@
 package com.objects.organization.religion.tenets.faith;
 
-import com.Global.*;
 import com.base.component.ComponentReference;
 import com.base.datemutable.timeline.change.ChangeSupplier;
 import com.base.reference.DMEReference;
@@ -13,11 +12,8 @@ import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.group.groups.ReligionGroups;
-import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.organization.religion.IReligionObject;
 import com.objects.organization.religion.tenets.diety.AbstractDivineEntity;
-import com.objects.organization.religion.utility.ReligionEdge;
 import com.utilities.caching.CachingSupplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jgrapht.Graph;
@@ -26,9 +22,7 @@ import org.jgrapht.graph.DirectedPseudograph;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import static com.objects.culture.tenet.group.groups.ReligionGroups.RELIGIOUS_DOCTRINE;
 
@@ -83,7 +77,7 @@ public class Faith extends DynamicTenet<Faith> implements IReligionObject {
     }
 
     @Override
-    public Multimap<CultureCondition.Key, CultureCondition<?, ?>> getConditions() {
+    public void getConditions(Set<CultureCondition<?, ?>> conditions) {
         return null;
     }
 

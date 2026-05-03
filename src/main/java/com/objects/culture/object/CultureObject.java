@@ -124,17 +124,15 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default boolean isMainstream(TenetReference tenet, boolean includeInfluencers){
         return getTenetsByThreshold(Acceptance.INTEGRATED,includeInfluencers).stream().anyMatch(t -> t.getTenet().equals(tenet));
     }
-
+    default TenetInstance<T> getInstance(TenetReference t){
+        return getContainer().getTenetInstance(t);
+    }
 
 
     default TLSet<TenetInstance<T>> getOpinions(){
         return getContainer().getOpinions();
     };
-    default Set<TenetInstance<T>> getActiveTenets(){
-        return getOpinions().getWhere( (ti) -> {
-            return ti.isActive();
-        });
-    }
+
     default Set<TenetInstance<T>> getTenetsByThreshold(Acceptance acceptance, boolean includeInfluencers){
         return getContainer().getTenetsByThreshold(acceptance,includeInfluencers);
     }
@@ -161,7 +159,7 @@ public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>
     default void internalSetCompass(InterpolatedPoliticalCompass<?> compass){
         getContainer().setCompass((InterpolatedPoliticalCompass<T>) compass);
     };
-    default InterpolatedPoliticalCompass<T> getCompass(){
+    default InterpolatedPoliticalCompass<T> getCompass(DMEReference<Culture> culture){
         return getContainer().getCompass();
     };
 

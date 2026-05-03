@@ -5,7 +5,6 @@ import com.objects.character.sentient.Gender;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.Culture;
 import com.objects.culture.object.compass.PoliticalCompass;
-import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
@@ -27,7 +26,7 @@ public abstract class Gender_Identity extends InterestGroup {
     }
 
     @Override
-    public PoliticalCompass makeCompass(Culture culture) {
+    public PoliticalCompass getCompass(Culture culture) {
         return null;
     }
 
@@ -48,12 +47,12 @@ public abstract class Gender_Identity extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.GENDER_MALE;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.GENDER_MALE;
         }
 
@@ -71,12 +70,12 @@ public abstract class Gender_Identity extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.GENDER_FEMALE;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.GENDER_FEMALE;
         }
 
@@ -94,12 +93,12 @@ public abstract class Gender_Identity extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.GENDER_TRANS;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.GENDER_TRANS;
         }
 
@@ -117,12 +116,12 @@ public abstract class Gender_Identity extends InterestGroup {
         }
 
         @Override
-        public TenetGroup getRightsGroup() {
+        public GovernmentGroups.GovernmentGroup getRightsGroup() {
             return GovernmentGroups.GENDER_NB_OTHER;
         }
 
         @Override
-        public TenetGroup getSocialStatusGroup() {
+        public SocietyGroups.SocietyGroup getSocialStatusGroup() {
             return SocietyGroups.GENDER_NB_OTHER;
         }
 

@@ -4,7 +4,6 @@ import com.base.reference.DMEReference;
 import com.objects.culture.Culture;
 import com.objects.culture.tenet.AcceptanceContainer;
 import com.objects.culture.object.compass.IPoliticalCompass;
-import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.TenetReference;
 
 public interface ICultureObject extends ICultureOpinionated{
@@ -20,9 +19,10 @@ public interface ICultureObject extends ICultureOpinionated{
 
     Type getType();
     DMEReference<Culture> getCulture();
-    IPoliticalCompass getCompass();
+    IPoliticalCompass getCompass(DMEReference<Culture> culture);
     @Override
-    default AcceptanceContainer getAcceptanceTenet(ICultureObject other, boolean factorOtherTolerance){
-        return new AcceptanceContainer(getCompass().getCompatibilityValue(other.getCompass(),factorOtherTolerance));
+    default AcceptanceContainer getAcceptanceTenet(TenetReference other, boolean factorOtherTolerance){
+        DMEReference<Culture> culture = getCulture();
+        return new AcceptanceContainer(getCompass(culture).getCompatibilityValue(other.get().getCompass(other.get().getCulture()),factorOtherTolerance));
     };
 }

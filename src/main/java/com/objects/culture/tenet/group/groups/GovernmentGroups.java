@@ -278,6 +278,14 @@ public static class GovernmentGroup extends TenetGroup {
             .setParent(EDUCATION_LEVEL)
             .addDependent(MARRIAGE_RIGHTS, CITIZENSHIP, LABOR_RIGHTS, CIVIL_LIBERTIES)
             .build();
+    public static final GovernmentGroup PROFESSION = new TenetGroup.Builder<GovernmentGroup>(Builder.GGF,TGType.CASTE_SYSTEM, Level.NORMAL, "profession", "IGProfession-Based Rights", "")
+            .setParent(POPULATION_GROUP_RIGHTS)
+            .addDependent(MARRIAGE_RIGHTS,CITIZENSHIP,LABOR_RIGHTS,CIVIL_LIBERTIES)
+            .build();
+
+
+
+
     public static final GovernmentGroup FOREIGN_POLICY = new TenetGroup.Builder<GovernmentGroup>(Builder.GGF,TGType.SYSTEM_LARGE, Level.NORMAL, "foreign_policy", "Foreign Policy", "")
             .setParent(GOVERNMENT_SYSTEM)
             .build();

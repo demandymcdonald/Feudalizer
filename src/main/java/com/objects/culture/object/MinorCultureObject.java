@@ -22,13 +22,13 @@ public interface MinorCultureObject<T extends DateMutableEntity<T> & MinorCultur
 
     @Override
     default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
-        double val = getParent().get().getAcceptanceValue(tenet, includeInfluencers);
+        double val = getParent().get().getAcceptanceTenet(tenet, includeInfluencers).value();
         Pair<Double,Integer> added = getAddedOpinion(tenet.get());
         int localInf = Math.clamp(added.getRight(),0,100);
         double frac = (val * (1- (double) localInf /100)) + (added.getLeft() * localInf/100);
         return new AcceptanceContainer(frac);
     };
-    default IPoliticalCompass getCompass(){
-        return getParent().get().getCompass();
+    default IPoliticalCompass getCompass(DMEReference<Culture> culture){
+        return getParent().get().getCompass(culture);
     }
 }

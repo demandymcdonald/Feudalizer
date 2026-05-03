@@ -134,7 +134,7 @@ public class Job extends Title<Job> implements IOrganizedEntity<Job> {
     }
 
     @Override
-    public IPoliticalCompass getCompass() {
+    public IPoliticalCompass getCompass(DMEReference<Culture> culture) {
         return organization.get().getCompass();
     }
 

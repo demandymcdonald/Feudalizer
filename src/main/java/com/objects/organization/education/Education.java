@@ -1,9 +1,11 @@
 package com.objects.organization.education;
 
-import com.google.common.base.Suppliers;
+import com.base.component.InstanceType;
+import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
+import com.objects.culture.Culture;
+import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.objects.culture.tenet.group.groups.EducationGroups;
 import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
@@ -13,7 +15,6 @@ import com.utilities.id.StringIdentifiable;
 import com.utilities.number.BoundInt;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static com.objects.culture.tenet.group.groups.EducationGroups.SCHOOL_TYPE;
 
@@ -69,7 +70,12 @@ public class Education implements IDisplayable, StringIdentifiable {
         return group;
     }
     private static InterestGroup build(Education education){
-        return new InterestGroup(education.getDisplayID(),education.getDisplayName(),education.getDescription()) {
+        return new InterestGroup(InstanceType.PROCEDURAL, InterestGroup.Dimension.Education,education.getDisplayID(),education.getDisplayName(),education.getDescription()) {
+            @Override
+            public InterestGroup getNewObject(InstanceType type, String id, JsonObject data) {
+                return null;
+            }
+
             @Override
             public <C extends SentientCharacter<C>> boolean isMember(C character) {
                 return character.getEducation().asSet().stream().anyMatch(educationInstance -> educationInstance.getType().equals(education));
@@ -81,18 +87,18 @@ public class Education implements IDisplayable, StringIdentifiable {
                 return Map.of();
             }
             @Override
-            public TenetGroup getRightsGroup() {
+            public GovernmentGroups.GovernmentGroup getRightsGroup() {
                 return rt;
             }
 
             @Override
-            public TenetGroup getSocialStatusGroup() {
+            public SocietyGroups.SocietyGroup getSocialStatusGroup() {
                 return st;
             }
 
             @Override
-            public Dimension getDimension() {
-                return Dimension.Education;
+            public PoliticalCompass getCompass(Culture culture) {
+                return null;
             }
             private static TenetGroup rightTenet(Education e){
                 return switch (e.level) {

@@ -745,24 +745,4 @@ public abstract class TLMultiChange<M extends TLMultiChange<M,K,V,I,T>, K extend
             applyChange.accept(k, v);
         }
     }
-    public class CanMerge extends ApplyCondition<T>{
-
-        public CanMerge() {
-            super("multi_merge");
-        }
-
-        @Override
-        protected Optional<StateError> doCheck(DMEReference<? extends T> entity, TimelineChange<? extends T> thisChange, TimelineChange<?> checkAgainst) {
-            if (thisChange.getClass().equals(checkAgainst.getClass())){
-                return Optional.of(new StateError("merge_multi", SimpleReference.of("Merge the two states"),checkAgainst).addMergeContinue());
-            }
-            return Optional.empty();
-        }
-
-        @Override
-        public ShouldRun whenToRun() {
-            return ShouldRun.WHOLE_STATE_PER_ENTITY;
-        }
-
-    }
 }
