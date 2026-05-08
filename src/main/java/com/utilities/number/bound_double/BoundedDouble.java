@@ -1,7 +1,7 @@
-package com.utilities.number;
+package com.utilities.number.bound_double;
 
-import com.Global.*;
 import com.google.gson.JsonElement;
+import com.utilities.number.BoundedNumber;
 
 public class BoundedDouble extends BoundedNumber<Double> implements Comparable<BoundedDouble>{
     public BoundedDouble(double min, double max) {

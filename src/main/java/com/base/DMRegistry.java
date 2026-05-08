@@ -5,7 +5,7 @@ import com.base.datemutable.DateMutableEntity;
 import com.base.reference.DMEReference;
 import com.objects.character.CharacterManager;
 import com.objects.family.FamilyManager;
-import com.utilities.LoadingManager;
+import com.base.loaders.LoadingManager;
 import com.google.gson.JsonObject;
 import com.objects.title.TitleManager;
 

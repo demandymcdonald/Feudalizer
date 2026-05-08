@@ -1,11 +1,14 @@
 package com.objects.organization.government.rights;
 
+import com.base.component.InstanceType;
 import com.base.reference.DMEReference;
+import com.google.gson.JsonObject;
 import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.culture.tenet.mutable.augments.IRightsTenet;
 import com.objects.culture.tenet.mutable.tenets.leadership.Leadership;
 import com.objects.organization.government.GoverningEntity;
+import com.utilities.number.bound_float.BoundFloat;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,37 +16,25 @@ import java.util.Map;
 import java.util.Set;
 
 public class Rights {
-    private static Map<String, Right> rights = new HashMap<>();
-    public static void registerRight(Right right) {
-        rights.put(right.getDisplayID(), right);
-    }
-    public static Set<Right> getRights() {
-        return new HashSet<>(rights.values());
-    }
-    public static final Right VOTING = new Right("voting","Voting Rights","") {
-        @Override
-        public <G extends GoverningEntity<G>> RightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
-            Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.CannotLead.class);
-            for(TenetInstance<G> tenetInstance : instance) {
-                if(tenetInstance.getTenet() instanceof IRightsTenet<?> irt && irt.isAffected().contains(interestGroup)){
-                    return new RightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
-                }
-            }
-            return new RightInstance(this,interestGroup,RightLevel.POSSESS);
+    public static final VotingRight VOTING_RIGHT = new VotingRight();
+    public static class VotingRight extends Right<VotingRight> {
+        protected VotingRight() {
+            super(InstanceType.HARDCODED, "voting", "Voting Rights", "");
         }
-    };
-    public static final Right HOLD_OFFICE = new Right("hold_office","Hold Office","") {
 
         @Override
-        public <G extends GoverningEntity<G>> RightInstance getRightFor(DMEReference<G> government, InterestGroup interestGroup) {
-            Set<TenetInstance<G>> instance = government.get().getActiveTenetByClass(Leadership.CannotLead.class);
-            for(TenetInstance<G> tenetInstance : instance) {
-                if(tenetInstance.getTenet() instanceof IRightsTenet<?> irt && irt.isAffected().contains(interestGroup)){
-                    return new RightInstance(this,interestGroup,RightLevel.DO_NOT_POSSESS);
-                }
-            }
-            return new RightInstance(this,interestGroup,RightLevel.POSSESS);
+        protected RightLevel getRightLevel(VotingRight right, GoverningEntity<?> government, InterestGroup interestGroup) {
+            return null;
         }
-    };
 
+        @Override
+        protected BoundFloat getHardshipFactor() {
+            return null;
+        }
+
+        @Override
+        public VotingRight getNewObject(InstanceType type, String id, JsonObject data) {
+            return null;
+        }
+    }
 }

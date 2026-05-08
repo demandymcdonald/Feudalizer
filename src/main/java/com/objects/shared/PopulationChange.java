@@ -15,8 +15,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.objects.culture.tenet.interest.InterestGroup;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 
 import java.time.LocalDate;
 import java.util.List;

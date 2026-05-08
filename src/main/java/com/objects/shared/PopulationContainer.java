@@ -11,7 +11,10 @@ import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
-import com.utilities.number.*;
+import com.utilities.number.bound_double.BoundDbl;
+import com.utilities.number.bound_double.BoundDoubles;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 
 import javax.annotation.Nullable;
 import java.util.*;

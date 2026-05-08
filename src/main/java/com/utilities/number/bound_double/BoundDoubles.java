@@ -1,4 +1,4 @@
-package com.utilities.number;
+package com.utilities.number.bound_double;
 
 public class BoundDoubles {
     public static BoundDbl percent(boolean neg){

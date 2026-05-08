@@ -13,7 +13,7 @@ import com.objects.culture.tenet.TenetReference;
 import com.utilities.id.Identifiable;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.id.UUIDIdentifiable;
-import com.utilities.number.BoundedDouble;
+import com.utilities.number.bound_double.BoundedDouble;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.Map;

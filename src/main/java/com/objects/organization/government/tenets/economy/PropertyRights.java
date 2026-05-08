@@ -14,12 +14,12 @@ import com.objects.organization.government.rights.RightInstance;
 public class PropertyRights extends Right<PropertyRights> {
 
     public PropertyRights() {
-        super(InstanceType.HARDCODED, id, name, description);
+        super(InstanceType.HARDCODED, "property_rights", "Property Rights", "The right to own property");
     }
 
     @Override
     public RightInstance<PropertyRights> instance(DMEReference<? extends GoverningEntity<?>> dmeReference, DMEReference<? extends SentientCharacter<?>> dmeReference2) {
-        return null;
+        return new RightInstance<>(this.getReference());
     }
 
     @Override

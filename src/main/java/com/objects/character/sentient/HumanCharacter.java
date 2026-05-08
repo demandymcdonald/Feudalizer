@@ -134,7 +134,7 @@ public class HumanCharacter extends SentientCharacter<HumanCharacter, SentientSp
     }
 
 
-//    public void internalSetOpinion(Map<UUID, Opinion> opinions){
+//    public void internalSetOpinion(WorldMap<UUID, Opinion> opinions){
 //        this.opinions.clear();
 //        this.opinions.putAll(opinions);
 //    }

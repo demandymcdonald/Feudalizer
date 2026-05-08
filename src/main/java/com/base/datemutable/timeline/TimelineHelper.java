@@ -110,7 +110,7 @@ public class TimelineHelper {
 
 //    public static <T extends DateMutableEntity<T>> HashMap<Long, LocalDate> extendTrail(Timeline<T> timeline, TimelineState<T> lastState, LocalDate newState) {
 //        HashMap<Long, LocalDate> breadcrumbs = new HashMap<>();
-//        for (Map.Entry<Long, LocalDate> entry : lastState.getBreadcrumbs().entrySet()) {
+//        for (WorldMap.Entry<Long, LocalDate> entry : lastState.getBreadcrumbs().entrySet()) {
 //            breadcrumbs.put(entry.getKey(), entry.getValue());
 //            TimelineChange<? super T> change = (TimelineChange<? super T>) followBreadcrumb(timeline, entry.getKey(), entry.getValue());
 //            change.addEnd(newState);

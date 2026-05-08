@@ -2,8 +2,8 @@ package com.display.windows.dialogs;
 
 import com.Global;
 import com.base.DMRegistry;
-import com.display.geography.GeographyManager;
-import com.display.geography.GeometryType;
+import com.base.geography.GeographyManager;
+import com.base.geography.tools.GeometryType;
 import com.objects.character.sentient.HumanCharacter;
 import com.objects.title.land.habitable.Province;
 import com.objects.title.land.Titles;
@@ -18,7 +18,7 @@ import org.locationtech.jts.geom.Geometry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.display.geography.GeographyManager.registerCustomGeometry;
+import static com.base.geography.GeographyManager.registerCustomGeometry;
 
 public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
 
@@ -75,7 +75,7 @@ public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
 
         // Merge geometries
         List<Geometry> geometries = new ArrayList<>();
-        for (Pair<com.display.geography.GeometryType, String> county : selectedCounties) {
+        for (Pair<com.base.geography.tools.GeometryType, String> county : selectedCounties) {
             Geometry geom = (Geometry) GeographyManager.getFeature(county.getKey(), county.getValue())
                     .getDefaultGeometry();
             if (geom != null) {
@@ -102,7 +102,7 @@ public class ProvinceCreationDialog extends TitleSelectionDialog<Province> {
         Province province = Titles.createProvince(name, Global.CURRENT_DATE(), null, GeometryType.CUST_P,feature.getID());
         province.setHolder(holder);
         // Exclude counties
-        for (Pair<com.display.geography.GeometryType, String> county : selectedCounties) {
+        for (Pair<com.base.geography.tools.GeometryType, String> county : selectedCounties) {
             GeographyManager.excludeGeometry(county.getKey(), county.getValue());
         }
 

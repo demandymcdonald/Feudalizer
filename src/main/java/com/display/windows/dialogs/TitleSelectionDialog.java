@@ -1,7 +1,7 @@
 package com.display.windows.dialogs;
 
-import com.display.geography.GeographyManager;
-import com.display.geography.GeometryType;
+import com.base.geography.GeographyManager;
+import com.base.geography.tools.GeometryType;
 import com.objects.title.Title;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -56,7 +56,7 @@ public abstract class TitleSelectionDialog<T extends Title<T>> extends Dialog<T>
         selectedCountiesView.setPrefHeight(150);
         selectedCountiesView.setPlaceholder(new Label("No counties selected"));
 
-        Button selectButton = new Button("Select Counties on Map");
+        Button selectButton = new Button("Select Counties on WorldMap");
         selectButton.setOnAction(e -> enterSelectionMode());
 
         Button clearButton = new Button("Clear Selection");

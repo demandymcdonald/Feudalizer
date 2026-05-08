@@ -1,8 +1,8 @@
 package com.objects.character.physical.genetics;
 
 import com.objects.character.physical.aspect.GeneProperty;
-import com.utilities.number.BoundDbl;
-import com.utilities.number.BoundDoubles;
+import com.utilities.number.bound_double.BoundDbl;
+import com.utilities.number.bound_double.BoundDoubles;
 
 import java.util.Map;
 import java.util.TreeMap;

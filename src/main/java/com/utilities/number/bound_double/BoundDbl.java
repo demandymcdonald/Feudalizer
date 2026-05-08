@@ -1,4 +1,4 @@
-package com.utilities.number;
+package com.utilities.number.bound_double;
 
 import org.apache.commons.math3.util.Precision;
 

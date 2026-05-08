@@ -6,7 +6,7 @@ import com.base.datemutable.timeline.change.TimelineChange;
 import com.base.datemutable.timeline.change.multi.type.ChangeType;
 import com.base.datemutable.timeline.change.multi.type.WipeType;
 import com.base.datemutable.timeline.change.multi.wrapper.TLSet;
-import com.display.geography.GeometryType;
+import com.base.geography.tools.GeometryType;
 import com.objects.CauseOfEnd;
 import com.objects.culture.object.PassiveCultureObject;
 import com.objects.culture.object.compass.CompositeCompass;

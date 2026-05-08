@@ -1,4 +1,4 @@
-package com.utilities.number;
+package com.utilities.number.bound_int;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;

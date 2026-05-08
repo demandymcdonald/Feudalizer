@@ -12,7 +12,7 @@ import com.objects.culture.tenet.interest.IGPointer;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.utilities.IDisplayable;
 import com.utilities.id.StringIdentifiable;
-import com.utilities.number.BoundInt;
+import com.utilities.number.bound_int.BoundInt;
 
 import java.util.Map;
 

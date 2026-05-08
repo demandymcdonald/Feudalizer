@@ -3,23 +3,28 @@ package com;
 import com.base.DMRegistry;
 import com.base.datemutable.timeline.sandbox.core.SandboxHandler;
 import com.base.datemutable.utilities.TimelineSynced;
-import com.utilities.LoadingManager;
+import com.base.loaders.LoadingManager;
+import com.base.loaders.global.properties.AppConfig;
+import com.base.loaders.global.properties.ProjectProperties;
+import com.ibm.icu.util.ULocale;
 import com.utilities.ThreadMutable;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Global implements ThreadMutable<Global, Global.DateWrapper> {
-
-
-
+    public static final AppConfig CONFIG = new AppConfig();
+    public static final AtomicReference<ProjectProperties> CURRENT_PROPERTIES = new AtomicReference<>(new ProjectProperties());
     //---- Static Globals ----
+    public static final UUID INSTANCE_ID = UUID.randomUUID();
     public static final LocalDate MAX_DATE = LocalDate.MAX;
     public static final LocalDate CONFEDERACY_FOUNDED = LocalDate.of(2415,12,24);
-    public static Double SCREEN_WIDTH = 1920D;
-    public static Double SCREEN_HEIGHT = 1080D;
+
     public static final boolean SQL_ENABLED = false;
     public static final Path SHAPE_PATH = Path.of("data/shapefiles/");
     private static final LoadingManager LOADING_MANAGER = new LoadingManager();
@@ -34,6 +39,7 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
         alertListenersPre(newDate);
         DMRegistry.onDateChange();
         alertListenersPost(newDate);
+        CURRENT_PROPERTIES.get().setLastDate(newDate);
     }
     private static void alertListenersPre(LocalDate date){
         listeners.get().keySet().forEach((ts) -> {ts.onLoad(date);});
@@ -65,7 +71,12 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
         listeners.get().put(listener,false);
     }
 
-
+    public static ULocale getIBMLocale(){
+        return CONFIG.getIBMLocale();
+    }
+    public static Locale getJavaLocale(){
+        return CONFIG.getJavaLocale();
+    }
 
     @Override
     public DateWrapper share() {

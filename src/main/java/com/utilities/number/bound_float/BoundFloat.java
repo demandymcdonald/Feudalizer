@@ -1,11 +1,15 @@
-package com.utilities.number;
+package com.utilities.number.bound_float;
 
-import com.Global.*;
 import com.google.gson.JsonElement;
+import com.utilities.number.BoundedNumber;
 
-public class BoundedFloat extends BoundedNumber<Float>{
-    public BoundedFloat(float min, float max) {
+public class BoundFloat extends BoundedNumber<Float> {
+    public BoundFloat(float min, float max) {
         super(min, max);
+    }
+
+    public BoundFloat(Float min, Float max, Float current) {
+        super(min, max, current);
     }
     @Override
     public void add(Float value) {

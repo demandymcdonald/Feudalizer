@@ -1,7 +1,7 @@
-package com.utilities;
+package com.base.loaders;
 
+import com.utilities.ThreadManager;
 import javafx.application.Platform;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

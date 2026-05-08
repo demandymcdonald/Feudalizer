@@ -19,8 +19,8 @@ import com.objects.culture.tenet.Tenet;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.succession.held.ICharacterHeld;
 import com.objects.succession.held.HolderChanges;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;

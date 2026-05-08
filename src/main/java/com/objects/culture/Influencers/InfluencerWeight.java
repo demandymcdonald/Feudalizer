@@ -4,8 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.group.TenetGroup;
 import com.objects.culture.tenet.group.groups.*;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 import com.utilities.serialization.RegistrySerializable;
 import org.apache.commons.lang3.tuple.Pair;
 

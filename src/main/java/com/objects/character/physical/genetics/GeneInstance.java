@@ -3,8 +3,8 @@ package com.objects.character.physical.genetics;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.character.physical.GeneManager;
-import com.utilities.number.BoundDbl;
-import com.utilities.number.BoundDoubles;
+import com.utilities.number.bound_double.BoundDbl;
+import com.utilities.number.bound_double.BoundDoubles;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import static com.objects.character.physical.genetics.SpectrumTrait.SPECTRUM_SIZE;

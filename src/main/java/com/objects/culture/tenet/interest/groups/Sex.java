@@ -9,8 +9,8 @@ import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
 import com.objects.culture.tenet.interest.InterestGroup;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 
 import java.util.Map;
 

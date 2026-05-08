@@ -4,11 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.culture.object.ideology.Ideology;
-import com.objects.culture.tenet.group.CategoryModifier;
-import com.objects.culture.tenet.group.TenetGroup;
-import com.utilities.number.BoundedInteger;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;

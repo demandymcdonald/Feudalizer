@@ -2,7 +2,7 @@ package com.objects.character.physical.genetics;
 
 import com.google.gson.JsonObject;
 import com.objects.character.physical.race.Race;
-import com.utilities.number.BoundInt;
+import com.utilities.number.bound_int.BoundInt;
 
 import java.util.Map;
 

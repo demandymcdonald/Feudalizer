@@ -1,7 +1,7 @@
-package com.utilities.number;
+package com.utilities.number.bound_int;
 
-import com.Global.*;
 import com.google.gson.JsonElement;
+import com.utilities.number.BoundedNumber;
 
 public class BoundedInteger extends BoundedNumber<Integer> {
 

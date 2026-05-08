@@ -4,7 +4,7 @@ import com.google.common.base.Suppliers;
 
 import java.util.function.Supplier;
 
-public class CachingSupplier<T> {
+public class CachingSupplier<T> implements Supplier<T> {
     private final Supplier<T> supplier;
     private Supplier<T> usableSupplier;
     private boolean isMemoized = false;

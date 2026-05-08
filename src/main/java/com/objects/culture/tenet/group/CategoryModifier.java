@@ -1,9 +1,8 @@
 package com.objects.culture.tenet.group;
 
 import com.objects.culture.tenet.group.groups.*;
-import com.objects.organization.education.Education;
-import com.utilities.number.BoundDbl;
-import com.utilities.number.BoundDoubles;
+import com.utilities.number.bound_double.BoundDbl;
+import com.utilities.number.bound_double.BoundDoubles;
 
 import java.util.HashMap;
 import java.util.Map;

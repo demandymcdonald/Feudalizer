@@ -4,9 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.objects.culture.tenet.Acceptance;
 import com.objects.culture.tenet.AcceptanceContainer;
-import com.objects.culture.TenetManager;
 import com.utilities.IDisplayable;
-import com.utilities.number.BoundInt;
+import com.utilities.number.bound_int.BoundInt;
 import com.utilities.serialization.JsonSerializable;
 
 import java.util.Arrays;

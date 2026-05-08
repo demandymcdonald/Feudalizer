@@ -9,8 +9,8 @@ import com.objects.character.physical.aspect.GeneProperty;
 import com.objects.character.physical.aspect.PhysicalAspect;
 import com.objects.character.physical.species.Species;
 import com.utilities.IDisplayable;
-import com.utilities.number.BoundDbl;
-import com.utilities.number.BoundDoubles;
+import com.utilities.number.bound_double.BoundDbl;
+import com.utilities.number.bound_double.BoundDoubles;
 
 import java.time.LocalDate;
 import java.util.HashSet;

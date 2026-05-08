@@ -11,7 +11,7 @@ import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.culture.tenet.interest.IGPointer;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.title.profession.JobType;
-import com.utilities.number.BoundInt;
+import com.utilities.number.bound_int.BoundInt;
 
 import java.util.Map;
 

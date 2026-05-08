@@ -2,7 +2,6 @@ package com.objects.culture.tenet.interest;
 
 import com.base.component.InstanceType;
 import com.base.component.immutable.ImmutableComponent;
-import com.base.component.mutable.MutableComponent;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
@@ -16,7 +15,7 @@ import com.objects.culture.tenet.group.groups.GovernmentGroups;
 import com.objects.culture.tenet.group.groups.SocietyGroups;
 import com.objects.organization.government.GoverningEntity;
 import com.utilities.IDisplayable;
-import com.utilities.number.BoundInt;
+import com.utilities.number.bound_int.BoundInt;
 
 import java.util.Map;
 

@@ -2,6 +2,7 @@ package com.base.component;
 
 public enum InstanceType {
     HARDCODED,
+    EXTERNAL(true),
     FACTORY(true),
     PROCEDURAL,
     DATA_DRIVEN(true);

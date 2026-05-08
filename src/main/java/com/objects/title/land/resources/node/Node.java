@@ -15,8 +15,8 @@ import com.utilities.IDisplayable;
 import com.utilities.caching.CachingSupplier;
 import com.utilities.hierarchy.StateIntegrity;
 import com.utilities.id.StringIdentifiable;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 import org.apache.commons.lang3.mutable.MutableLong;
 
 import java.nio.charset.StandardCharsets;

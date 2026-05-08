@@ -1,8 +1,8 @@
 package com.display.windows;
 
 import com.Feudalizer;
-import com.display.geography.GeographyManager;
-import com.display.geography.GeometryType;
+import com.base.geography.GeographyManager;
+import com.base.geography.tools.GeometryType;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.geometry.VPos;
@@ -13,7 +13,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
-import org.geotools.api.feature.Property;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -25,8 +24,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import static com.display.geography.GeographyManager.*;
 
 /**
  * The MapDisplay class represents a component for rendering and interacting

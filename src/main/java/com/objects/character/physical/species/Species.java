@@ -10,8 +10,8 @@ import com.objects.character.physical.IGeneNode;
 import com.objects.character.physical.species.nomenclature.NameContainer;
 import com.utilities.IDisplayable;
 import com.utilities.caching.CachingSupplier;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 
 import java.util.*;
 

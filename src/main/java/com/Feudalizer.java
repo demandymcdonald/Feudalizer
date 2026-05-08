@@ -2,7 +2,7 @@ package com;
 
 
 import com.display.MainWindow;
-import com.display.geography.GeographyLoader;
+import com.base.geography.tools.GeographyLoader;
 import com.objects.character.physical.GeneManager;
 import com.sql.SQLManager;
 import javafx.application.Application;

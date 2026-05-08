@@ -1,4 +1,4 @@
-package com.utilities.number;
+package com.utilities.number.bound_int;
 
 public class BoundInts {
 

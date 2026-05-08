@@ -1,7 +1,7 @@
 package com.display.windows;
 
 import com.base.DMRegistry;
-import com.display.geography.GeometryType;
+import com.base.geography.tools.GeometryType;
 import com.display.windows.cards.view.CharacterViewCard;
 import com.display.windows.cards.view.title.*;
 import com.objects.character.sentient.HumanCharacter;

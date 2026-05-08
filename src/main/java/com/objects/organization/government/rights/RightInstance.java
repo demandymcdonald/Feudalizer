@@ -11,9 +11,10 @@ import com.objects.organization.government.GoverningEntity;
 public class RightInstance<T extends Right<T>> extends IOIBi<T,RightInstance<T>, DMEReference<? extends GoverningEntity<?>>,DMEReference<? extends SentientCharacter<?>>> {
    private InterestGroup group;
    private RightLevel level;
-
-    public RightInstance(ComponentReference<T> reference) {
+    public RightInstance(ComponentReference<T> reference, InterestGroup group, RightLevel level) {
         super(reference);
+        this.group = group;
+        this.level = level;
     }
 
     public RightInstance(JsonObject reference) {

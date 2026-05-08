@@ -1,6 +1,6 @@
 package com.objects.title.land;
 
-import com.display.geography.GeometryType;
+import com.base.geography.tools.GeometryType;
 import com.objects.title.land.habitable.County;
 import com.objects.title.land.habitable.Province;
 import com.objects.title.land.habitable.Town;

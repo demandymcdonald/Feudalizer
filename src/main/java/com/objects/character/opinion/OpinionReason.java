@@ -1,13 +1,9 @@
 package com.objects.character.opinion;
 
-import com.base.reference.ComplexReference;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.utilities.IDisplayable;
-import com.utilities.number.BoundInt;
-import com.utilities.number.BoundInts;
+import com.utilities.number.bound_int.BoundInt;
+import com.utilities.number.bound_int.BoundInts;
 import com.utilities.serialization.CompressString;
 
 import javax.annotation.Nullable;

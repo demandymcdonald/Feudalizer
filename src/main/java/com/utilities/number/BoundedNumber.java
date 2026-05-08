@@ -12,6 +12,11 @@ public abstract class BoundedNumber<N extends Number>{
         this.min = min;
         this.max = max;
     }
+    public BoundedNumber(N min, N max, N current) {
+        this.min = min;
+        this.max = max;
+        set(current);
+    }
     public N getMin() {
         return min;
     }

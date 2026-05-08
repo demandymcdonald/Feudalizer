@@ -8,7 +8,7 @@ import com.objects.culture.Influencers.InfluencerRelationship;
 import com.objects.culture.Influencers.InfluencerWeight;
 import com.objects.culture.TenetManager;
 import com.objects.culture.tenet.group.TenetGroup;
-import com.utilities.number.BoundedInteger;
+import com.utilities.number.bound_int.BoundedInteger;
 
 import java.util.HashMap;
 import java.util.Map;

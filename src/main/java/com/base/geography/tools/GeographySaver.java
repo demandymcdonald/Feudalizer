@@ -1,5 +1,6 @@
-package com.display.geography;
+package com.base.geography.tools;
 
+import com.base.geography.GeographyManager;
 import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.data.Transaction;
 import org.geotools.api.feature.simple.SimpleFeature;
