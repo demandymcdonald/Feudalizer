@@ -11,7 +11,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <javafx.version>22</javafx.version>
     <jackson.version>2.16.1</jackson.version>
-    <geotools.version>31.0</geotools.version>
+    <geotools.version>32.1</geotools.version>
   </properties>
 
   <dependencies>
@@ -71,6 +71,21 @@
       <version>${geotools.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-swing</artifactId>
+      <version>${geotools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-epsg-hsql</artifactId>
+      <version>${geotools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-geopkg</artifactId>
+      <version>${geotools.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>
@@ -95,16 +110,7 @@
       <artifactId>jgrapht-core</artifactId>
       <version>1.5.3</version>
     </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-swing</artifactId>
-      <version>${geotools.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-epsg-hsql</artifactId>
-      <version>31.0</version>
-    </dependency>
+
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>

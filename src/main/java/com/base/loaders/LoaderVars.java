@@ -19,6 +19,7 @@ public class LoaderVars {
 
 
     public static final String GEO_DIRECTORY_SUBPATH = "geography/";
+    public static final String GEO_PACKAGE_LOCATION = GEO_DIRECTORY_SUBPATH + "geosave.gpkg";
     public static final String GEO_NAME = "geo_properties.xml";
     public static final String GEO_VISIBILITY = "visibility.json";
     public static final String PROJECT_PROPERTIES = "project.properties";

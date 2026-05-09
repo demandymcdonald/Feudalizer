@@ -6,9 +6,7 @@ import com.google.common.collect.Multimaps;
 import com.google.gson.JsonObject;
 import com.utilities.serialization.SuperclassSerializable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ComponentManager<T extends IComponent<?>> implements IComponentLogged {
@@ -45,7 +43,9 @@ public abstract class ComponentManager<T extends IComponent<?>> implements IComp
         isLoaded.set(true);
     }
 
-
+    public Set<T> getAll(){
+        return new HashSet<>(instanceMap.values());
+    }
     public void link(T object){
         onLink(object);
     }

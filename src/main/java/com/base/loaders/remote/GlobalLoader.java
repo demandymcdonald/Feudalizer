@@ -14,10 +14,6 @@ public abstract class GlobalLoader implements ILoader {
 
 
 
-        public void blah(){
-            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-            builder.setCRS(DefaultGeographicCRS.WGS84);
-        }
-        (DefaultGeographicCRS.WGS84);
+
 
 }

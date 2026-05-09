@@ -2,7 +2,7 @@ package com.base.loaders.remote;
 
 import com.Global;
 import com.base.component.InstanceType;
-import com.base.geography.GeoContainer;
+import com.base.geography.RawGeoContainer;
 import com.base.loaders.LoaderVars;
 import com.base.loaders.global.HandlerType;
 import com.base.loaders.global.json.FileLoaderUtility;
@@ -11,7 +11,6 @@ import com.base.loaders.local.utilities.SFCLoader;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.ibm.icu.util.ULocale;
-import org.apache.commons.lang3.tuple.Triple;
 import org.geotools.api.data.DataStore;
 
 import java.io.File;
@@ -25,13 +24,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RealWorldGeographyImporter extends GlobalLoader{
-    private static final JsonLoader metadataLoader = new JsonLoader();
-    private static final SFCLoader payloadLoader = new SFCLoader();
+
     private static final String GeoBoundsPrefix = "gb_";
     private final String realWorldLocalCache = "imported_geography/gb/";
 
 
-    public Set<GeoContainer> getFindFeatures(String... codes){
+    public Set<RawGeoContainer> getFindFeatures(String... codes){
         File dirLoc = localCacheDir();
         FileLoaderUtility.validatePath(dirLoc,true);
         if(!dirLoc.isDirectory()) throw new RuntimeException("Directory does not exist: "+dirLoc.getAbsolutePath());
@@ -43,12 +41,12 @@ public class RealWorldGeographyImporter extends GlobalLoader{
         if(!needsImport.isEmpty()){
             importFeatures(dirLoc, needsImport, features);
         }
-        Set<GeoContainer> toReturn = new HashSet<>();
+        Set<RawGeoContainer> toReturn = new HashSet<>();
         for(Map.Entry<JsonObject, DataStore> entry : features.entrySet()){
             JsonObject metadata = entry.getKey();
             DataStore payload = entry.getValue();
             geoContainers.add(
-                    new GeoContainer(
+                    new RawGeoContainer(
                             InstanceType.EXTERNAL,
                             metadata.get("file_code").getAsString(),
                             metadata.get("Continent").getAsString(),
@@ -58,7 +56,7 @@ public class RealWorldGeographyImporter extends GlobalLoader{
         }
     }
 
-    private void checkCache(Set<String> ids, Set<File> files, Set<String> needsImport, Set<GeoContainer> toReturn) {
+    private void checkCache(Set<String> ids, Set<File> files, Set<String> needsImport, Set<RawGeoContainer> toReturn) {
         for(String s : ids){
             File rawMetadata;
             Set<File> filtered = new HashSet<>(files.stream().filter((file) -> file.getName().contains(s)).toList());
@@ -87,8 +85,8 @@ public class RealWorldGeographyImporter extends GlobalLoader{
             );
         }
     }
-    private GeoContainer parse(JsonObject metadata, DataStore country, DataStore state, DataStore county){
-        GeoContainer container = new GeoContainer(InstanceType.GEOGRAPHY, metadata.get("id").getAsString(), metadata.get("continent").getAsString(), country, state, county, metadata.get("areaKM").getAsLong(), metadata.get("name").getAsString(), metadata.get("iso").getAsString(), metadata.get("defaultNumAdminUnits").getAsInt());
+    private RawGeoContainer parse(JsonObject metadata, DataStore country, DataStore state, DataStore county){
+        RawGeoContainer container = new RawGeoContainer(InstanceType.GEOGRAPHY, metadata.get("id").getAsString(), metadata.get("continent").getAsString(), country, state, county, metadata.get("areaKM").getAsLong(), metadata.get("name").getAsString(), metadata.get("iso").getAsString(), metadata.get("defaultNumAdminUnits").getAsInt());
         return container;
     }
     private void handleImproperlyFormatted(Set<String> needsImport, String code, Set<File> filtered){
@@ -125,23 +123,8 @@ public class RealWorldGeographyImporter extends GlobalLoader{
             metadataLoader.write(new File(dirLoc, code + ".json"), meta, true);
         }
     }
-    private DataStore importPayload(File dirLoc, String code, JsonObject metadata) {
-        try (HttpClient client = HttpClient.newHttpClient()){
-            return remoteGetPayload(client, dirLoc, "", code, new URI(metadata.get("gjDownloadURL").getAsString()));
-        } catch (Exception e){
-            logger.error("Failed to import geography with code: .. {} Error: {}",code,e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-    private DataStore remoteGetPayload(HttpClient client, File dirLoc, String prefix, String code, URI url) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        File finalFile = FileLoaderUtility.validatePath(new File(dirLoc, prefix + code + ".geojson"),null,null,true);
-        Files.writeString(finalFile.toPath(), response.body());
-        return payloadLoader.read(finalFile,null,true);
-    }
+
+
     private Map<Integer,JsonObject> importMetadata(String code){
         if (getValidIds().contains(code)){
             Map<Integer,JsonObject> metaData = remoteGetMetadata(code);
@@ -156,25 +139,7 @@ public class RealWorldGeographyImporter extends GlobalLoader{
     }
 
 
-    private Map<Integer,JsonObject> remoteGetMetadata(String code){
-        Map<Integer,JsonObject> features = new HashMap<>();
-        try (HttpClient client = HttpClient.newHttpClient()){
-            for(int i = 0; i < 6; i++) {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(new URI("https://www.geoboundaries.org/api/current/gbOpen/" + code + "/ADM"+i+"/"))
-                        .build();
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                if (response.statusCode() == 404) {
-                    break;
-                }
-                features.put(i,LoaderVars.GSON.fromJson(response.body(), JsonObject.class));
-            }
-        } catch (Exception e){
-            logger.error("Failed to import geography with code: .. {} Error: {}",code,e.getMessage());
-            throw new RuntimeException(e);
-        }
-        return features;
-    }
+
     public Map<String,String> getValidCodes(){
         Map<String,String> codes = new HashMap<>();
 

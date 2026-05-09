@@ -1,25 +1,95 @@
 package com.base.geography;
 
+import com.Global;
 import com.base.component.ComponentManager;
+import com.base.geography.params.LayerType;
 import com.base.geography.tools.GeographyType;
+import com.base.loaders.LoaderVars;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geopkg.FeatureEntry;
+import org.geotools.geopkg.GeoPackage;
+import org.locationtech.jts.geom.Geometry;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeMap;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import static com.base.geography.params.LayerType.Category.Administrative;
+import static com.base.geography.params.LayerType.Category.Natural;
+
 public class GeographyManager {
-    private static final Multimap<GeographyType, SimpleFeatureCollection> FEATURE_MAP = HashMultimap.create();
+
+    private GeoPackage database = null;
+
+    public void loadSave(Path saveFileLoc){
+        Path dbLoc = saveFileLoc.resolve(LoaderVars.GEO_PACKAGE_LOCATION);
+        if(database != null){
+            closeDatabase();
+             database = null;
+        }
+        try {
+            database = new GeoPackage(dbLoc.toFile());
+            validateTables();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load GeoPackage at " + dbLoc, e);
+        }
+    }
+    private void validateTables() throws IOException {
+        database.init();
+        List<String> tableNames = database.features().stream().map(FeatureEntry::getTableName).toList();
+        for (LayerType type : Layer.LAYER_TYPE_INSTANCE.getAll()){
+            final String typeID = type.getID();
+            if(!tableNames.contains(typeID)){
+                SimpleFeatureType schema = getOurSchema(type);
+                FeatureEntry entry = new FeatureEntry();
+                entry.setTableName(typeID);
+                entry.setDescription(type.getCategory() + " Level " + type.getPosition() + " for LayerType: " + type.getFileCode());
+                database.create(entry,schema);
+            }
+        }
+    }
+
+    public static SimpleFeatureType getOurSchema(LayerType type){
+        LayerType.Category category = type.getCategory();
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName(type.getFileCode());
+        builder.setCRS(getProjectCRS());
+        builder.add("id",String.class);
+        builder.add("name",String.class);
+        builder.add("group",String.class);
+        builder.add("source",String.class);
+        builder.add("geom", Geometry.class);
+        if (category == Administrative || category == Natural){
+            builder.add("area_sqkm",Float.class);
+        }
+        return builder.buildFeatureType();
+    }
 
 
+
+    public void closeDatabase(){
+        if(database != null){
+            database.close();
+        }
+    }
+
+
+
+
+    public static CoordinateReferenceSystem getProjectCRS(){
+        return Global.CURRENT_PROPERTIES.get().getCrs();
+    }
 
 
     public static class Layer extends ComponentManager<MapLayer<?>>{
         public static final Layer INSTANCE = new Layer();
+        public static final LayerTypeManager LAYER_TYPE_INSTANCE = new LayerTypeManager();
         private final ConcurrentSkipListMap<Integer, MapLayer<?>> layers = new ConcurrentSkipListMap<>(); //what a mouthful.
         public Layer() {
             super((Class<? extends MapLayer<?>>) MapLayer.class);
@@ -41,6 +111,12 @@ public class GeographyManager {
         public Set<MapLayer<?>> getLayers(){
             return new HashSet<>(layers.values());
         }
+        public static class LayerTypeManager extends ComponentManager<LayerType>{
+
+            public LayerTypeManager() {
+                super(LayerType.class);
+            }
+        }
     }
 
 
@@ -73,11 +149,6 @@ public class GeographyManager {
 
 
 
-
-
-    public static void prepareForFreshLoad(){
-        FEATURE_MAP.clear();
-    }
 //
 //    private static SimpleFeatureType featureType(){
 //        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
