@@ -1,5 +1,7 @@
 package com.base.thread;
 
+import com.base.thread.flight.ThreadFlight;
+
 public class ThreadTrafficController {
     //The actual manager of Threadports, Flights, which has the sole authority to grant clearance, control the threadspace, and issue navigation directives.
     private static final ThreadTrafficController instance = new ThreadTrafficController();
@@ -22,6 +24,11 @@ public class ThreadTrafficController {
 
     }
     public <T extends ILocking<T>>void endClearance(Class<? extends T> object){
+
+    }
+
+
+    public void declareEmergency(ThreadFlight flight, boolean crashed, Exception e){
 
     }
 }
