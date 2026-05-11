@@ -1,6 +1,7 @@
 package com.base.thread.flight;
 
 import com.base.thread.ThreadTrafficController;
+import com.base.thread.flight.acars.Acars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,19 +11,27 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class ThreadFlight {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ThreadFlight.class);
     public enum Status{
-        ON_GROUND(false),
-        TAXIING(false),
-        TAKE_OFF(true),
-        IN_FLIGHT(true),
-        IN_PATTERN(true),
-        HOLDING(true),
-        LANDING(true),
-        LANDED(false),
-        CRASHED(false);
+        ON_GROUND(false,false),
+        TAXIING(false,false),
+        TAKE_OFF(true,false),
+        IN_FLIGHT(true,false),
+        IN_PATTERN(true,false),
+        HOLDING(true,false),
+        LANDING(true,false),
+        LANDED(false,true),
+        CRASHED(false,true),;
 
         private final boolean inAir;
-        Status(boolean inAir){
+        private final boolean flightFinished;
+        Status(boolean inAir, boolean flightFinished) {
             this.inAir = inAir;
+            this.flightFinished = flightFinished;
+        }
+        public boolean isInAir(){
+            return inAir;
+        }
+        public boolean isFlightFinished(){
+            return flightFinished;
         }
     }
     protected final TCCFlightTracker tccEndPoint = new TCCFlightTracker();
@@ -44,7 +53,9 @@ public abstract class ThreadFlight {
             return;
         }
     };
-
+    public AtomicReference<Status> getStatus(){
+        return status;
+    };
     public abstract void doFlight();
 
 
