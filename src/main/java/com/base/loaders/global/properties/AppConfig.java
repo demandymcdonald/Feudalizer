@@ -2,6 +2,7 @@ package com.base.loaders.global.properties;
 
 import com.ibm.icu.util.ULocale;
 import com.utilities.caching.CachingSupplier;
+import jdk.jfr.Percentage;
 
 import java.util.Locale;
 
@@ -23,6 +24,26 @@ public class AppConfig extends PropertiesFile<AppConfig>{
         setProperty("window.height",String.valueOf(height));
         this.setDirty(true);
     }
+    public int getNumProcessors(){
+        return Runtime.getRuntime().availableProcessors();
+    }
+    private int maxThreads(){
+        int max =  Integer.parseInt(getProperty("threading.max_threads"));
+        if (max <= 0){
+            return Math.max(getNumProcessors() - 1,1);
+        }
+        return max;
+    }
+    @Percentage
+    private float maxThreadPercentage(){
+        return Math.clamp(Integer.parseInt(getProperty("threading.max_threads_percentage"))/ 100F, .25F, 1F);
+    }
+    public int getTotalThreads(){
+        return (int) Math.min(Math.floor(getNumProcessors() * maxThreadPercentage()),maxThreads());
+    }
+
+
+
     public ULocale getIBMLocale(){
         return locale.get();
     }

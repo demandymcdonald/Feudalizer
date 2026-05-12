@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Global implements ThreadMutable<Global, Global.DateWrapper> {
@@ -24,7 +25,7 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
     public static final UUID INSTANCE_ID = UUID.randomUUID();
     public static final LocalDate MAX_DATE = LocalDate.MAX;
     public static final LocalDate CONFEDERACY_FOUNDED = LocalDate.of(2415,12,24);
-
+    public static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     public static final boolean SQL_ENABLED = false;
     public static final Path SHAPE_PATH = Path.of("data/shapefiles/");
     private static final LoadingManager LOADING_MANAGER = new LoadingManager();

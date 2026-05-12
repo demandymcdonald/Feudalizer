@@ -2,7 +2,6 @@ package com.base.thread;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 //Yes, I know the whimsy levels are off the charts with the light aviation theming, I try and be a #serious programmer sometimes,
 //but this is making a genuinely dense daemon-running monster less scary so I'm going with it. Sue me.
 
@@ -24,7 +23,7 @@ public interface ILocking<T extends ILocking<T>> extends AutoCloseable{
     // with a hold.
     @Override
     default void close(){
-        ThreadTrafficController.connect().endClearance((T)this);
+        ThreadTracon.connect().endClearance((T)this);
     }
 
     //Note: requesting clearance will hold the thread (or pull a loading screen if it's on the render thread) until you
@@ -35,26 +34,26 @@ public interface ILocking<T extends ILocking<T>> extends AutoCloseable{
     //Also: nesting clearance requests won't throw, since the TCC tracks the number of clearance requests per thread, and de-increments
     // them accordingly on each clearance end call.
     default T requestClearance() throws PossibleThreadDeviation {
-        ThreadTrafficController.connect().requestClearance((T)this);
+        ThreadTracon.connect().requestClearance((T)this);
         return (T)this;
     }
     default T requestSuperclassClearance()throws PossibleThreadDeviation {
         Optional<Class<? super T>> superclass = getSuperclass();
         if(superclass.isPresent()){
-            ThreadTrafficController.connect().requestClearance(superclass.get());
+            ThreadTracon.connect().requestClearance(superclass.get());
             return (T)this;
         }
         return requestClassClearance();
     }
     default T requestClassClearance()throws PossibleThreadDeviation {
-        ThreadTrafficController.connect().requestClearance(this.getClass());
+        ThreadTracon.connect().requestClearance(this.getClass());
         return (T)this;
     }
     //Note: if your thread does not have the permissions to cut ahead (generally restricted to the main/render/some sandbox threads
     //you will be patterned in with the rest of the threads awaiting lock. There may still be a momentary wait while the current lock-holder
     //reaches a safe pause point.
     default T requestPriorityClearance()throws PossibleThreadDeviation {
-        ThreadTrafficController.connect().requestPriorityClearance((T)this);
+        ThreadTracon.connect().requestPriorityClearance((T)this);
         return (T)this;
     }
 

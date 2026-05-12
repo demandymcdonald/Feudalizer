@@ -1,6 +1,8 @@
 package com.base.thread.flight.acars;
 
-import com.base.thread.flight.ThreadFlight;
+import com.base.thread.space.ThreadFlight;
+import org.apache.commons.lang3.math.Fraction;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -27,9 +29,13 @@ public class AcarsCount extends Acars<CountDownLatch> {
     }
 
     @Override
-    public CountDownLatch get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public CountDownLatch get(long timeout, @NonNull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         return cdl;
     }
 
 
+    @Override
+    public Fraction getProgress() {
+        return Fraction.getFraction((int) (max - cdl.getCount()), (int) max);
+    }
 }

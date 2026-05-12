@@ -1,6 +1,6 @@
 package com.base.thread.flight;
 
-import java.util.*;
+import com.base.thread.space.ThreadFlight;
 
 public class FlightStage {
     private final ThreadFlight parent;
@@ -10,6 +10,7 @@ public class FlightStage {
         this.stage = stage;
     }
     public void run(){
+
 
     }
 }

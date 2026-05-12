@@ -1,9 +1,6 @@
 package com.base.thread;
 
-import com.Global.*;
-import com.base.thread.flight.ThreadFlight;
-
-import java.util.*;
+import com.base.thread.space.ThreadFlight;
 
 public class PossibleThreadDeviation extends Exception{
     //# to call is basically the error code, ideally formatted as a 555 number

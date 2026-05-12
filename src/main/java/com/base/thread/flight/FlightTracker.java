@@ -1,7 +1,9 @@
 package com.base.thread.flight;
 
+import com.base.thread.space.ThreadFlight;
+
 public abstract class FlightTracker {
-    //Base object that acts as a socket between the ThreadTrafficController and the Thread itself.
+    //Base object that acts as a socket between the ThreadTracon and the Thread itself.
     protected final ThreadFlight realObject;
     public FlightTracker(ThreadFlight realObject) {
         this.realObject = realObject;
