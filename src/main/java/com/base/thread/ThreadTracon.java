@@ -25,6 +25,21 @@ public class ThreadTracon {
         tracon.start();
     }
 
+    public static long getSystemTime(){
+        return System.currentTimeMillis();
+    }
+    public static long getSystemTimeSec(){
+        return System.currentTimeMillis()/1000;
+    }
+
+
+
+
+
+
+
+
+
     public static ThreadTracon connect(){
         return instance;
     }

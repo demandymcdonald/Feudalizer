@@ -6,20 +6,23 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
-import static com.Global.*;
+import static com.base.thread.space.CallsignGen.generateTowerCode;
 
 public class ThreadTower {
-
-    private final String tower_code = generateCode();
+    private static final long TL_SECONDS_BEFORE_BUMP = 10;
+    private final String tower_code = generateTowerCode();
     private final ThreadGroup group = new ThreadGroup("tower_" + tower_code);
+    private final AtomicInteger activeRunways = new AtomicInteger(0);
     private final ThreadPoolExecutor service;
     private final Map<ILocking<?>, Deque<ThreadFlight>> separatedAssets = new ConcurrentHashMap<>();
     private final Map<ThreadFlight,Thread> activeFlights = Collections.synchronizedMap(new WeakHashMap<>());
-    private final SortedSet<ThreadFlight> activeFlightsQueue = new ConcurrentSkipListSet<>();
+    private final Deque<ThreadFlight> activeFlightsQueue = new ConcurrentLinkedDeque<>();
             ;
-    protected ThreadTower(int coreSize, int poolSize) {
-        service = new ThreadPoolExecutor(coreSize, poolSize, 15L, TimeUnit.SECONDS, new LinkedBlockingQueue<>()){
+    protected ThreadTower(int activeRunways) {
+        this.activeRunways.set(activeRunways);
+        service = new ThreadPoolExecutor(activeRunways, activeRunways * 2, 15L, TimeUnit.SECONDS, new LinkedBlockingQueue<>()){
             @Override
             public ThreadFactory getThreadFactory() {
                 return new ThreadFactory() {
@@ -28,7 +31,7 @@ public class ThreadTower {
                         if (r instanceof ThreadFlight tf){
                             Thread t = new Thread(group, r);
                             t.setDaemon(true);
-                            t.setName(tower_code + "_" + tf.getCallsign());
+                            t.setName(tower_code + ":" + tf.getIcaoCallsign());
                             t.setPriority(Thread.NORM_PRIORITY);
                             activeFlights.put(tf,t);
                             return t;
@@ -40,6 +43,51 @@ public class ThreadTower {
             };
         };
     }
+    public void doTowerControl(int updatedActiveRunways){
+
+        manageExecutor(updatedActiveRunways);
+    }
+    public void flightEntersControl(ThreadFlight tf){
+        if(tf.getStatus().get() == ThreadFlight.Status.ON_GROUND){
+            tf.startFlight();
+            return;
+        }
+        activeFlightsQueue.add(tf);
+    }
+    private void manageExecutor(int updatedActiveRunways) {
+        final int maxInExecutor;
+        final int numInPool = service.getActiveCount();
+        if(updatedActiveRunways != activeRunways.get()){
+            activeRunways.set(updatedActiveRunways);
+            service.setCorePoolSize(updatedActiveRunways);
+            maxInExecutor = updatedActiveRunways * 2;
+            service.setMaximumPoolSize(maxInExecutor);
+        } else {
+            maxInExecutor = service.getMaximumPoolSize();
+        }
+        int takeoffSlots = maxInExecutor - numInPool;
+        while (takeoffSlots > 0){
+            takeoffSlots--;
+            ThreadFlight flight = activeFlightsQueue.poll();
+            if (flight != null){
+                service.execute(flight);
+            }
+        }
+        updatePriorities();
+    }
+
+    public void updatePriorities(){
+        for(ThreadFlight flight : activeFlights.keySet()){
+            int numBump = flight.numBump();
+            if((ThreadTracon.getSystemTimeSec() - flight.getFormedTimeSec()) > (TL_SECONDS_BEFORE_BUMP * numBump)){
+                flight.bump();
+                AtomicLong fullPrio = flight.internalGetFullPriority();
+                fullPrio.set(Math.max(0,flight.getBasePriority() - (1000L * numBump)) + ThreadTracon.connect().getNextPriorityNumber());
+            }
+        }
+    }
+
+
 
 
     public void openThreadSpace(){
@@ -49,29 +97,23 @@ public class ThreadTower {
         service.shutdown();
     }
 
-    public int getThreadSpaceActivity(){
-        return activeFlights.size();
+    //public int getThreadSpaceActivity(){
+//        return activeFlights.size();
+//    }
+    public int getNumFlights(){
+        return getFlightsAwaitingTakeoff() + activeFlights.size();
     }
-    public int getAllOperations(){
-        return activeFlightsQueue.size() + getThreadSpaceActivity();
+    public int getNumRunways(){
+        return activeRunways.get();
+    }
+    public int getActiveRunways(){
+        return service.getActiveCount();
+    }
+    public int getFlightsAwaitingTakeoff(){
+        return activeFlightsQueue.size();
     }
 
 
-
-
-    private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    public static String generateCode(){
-        StringBuilder sb = new StringBuilder();
-        sb.append("K");
-        for (int i = 0; i < 3; i++) {
-            int index = RANDOM.nextInt(CHARS.length());
-            sb.append(CHARS.charAt(index));
-        }
-        if (sb.toString().equals("KPDX") || ThreadTracon.connect().getTowers().contains(sb.toString())){
-            return generateCode();
-        }
-        return sb.toString();
-    }
 
     //Acts as a bucket for threads that need to/can access the same shared resources and aren't "in air"
 
