@@ -28,6 +28,7 @@ import static com.objects.culture.tenet.group.TenetGroup.Level.META_PILLAR;
 import static com.objects.culture.tenet.group.TenetGroup.builder;
 
 public class TenetManager extends ComponentManager<MutableTenet>{
+    public static final TenetManager INSTANCE = new TenetManager();
     public static final TenetGroup CULTURE = new TenetGroup.Builder<TenetGroup>(TGType.SORT_ONLY,META_PILLAR,"culture", "All_Culture", "Every Tenet").build();
     public static final TenetGroup HARD_CULTURE = new TenetGroup.Builder<TenetGroup>(TGType.SORT_ONLY,META_PILLAR,"hard", "Hard Culture", "").setParent(CULTURE).build();
     public static final TenetGroup SOFT_CULTURE = new TenetGroup.Builder<TenetGroup>(TGType.SORT_ONLY,META_PILLAR,"soft", "Soft Culture", "").setParent(CULTURE).build();

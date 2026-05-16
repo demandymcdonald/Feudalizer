@@ -68,6 +68,9 @@ public abstract class AbstractMutableManager<M extends AbstractMutableManager<M,
         }
         return (R) r;
     }
+    public <R extends DateMutableEntity<R>> R copyEntity(R entity){
+        DMEReference<? extends T> td = (DMEReference<? extends T>) dme;
+    }
     public abstract Map<Class<? extends T>, Factory<? extends T,T,UUID,JsonObject>> getFactories();
 
     public abstract Class<?> instanceClass();

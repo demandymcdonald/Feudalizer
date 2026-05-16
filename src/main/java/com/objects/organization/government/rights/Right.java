@@ -11,6 +11,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
 import com.objects.culture.TenetManager;
+import com.objects.culture.tenet.Tenet;
+import com.objects.culture.tenet.factory.RightTenets;
+import com.objects.culture.tenet.instance.TenetInstance;
 import com.objects.culture.tenet.interest.InterestGroup;
 import com.objects.organization.government.GoverningEntity;
 import com.utilities.IDisplayable;
@@ -21,8 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import static com.objects.organization.government.rights.RightLevel.POSSESS;
 
 public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>, DMEReference<? extends GoverningEntity<?>>,DMEReference<? extends SentientCharacter<?>>> implements IDisplayable {
     private String name;
@@ -30,7 +34,7 @@ public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>,
     private final Cache<String, RightLevel> rlCache = CacheBuilder.newBuilder().expireAfterAccess(2, TimeUnit.MINUTES).build();
     private final Map<ComponentReference<InterestGroup>, BoundFloat> interestGroupMap = new HashMap<>();
     public Right(InstanceType type, String id, String name, String description) {
-        super(type,id);
+        super(type,"right_" + id);
         this.name = name;
         this.description = description;
     }
@@ -51,12 +55,12 @@ public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>,
         DMEReference<? extends GoverningEntity<?>> gov = character.get().getGovernment();
         return instance(gov,character);
     }
-    protected final Pair<InterestGroup,RightLevel> getRights(T right, DMEReference<? extends GoverningEntity<?>> gov, DMEReference<? extends SentientCharacter<?>> character){
-        final GoverningEntity<?> entity = gov.get();
+    protected final <G extends GoverningEntity<G>> Pair<InterestGroup,RightLevel> getRights(DMEReference<? extends GoverningEntity<?>> gov, DMEReference<? extends SentientCharacter<?>> character){
+        final G entity = (G) gov.get();
         final Set<InterestGroup> igs = TenetManager.InterestGroups.INSTANCE.getForCharacter(character);
         if(entity == null){
             //Because a person not subject to jurisdiction has the right to do whatever the hell they want. Should never happen.
-            return Pair.of(igs.stream().findFirst().orElse(null),RightLevel.POSSESS);
+            return Pair.of(igs.stream().findFirst().orElse(null), POSSESS);
         }
         InterestGroup ig = null;
         RightLevel level = null;
@@ -64,14 +68,14 @@ public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>,
             String id = entity.getID() + ":" + group.getID();
             RightLevel pl = rlCache.getIfPresent(id);
             if (pl == null){
-                pl = getRightLevel(right,entity,group);
+                pl = getRightLevel(entity,group);
                 rlCache.put(id,pl);
             }
             if (pl == RightLevel.OVERRIDE_DO_NOT_POSSESS){
                 return Pair.of(group,RightLevel.DO_NOT_POSSESS);
             }
             if (pl == RightLevel.OVERRIDE_POSSESS){
-                return  Pair.of(group,RightLevel.POSSESS);
+                return  Pair.of(group, POSSESS);
             }
             if(level == null || pl.getLevel() < level.getLevel()){
                 level = pl;
@@ -82,12 +86,40 @@ public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>,
         }
         return Pair.of(ig,level);
     }
+    protected <G extends GoverningEntity<G>> RightLevel getRightLevel(G government, InterestGroup interestGroup){
+        Set<TenetInstance<G>> revokeTenets = government.getActiveTenetByClass(RightTenets.class).stream().filter(
+                t -> t.getTenet().get() instanceof RightTenets<?> rt && rt.getRight() == this && rt.getInterestGroup().equals(interestGroup)).collect(Collectors.toSet());
+        if (revokeTenets.isEmpty()){
+            return POSSESS;
+        }
+        RightTenets<T> right = (RightTenets<T>) revokeTenets.stream().findFirst().get().getTenet().get();
+        return right.getLevel();
+    };
 
-    protected abstract RightLevel getRightLevel(
-            T right,
-            GoverningEntity<?> government,
-            InterestGroup interestGroup);
-    protected abstract BoundFloat getHardshipFactor();
+    protected abstract float getHardshipFactor();
+
+    public final RightTenets.RevokeRightTenet<T> getRevokeTenet(InterestGroup interestGroup){
+        return TenetManager.INSTANCE.getOrMake(RightTenets.RevokeRightTenet.class, RightTenets.RevokeRightTenet.getID((T) this, interestGroup),
+                () -> buildRevoke(interestGroup));
+    };
+    public final RightTenets.GuaranteeRightTenet<T> getGuaranteeTenet(InterestGroup interestGroup){
+        return TenetManager.INSTANCE.getOrMake(RightTenets.GuaranteeRightTenet.class, RightTenets.GuaranteeRightTenet.getID((T) this, interestGroup),
+                () -> buildGuarantee(interestGroup));
+    };
+    public final RightTenets.LimitedRightTenet<T> getLimitedTenet(InterestGroup interestGroup){
+        return TenetManager.INSTANCE.getOrMake(RightTenets.LimitedRightTenet.class, RightTenets.LimitedRightTenet.getID((T) this, interestGroup),
+                () -> buildLimited(interestGroup));
+    };
+    public final RightTenets.RevokeRightTenet<T> getGuaranteeRevokeTenet(InterestGroup interestGroup){
+        return TenetManager.INSTANCE.getOrMake(RightTenets.GuaranteeRevokeRightTenet.class, RightTenets.RevokeRightTenet.getID((T) this, interestGroup),
+                () -> buildGuaranteeRevoke(interestGroup));
+    };
+ ,
+    protected abstract RightTenets.GuaranteeRevokeRightTenet<T> buildGuaranteeRevoke(InterestGroup interestGroup);
+    protected abstract RightTenets.RevokeRightTenet<T> buildRevoke(InterestGroup interestGroup);
+    protected abstract RightTenets.GuaranteeRightTenet<T> buildGuarantee(InterestGroup interestGroup);
+    protected abstract RightTenets.LimitedRightTenet<T> buildLimited(InterestGroup interestGroup);
+
 
     @Override
     public void additionalLoad(JsonObject data) {
@@ -123,7 +155,7 @@ public abstract class Right<T extends Right<T>> extends IOBi<T,RightInstance<T>,
 
     @Override
     public RightInstance<T> instance(DMEReference<? extends GoverningEntity<?>> gov, DMEReference<? extends SentientCharacter<?>> character) {
-        Pair<InterestGroup,RightLevel> pair = getRights((T) this,gov,character);
+        Pair<InterestGroup,RightLevel> pair = getRights(gov,character);
         return new RightInstance<>(this.getReference(),pair.getKey(),pair.getValue());
     }
 }

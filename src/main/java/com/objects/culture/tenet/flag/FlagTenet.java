@@ -1,5 +1,6 @@
 package com.objects.culture.tenet.flag;
 
+import com.base.component.AbstractComponent;
 import com.base.component.InstanceType;
 import com.base.component.instanced.AbstractInstancedComponent;
 import com.base.component.instanced.base.IOBase;
@@ -25,7 +26,7 @@ import com.objects.culture.tenet.group.TenetGroup;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class FlagTenet extends IOBase<FlagTenet,FlagInstance> implements SubTenet {
+public abstract class FlagTenet extends AbstractComponent<FlagTenet> implements SubTenet {
     private TenetGroup group;
     private PoliticalCompass politicalCompass;
     private String name;
@@ -69,10 +70,7 @@ public abstract class FlagTenet extends IOBase<FlagTenet,FlagInstance> implement
     public final String getDisplayName() {
         return name;
     }
-    @Override
-    public FlagInstance instance() {
-        return new FlagInstance(this.getReference());
-    }
+
     @Override
     public final String getDescription() {
         return description;

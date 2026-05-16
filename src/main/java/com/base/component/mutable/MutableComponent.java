@@ -8,20 +8,19 @@ import java.util.UUID;
 
 public abstract class MutableComponent<T extends MutableComponent<T>> extends AbstractComponent<T> {
     private static final String delimiter = ":{id}:";
-    private final UUID runtime;
     public MutableComponent(InstanceType type, String id) {
-        super(type, buildID(id));
-        runtime = UUID.fromString(this.getID().split(delimiter)[1]);
+        super(type, buildID(type, id));
     }
-    private static String buildID(String id){
-        if(id.contains(delimiter)){
-            return id;
+    private static String buildID(InstanceType type, String id){
+        if (type == InstanceType.DATA_DRIVEN || type == InstanceType.EXTERNAL) {
+            if(id.contains(delimiter)){
+                return id;
+            } else {
+                UUID runtime = UUID.randomUUID();
+                return id + delimiter + runtime.toString();
+            }
         } else {
-            UUID runtime = UUID.randomUUID();
-            return id + delimiter + runtime.toString();
+            return id;
         }
-    }
-    public UUID getRuntime() {
-        return runtime;
     }
 }

@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.utilities.id.StringIdentifiable;
 import com.utilities.serialization.SuperclassSerializable;
 
-public interface IComponent<T extends IComponent<T>> extends StringIdentifiable, SuperclassSerializable<T>, IComponentLogged {
+public interface IComponent<T extends IComponent<T>> extends StringIdentifiable, SuperclassSerializable<T>, IComponentLogged,Cloneable {
 
     InstanceType getInstanceType();
     T getNewObject(InstanceType type, String id, JsonObject data);

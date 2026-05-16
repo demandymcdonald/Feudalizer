@@ -32,6 +32,7 @@ public abstract class ThreadFlight implements StringIdentifiable,Runnable,Compar
 
         private final boolean inAir;
         private final boolean flightFinished;
+
         Status(boolean inAir, boolean flightFinished) {
             this.inAir = inAir;
             this.flightFinished = flightFinished;
@@ -59,11 +60,14 @@ public abstract class ThreadFlight implements StringIdentifiable,Runnable,Compar
     private final long formedTime;
     private final FlightType type;
     private final AtomicInteger numBump = new AtomicInteger(1);
-    public ThreadFlight(FlightType type, int priority, Acars<?> acars) {
+    private final boolean shouldCopyShared;
+    public final AtomicReference<ThreadTower> currentTower = new AtomicReference<>();
+    public ThreadFlight(FlightType type, int priority, Acars<?> acars, boolean shouldCopyShared) {
         this.type = type;
         this.formedTime = System.currentTimeMillis();
         this.acars = acars;
         this.priority = priority > 1000 ? priority : priority * 1000;
+        this.shouldCopyShared = shouldCopyShared;
         this.callsign = CallsignGen.generateFlightCode(type); //I love this for the memes, but I might cut it later if it's hurting performance.
     }
 
@@ -131,6 +135,10 @@ public abstract class ThreadFlight implements StringIdentifiable,Runnable,Compar
     public final String getShortCallsign(){
         return callsign.getMiddle();
     }
+
+    public final boolean shouldCopyShared(){
+        return shouldCopyShared;
+    }
     public FlightType getType() {
         return type;
     }
@@ -147,6 +155,7 @@ public abstract class ThreadFlight implements StringIdentifiable,Runnable,Compar
 
     @Override
     public final void run() {
+        currentTower.get().downloadFMCData(this); //Pulls a copy of all the pooled objects into the threadlocal's wrapper.
         if(status.get() == Status.ON_GROUND){
             startFlight();
         }

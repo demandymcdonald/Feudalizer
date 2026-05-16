@@ -1,8 +1,10 @@
 package com.base.thread;
 
 import com.base.thread.space.ThreadFlight;
+import com.base.thread.space.ThreadedAsset;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,10 +18,13 @@ public class ThreadTower {
     private final ThreadGroup group = new ThreadGroup("tower_" + tower_code);
     private final AtomicInteger activeRunways = new AtomicInteger(0);
     private final ThreadPoolExecutor service;
-    private final Map<ILocking<?>, Deque<ThreadFlight>> separatedAssets = new ConcurrentHashMap<>();
+
+    private final Map<LockInstance, Deque<ThreadFlight>> separatedAssets = new ConcurrentHashMap<>();
     private final Map<ThreadFlight,Thread> activeFlights = Collections.synchronizedMap(new WeakHashMap<>());
+    private final Map<ThreadedAsset<?>,Object> groupedObjects = new ConcurrentHashMap<>();
     private final Deque<ThreadFlight> activeFlightsQueue = new ConcurrentLinkedDeque<>();
-            ;
+    protected final Map<ThreadedAsset<?>,Object> registeredAssets = new ConcurrentHashMap<>();
+
     protected ThreadTower(int activeRunways) {
         this.activeRunways.set(activeRunways);
         service = new ThreadPoolExecutor(activeRunways, activeRunways * 2, 15L, TimeUnit.SECONDS, new LinkedBlockingQueue<>()){
@@ -53,6 +58,15 @@ public class ThreadTower {
             return;
         }
         activeFlightsQueue.add(tf);
+    }
+    public void downloadFMCData(ThreadFlight tf){
+        if (tf.shouldCopyShared()) return;
+        for(ThreadedAsset<?> asset : registeredAssets.keySet()){
+            asset.set(registeredAssets.get(asset));
+        }
+    }
+    public void flightLeavesThreadspace(ThreadFlight fl){
+        activeFlights.remove(fl);
     }
     private void manageExecutor(int updatedActiveRunways) {
         final int maxInExecutor;
@@ -112,12 +126,24 @@ public class ThreadTower {
     public int getFlightsAwaitingTakeoff(){
         return activeFlightsQueue.size();
     }
+    public boolean containsThread(Thread t){
+        return activeFlights.containsValue(t);
+    }
+    public boolean containsFlight(ThreadFlight tf){
+        return activeFlights.containsKey(tf);
+    }
 
 
 
-    //Acts as a bucket for threads that need to/can access the same shared resources and aren't "in air"
+
+    public static class LockInstance {
 
 
+        public LockInstance(ILocking<?> lock, @Nullable ThreadFlight flight, Thread thread) {
+        }
+        //Acts as a bucket for threads that need to/can access the same shared resources and aren't "in air"
+
+    }
 
 
 

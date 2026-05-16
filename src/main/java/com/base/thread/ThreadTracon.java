@@ -2,7 +2,9 @@ package com.base.thread;
 
 import com.Global;
 import com.base.thread.space.ThreadFlight;
+import com.base.thread.space.ThreadedAsset;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,6 +16,7 @@ public class ThreadTracon {
     private final AtomicBoolean isActive = new AtomicBoolean(true);
     private final Map<String,ThreadTower> towers = new ConcurrentHashMap<>();
     private final Map<String,ThreadFlight> flights = Collections.synchronizedMap(new WeakHashMap<>());
+    private final Set<ThreadedAsset<?>> registeredAssets = Collections.synchronizedSet(new HashSet<>());
     //The actual manager of Threadports, Flights, which has the sole authority to grant clearance, control the threadspace, and issue navigation directives.
     private static final ThreadTracon instance = new ThreadTracon();
     private final int maxPhysicalThreads = Global.CONFIG.getTotalThreads() - 2; //Take away one for main/render, another for this/buffer.
@@ -44,12 +47,37 @@ public class ThreadTracon {
         return instance;
     }
 
-    public void registerFlight(ThreadFlight flight){
-        flights.put(flight.getCallsign(),flight);
+    public void registerFlight(ThreadFlight flight, @Nullable ThreadTower tower){
+        flights.put(flight.getIcaoCallsign(),flight);
         flight.internalGetFullPriority().set((flight.getBasePriority() * 1000L) + getNextPriorityNumber());
+        if(tower == null){
+            tower = newTower(flight.shouldCopyShared());
+        }
+        tower.flightEntersControl(flight);
+        flight.currentTower.set(tower);
     }
-
-
+    private ThreadTower newTower(boolean copyCurrentValue){
+        ThreadTower tower = new ThreadTower(1);
+        for(ThreadedAsset<?> asset : registeredAssets){
+            tower.registeredAssets.put(asset,asset.getNewThreadInstance(copyCurrentValue));
+        }
+        return tower;
+    }
+    public ThreadTower getTower(ThreadFlight flight){
+        for(ThreadTower tower : towers.values()){
+            if(tower.containsFlight(flight)){
+                return tower;
+            }
+        }
+    }
+    public ThreadTower getTower(Thread thread){
+        for(ThreadTower tower : towers.values()){
+            if(tower.containsThread(thread)){
+                return tower;
+            }
+        }
+        return null;
+    }
     public <T extends ILocking<T>> void requestClearance(T object) throws PossibleThreadDeviation{
 
     }
@@ -89,8 +117,9 @@ public class ThreadTracon {
 
         }
     }
-
-
+    public void registerAsset(ThreadedAsset<?> asset){
+        registeredAssets.add(asset);
+    }
 
 
 

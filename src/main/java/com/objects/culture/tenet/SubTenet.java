@@ -24,6 +24,11 @@ public interface SubTenet extends Tenet{
         if (reference2.isPresent()) return reference2;
         final Optional<StateError> reference3 = getRequiredFlag(holder, reference, existing);
         if (reference3.isPresent()) return reference3;
+        for(TenetInstance<?> ti : activeTenets){
+            if(!this.isTenetCompatible(ti)){
+                return Optional.of(new StateError("tenet_incompatible", new ComplexReference("Tenet {} is incompatible with {}.", reference, ti.getTenet()), existing).addEndSave().addEndCancel().addIgnore());
+            }
+        }
         return getIncompatFlags(holder, reference, existing);
     }
 
@@ -41,7 +46,7 @@ public interface SubTenet extends Tenet{
     }
 
     private  Optional<StateError> getRequiredFlag(DMEReference<? extends IActivatable<?>> holder, TenetReference reference, OpinionChange<? extends IActivatable<?>> existing) {
-        ImmutableSet<FlagInstance> flags = ImmutableSet.copyOf(holder.get().getFlags());
+        ImmutableSet<FlagTenet> flags = ImmutableSet.copyOf(holder.get().getFlags());
         Set<FlagTenet> reqFlags = new HashSet<>();
         requiredFlags(reqFlags);
         if(!reqFlags.isEmpty()){
@@ -86,7 +91,6 @@ public interface SubTenet extends Tenet{
         return Optional.empty();
     }
 
-    ;
 
     private static boolean threshold(Acceptance base, Acceptance against){
         if(base.getValue() > 0){
@@ -99,4 +103,7 @@ public interface SubTenet extends Tenet{
     default void incompatibleTenets(Set<TenetReference> tenets){};
     default void requiredFlags(Set<Class<? extends FlagTenet>> flags){};
     default void incompatibleFlags(Set<Class<? extends FlagTenet>> flags){};
+    default boolean isTenetCompatible(TenetInstance<?> t){
+        return true;
+    }
 }

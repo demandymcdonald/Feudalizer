@@ -6,6 +6,8 @@ import com.base.datemutable.utilities.TimelineSynced;
 import com.base.loaders.LoadingManager;
 import com.base.loaders.global.properties.AppConfig;
 import com.base.loaders.global.properties.ProjectProperties;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.ibm.icu.util.ULocale;
 import com.utilities.ThreadMutable;
 
@@ -33,6 +35,9 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
     //--- Thread Specific Globals ---
     private static final ThreadLocal<DateWrapper> CurrentDate = ThreadLocal.withInitial(() -> DateWrapper.of(CONFEDERACY_FOUNDED));
     private static ThreadLocal<SandboxHandler<?>> SANDBOX_HANDLER = new ThreadLocal<>();
+
+    public static final Gson GSON = buildGson();
+
 
     public static void setCurrentDate(LocalDate newDate) {
         if (newDate == null || newDate.equals(CurrentDate.get().get())){return;}
@@ -94,6 +99,21 @@ public class Global implements ThreadMutable<Global, Global.DateWrapper> {
     public static void setSandboxHandler(SandboxHandler<?> handler) {
         SANDBOX_HANDLER.set(handler);
     }
+
+
+    private static Gson buildGson(){
+        GsonBuilder builder = new GsonBuilder();
+        builder.setLenient();
+        builder.create();
+    }
+
+
+
+
+
+
+
+
 
     public enum TimeDirection {
         FORWARD, BACKWARD

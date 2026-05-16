@@ -8,6 +8,7 @@ import com.utilities.serialization.SuperclassSerializable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 public abstract class ComponentManager<T extends IComponent<?>> implements IComponentLogged {
 
@@ -59,7 +60,17 @@ public abstract class ComponentManager<T extends IComponent<?>> implements IComp
         }
         return null;
     }
-
+    public final <t extends T> t getOrMake(Class<? extends T> clazz, String id, Supplier<t> factory){
+        T tr = instanceMap.get(id);
+        if(tr == null){
+            tr = factory.get();
+            register(tr);
+        }
+        if(tr != null && tr.getClass() == clazz){
+            return (t) tr;
+        }
+        return null;
+    }
     public final Map<String, JsonObject> save(){
         Map<String, JsonObject> saveableMap = new HashMap<>();
         for(T t : instanceMap.values()){
