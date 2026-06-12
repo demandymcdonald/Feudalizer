@@ -14,7 +14,7 @@ public class HumanAugments {
     public static final AugmentSlot BIONIC_EYE = new AugmentSlot("human_bionic_eye", "Bionic Eye", "");
     public static final AugmentSlot GLASSES = new AugmentSlot("human_glasses", "Glasses", "");
     public static final AugmentSlot SKIN_TEXTURE = new AugmentSlot("skin_texture", "Skin Texture", "");
-    public static final AugmentSlot TEETH_CONDITION = new AugmentSlot( "teeth_condition", "Teeth Condition", "");
+    public static final AugmentSlot TEETH_CONDITION = new AugmentSlot( "teeth_condition", "Teeth ScriptingCondition", "");
     public static final AugmentSlot TEETH_BRACES = new AugmentSlot("teeth_braces", "Braces", "");
     public static final AugmentSlot TEETH_IMPLANTS = new AugmentSlot("teeth_implants", "Dental Implants", "");
     public static final AugmentSlot TEETH_VENEERS = new AugmentSlot("teeth_veneers", "Veneers", "");

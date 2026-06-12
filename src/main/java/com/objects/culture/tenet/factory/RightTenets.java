@@ -26,8 +26,8 @@ public abstract class RightTenets<R extends Right<R>> extends MutableTenet imple
         super(type, id);
     }
 
-    public RightTenets(TenetReference parent, TenetGroup group, R right, PoliticalCompass compass, InterestGroup interestGroup, String id, String name, String desc) {
-        super(InstanceType.PROCEDURAL, parent, group, compass, id, name, desc);
+    public RightTenets(TenetGroup group, R right, PoliticalCompass compass, InterestGroup interestGroup, String id, String name, String desc) {
+        super(InstanceType.PROCEDURAL, group, compass, id, name, desc);
         this.interestGroup = interestGroup;
         this.right = right;
     }
@@ -74,8 +74,8 @@ public abstract class RightTenets<R extends Right<R>> extends MutableTenet imple
             super(type, id);
         }
 
-        public RevokeRightTenet(TenetReference parent, R right, PoliticalCompass compass, InterestGroup interestGroup) {
-            super(parent,interestGroup.getRightsGroup(),right,compass,interestGroup,getID(right, interestGroup), "Revoke Right: " + right.getDisplayName(), "Disenfranchise " + interestGroup.getDisplayName() + " from " + right.getDisplayName());
+        public RevokeRightTenet(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+            super(interestGroup.getRightsGroup(),right,compass,interestGroup,getID(right, interestGroup), "Revoke Right: " + right.getDisplayName(), "Disenfranchise " + interestGroup.getDisplayName() + " from " + right.getDisplayName());
         }
 
         public static <R extends Right<R>> String getID(R right, InterestGroup interestGroup){
@@ -86,14 +86,36 @@ public abstract class RightTenets<R extends Right<R>> extends MutableTenet imple
         public RightLevel getLevel() {
             return RightLevel.DO_NOT_POSSESS;
         }
+        public static <R extends Right<R>> RevokeRightTenet<R> buildEmpty(R right,PoliticalCompass compass, InterestGroup interestGroup){
+            return new RevokeRightTenet.RevokeImpl<>(right,compass,interestGroup);
+        }
+        private static class RevokeImpl<R extends Right<R>> extends RevokeRightTenet<R> {
+            public RevokeImpl(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+                super(right, compass, interestGroup);
+            }
+
+            public RevokeImpl(InstanceType type, String id) {
+                super(type, id);
+            }
+
+            @Override
+            public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+                return new RightTenets.RevokeRightTenet.RevokeImpl<>(type,id);
+            }
+
+            @Override
+            public void getConditions(Set<CultureCondition<?, ?>> conditions) {
+
+            }
+        }
     }
     public static abstract class GuaranteeRevokeRightTenet<R extends Right<R>> extends RevokeRightTenet<R> {
         public GuaranteeRevokeRightTenet(InstanceType type, String id) {
             super(type, id);
         }
 
-        public GuaranteeRevokeRightTenet(TenetReference parent, R right, PoliticalCompass compass, InterestGroup interestGroup) {
-            super(parent,right,compass,interestGroup);
+        public GuaranteeRevokeRightTenet(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+            super(right,compass,interestGroup);
         }
 
         @Override
@@ -104,13 +126,36 @@ public abstract class RightTenets<R extends Right<R>> extends MutableTenet imple
         public static <R extends Right<R>> String getID(R right, InterestGroup interestGroup){
             return "revoke_guarantee_" + right.getID() + "_" + interestGroup.getID();
         }
+
+        public static <R extends Right<R>> GuaranteeRevokeRightTenet<R> buildEmpty(R right,PoliticalCompass compass, InterestGroup interestGroup){
+            return new GuaranteeRevokeRightTenet.GuaranteeRevokeImpl<>(right,compass,interestGroup);
+        }
+        private static class GuaranteeRevokeImpl<R extends Right<R>> extends GuaranteeRevokeRightTenet<R> {
+            public GuaranteeRevokeImpl(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+                super(right, compass, interestGroup);
+            }
+
+            public GuaranteeRevokeImpl(InstanceType type, String id) {
+                super(type, id);
+            }
+
+            @Override
+            public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+                return new RightTenets.GuaranteeRevokeRightTenet.GuaranteeRevokeImpl<>(type,id);
+            }
+
+            @Override
+            public void getConditions(Set<CultureCondition<?, ?>> conditions) {
+
+            }
+        }
     }
     public static abstract class GuaranteeRightTenet<R extends Right<R>> extends RightTenets<R> {
         public GuaranteeRightTenet(InstanceType type, String id) {
             super(type, id);
         }
-        public GuaranteeRightTenet(TenetReference parent, R right, PoliticalCompass compass, InterestGroup interestGroup) {
-            super(parent,interestGroup.getRightsGroup(),right,compass,interestGroup,getID(right, interestGroup), "Guarantee Right: " + right.getDisplayName(), "Mandate that " + interestGroup.getDisplayName() + " has the right: " + right.getDisplayName());
+        public GuaranteeRightTenet(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+            super(interestGroup.getRightsGroup(),right,compass,interestGroup,getID(right, interestGroup), "Guarantee Right: " + right.getDisplayName(), "Mandate that " + interestGroup.getDisplayName() + " has the right: " + right.getDisplayName());
         }
         public static <R extends Right<R>> String getID(R right, InterestGroup interestGroup){
             return "guarantee_" + right.getID() + "_" + interestGroup.getID();
@@ -120,13 +165,35 @@ public abstract class RightTenets<R extends Right<R>> extends MutableTenet imple
         public RightLevel getLevel() {
             return RightLevel.OVERRIDE_POSSESS;
         }
+        public static <R extends Right<R>> GuaranteeRightTenet<R> buildEmpty(R right,PoliticalCompass compass, InterestGroup interestGroup){
+            return new GuaranteeRightTenet.GuaranteeRightTenetImpl<>(right,compass,interestGroup);
+        }
+        private static class GuaranteeRightTenetImpl<R extends Right<R>> extends GuaranteeRightTenet<R> {
+            public GuaranteeRightTenetImpl(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+                super(right, compass, interestGroup);
+            }
+
+            public GuaranteeRightTenetImpl(InstanceType type, String id) {
+                super(type, id);
+            }
+
+            @Override
+            public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+                return new RightTenets.GuaranteeRightTenet.GuaranteeRightTenetImpl<>(type,id);
+            }
+
+            @Override
+            public void getConditions(Set<CultureCondition<?, ?>> conditions) {
+
+            }
+        }
     }
     public static abstract class LimitedRightTenet<R extends Right<R>> extends RightTenets<R> {
         public LimitedRightTenet(InstanceType type, String id) {
             super(type, id);
         }
-        public LimitedRightTenet(TenetReference parent, R right, PoliticalCompass compass, InterestGroup interestGroup) {
-            super(parent,interestGroup.getRightsGroup(),right,compass,interestGroup,getID(right, interestGroup), "Limited Right: " + right.getDisplayName(), interestGroup.getDisplayName() + " has limited access to the right: " + right.getDisplayName());
+        public LimitedRightTenet(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+            super(interestGroup.getRightsGroup(),right,compass,interestGroup,getID(right, interestGroup), "Limited Right: " + right.getDisplayName(), interestGroup.getDisplayName() + " has limited access to the right: " + right.getDisplayName());
         }
         public static <R extends Right<R>> String getID(R right, InterestGroup interestGroup){
             return "limit_" + right.getID() + "_" + interestGroup.getID();
@@ -135,5 +202,30 @@ public abstract class RightTenets<R extends Right<R>> extends MutableTenet imple
         public RightLevel getLevel() {
             return RightLevel.PARTIAL;
         }
+        public static <R extends Right<R>> LimitedRightTenet<R> buildEmpty(R right,PoliticalCompass compass, InterestGroup interestGroup){
+            return new LimitedRightTenetImpl<>(right,compass,interestGroup);
+        }
+        private static class LimitedRightTenetImpl<R extends Right<R>> extends LimitedRightTenet<R> {
+            public LimitedRightTenetImpl(R right, PoliticalCompass compass, InterestGroup interestGroup) {
+                super(right, compass, interestGroup);
+            }
+
+            public LimitedRightTenetImpl(InstanceType type, String id) {
+                super(type, id);
+            }
+
+            @Override
+            public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
+                return new LimitedRightTenetImpl<>(type,id);
+            }
+
+            @Override
+            public void getConditions(Set<CultureCondition<?, ?>> conditions) {
+
+            }
+        }
+
+
     }
+
 }

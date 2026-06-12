@@ -1,6 +1,6 @@
 package com.base.loaders.global.json;
 
-import com.base.api.DataFileType;
+import com.base.worldforge.DataFileType;
 import com.base.loaders.LoaderVars;
 import com.base.loaders.global.IFile;
 import com.google.gson.JsonElement;
@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;

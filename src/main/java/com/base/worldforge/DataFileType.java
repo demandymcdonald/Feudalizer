@@ -1,5 +1,4 @@
-package com.base.api;
-import com.Global.*;
+package com.base.worldforge;
 
 public enum DataFileType {
     SHP,

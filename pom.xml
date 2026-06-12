@@ -52,7 +52,11 @@
       <artifactId>jackson-dataformat-csv</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
     <!-- GeoTools dependencies -->
     <dependency>
       <groupId>org.geotools</groupId>
@@ -135,6 +139,18 @@
       <groupId>org.fxmisc.richtext</groupId>
       <artifactId>richtextfx</artifactId>
       <version>0.11.7</version>
+    </dependency>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>RELEASE</version>
+          <scope>test</scope>
+      </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

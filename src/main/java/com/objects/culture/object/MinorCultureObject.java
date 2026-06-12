@@ -19,7 +19,7 @@ public interface MinorCultureObject<T extends DateMutableEntity<T> & MinorCultur
     default void changeCulture(DMEReference<Culture> newCulture){
         getReference().get().getTimeline().addChange(new MinorCultureChange<>(getReference(), Global.getDate(), newCulture));
     }
-
+    DMEReference<Culture> getCulture();
     @Override
     default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
         double val = getParent().get().getAcceptanceTenet(tenet, includeInfluencers).value();

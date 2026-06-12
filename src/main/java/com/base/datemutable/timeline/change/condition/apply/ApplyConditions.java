@@ -5,14 +5,14 @@ import com.base.datemutable.DateMutableEntity;
 import java.util.List;
 
 public class ApplyConditions {
-//    public static <T extends DateMutableEntity<T>> List<Condition<StateError,T>> BaseConditions(){
+//    public static <T extends DateMutableEntity<T>> List<ScriptingCondition<StateError,T>> BaseConditions(){
 //        return List.of(IS_DEAD);
 //    }
     public static List<ApplyCondition<DateMutableEntity<?>>> BaseConditions() {
         return List.of();
     }
 
-//    public static final Condition<StateError, ? extends DateMutableEntity<?>> AT_BOUNDARY = new Condition<>("gen_out_of_bounds",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, ? extends DateMutableEntity<?>> AT_BOUNDARY = new ScriptingCondition<>("gen_out_of_bounds",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar sidecar) {
 //            if (thisChange instanceof BoundaryChange<?,?> cd){
@@ -22,7 +22,7 @@ public class ApplyConditions {
 //        }
 //    });
 //    //--- Title Conditions ---
-//    public static final Condition<StateError, Sidecar.TitleChange> TEMPLATE = new Condition<>("title_template",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> TEMPLATE = new ScriptingCondition<>("title_template",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
@@ -33,7 +33,7 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> IS_OPPOSITE = new Condition<>("title_isOpposite",true, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> IS_OPPOSITE = new ScriptingCondition<>("title_isOpposite",true, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            if( thisChange instanceof TitleTLChange<?> tC && checkAgainst instanceof TitleTLChange<?> cA){
@@ -44,7 +44,7 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> WAS_REGRANTED = new Condition<>("title_wasReGranted", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> WAS_REGRANTED = new ScriptingCondition<>("title_wasReGranted", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
@@ -55,7 +55,7 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> WAS_REVOKED = new Condition<>("title_wasReGranted", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> WAS_REVOKED = new ScriptingCondition<>("title_wasReGranted", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
@@ -66,7 +66,7 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> DUPLICATE = new Condition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> DUPLICATE = new ScriptingCondition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            //Title<?> subject = sidecar.subject();
@@ -81,7 +81,7 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> TITLE_LOOP = new Condition<>("title_loop;",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> TITLE_LOOP = new ScriptingCondition<>("title_loop;",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            if( thisChange instanceof TitleTLChange.DeJureDrift<?,?> tC && checkAgainst instanceof TitleTLChange.DeJureDrift<?,?> cA){
@@ -125,7 +125,7 @@ public class ApplyConditions {
 //            //return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> CAN_STILL_HOLD = new Condition<>("title_canStillHold",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> CAN_STILL_HOLD = new ScriptingCondition<>("title_canStillHold",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            Title<?> subject = sidecar.subject();
@@ -144,7 +144,7 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static final Condition<StateError, Sidecar.TitleChange> DRIFT_ON_GRANT = new Condition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> DRIFT_ON_GRANT = new ScriptingCondition<>("title_duplicate", false,new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            //Title<?> subject = sidecar.subject();
@@ -157,8 +157,8 @@ public class ApplyConditions {
 //            return Optional.empty();
 //        }
 //    });
-//    public static <T extends Title<T>> Condition<StateError, Sidecar.TitleChange> INHERITS_TITLE(){
-//        return new Condition<>("title_inherited",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static <T extends Title<T>> ScriptingCondition<StateError, Sidecar.TitleChange> INHERITS_TITLE(){
+//        return new ScriptingCondition<>("title_inherited",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //            @Override
 //            public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //                if (thisChange instanceof TitleTLChange.Inherit<?> ttl && ttl.isFirstTime()) {
@@ -169,7 +169,7 @@ public class ApplyConditions {
 //            }
 //        });
 //    }
-//    public static final Condition<StateError, Sidecar.TitleChange> HAS_PARENT = new Condition<>("title_template",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
+//    public static final ScriptingCondition<StateError, Sidecar.TitleChange> HAS_PARENT = new ScriptingCondition<>("title_template",false, new TriFunction<TimelineChange<?>, TimelineChange<?>, Sidecar.TitleChange, Optional<StateError>>() {
 //        @Override
 //        public Optional<StateError> apply(TimelineChange<?> thisChange, TimelineChange<?> checkAgainst, Sidecar.TitleChange sidecar) {
 //            if(thisChange instanceof TitleTLChange.DeJureDrift<?,?> ttl){

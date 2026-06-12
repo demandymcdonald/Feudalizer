@@ -9,7 +9,9 @@ import com.objects.culture.Culture;
 import com.objects.culture.IActivatable;
 import com.objects.culture.object.CultureObject;
 import com.objects.culture.object.ICultureObject;
+import com.objects.culture.object.ICultureOpinionated;
 import com.objects.culture.object.change.OpinionChange;
+import com.objects.culture.object.compass.IPoliticalCompass;
 import com.objects.culture.tenet.dynamic.DynamicTenet;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.group.TenetGroup;
@@ -20,7 +22,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public interface Tenet extends IDisplayable, ICultureObject {
+public interface Tenet extends IDisplayable, ICultureOpinionated {
     TenetGroup getGroup();
     default TenetReference getTenetReference() {
         return TenetReference.of(this);
@@ -37,17 +39,13 @@ public interface Tenet extends IDisplayable, ICultureObject {
         return result;
     };
     void getConditions(Set<CultureCondition<?, ?>> conditions);
-
+    IPoliticalCompass getCompass(DMEReference<Culture> culture);
 
     @Override
     default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
-        return new AcceptanceContainer(getAcceptanceValue(tenet,getCulture(), includeInfluencers));
+        return new AcceptanceContainer(0);
     };
 
-    @Override
-    default Type getType(){
-        return Type.Tenet;
-    };
 
     default Acceptance getAcceptance(TenetReference tenet,DMEReference<Culture> culture, boolean includeInfluencers) {
         return Acceptance.get((int) Math.round(getAcceptanceValue(tenet,culture,includeInfluencers)));

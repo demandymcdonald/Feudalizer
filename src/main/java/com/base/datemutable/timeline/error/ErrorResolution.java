@@ -9,7 +9,7 @@ import com.base.datemutable.timeline.sandbox.core.Objective;
 import com.base.datemutable.timeline.sandbox.core.Sandbox;
 import com.base.datemutable.timeline.sandbox.core.SandboxHandler;
 import com.base.datemutable.timeline.state.TimelineState;
-import com.objects.character.sentient.SentientCharacter<?>;
+import com.objects.character.sentient.SentientCharacter;
 import com.utilities.IDisplayable;
 
 import static com.base.datemutable.timeline.error.SandboxCode.*;

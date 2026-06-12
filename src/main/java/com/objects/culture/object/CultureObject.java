@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
 public interface CultureObject<T extends DateMutableEntity<T> & CultureObject<T>> extends ICultureObject{
 
     CultureObjectContainer<T> getContainer();
-
+    DMEReference<Culture> getCulture();
     @Override
     default AcceptanceContainer getAcceptanceTenet(TenetReference tenet, boolean includeInfluencers){
         return getContainer().getAcceptanceTenet(tenet,includeInfluencers);

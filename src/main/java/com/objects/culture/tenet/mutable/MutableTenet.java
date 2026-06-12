@@ -26,15 +26,13 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
     private String displayID;
     private String name;
     private String description;
-    private TenetReference parent;
-    public MutableTenet(InstanceType type, TenetReference parent, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
+    public MutableTenet(InstanceType type, TenetGroup group, PoliticalCompass entry, String id, String name, String description) {
         super(type,buildID(group,id));
         this.group = group;
         this.displayID = buildID(group, id);
         this.politicalCompass = entry;
         this.name = name;
         this.description = description;
-        this.parent = parent;
     }
     public MutableTenet(InstanceType type, String id){
         super(type,id);
@@ -44,7 +42,7 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
     public final AcceptanceContainer getCultureOpinion(DMEReference<Culture> culture){
         return culture.get().getAcceptanceTenet(getTenetReference(),true);
     }
-    public abstract Set<CultureCondition<?,?>> getConditionList();
+
     private static String buildID(TenetGroup group, String id){
         return group.getDisplayID() + "." + id;
     }
@@ -80,7 +78,6 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
         object.addProperty("mt:name", name);
         object.addProperty("mt:description", description);
         object.addProperty("mt:group", group.getDisplayID());
-        object.add("mt:parent",parent.serialize());
         object.add("mt:compass", politicalCompass.toJson());
     }
     @Override
@@ -89,19 +86,11 @@ public abstract class MutableTenet extends MutableComponent<MutableTenet> implem
         name = object.get("mt:name").getAsString();
         description = object.get("mt:description").getAsString();
         group = TenetManager.Group.INSTANCE.get(object.get("mt:group").getAsString());
-        parent = TenetReference.deserialize(object.get("mt:parent").getAsJsonObject());
         politicalCompass = PoliticalCompass.build(object.get("mt:compass").getAsJsonObject());
     }
     @Override
     public AcceptanceContainer getAcceptanceObject(ICultureObject other, boolean includeInfluencers, boolean factorOtherTolerance) {
         return politicalCompass.getAcceptanceContainer(other.getCompass(other.getCulture()), factorOtherTolerance);
-    }
-    @Override
-    public DMEReference<Culture> getCulture() {
-        return parent.get().getCulture();
-    }
-    public TenetReference getParentTenet(){
-        return parent;
     }
     public static PoliticalCompass makeCompass(PoliticalCompass base, Set<PoliticalCompass.IdeologyEntry> opinions, @Nullable TenetGroup reference, @Nullable CategoryModifier modifiers){
         PoliticalCompass compass = PoliticalCompass.of(opinions);

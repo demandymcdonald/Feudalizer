@@ -1,6 +1,6 @@
 package com.base.loaders.global.properties;
 
-import com.base.api.DataFileType;
+import com.base.worldforge.DataFileType;
 import com.base.loaders.global.IFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

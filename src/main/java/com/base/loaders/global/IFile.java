@@ -1,6 +1,6 @@
 package com.base.loaders.global;
 
-import com.base.api.IDataDriven;
+import com.base.worldforge.IDataDriven;
 
 import java.io.File;
 import java.nio.file.Path;

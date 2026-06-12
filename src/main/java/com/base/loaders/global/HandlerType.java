@@ -1,6 +1,6 @@
 package com.base.loaders.global;
 
-import com.base.api.DataFileType;
+import com.base.worldforge.DataFileType;
 import com.base.loaders.local.LocalLoader;
 
 import java.util.concurrent.atomic.AtomicReference;

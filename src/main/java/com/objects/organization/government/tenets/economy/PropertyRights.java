@@ -6,6 +6,7 @@ import com.base.component.InstanceType;
 import com.base.reference.DMEReference;
 import com.google.gson.JsonObject;
 import com.objects.character.sentient.SentientCharacter;
+import com.objects.culture.object.compass.PoliticalCompass;
 import com.objects.culture.tenet.factory.CultureCondition;
 import com.objects.culture.tenet.factory.RightTenets;
 import com.objects.culture.tenet.interest.InterestGroup;
@@ -26,7 +27,6 @@ public abstract class PropertyRights<T extends PropertyRights<T>> extends Right<
     }
 
 
-
     @Override
     public void additionalSave(JsonObject data) {
 
@@ -38,57 +38,78 @@ public abstract class PropertyRights<T extends PropertyRights<T>> extends Right<
     }
     public static class PersonalPropertyRight extends PropertyRights<PersonalPropertyRight>{
 
-        public PersonalPropertyRight(InstanceType instType) {
+        protected PersonalPropertyRight(InstanceType instType) {
             super(instType, "personal_property", "Personal Property Right","The right to own personal property like a car, house, or other personal belongings.");
         }
 
 
         @Override
         protected float getHardshipFactor() {
-            return 1.5f;
+            return .5f;
         }
-
+        private static final PoliticalCompass guarantee_compass = new PoliticalCompass(-25,15,0,0);
+        private static final PoliticalCompass limited_compass = new PoliticalCompass(-7,4,0,0);
+        private static final PoliticalCompass revoke_compass = new PoliticalCompass(25,-5,0,0);
         @Override
         protected RightTenets.GuaranteeRevokeRightTenet<PersonalPropertyRight> buildGuaranteeRevoke(InterestGroup interestGroup) {
-            return new RightTenets.GuaranteeRevokeRightTenet<PersonalPropertyRight>(){
-
-                @Override
-                public void getConditions(Set<CultureCondition<?, ?>> conditions) {
-
-                }
-
-                @Override
-                public MutableTenet getNewObject(InstanceType type, String id, JsonObject data) {
-                    return null;
-                }
-
-                @Override
-                public Set<CultureCondition<?, ?>> getConditionList() {
-                    return Set.of();
-                }
-            };
+            return RightTenets.GuaranteeRevokeRightTenet.buildEmpty(this, revoke_compass, interestGroup);
         }
 
         @Override
         protected RightTenets.RevokeRightTenet<PersonalPropertyRight> buildRevoke(InterestGroup interestGroup) {
-            return null;
+            return RightTenets.RevokeRightTenet.buildEmpty(this, revoke_compass, interestGroup);
         }
 
         @Override
         protected RightTenets.GuaranteeRightTenet<PersonalPropertyRight> buildGuarantee(InterestGroup interestGroup) {
-            return null;
+            return RightTenets.GuaranteeRightTenet.buildEmpty(this, guarantee_compass, interestGroup);
         }
 
         @Override
         protected RightTenets.LimitedRightTenet<PersonalPropertyRight> buildLimited(InterestGroup interestGroup) {
-            return null;
+            return RightTenets.LimitedRightTenet.buildEmpty(this, limited_compass, interestGroup);
         }
 
         @Override
         public PersonalPropertyRight getNewObject(InstanceType type, String id, JsonObject data) {
-            return null;
+            return this;
         }
     }
+    public static class LandOwnershipPropertyRight extends PropertyRights<LandOwnershipPropertyRight>{
 
+        protected LandOwnershipPropertyRight(InstanceType instType) {
+            super(instType, "land_ownership", "Land Ownership","The right to own land.");
+        }
+        @Override
+        protected float getHardshipFactor() {
+            return 1f;
+        }
+        private static final PoliticalCompass guarantee_compass = new PoliticalCompass(-25,15,0,0);
+        private static final PoliticalCompass limited_compass = new PoliticalCompass(-7,4,0,0);
+        private static final PoliticalCompass revoke_compass = new PoliticalCompass(25,-5,0,0);
+        @Override
+        protected RightTenets.GuaranteeRevokeRightTenet<LandOwnershipPropertyRight> buildGuaranteeRevoke(InterestGroup interestGroup) {
+            return RightTenets.GuaranteeRevokeRightTenet.buildEmpty(this, revoke_compass, interestGroup);
+        }
 
+        @Override
+        protected RightTenets.RevokeRightTenet<LandOwnershipPropertyRight> buildRevoke(InterestGroup interestGroup) {
+            return RightTenets.RevokeRightTenet.buildEmpty(this, revoke_compass, interestGroup);
+        }
+
+        @Override
+        protected RightTenets.GuaranteeRightTenet<LandOwnershipPropertyRight> buildGuarantee(InterestGroup interestGroup) {
+            return RightTenets.GuaranteeRightTenet.buildEmpty(this, guarantee_compass, interestGroup);
+        }
+
+        @Override
+        protected RightTenets.LimitedRightTenet<LandOwnershipPropertyRight> buildLimited(InterestGroup interestGroup) {
+            return RightTenets.LimitedRightTenet.buildEmpty(this, limited_compass, interestGroup);
+        }
+
+        @Override
+        public LandOwnershipPropertyRight getNewObject(InstanceType type, String id, JsonObject data) {
+            return this;
+        }
+    }
 }
